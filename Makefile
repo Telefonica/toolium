@@ -5,6 +5,7 @@ ARCH            = noarch
 PACKAGE         = $(APP)-$(VERSION)-$(RELEASE).$(ARCH).rpm
 ROOT            = $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PYTHON          ?= $(shell which python2.7)
+PYTHON          = d:/Python27/python.exe
 MKD2PDF         ?= $(shell which markdown-pdf)
 VIRTUALENV      ?= virtualenv
 TEST            = tests
@@ -13,11 +14,21 @@ SPHINXSOURCEDIR = docs/src-docs/source
 SPHINXBUILDDIR  = docs/src-docs/build
 
 ifeq ($(USER), vagrant)
-VENV_PREFIX = $(HOME)/.venv
-TMP=/tmp
+	VENV_PREFIX = $(HOME)/.venv
+	TMP = /tmp
 else
-VENV_PREFIX = $(ROOT)/tmp/venv
-TMP=$(ROOT)/tmp
+	VENV_PREFIX = $(HOME)/virtualenv
+	TMP = $(ROOT)/tmp
+endif
+
+ifeq ($(OS),Windows_NT)
+	BIN = Scripts
+	LIB = Lib
+	TGZ_EXT = zip
+else
+	BIN = bin
+	LIB = lib/python2.7
+	TGZ_EXT = tar.gz
 endif
 
 VENV = $(VENV_PREFIX)/$(APP)
@@ -28,10 +39,9 @@ TESTREQ = requirements_dev.txt
 ACCEPTANCE_TEST_VENV = $(VENV_PREFIX)/$(TEST)
 ACCEPTANCE_TEST_REQ = test/acceptance/src/requirements.txt
 
-UNIT_TEST_ARGS=--nocapture --verbosity=3 --stop --where tests
+UNIT_TEST_ARGS=--nocapture --with-xunit --xunit-file=$(ROOT)/dist/nosetest.xml
 COVERAGE_ARGS=--with-coverage --cover-erase --cover-package=$(APP) \
-               --cover-branches --with-xunit --cover-xml \
-               --xunit-file=$(ROOT)/dist/nosetest.xml \
+               --cover-branches --cover-xml \
                --cover-xml-file=$(ROOT)/dist/coverage.xml
 
 all: default
@@ -64,13 +74,13 @@ init:
 
 sdist:
 	@echo ">>> Creating source distribution..."
-	$(VENV)/bin/python2.7 setup.py sdist
+	$(VENV)/$(BIN)/python setup.py sdist
 	@echo ">>> OK. TGZ generated in $(ROOT)/dist"
 	@echo
 
 rpm: init sdist
 	@echo ">>> Creating RPM package..."
-	cp $(ROOT)/dist/$(APP)-$(VERSION).tar.gz $(TMP)/rpmbuild/SOURCES
+	cp $(ROOT)/dist/$(APP)-$(VERSION).${TGZ_EXT} $(TMP)/rpmbuild/SOURCES
 	rpmbuild -bb $(APP).spec                                                 \
              --define "version $(VERSION)"                                   \
              --define "release $(RELEASE)"                                   \
@@ -79,7 +89,7 @@ rpm: init sdist
              --define "_topdir $(TMP)/rpmbuild"                              \
              --define "buildroot $(TMP)/rpmbuild/BUILDROOT"                  \
              --define "__python $(PYTHON)"                                   \
-             --define "python_sitelib virtualenv/lib/python2.7/site-packages"      \
+             --define "python_sitelib $(VENV)/$(LIB)/site-packages"      \
              --define "_sysconfdir /etc"                                     \
              --define "_bindir /usr/bin"                                     \
              --nodeps                                                        \
@@ -95,14 +105,14 @@ $(VENV): $(REQ) $(TESTREQ)
 	mkdir -p $@; \
 	export GIT_SSL_NO_VERIFY=true; \
 	$(VIRTUALENV) --no-site-packages --distribute -p $(PYTHON) $@; \
-	$@/bin/pip install --upgrade -r $(REQ); \
-	$@/bin/pip install --upgrade -r $(TESTREQ); \
+	$@/$(BIN)/pip install --upgrade -r $(REQ); \
+	$@/$(BIN)/pip install --upgrade -r $(TESTREQ); \
 
 unittest: init venv
-	$(VENV)/bin/nosetests $(UNIT_TEST_ARGS)
+	$(VENV)/$(BIN)/nosetests $(UNIT_TEST_ARGS)
 
 coverage: init venv
-	$(VENV)/bin/nosetests $(COVERAGE_ARGS) $(UNIT_TEST_ARGS)
+	$(VENV)/$(BIN)/nosetests $(COVERAGE_ARGS) $(UNIT_TEST_ARGS)
 	@echo ">>> OK. Coverage reports generated in $(ROOT)/dist"
 
 docs:
@@ -131,13 +141,12 @@ src-doc-html: venv
 	@echo ">>> Cleaning sphinx doc files..."
 	rm -rf $(SPHINXBUILDDIR)/html
 	@echo ">>> Generating doc files..."
-	$(VENV)/bin/$(SPHINXBUILD) -b html $(SPHINXSOURCEDIR) $(SPHINXBUILDDIR)/html
+	$(VENV)/$(BIN)/$(SPHINXBUILD) -b html $(SPHINXSOURCEDIR) $(SPHINXBUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(SPHINXBUILDDIR)/html."
 
 pylint: init venv
-	$(VENV)/bin/pylint  --rcfile=pylint.rc -f parseable iammy_analytics | tee dist/pylint.log
-	$(VENV)/bin/pylint  --rcfile=pylint.rc -f parseable tests | tee dist/pylint.log
+	$(VENV)/$(BIN)/pylint --rcfile=pylint.rc -f parseable $(APP) | tee dist/pylint.log
 	@echo ">>> OK. Pylint reports generated in $(ROOT)/dist"
 
 clean:
