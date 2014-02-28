@@ -1,0 +1,65 @@
+# Eclipse IDE File
+.classpath
+.project
+.springBeans
+.settings
+target
+.pydevproject
+
+# OS or Editor folders
+.DS_Store
+Thumbs.db
+.cache
+.project
+.settings
+.classpath
+.springBeans
+.metadata
+target
+Server
+classes
+.tmproj
+*.esproj
+.checkstyle
+nbproject
+nbactions.xml
+cobertura.ser
+
+# Numerous always-ignore extensions
+*.pyc
+*.diff
+*.err
+*.orig
+*.log
+*.rej
+*.swo
+*.swp
+*.vi
+*~
+*.sass-cache
+
+# Dreamweaver added files
+_notes
+dwsync.xml
+
+# Komodo
+*.komodoproject
+.komodotools
+
+# Folders to ignore
+.hg
+.svn
+.CVS
+intermediate
+publish
+.idea
+Docs
+/*.html
+/reports
+.sonar
+.coverage
+dist
+
+# Database
+*.sqlite3
+*.db3
