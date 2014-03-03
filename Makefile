@@ -10,14 +10,8 @@ TEST			= tests
 SPHINXBUILD		= sphinx-build
 SPHINXSOURCEDIR	= docs/src-docs/source
 SPHINXBUILDDIR	= docs/src-docs/build
-
-ifeq ($(USER), develenv)
-	VENV_PREFIX = $(ROOT)/.venv
-	# TMP=$(ROOT)/tmp
-else
-	VENV_PREFIX = $(HOME)/virtualenv
-	# TMP = $(ROOT)/tmp
-endif
+VENV_PREFIX 	= $(ROOT)/tmp/.venv
+# TMP=$(ROOT)/tmp
 
 ifeq ($(OS),Windows_NT)
 	BIN = Scripts
