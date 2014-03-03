@@ -11,7 +11,7 @@ been supplied.
 '''
 from setuptools import setup
 
-__VERSION__ = '0.1'
+__VERSION__ = file('VERSION').read().strip()
 with open('requirements.txt') as f:
     required = f.read().splitlines()
 

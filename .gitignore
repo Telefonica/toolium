@@ -6,6 +6,22 @@
 target
 .pydevproject
 
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+dist
+develop-eggs
+.installed.cfg
+lib
+lib64
+
 # OS or Editor folders
 .DS_Store
 Thumbs.db
@@ -58,7 +74,7 @@ Docs
 /reports
 .sonar
 .coverage
-dist
+tmp
 
 # Database
 *.sqlite3

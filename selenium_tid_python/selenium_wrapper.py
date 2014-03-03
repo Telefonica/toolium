@@ -116,7 +116,9 @@ class SeleniumWrapper(object):
             platforms_list = {
                               'xp': 'XP',
                               'windows_7': 'VISTA',
+                              'windows7': 'VISTA',
                               'windows_8': 'WIN8',
+                              'windows8': 'WIN8',
                               'linux': 'LINUX',
                               'mac': 'MAC',
                              }
