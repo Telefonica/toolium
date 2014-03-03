@@ -10,21 +10,23 @@ TEST			= tests
 SPHINXBUILD		= sphinx-build
 SPHINXSOURCEDIR	= docs/src-docs/source
 SPHINXBUILDDIR	= docs/src-docs/build
-VENV_PREFIX 	= $(ROOT)/tmp/.venv
-# TMP=$(ROOT)/tmp
 
 ifeq ($(OS),Windows_NT)
 	BIN = Scripts
 	LIB = Lib
 	TGZ_EXT = zip
 	PYTHON ?= $(shell which python).exe
+	PYTHON_EXE ?= $(shell where python | head -n1)
 else
 	BIN = bin
 	LIB = lib/python2.7
 	TGZ_EXT = tar.gz
 	PYTHON ?= $(shell which python2.7)
+	PYTHON_EXE = PYTHON
 endif
 
+TMP=$(ROOT)/tmp
+VENV_PREFIX = $(TMP)/.venv
 VENV = $(VENV_PREFIX)/$(APP)
 REQ = requirements.txt
 
@@ -121,12 +123,12 @@ endif
 # Just for development purposes. It uses your active python2.7
 # Remember to update your requirements if needed
 egg:
-	$(PYTHON) setup.py bdist_egg
+	$(PYTHON_EXE) setup.py bdist_egg
 
 # Just for development purposes. It uses your active python2.7
 # Remember to update your requirements if needed
 install:
-	$(PYTHON) setup.py install
+	$(PYTHON_EXE) setup.py install
 
 disabled-src-doc-html: venv
 	@echo ">>> Cleaning sphinx doc files..."
@@ -142,7 +144,7 @@ pylint: init venv
 
 clean:
 	@echo ">>> Cleaning temporal files..."
-	rm -rf tmp/ dist/ *.egg-info/ build/
+	rm -rf $(TMP) dist/ *.egg-info/ build/
 	@echo
 
 .PHONY: all sdist rpm clean doc
