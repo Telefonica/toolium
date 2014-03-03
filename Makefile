@@ -1,43 +1,40 @@
-APP             = selenium_tid_python
-VERSION         ?= $(shell cat VERSION)
-RELEASE         ?= $(shell git log --pretty=oneline | wc -l | tr -d ' ')
-ARCH            = noarch
-PACKAGE         = $(APP)-$(VERSION)-$(RELEASE).$(ARCH).rpm
-ROOT            = $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-PYTHON          ?= $(shell which python2.7)
-PYTHON          = d:/Python27/python.exe
-MKD2PDF         ?= $(shell which markdown-pdf)
-VIRTUALENV      ?= virtualenv
-TEST            = tests
-SPHINXBUILD     = sphinx-build
-SPHINXSOURCEDIR = docs/src-docs/source
-SPHINXBUILDDIR  = docs/src-docs/build
+APP				= selenium_tid_python
+VERSION			?= $(shell cat VERSION)
+RELEASE			?= $(shell git log --pretty=oneline | wc -l | tr -d ' ')
+ARCH			= noarch
+PACKAGE			= $(APP)-$(VERSION)-$(RELEASE).$(ARCH).rpm
+ROOT			= $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+MKD2PDF			?= $(shell which markdown-pdf)
+VIRTUALENV		?= virtualenv
+TEST			= tests
+SPHINXBUILD		= sphinx-build
+SPHINXSOURCEDIR	= docs/src-docs/source
+SPHINXBUILDDIR	= docs/src-docs/build
 
-ifeq ($(USER), vagrant)
-	VENV_PREFIX = $(HOME)/.venv
-	TMP = /tmp
+ifeq ($(USER), develenv)
+	VENV_PREFIX = $(ROOT)/.venv
+	# TMP=$(ROOT)/tmp
 else
 	VENV_PREFIX = $(HOME)/virtualenv
-	TMP = $(ROOT)/tmp
+	# TMP = $(ROOT)/tmp
 endif
 
 ifeq ($(OS),Windows_NT)
 	BIN = Scripts
 	LIB = Lib
 	TGZ_EXT = zip
+	PYTHON ?= $(shell which python).exe
 else
 	BIN = bin
 	LIB = lib/python2.7
 	TGZ_EXT = tar.gz
+	PYTHON ?= $(shell which python2.7)
 endif
 
 VENV = $(VENV_PREFIX)/$(APP)
 REQ = requirements.txt
 
 TESTREQ = requirements_dev.txt
-
-ACCEPTANCE_TEST_VENV = $(VENV_PREFIX)/$(TEST)
-ACCEPTANCE_TEST_REQ = test/acceptance/src/requirements.txt
 
 UNIT_TEST_ARGS=--nocapture --with-xunit --xunit-file=$(ROOT)/dist/nosetest.xml
 COVERAGE_ARGS=--with-coverage --cover-erase --cover-package=$(APP) \
@@ -57,20 +54,20 @@ default:
 	@echo "    venv          - Create and update virtual environments"
 	@echo "    install       - Install application"
 	@echo "    sdist         - Build a tar.gz software distribution of the package"
-	@echo "    rpm           - Create $(PACKAGE) rpm"
-	@echo "    docs          - Create package documentation"
+# @echo "    rpm           - Create $(PACKAGE) rpm"
+# @echo "    docs          - Create package documentation"
 	@echo "    egg           - Create python egg"
-	@echo "    unittest      - Execute unit tests"
-	@echo "    src-doc-html  - Build sphinx documentation"
-	@echo "    coverage      - Execute unittests and code coverage"
+# @echo "    unittest      - Execute unit tests"
+# @echo "    src-doc-html  - Build sphinx documentation"
+# @echo "    coverage      - Execute unittests and code coverage"
 	@echo "    pylint        - Run pylint"
 	@echo
 
 init:
 	mkdir -p $(ROOT)/dist
-	mkdir -p $(TMP)/rpmbuild/SOURCES
-	mkdir -p $(TMP)/rpmbuild/BUILD
-	mkdir -p $(TMP)/rpmbuild/RPMS
+	# mkdir -p $(TMP)/rpmbuild/SOURCES
+	# mkdir -p $(TMP)/rpmbuild/BUILD
+	# mkdir -p $(TMP)/rpmbuild/RPMS
 
 sdist:
 	@echo ">>> Creating source distribution..."
@@ -78,7 +75,7 @@ sdist:
 	@echo ">>> OK. TGZ generated in $(ROOT)/dist"
 	@echo
 
-rpm: init sdist
+disabled-rpm: init sdist
 	@echo ">>> Creating RPM package..."
 	cp $(ROOT)/dist/$(APP)-$(VERSION).${TGZ_EXT} $(TMP)/rpmbuild/SOURCES
 	rpmbuild -bb $(APP).spec                                                 \
@@ -108,14 +105,14 @@ $(VENV): $(REQ) $(TESTREQ)
 	$@/$(BIN)/pip install --upgrade -r $(REQ); \
 	$@/$(BIN)/pip install --upgrade -r $(TESTREQ); \
 
-unittest: init venv
+disabled-unittest: init venv
 	$(VENV)/$(BIN)/nosetests $(UNIT_TEST_ARGS)
 
-coverage: init venv
+disabled-coverage: init venv
 	$(VENV)/$(BIN)/nosetests $(COVERAGE_ARGS) $(UNIT_TEST_ARGS)
 	@echo ">>> OK. Coverage reports generated in $(ROOT)/dist"
 
-docs:
+disabled-docs:
 ifneq "$(MKD2PDF)" ""
 	@echo ">>> Creating documentation..." ; \
 	mkdir -p dist ; \
@@ -137,7 +134,7 @@ egg:
 install:
 	$(PYTHON) setup.py install
 
-src-doc-html: venv
+disabled-src-doc-html: venv
 	@echo ">>> Cleaning sphinx doc files..."
 	rm -rf $(SPHINXBUILDDIR)/html
 	@echo ">>> Generating doc files..."
