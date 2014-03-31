@@ -1,5 +1,5 @@
-Selenium-tid-python changelog
-=============================
+seleniumtid changelog
+=====================
 
 v0.4
 ----

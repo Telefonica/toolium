@@ -85,17 +85,17 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/selenium-tid-python.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/seleniumtid.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/selenium-tid-python.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/seleniumtid.qhc"
 
 devhelp:
 	$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) $(BUILDDIR)/devhelp
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/selenium-tid-python"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/selenium-tid-python"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/seleniumtid"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/seleniumtid"
 	@echo "# devhelp"
 
 epub:
