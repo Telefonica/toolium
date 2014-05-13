@@ -25,4 +25,5 @@ pip install -r requirements.txt
 
 The following packages will be installed:
   * selenium (http://docs.seleniumhq.org/)
+  * Appium-Python-Client (https://github.com/appium/python-client)
 
