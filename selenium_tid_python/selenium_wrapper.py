@@ -10,6 +10,7 @@ stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
 from selenium import webdriver
+from appium import webdriver as appiumdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium_tid_python.config import Config
 import logging
@@ -124,18 +125,21 @@ class SeleniumWrapper(object):
         except IndexError:
             pass
 
+        if browser_name == 'opera':
+            capabilities['opera.autostart'] = True
+            capabilities['opera.arguments'] = '-fullscreen'
+
         if browser_name == 'android' or browser_name == 'iphone':
             # Add Appium server capabilities
             for cap, cap_value in dict(self.config.items('AppiumCapabilities')).iteritems():
                 self.logger.debug("Added server capability: {0} = {1}".format(cap, cap_value))
                 capabilities[cap] = cap_value
 
-        if browser_name == 'opera':
-            capabilities['opera.autostart'] = True
-            capabilities['opera.arguments'] = '-fullscreen'
-
-        # Create remote driver
-        self.driver = webdriver.Remote(command_executor=server_url, desired_capabilities=capabilities)
+            # Create remote appium driver
+            self.driver = appiumdriver.Remote(command_executor=server_url, desired_capabilities=capabilities)
+        else:
+            # Create remote driver
+            self.driver = webdriver.Remote(command_executor=server_url, desired_capabilities=capabilities)
 
     def _setup_localdriver(self):
         """
