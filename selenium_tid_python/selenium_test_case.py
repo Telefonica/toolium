@@ -25,6 +25,11 @@ class SeleniumTestCase(unittest.TestCase):
         self.logger = logging.getLogger(__name__)
         # Create driver
         self.driver = selenium_driver.connect()
+        # Add implicitly wait
+        config = selenium_driver.config
+        implicitly_wait = config.get_optional('Common', 'implicitly_wait')
+        if (implicitly_wait):
+            self.driver.implicitly_wait(implicitly_wait)
         # Maximize browser
         if selenium_driver.is_maximizable():
             self.driver.maximize_window()
