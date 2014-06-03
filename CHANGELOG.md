@@ -1,6 +1,14 @@
 Selenium-tid-python changelog
 =============================
 
+v0.3
+----
+
+*Release date: 2014-06-??*
+
+  * Add a config property 'implicitly_wait' in [Common] section to set an implicit timeout 
+  * The driver can be reused in a test class setting a class variable 'reuse = True' 
+
 v0.2
 ----
 

@@ -17,22 +17,32 @@ from selenium_tid_python import selenium_driver
 
 
 class SeleniumTestCase(unittest.TestCase):
+    driver = None
+    reuse = False
+
     def get_subclassmethod_name(self):
         return self.__class__.__name__ + "." + self._testMethodName
+
+    @classmethod
+    def tearDownClass(cls):
+        if SeleniumTestCase.driver != None:
+            SeleniumTestCase.driver.quit()
+            SeleniumTestCase.driver = None
 
     def setUp(self):
         # Configure logger
         self.logger = logging.getLogger(__name__)
         # Create driver
-        self.driver = selenium_driver.connect()
+        if SeleniumTestCase.driver == None:
+            SeleniumTestCase.driver = selenium_driver.connect()
         # Add implicitly wait
         config = selenium_driver.config
         implicitly_wait = config.get_optional('Common', 'implicitly_wait')
         if (implicitly_wait):
-            self.driver.implicitly_wait(implicitly_wait)
+            SeleniumTestCase.driver.implicitly_wait(implicitly_wait)
         # Maximize browser
         if selenium_driver.is_maximizable():
-            self.driver.maximize_window()
+            SeleniumTestCase.driver.maximize_window()
         self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
 
     def tearDown(self):
@@ -48,9 +58,11 @@ class SeleniumTestCase(unittest.TestCase):
             filepath = os.path.join(selenium_driver.screenshots_path, filename)
             if not os.path.exists(selenium_driver.screenshots_path):
                 os.makedirs(selenium_driver.screenshots_path)
-            if self.driver.get_screenshot_as_file(filepath):
+            if SeleniumTestCase.driver.get_screenshot_as_file(filepath):
                 self.logger.error("Saved screenshot " + filepath)
                 selenium_driver.screenshots_number += 1
 
         # Close browser and stop driver
-        self.driver.quit()
+        if not self.reuse:
+            SeleniumTestCase.driver.quit()
+            SeleniumTestCase.driver = None
