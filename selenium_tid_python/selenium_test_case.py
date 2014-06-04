@@ -17,17 +17,32 @@ from selenium_tid_python import selenium_driver
 
 
 class SeleniumTestCase(unittest.TestCase):
+    driver = None
+    reuse = False
+
     def get_subclassmethod_name(self):
         return self.__class__.__name__ + "." + self._testMethodName
+
+    @classmethod
+    def tearDownClass(cls):
+        if SeleniumTestCase.driver != None:
+            SeleniumTestCase.driver.quit()
+            SeleniumTestCase.driver = None
 
     def setUp(self):
         # Configure logger
         self.logger = logging.getLogger(__name__)
         # Create driver
-        self.driver = selenium_driver.connect()
+        if SeleniumTestCase.driver == None:
+            SeleniumTestCase.driver = selenium_driver.connect()
+        # Add implicitly wait
+        config = selenium_driver.config
+        implicitly_wait = config.get_optional('Common', 'implicitly_wait')
+        if (implicitly_wait):
+            SeleniumTestCase.driver.implicitly_wait(implicitly_wait)
         # Maximize browser
         if selenium_driver.is_maximizable():
-            self.driver.maximize_window()
+            SeleniumTestCase.driver.maximize_window()
         self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
 
     def tearDown(self):
@@ -37,15 +52,20 @@ class SeleniumTestCase(unittest.TestCase):
             self.logger.info("The test '{0}' has passed".format(self.get_subclassmethod_name()))
         else:
             self.logger.error("The test '{0}' has failed: {1}".format(self.get_subclassmethod_name(), result[1]))
-            # Capture screenshot
-            test_name = self.get_subclassmethod_name().replace('.', '_')
-            filename = '{0:0=2d}_{1}.png'.format(selenium_driver.screenshots_number, test_name)
-            filepath = os.path.join(selenium_driver.screenshots_path, filename)
-            if not os.path.exists(selenium_driver.screenshots_path):
-                os.makedirs(selenium_driver.screenshots_path)
-            if self.driver.get_screenshot_as_file(filepath):
-                self.logger.error("Saved screenshot " + filepath)
-                selenium_driver.screenshots_number += 1
+            self.capture_screenshot()
 
         # Close browser and stop driver
-        self.driver.quit()
+        if not self.reuse:
+            SeleniumTestCase.driver.quit()
+            SeleniumTestCase.driver = None
+
+    def capture_screenshot(self):
+        # Capture screenshot
+        test_name = self.get_subclassmethod_name().replace('.', '_')
+        filename = '{0:0=2d}_{1}.png'.format(selenium_driver.screenshots_number, test_name)
+        filepath = os.path.join(selenium_driver.screenshots_path, filename)
+        if not os.path.exists(selenium_driver.screenshots_path):
+            os.makedirs(selenium_driver.screenshots_path)
+        if SeleniumTestCase.driver.get_screenshot_as_file(filepath):
+            self.logger.info("Saved screenshot " + filepath)
+            selenium_driver.screenshots_number += 1

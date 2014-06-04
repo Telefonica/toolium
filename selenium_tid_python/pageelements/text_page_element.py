@@ -16,4 +16,4 @@ from selenium_tid_python.pageelements.page_element import PageElement
 class TextPageElement(PageElement):
     def __get__(self, obj, cls=None):
         driver = selenium_driver.driver
-        return driver.find_element(self.locator[0], self.locator[1]).text
+        return driver.find_element(*self.locator).text
