@@ -12,13 +12,13 @@ been supplied.
 import unittest
 import logging
 import sys
-import os
 from selenium_tid_python import selenium_driver
+from selenium_tid_python.utils import Utils
 
 
 class SeleniumTestCase(unittest.TestCase):
     driver = None
-    reuse = False
+    reuse_driver = False
 
     def get_subclassmethod_name(self):
         return self.__class__.__name__ + "." + self._testMethodName
@@ -52,20 +52,12 @@ class SeleniumTestCase(unittest.TestCase):
             self.logger.info("The test '{0}' has passed".format(self.get_subclassmethod_name()))
         else:
             self.logger.error("The test '{0}' has failed: {1}".format(self.get_subclassmethod_name(), result[1]))
-            self.capture_screenshot()
+            test_name = self.get_subclassmethod_name().replace('.', '_')
+            Utils(self.driver).capture_screenshot(test_name)
 
         # Close browser and stop driver
-        if not self.reuse:
+        config = selenium_driver.config
+        config_reuse_driver = config.getboolean_optional('Common', 'reuse_driver')
+        if not self.reuse_driver and not config_reuse_driver:
             SeleniumTestCase.driver.quit()
             SeleniumTestCase.driver = None
-
-    def capture_screenshot(self):
-        # Capture screenshot
-        test_name = self.get_subclassmethod_name().replace('.', '_')
-        filename = '{0:0=2d}_{1}.png'.format(selenium_driver.screenshots_number, test_name)
-        filepath = os.path.join(selenium_driver.screenshots_path, filename)
-        if not os.path.exists(selenium_driver.screenshots_path):
-            os.makedirs(selenium_driver.screenshots_path)
-        if SeleniumTestCase.driver.get_screenshot_as_file(filepath):
-            self.logger.info("Saved screenshot " + filepath)
-            selenium_driver.screenshots_number += 1

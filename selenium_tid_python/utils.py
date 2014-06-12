@@ -10,6 +10,8 @@ stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
 import logging
+import os
+from selenium_tid_python import selenium_driver
 
 
 class Utils(object):
@@ -17,6 +19,16 @@ class Utils(object):
         self.driver = driver
         # Configure logger
         self.logger = logging.getLogger(__name__)
+
+    def capture_screenshot(self, name):
+        # Capture screenshot
+        filename = '{0:0=2d}_{1}.png'.format(selenium_driver.screenshots_number, name)
+        filepath = os.path.join(selenium_driver.screenshots_path, filename)
+        if not os.path.exists(selenium_driver.screenshots_path):
+            os.makedirs(selenium_driver.screenshots_path)
+        if self.driver.get_screenshot_as_file(filepath):
+            self.logger.info("Saved screenshot " + filepath)
+            selenium_driver.screenshots_number += 1
 
     def print_all_selenium_logs(self):
         map(self.print_selenium_logs, {'browser', 'client', 'driver', 'performance', 'server'})
