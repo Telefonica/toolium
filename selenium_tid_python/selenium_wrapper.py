@@ -185,6 +185,8 @@ class SeleniumWrapper(object):
         chromedriver = self.config.get('Browser', 'chromedriver_path')
         self.logger.debug("Chrome driver path given in properties: {0}".format(chromedriver))
         options = webdriver.ChromeOptions()
+        # Temporal option to solve https://code.google.com/p/chromedriver/issues/detail?id=799
+        options.add_argument("test-type")
         self.driver = webdriver.Chrome(chromedriver, chrome_options=options)
 
     def _setup_safari(self):
