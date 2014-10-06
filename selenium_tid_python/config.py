@@ -27,6 +27,7 @@ class Config(object):
         Create config object with properties file and system properties
         '''
         config = ConfigParser.ConfigParser()
+        config.optionxform = str
         config.read('conf/properties.cfg')
 
         # Get system properties and update config properties
