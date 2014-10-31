@@ -13,7 +13,7 @@ import logging
 import urllib
 import urllib2
 import re
-from selenium_tid_python import selenium_driver
+from seleniumtid import selenium_driver
 
 # Configure logger
 logger = logging.getLogger(__name__)

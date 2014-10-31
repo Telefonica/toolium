@@ -16,9 +16,9 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
-    name='selenium_tid_python',
+    name='seleniumtid',
     version=__VERSION__,
-    packages=['selenium_tid_python', 'selenium_tid_python.pageobjects', 'selenium_tid_python.pageelements'],
+    packages=['seleniumtid', 'seleniumtid.pageobjects', 'seleniumtid.pageelements'],
     url='',
     license='',
     author='Telefonica I+D',

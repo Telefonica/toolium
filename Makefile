@@ -1,4 +1,4 @@
-APP				= selenium_tid_python
+APP				= seleniumtid
 VERSION			?= $(shell cat VERSION)
 RELEASE			?= $(shell git log --pretty=oneline | wc -l | tr -d ' ')
 ARCH			= noarch

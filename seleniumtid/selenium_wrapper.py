@@ -12,7 +12,7 @@ been supplied.
 from selenium import webdriver
 from appium import webdriver as appiumdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium_tid_python.config import Config
+from seleniumtid.config import Config
 import logging
 import os
 import datetime

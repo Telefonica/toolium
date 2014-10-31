@@ -12,8 +12,8 @@ been supplied.
 import unittest
 import logging
 import sys
-from selenium_tid_python import selenium_driver
-from selenium_tid_python.utils import Utils
+from seleniumtid import selenium_driver
+from seleniumtid.utils import Utils
 
 
 class SeleniumTestCase(unittest.TestCase):
