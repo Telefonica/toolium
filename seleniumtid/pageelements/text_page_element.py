@@ -9,11 +9,10 @@ consent of Telefonica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
-from seleniumtid import selenium_driver
 from seleniumtid.pageelements.page_element import PageElement
 
 
 class TextPageElement(PageElement):
-    def __get__(self, obj, cls=None):
-        driver = selenium_driver.driver
-        return driver.find_element(*self.locator).text
+    @property
+    def text(self):
+        return self.element().text

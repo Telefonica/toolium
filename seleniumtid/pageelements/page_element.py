@@ -13,17 +13,13 @@ from seleniumtid import selenium_driver
 
 
 class PageElement(object):
-    locator = (None, None)
-
-    def __init__(self, locator):
+    def __init__(self, locator, driver=None):
         self.locator = locator
+        if driver:
+            self.driver = driver
+        else:
+            # Using common driver
+            self.driver = selenium_driver.driver
 
-    def __get__(self, obj, cls=None):
-        driver = selenium_driver.driver
-        return driver.find_element(*self.locator)
-
-    def __set__(self, obj, val):
-        pass
-
-    def __delete__(self, obj):
-        pass
+    def element(self):
+        return self.driver.find_element(*self.locator)

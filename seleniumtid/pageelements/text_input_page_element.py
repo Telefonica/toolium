@@ -9,15 +9,14 @@ consent of Telefonica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
-from seleniumtid import selenium_driver
 from seleniumtid.pageelements.page_element import PageElement
 
 
 class TextInputPageElement(PageElement):
-    def __get__(self, obj, cls=None):
-        driver = selenium_driver.driver
-        return driver.find_element(*self.locator).get_attribute("value")
+    @property
+    def text(self):
+        return self.element().get_attribute("value")
 
-    def __set__(self, obj, val):
-        driver = selenium_driver.driver
-        driver.find_element(*self.locator).send_keys(val)
+    @text.setter
+    def text(self, value):
+        self.element().send_keys(value)
