@@ -17,6 +17,9 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 class Utils(object):
+    driver = None
+    logger = None
+
     def __init__(self, driver):
         self.driver = driver
         # Configure logger

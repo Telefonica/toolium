@@ -13,6 +13,7 @@ import logging.config
 import ConfigParser
 import os
 import types
+import io
 
 
 class Config(object):
@@ -38,6 +39,25 @@ class Config(object):
         config = self._add_optional_methods(config)
 
         return config
+
+    def deepcopy(self, config):
+        '''
+        Returns a deep copy of config object
+        '''
+        config_string = io.BytesIO()
+        config.write(config_string)
+        # We must reset the buffer ready for reading.
+        config_string.seek(0)
+
+        # Create a new config object
+        config_copy = ConfigParser.ConfigParser()
+        config_copy.optionxform = str
+        config_copy.readfp(config_string)
+
+        # Add new methods to config object
+        config_copy = self._add_optional_methods(config_copy)
+
+        return config_copy
 
     def _add_optional_methods(self, config):
         def get_optional(self, section, option, default=None):
