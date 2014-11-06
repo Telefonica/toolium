@@ -26,8 +26,7 @@ class Utils(object):
         '''
         Read timeout from configuration properties and set the implicit wait
         '''
-        config = selenium_driver.config
-        implicitly_wait = config.get_optional('Common', 'implicitly_wait')
+        implicitly_wait = selenium_driver.config.get_optional('Common', 'implicitly_wait')
         if (implicitly_wait):
             self.driver.implicitly_wait(implicitly_wait)
 

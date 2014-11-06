@@ -12,14 +12,13 @@ been supplied.
 from selenium import webdriver
 from appium import webdriver as appiumdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from seleniumtid.config import Config
 import logging
 
 
 class ConfigDriver(object):
     def __init__(self, config):
         self.logger = logging.getLogger(__name__)
-        self.config = Config().deepcopy(config)
+        self.config = config.deepcopy()
 
     def create_driver(self):
         """

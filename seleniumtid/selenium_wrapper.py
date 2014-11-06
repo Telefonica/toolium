@@ -9,11 +9,11 @@ consent of Telefonica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
-from seleniumtid.config import Config
-import logging
+import logging.config
 import os
 import datetime
 from seleniumtid.config_driver import ConfigDriver
+from seleniumtid.config_parser import ExtendedConfigParser
 
 
 class SeleniumWrapper(object):
@@ -21,18 +21,19 @@ class SeleniumWrapper(object):
     _instance = None
     driver = None
     logger = None
-    config = None
+    config = ExtendedConfigParser()
     screenshots_path = None
     screenshots_number = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             # Configure logger
-            Config().initialize_logger()
+            logging.config.fileConfig('conf/logging.conf')
             cls.logger = logging.getLogger(__name__)
 
             # Configure properties
-            cls.config = Config().initialize_config()
+            cls.config.read('conf/properties.cfg')
+            cls.config.update_from_system_properties()
 
             # Unique screenshots directory
             date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
@@ -43,24 +44,6 @@ class SeleniumWrapper(object):
             # Create new instance
             cls._instance = super(SeleniumWrapper, cls).__new__(cls, *args, **kwargs)
         return cls._instance
-
-    def _get_system_properties(self):
-        '''
-        Update all config properties values with system property values
-        '''
-        for section in self.config.sections:
-            for option in self.config.options(section):
-                self._get_system_property(section, option)
-
-    def _get_system_property(self, section, option):
-        '''
-        Update a config property value with system property value
-        '''
-        try:
-            propertyName = "{0}_{1}".format(section, option)
-            self.config.set(section, option, os.environ[propertyName])
-        except KeyError:
-            pass
 
     def connect(self):
         """

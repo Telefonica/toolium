@@ -37,8 +37,7 @@ class SeleniumTestCase(unittest.TestCase):
             SeleniumTestCase.driver = selenium_driver.connect()
             SeleniumTestCase.utils = Utils(SeleniumTestCase.driver)
         # Get common configuration of reusing driver
-        config = selenium_driver.config
-        self.reuse_driver = config.getboolean_optional('Common', 'reuse_driver')
+        self.reuse_driver = selenium_driver.config.getboolean_optional('Common', 'reuse_driver')
         # Set implicitly wait
         self.utils.set_implicit_wait()
         # Maximize browser
