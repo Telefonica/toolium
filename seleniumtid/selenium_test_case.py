@@ -18,8 +18,6 @@ from seleniumtid.utils import Utils
 
 class SeleniumTestCase(unittest.TestCase):
     driver = None
-    reuse_driver = False
-    logger = None
     utils = None
 
     def get_subclassmethod_name(self):
@@ -38,6 +36,9 @@ class SeleniumTestCase(unittest.TestCase):
         if not SeleniumTestCase.driver:
             SeleniumTestCase.driver = selenium_driver.connect()
             SeleniumTestCase.utils = Utils(SeleniumTestCase.driver)
+        # Get common configuration of reusing driver
+        config = selenium_driver.config
+        self.reuse_driver = config.getboolean_optional('Common', 'reuse_driver')
         # Set implicitly wait
         self.utils.set_implicit_wait()
         # Maximize browser
@@ -56,8 +57,6 @@ class SeleniumTestCase(unittest.TestCase):
             self.utils.capture_screenshot(test_name)
 
         # Close browser and stop driver
-        config = selenium_driver.config
-        config_reuse_driver = config.getboolean_optional('Common', 'reuse_driver')
-        if not self.reuse_driver and not config_reuse_driver:
+        if not self.reuse_driver:
             SeleniumTestCase.driver.quit()
             SeleniumTestCase.driver = None

@@ -17,9 +17,6 @@ import logging
 
 
 class ConfigDriver(object):
-    logger = None
-    config = None
-
     def __init__(self, config):
         self.logger = logging.getLogger(__name__)
         self.config = Config().deepcopy(config)
