@@ -30,9 +30,9 @@ def jira(test_key):
         def modified_test(*args, **kwargs):
             try:
                 test_item(*args, **kwargs)
-            except Exception as exc:
+            except Exception:
                 change_jira_status_with_config(test_key, 'Fail')
-                raise exc
+                raise
             change_jira_status_with_config(test_key, 'Pass')
         return modified_test
     return decorator
