@@ -18,7 +18,7 @@ with open('requirements.txt') as f:
 setup(
     name='seleniumtid',
     version=__VERSION__,
-    packages=['seleniumtid', 'seleniumtid.pageobjects', 'seleniumtid.pageelements'],
+    packages=['seleniumtid', 'seleniumtid.pageobjects', 'seleniumtid.pageelements', 'seleniumtid.lettuce'],
     url='',
     license='',
     author='Telefonica I+D',

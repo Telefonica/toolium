@@ -6,6 +6,7 @@ v0.4
 
 *Release date: 2014-11-??*
 
+  * Add Lettuce terrain file to initialize Selenium driver
   * Add ConfigDriver.create_driver method to create a new driver with specific configuration
   * Add wait_until_element_not_visible method in utils class
 
