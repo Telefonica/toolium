@@ -12,7 +12,7 @@ been supplied.
 from seleniumtid.pageelements.page_element import PageElement
 
 
-class TextInputPageElement(PageElement):
+class InputText(PageElement):
     @property
     def text(self):
         return self.element().get_attribute("value")

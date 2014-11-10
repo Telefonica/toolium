@@ -12,7 +12,7 @@ been supplied.
 from seleniumtid.pageelements.page_element import PageElement
 
 
-class TextPageElement(PageElement):
+class Text(PageElement):
     @property
     def text(self):
         return self.element().text

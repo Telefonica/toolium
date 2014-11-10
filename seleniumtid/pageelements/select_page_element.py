@@ -10,14 +10,18 @@ stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
 from seleniumtid.pageelements.page_element import PageElement
-from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.ui import Select as SeleniumSelect
 
 
-class SelectPageElement(PageElement):
+class Select(PageElement):
     @property
     def option(self):
-        return Select(self.element()).first_selected_option.text
+        return self.select_object.first_selected_option.text
 
     @option.setter
     def option(self, value):
-        Select(self.element()).select_by_visible_text(value)
+        self.select_object.select_by_visible_text(value)
+
+    @property
+    def select_object(self):
+        return SeleniumSelect(self.element())
