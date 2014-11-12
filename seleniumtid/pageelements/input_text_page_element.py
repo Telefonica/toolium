@@ -9,8 +9,14 @@ consent of Telefonica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
-import unittest
+from seleniumtid.pageelements.page_element import PageElement
 
 
-class PageObject(unittest.TestCase):
-    pass
+class InputText(PageElement):
+    @property
+    def text(self):
+        return self.element().get_attribute("value")
+
+    @text.setter
+    def text(self, value):
+        self.element().send_keys(value)

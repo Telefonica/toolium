@@ -13,7 +13,7 @@ import logging
 import urllib
 import urllib2
 import re
-from selenium_tid_python import selenium_driver
+from seleniumtid import selenium_driver
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -30,9 +30,9 @@ def jira(test_key):
         def modified_test(*args, **kwargs):
             try:
                 test_item(*args, **kwargs)
-            except Exception as exc:
+            except Exception:
                 change_jira_status_with_config(test_key, 'Fail')
-                raise exc
+                raise
             change_jira_status_with_config(test_key, 'Pass')
         return modified_test
     return decorator
