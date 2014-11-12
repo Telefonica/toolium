@@ -28,18 +28,25 @@ class SeleniumWrapper(object):
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             # Configure logger
-            logging.config.fileConfig('conf/logging.conf')
+            conf_logging_file = 'conf/logging.conf'
+            try:
+                logging.config.fileConfig(conf_logging_file)
+            except Exception:
+                print '[WARN] Logging config file not found: {}'.format(conf_logging_file)
             cls.logger = logging.getLogger(__name__)
 
             # Configure properties
-            cls.config.read('conf/properties.cfg')
-            cls.config.update_from_system_properties()
-
-            # Unique screenshots directory
-            date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
-            browser_info = cls.config.get('Browser', 'browser').replace('-', '_')
-            cls.screenshots_path = os.path.join(os.getcwd(), 'dist', 'screenshots', date + '_' + browser_info)
-            cls.screenshots_number = 1
+            conf_properties_file = 'conf/properties.cfg'
+            result = cls.config.read(conf_properties_file)
+            if len(result) == 0:
+                print '[ERR] Properties config file not found: {}'.format(conf_properties_file)
+            else:
+                cls.config.update_from_system_properties()
+                # Unique screenshots directory
+                date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
+                browser_info = cls.config.get('Browser', 'browser').replace('-', '_')
+                cls.screenshots_path = os.path.join(os.getcwd(), 'dist', 'screenshots', date + '_' + browser_info)
+                cls.screenshots_number = 1
 
             # Create new instance
             cls._instance = super(SeleniumWrapper, cls).__new__(cls, *args, **kwargs)

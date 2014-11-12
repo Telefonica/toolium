@@ -51,10 +51,10 @@ default:
 	@echo "    install       - Install application"
 	@echo "    sdist         - Build a tar.gz software distribution of the package"
 # @echo "    rpm           - Create $(PACKAGE) rpm"
-# @echo "    docs          - Create package documentation"
+	@echo "    docs          - Create package documentation"
 	@echo "    egg           - Create python egg"
 # @echo "    unittest      - Execute unit tests"
-# @echo "    src-doc-html  - Build sphinx documentation"
+	@echo "    src-doc-html  - Build sphinx documentation"
 # @echo "    coverage      - Execute unittests and code coverage"
 	@echo "    pylint        - Run pylint"
 	@echo
@@ -108,7 +108,7 @@ disabled-coverage: init venv
 	$(VENV)/$(BIN)/nosetests $(COVERAGE_ARGS) $(UNIT_TEST_ARGS)
 	@echo ">>> OK. Coverage reports generated in $(ROOT)/dist"
 
-disabled-docs:
+docs:
 ifneq "$(MKD2PDF)" ""
 	@echo ">>> Creating documentation..." ; \
 	mkdir -p dist ; \
@@ -130,7 +130,7 @@ egg:
 install:
 	$(PYTHON_EXE) setup.py install
 
-disabled-src-doc-html: venv
+src-doc-html: venv
 	@echo ">>> Cleaning sphinx doc files..."
 	rm -rf $(SPHINXBUILDDIR)/html
 	@echo ">>> Generating doc files..."
