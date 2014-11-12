@@ -22,7 +22,7 @@ setup(
     url='',
     license='',
     author='Telefonica I+D',
-    author_email='rga@tid.es',
+    author_email='ruben.gonzalezalonso@telefonica.com',
     description='Selenium TID Library for Python',
     install_requires=required
 )
