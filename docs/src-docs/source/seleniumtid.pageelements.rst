@@ -1,9 +1,6 @@
 seleniumtid.pageelements package
 ================================
 
-Submodules
-----------
-
 seleniumtid.pageelements.input_text_page_element
 ------------------------------------------------
 
@@ -32,15 +29,6 @@ seleniumtid.pageelements.text_page_element
 ------------------------------------------
 
 .. automodule:: seleniumtid.pageelements.text_page_element
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: seleniumtid.pageelements
     :members:
     :undoc-members:
     :show-inheritance:

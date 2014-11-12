@@ -1,8 +1,5 @@
-seleniumtid package modules
-===========================
-
-Subpackages
------------
+seleniumtid packages
+====================
 
 .. toctree::
 
@@ -10,8 +7,8 @@ Subpackages
     seleniumtid.pageelements
     seleniumtid.pageobjects
 
-Submodules
-----------
+seleniumtid modules
+===================
 
 seleniumtid.config_driver
 -------------------------
@@ -57,15 +54,6 @@ seleniumtid.utils
 -----------------
 
 .. automodule:: seleniumtid.utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: seleniumtid
     :members:
     :undoc-members:
     :show-inheritance:
