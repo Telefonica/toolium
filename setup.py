@@ -16,13 +16,13 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
-    name='selenium_tid_python',
+    name='seleniumtid',
     version=__VERSION__,
-    packages=['selenium_tid_python', 'selenium_tid_python.pageobjects', 'selenium_tid_python.pageelements'],
+    packages=['seleniumtid', 'seleniumtid.pageobjects', 'seleniumtid.pageelements', 'seleniumtid.lettuce'],
     url='',
     license='',
     author='Telefonica I+D',
-    author_email='rga@tid.es',
+    author_email='ruben.gonzalezalonso@telefonica.com',
     description='Selenium TID Library for Python',
     install_requires=required
 )

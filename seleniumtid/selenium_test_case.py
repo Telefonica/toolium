@@ -12,20 +12,20 @@ been supplied.
 import unittest
 import logging
 import sys
-from selenium_tid_python import selenium_driver
-from selenium_tid_python.utils import Utils
+from seleniumtid import selenium_driver
+from seleniumtid.utils import Utils
 
 
 class SeleniumTestCase(unittest.TestCase):
     driver = None
-    reuse_driver = False
+    utils = None
 
     def get_subclassmethod_name(self):
         return self.__class__.__name__ + "." + self._testMethodName
 
     @classmethod
     def tearDownClass(cls):
-        if SeleniumTestCase.driver != None:
+        if SeleniumTestCase.driver:
             SeleniumTestCase.driver.quit()
             SeleniumTestCase.driver = None
 
@@ -33,13 +33,13 @@ class SeleniumTestCase(unittest.TestCase):
         # Configure logger
         self.logger = logging.getLogger(__name__)
         # Create driver
-        if SeleniumTestCase.driver == None:
+        if not SeleniumTestCase.driver:
             SeleniumTestCase.driver = selenium_driver.connect()
-        # Add implicitly wait
-        config = selenium_driver.config
-        implicitly_wait = config.get_optional('Common', 'implicitly_wait')
-        if (implicitly_wait):
-            SeleniumTestCase.driver.implicitly_wait(implicitly_wait)
+            SeleniumTestCase.utils = Utils(SeleniumTestCase.driver)
+        # Get common configuration of reusing driver
+        self.reuse_driver = selenium_driver.config.getboolean_optional('Common', 'reuse_driver')
+        # Set implicitly wait
+        self.utils.set_implicit_wait()
         # Maximize browser
         if selenium_driver.is_maximizable():
             SeleniumTestCase.driver.maximize_window()
@@ -53,11 +53,9 @@ class SeleniumTestCase(unittest.TestCase):
         else:
             self.logger.error("The test '{0}' has failed: {1}".format(self.get_subclassmethod_name(), result[1]))
             test_name = self.get_subclassmethod_name().replace('.', '_')
-            Utils(self.driver).capture_screenshot(test_name)
+            self.utils.capture_screenshot(test_name)
 
         # Close browser and stop driver
-        config = selenium_driver.config
-        config_reuse_driver = config.getboolean_optional('Common', 'reuse_driver')
-        if not self.reuse_driver and not config_reuse_driver:
+        if not self.reuse_driver:
             SeleniumTestCase.driver.quit()
             SeleniumTestCase.driver = None

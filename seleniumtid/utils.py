@@ -11,7 +11,9 @@ been supplied.
 '''
 import logging
 import os
-from selenium_tid_python import selenium_driver
+from seleniumtid import selenium_driver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 class Utils(object):
@@ -20,8 +22,18 @@ class Utils(object):
         # Configure logger
         self.logger = logging.getLogger(__name__)
 
+    def set_implicit_wait(self):
+        '''
+        Read timeout from configuration properties and set the implicit wait
+        '''
+        implicitly_wait = selenium_driver.config.get_optional('Common', 'implicitly_wait')
+        if (implicitly_wait):
+            self.driver.implicitly_wait(implicitly_wait)
+
     def capture_screenshot(self, name):
-        # Capture screenshot
+        '''
+        Capture screenshot and save it in screenshots folder
+        '''
         filename = '{0:0=2d}_{1}.png'.format(selenium_driver.screenshots_number, name)
         filepath = os.path.join(selenium_driver.screenshots_path, filename)
         if not os.path.exists(selenium_driver.screenshots_path):
@@ -31,9 +43,26 @@ class Utils(object):
             selenium_driver.screenshots_number += 1
 
     def print_all_selenium_logs(self):
-        map(self.print_selenium_logs, {'browser', 'client', 'driver', 'performance', 'server'})
+        '''
+        Print all selenium logs
+        '''
+        map(self.print_selenium_logs, {'browser', 'client', 'driver', 'performance', 'server', 'logcat'})
 
     def print_selenium_logs(self, log_type):
+        '''
+        Print selenium logs of the specified type (browser, client, driver, performance, sever, logcat)
+        '''
         for entry in self.driver.get_log(log_type):
             message = entry['message'].rstrip().encode('utf-8')
             self.logger.debug('{0} - {1}: {2}'.format(log_type.title(), entry['level'], message))
+
+    def wait_until_element_not_visible(self, locator, timeout=10):
+        '''
+        Search element by locator and wait until it is not visible
+        '''
+        # Remove implicit wait
+        self.driver.implicitly_wait(0)
+        # Wait for invisibility
+        WebDriverWait(self.driver, timeout).until(EC.invisibility_of_element_located(locator))
+        # Restore implicit wait from properties
+        self.set_implicit_wait()
