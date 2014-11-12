@@ -51,10 +51,9 @@ default:
 	@echo "    install       - Install application"
 	@echo "    sdist         - Build a tar.gz software distribution of the package"
 # @echo "    rpm           - Create $(PACKAGE) rpm"
-	@echo "    docs          - Create package documentation"
 	@echo "    egg           - Create python egg"
 # @echo "    unittest      - Execute unit tests"
-	@echo "    src-doc-html  - Build sphinx documentation"
+	@echo "    doc           - Build sphinx documentation"
 # @echo "    coverage      - Execute unittests and code coverage"
 	@echo "    pylint        - Run pylint"
 	@echo
@@ -108,18 +107,6 @@ disabled-coverage: init venv
 	$(VENV)/$(BIN)/nosetests $(COVERAGE_ARGS) $(UNIT_TEST_ARGS)
 	@echo ">>> OK. Coverage reports generated in $(ROOT)/dist"
 
-docs:
-ifneq "$(MKD2PDF)" ""
-	@echo ">>> Creating documentation..." ; \
-	mkdir -p dist ; \
-	$(MKD2PDF) -s docstyle.css -o dist/README.pdf README.md; \
-	echo ">>> OK. PDFs generated in $(ROOT)/dist" ;\
-	echo
-else
-	@echo ">>> ERROR. markdown-pdf not found. Docs not generated" ;\
-	echo
-endif
-
 # Just for development purposes. It uses your active python2.7
 # Remember to update your requirements if needed
 egg:
@@ -130,7 +117,7 @@ egg:
 install:
 	$(PYTHON_EXE) setup.py install
 
-src-doc-html: venv
+doc: venv
 	@echo ">>> Cleaning sphinx doc files..."
 	rm -rf $(SPHINXBUILDDIR)/html
 	@echo ">>> Generating doc files..."
@@ -147,4 +134,4 @@ clean:
 	rm -rf $(TMP) dist/ *.egg-info/ build/
 	@echo
 
-.PHONY: all sdist rpm clean doc
+.PHONY: all clean venv install sdist egg doc pylint

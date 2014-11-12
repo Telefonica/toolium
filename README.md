@@ -24,6 +24,11 @@ pip install -r requirements.txt
 ```
 
 The following packages will be installed:
-  * selenium (http://docs.seleniumhq.org/)
+  * selenium (http://docs.seleniumhq.org)
   * Appium-Python-Client (https://github.com/appium/python-client)
+  * lettuce (http://lettuce.it)
 
+Documentation
+-------------
+
+View seleniumtid docs in http://quality/jenkins/job/selenium-tid-python/docs/
