@@ -16,12 +16,29 @@ from seleniumtid import selenium_driver
 from seleniumtid.utils import Utils
 
 
-class SeleniumTestCase(unittest.TestCase):
-    driver = None
-    utils = None
-
+class BasicTestCase(unittest.TestCase):
     def get_subclassmethod_name(self):
         return self.__class__.__name__ + "." + self._testMethodName
+
+    def setUp(self):
+        # Configure logger
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
+
+    def tearDown(self):
+        # Check test result
+        result = sys.exc_info()
+        if result == (None, None, None):
+            self._test_passed = True
+            self.logger.info("The test '{0}' has passed".format(self.get_subclassmethod_name()))
+        else:
+            self._test_passed = False
+            self.logger.error("The test '{0}' has failed: {1}".format(self.get_subclassmethod_name(), result[1]))
+
+
+class SeleniumTestCase(BasicTestCase):
+    driver = None
+    utils = None
 
     @classmethod
     def tearDownClass(cls):
@@ -30,8 +47,6 @@ class SeleniumTestCase(unittest.TestCase):
             SeleniumTestCase.driver = None
 
     def setUp(self):
-        # Configure logger
-        self.logger = logging.getLogger(__name__)
         # Create driver
         if not SeleniumTestCase.driver:
             SeleniumTestCase.driver = selenium_driver.connect()
@@ -43,15 +58,15 @@ class SeleniumTestCase(unittest.TestCase):
         # Maximize browser
         if selenium_driver.is_maximizable():
             SeleniumTestCase.driver.maximize_window()
-        self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
+        # Call BasicTestCase setUp
+        super(SeleniumTestCase, self).setUp()
 
     def tearDown(self):
+        # Call BasicTestCase tearDown
+        super(SeleniumTestCase, self).tearDown()
+
         # Check test result
-        result = sys.exc_info()
-        if result == (None, None, None):
-            self.logger.info("The test '{0}' has passed".format(self.get_subclassmethod_name()))
-        else:
-            self.logger.error("The test '{0}' has failed: {1}".format(self.get_subclassmethod_name(), result[1]))
+        if not self._test_passed:
             test_name = self.get_subclassmethod_name().replace('.', '_')
             self.utils.capture_screenshot(test_name)
 

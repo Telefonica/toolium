@@ -1,6 +1,13 @@
 seleniumtid changelog
 =====================
 
+v0.5
+----
+
+*Release date: 2014-11-??*
+
+  * Add BasicTestCase class to be used in Api tests or in other tests without selenium driver
+
 v0.4
 ----
 
