@@ -17,6 +17,10 @@ from seleniumtid.utils import Utils
 
 
 class BasicTestCase(unittest.TestCase):
+    @classmethod
+    def get_subclass_name(cls):
+        return cls.__name__
+
     def get_subclassmethod_name(self):
         return self.__class__.__name__ + "." + self._testMethodName
 
@@ -39,18 +43,35 @@ class BasicTestCase(unittest.TestCase):
 class SeleniumTestCase(BasicTestCase):
     driver = None
     utils = None
+    remote_video_node = None
 
     @classmethod
     def tearDownClass(cls):
+        # Stop driver
         if SeleniumTestCase.driver:
-            SeleniumTestCase.driver.quit()
-            SeleniumTestCase.driver = None
+            class_name = cls.get_subclass_name()
+            cls._finalize_driver(class_name)
+
+    @classmethod
+    def _finalize_driver(cls, video_name):
+        # Get session id to request the saved video
+        session_id = cls.driver.session_id
+
+        # Close browser and stop driver
+        cls.driver.quit()
+        cls.driver = None
+
+        # Download saved video
+        if cls.remote_video_node and selenium_driver.config.getboolean_optional('Server', 'video_enabled'):
+            cls.utils.download_remote_video(cls.remote_video_node, session_id, video_name)
 
     def setUp(self):
         # Create driver
         if not SeleniumTestCase.driver:
             SeleniumTestCase.driver = selenium_driver.connect()
             SeleniumTestCase.utils = Utils(SeleniumTestCase.driver)
+            SeleniumTestCase.remote_video_node = SeleniumTestCase.utils.get_remote_video_node()
+
         # Get common configuration of reusing driver
         self.reuse_driver = selenium_driver.config.getboolean_optional('Common', 'reuse_driver')
         # Set implicitly wait
@@ -65,12 +86,11 @@ class SeleniumTestCase(BasicTestCase):
         # Call BasicTestCase tearDown
         super(SeleniumTestCase, self).tearDown()
 
-        # Check test result
+        # Capture screenshot on error
+        test_name = self.get_subclassmethod_name().replace('.', '_')
         if not self._test_passed:
-            test_name = self.get_subclassmethod_name().replace('.', '_')
             self.utils.capture_screenshot(test_name)
 
-        # Close browser and stop driver
+        # Stop driver
         if not self.reuse_driver:
-            SeleniumTestCase.driver.quit()
-            SeleniumTestCase.driver = None
+            SeleniumTestCase._finalize_driver(test_name)

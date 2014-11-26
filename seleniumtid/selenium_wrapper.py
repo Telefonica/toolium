@@ -24,6 +24,8 @@ class SeleniumWrapper(object):
     config = ExtendedConfigParser()
     screenshots_path = None
     screenshots_number = None
+    videos_path = None
+    videos_number = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -42,11 +44,13 @@ class SeleniumWrapper(object):
                 print '[ERR] Properties config file not found: {}'.format(conf_properties_file)
             else:
                 cls.config.update_from_system_properties()
-                # Unique screenshots directory
+                # Unique screenshots and videos directories
                 date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
                 browser_info = cls.config.get('Browser', 'browser').replace('-', '_')
                 cls.screenshots_path = os.path.join(os.getcwd(), 'dist', 'screenshots', date + '_' + browser_info)
                 cls.screenshots_number = 1
+                cls.videos_path = os.path.join(os.getcwd(), 'dist', 'videos', date + '_' + browser_info)
+                cls.videos_number = 1
 
             # Create new instance
             cls._instance = super(SeleniumWrapper, cls).__new__(cls, *args, **kwargs)
