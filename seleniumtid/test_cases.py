@@ -53,7 +53,7 @@ class SeleniumTestCase(BasicTestCase):
             cls._finalize_driver(class_name)
 
     @classmethod
-    def _finalize_driver(cls, video_name):
+    def _finalize_driver(cls, video_name, test_passed=True):
         # Get session id to request the saved video
         session_id = cls.driver.session_id
 
@@ -61,8 +61,10 @@ class SeleniumTestCase(BasicTestCase):
         cls.driver.quit()
         cls.driver = None
 
-        # Download saved video
-        if cls.remote_video_node and selenium_driver.config.getboolean_optional('Server', 'video_enabled'):
+        # Download saved video if video is enabled or if test fails
+        if cls.remote_video_node and (selenium_driver.config.getboolean_optional('Server', 'video_enabled')
+                                      or not test_passed):
+            video_name = video_name if test_passed else 'error_{}'.format(video_name)
             cls.utils.download_remote_video(cls.remote_video_node, session_id, video_name)
 
     def setUp(self):
@@ -93,4 +95,4 @@ class SeleniumTestCase(BasicTestCase):
 
         # Stop driver
         if not self.reuse_driver:
-            SeleniumTestCase._finalize_driver(test_name)
+            SeleniumTestCase._finalize_driver(test_name, self._test_passed)

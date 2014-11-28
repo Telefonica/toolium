@@ -42,7 +42,7 @@ class Utils(object):
         if not os.path.exists(selenium_driver.screenshots_path):
             os.makedirs(selenium_driver.screenshots_path)
         if self.driver.get_screenshot_as_file(filepath):
-            self.logger.info("Saved screenshot " + filepath)
+            self.logger.info("Screenshot saved in " + filepath)
             selenium_driver.screenshots_number += 1
 
     def print_all_selenium_logs(self):
@@ -86,7 +86,7 @@ class Utils(object):
 
             # Extract remote node from response
             remote_node = urlparse(response['proxyId']).hostname
-            self.logger.debug("The test is executing in the remote node {}".format(remote_node))
+            self.logger.debug("Test running in remote node {}".format(remote_node))
         return remote_node
 
     def get_remote_video_node(self):
@@ -143,7 +143,7 @@ class Utils(object):
             os.makedirs(selenium_driver.videos_path)
         response = requests.get(video_url)
         open(filepath, 'wb').write(response.content)
-        self.logger.info("Test video saved in '{}'".format(filepath))
+        self.logger.info("Video saved in '{}'".format(filepath))
         selenium_driver.videos_number += 1
 
     def _is_remote_video_enabled(self, remote_node):
