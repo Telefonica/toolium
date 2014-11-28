@@ -31,13 +31,14 @@ class BasicTestCase(unittest.TestCase):
 
     def tearDown(self):
         # Check test result
-        result = sys.exc_info()
-        if result == (None, None, None):
+        result = sys.exc_info()[:2]
+        if result == (None, None):
             self._test_passed = True
             self.logger.info("The test '{0}' has passed".format(self.get_subclassmethod_name()))
         else:
             self._test_passed = False
-            self.logger.error("The test '{0}' has failed: {1}".format(self.get_subclassmethod_name(), result[1]))
+            error_message = result[1].msg.split('\n', 1)[0]
+            self.logger.error("The test '{0}' has failed: {1}".format(self.get_subclassmethod_name(), error_message))
 
 
 class SeleniumTestCase(BasicTestCase):
