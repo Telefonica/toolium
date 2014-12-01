@@ -1,6 +1,14 @@
 seleniumtid changelog
 =====================
 
+v0.5
+----
+
+*Release date: 2014-12-01*
+
+  * Downloads the saved video if the test has been executed in a VideoGrid
+  * Add BasicTestCase class to be used in Api tests or in other tests without selenium driver
+
 v0.4
 ----
 
