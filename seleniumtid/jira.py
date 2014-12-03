@@ -35,21 +35,28 @@ def jira(test_key):
                 test_item(*args, **kwargs)
             except Exception as e:
                 error_message = e.msg.split('\n', 1)[0]
-                message = "The test '{}' has failed: {}".format(test_item.func_name, error_message)
-                if test_key in jira_tests_status and jira_tests_status[test_key][2]:
-                    message = '{}\n{}'.format(jira_tests_status[test_key][2], message)
-                jira_tests_status[test_key] = (test_key, 'Fail', message)
+                test_comment = "The test '{}' has failed: {}".format(test_item.func_name, error_message)
+                add_jira_status(test_key, 'Fail', test_comment)
                 raise
-            # Don't overwrite previous fails
-            if test_key not in jira_tests_status:
-                jira_tests_status[test_key] = (test_key, 'Pass', None)
+            add_jira_status(test_key, 'Pass', None)
         return modified_test
     return decorator
 
 
-def change_all_saved_jira_status():
+def add_jira_status(test_key, test_status, test_comment):
+    if test_status == 'Fail':
+        if test_key in jira_tests_status and jira_tests_status[test_key][2]:
+            test_comment = '{}\n{}'.format(jira_tests_status[test_key][2], test_comment)
+        jira_tests_status[test_key] = (test_key, 'Fail', test_comment)
+    elif test_status == 'Pass':
+        # Don't overwrite previous fails
+        if test_key not in jira_tests_status:
+            jira_tests_status[test_key] = (test_key, 'Pass', test_comment)
+
+
+def change_all_jira_status():
     '''
-    Iterate over saved jira test cases, update their status in Jira and clear the dictionary
+    Iterate over all jira test cases, update their status in Jira and clear the dictionary
     '''
     for test_status in jira_tests_status.itervalues():
         change_jira_status_with_config(*test_status)

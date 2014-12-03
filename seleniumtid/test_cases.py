@@ -14,7 +14,7 @@ import logging
 import sys
 from seleniumtid import selenium_driver
 from seleniumtid.utils import Utils
-from seleniumtid.jira import change_all_saved_jira_status
+from seleniumtid.jira import change_all_jira_status
 
 
 class BasicTestCase(unittest.TestCase):
@@ -27,7 +27,7 @@ class BasicTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        change_all_saved_jira_status()
+        change_all_jira_status()
 
     def setUp(self):
         # Configure logger
