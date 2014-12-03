@@ -14,6 +14,7 @@ import logging
 import sys
 from seleniumtid import selenium_driver
 from seleniumtid.utils import Utils
+from seleniumtid.jira import change_all_saved_jira_status
 
 
 class BasicTestCase(unittest.TestCase):
@@ -23,6 +24,10 @@ class BasicTestCase(unittest.TestCase):
 
     def get_subclassmethod_name(self):
         return self.__class__.__name__ + "." + self._testMethodName
+
+    @classmethod
+    def tearDownClass(cls):
+        change_all_saved_jira_status()
 
     def setUp(self):
         # Configure logger
@@ -48,6 +53,9 @@ class SeleniumTestCase(BasicTestCase):
 
     @classmethod
     def tearDownClass(cls):
+        # Call BasicTestCase tearDownClass
+        super(SeleniumTestCase, cls).tearDownClass()
+
         # Stop driver
         if SeleniumTestCase.driver:
             class_name = cls.get_subclass_name()

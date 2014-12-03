@@ -1,6 +1,13 @@
 seleniumtid changelog
 =====================
 
+v0.6
+----
+
+*Release date: 2014-12-??*
+
+  * Multiple tests of a class can be linked to the same Jira Test Case
+
 v0.5
 ----
 

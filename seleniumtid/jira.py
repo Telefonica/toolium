@@ -21,6 +21,9 @@ logger = logging.getLogger(__name__)
 # Base url of the test execution service
 JIRA_EXECUTION_URL = 'http://qacore02.hi.inet/jira/test-case-execution'
 
+# Dict to save jira keys and their test status
+jira_tests_status = {}
+
 
 def jira(test_key):
     '''
@@ -31,11 +34,22 @@ def jira(test_key):
             try:
                 test_item(*args, **kwargs)
             except Exception:
-                change_jira_status_with_config(test_key, 'Fail')
+                jira_tests_status[test_key] = 'Fail'
                 raise
-            change_jira_status_with_config(test_key, 'Pass')
+            # Don't overwrite previous fails
+            if test_key not in jira_tests_status:
+                jira_tests_status[test_key] = 'Pass'
         return modified_test
     return decorator
+
+
+def change_all_saved_jira_status():
+    '''
+    Iterate over saved jira test cases, update their status in Jira and clear the dictionary
+    '''
+    for test_key, test_status in jira_tests_status.items():
+        change_jira_status_with_config(test_key, test_status)
+    jira_tests_status.clear()
 
 
 def change_jira_status_with_config(test_key, test_status):
