@@ -34,8 +34,8 @@ def jira(test_key):
             try:
                 test_item(*args, **kwargs)
             except Exception as e:
-                error_message = e.msg.split('\n', 1)[0]
-                test_comment = "The test '{}' has failed: {}".format(test_item.func_name, error_message)
+                error_message = get_error_message_from_exception(e)
+                test_comment = "The test '{}' has failed: {}".format(args[0].get_method_name(), error_message)
                 add_jira_status(test_key, 'Fail', test_comment)
                 raise
             add_jira_status(test_key, 'Pass', None)
@@ -43,7 +43,22 @@ def jira(test_key):
     return decorator
 
 
+def get_error_message_from_exception(exception):
+    '''
+    Extract first line of exception message
+    '''
+    try:
+        error_message = exception.msg
+    except AttributeError:
+        # Get error message in ddt tests
+        error_message = exception.message
+    return error_message.split('\n', 1)[0]
+
+
 def add_jira_status(test_key, test_status, test_comment):
+    '''
+    Save test status and comments to update Jira later
+    '''
     if test_status == 'Fail':
         if test_key in jira_tests_status and jira_tests_status[test_key][2]:
             test_comment = '{}\n{}'.format(jira_tests_status[test_key][2], test_comment)
