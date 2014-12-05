@@ -14,6 +14,7 @@ import logging
 import sys
 from seleniumtid import selenium_driver
 from seleniumtid.utils import Utils
+from seleniumtid.jira import change_all_jira_status, get_error_message_from_exception
 
 
 class BasicTestCase(unittest.TestCase):
@@ -21,8 +22,16 @@ class BasicTestCase(unittest.TestCase):
     def get_subclass_name(cls):
         return cls.__name__
 
+    def get_method_name(self):
+        # Split remove the test suffix added by ddt library
+        return self._testMethodName.split('___')[0]
+
     def get_subclassmethod_name(self):
-        return self.__class__.__name__ + "." + self._testMethodName
+        return self.__class__.__name__ + "." + self.get_method_name()
+
+    @classmethod
+    def tearDownClass(cls):
+        change_all_jira_status()
 
     def setUp(self):
         # Configure logger
@@ -37,7 +46,7 @@ class BasicTestCase(unittest.TestCase):
             self.logger.info("The test '{0}' has passed".format(self.get_subclassmethod_name()))
         else:
             self._test_passed = False
-            error_message = result[1].msg.split('\n', 1)[0]
+            error_message = get_error_message_from_exception(result[1])
             self.logger.error("The test '{0}' has failed: {1}".format(self.get_subclassmethod_name(), error_message))
 
 
@@ -48,6 +57,9 @@ class SeleniumTestCase(BasicTestCase):
 
     @classmethod
     def tearDownClass(cls):
+        # Call BasicTestCase tearDownClass
+        super(SeleniumTestCase, cls).tearDownClass()
+
         # Stop driver
         if SeleniumTestCase.driver:
             class_name = cls.get_subclass_name()
