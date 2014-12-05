@@ -21,6 +21,9 @@ logger = logging.getLogger(__name__)
 # Base url of the test execution service
 JIRA_EXECUTION_URL = 'http://qacore02.hi.inet/jira/test-case-execution'
 
+# Dict to save tuples with jira keys, their test status and comments
+jira_tests_status = {}
+
 
 def jira(test_key):
     '''
@@ -30,15 +33,52 @@ def jira(test_key):
         def modified_test(*args, **kwargs):
             try:
                 test_item(*args, **kwargs)
-            except Exception:
-                change_jira_status_with_config(test_key, 'Fail')
+            except Exception as e:
+                error_message = get_error_message_from_exception(e)
+                test_comment = "The test '{}' has failed: {}".format(args[0].get_method_name(), error_message)
+                add_jira_status(test_key, 'Fail', test_comment)
                 raise
-            change_jira_status_with_config(test_key, 'Pass')
+            add_jira_status(test_key, 'Pass', None)
         return modified_test
     return decorator
 
 
-def change_jira_status_with_config(test_key, test_status):
+def get_error_message_from_exception(exception):
+    '''
+    Extract first line of exception message
+    '''
+    try:
+        error_message = exception.msg
+    except AttributeError:
+        # Get error message in ddt tests
+        error_message = exception.message
+    return error_message.split('\n', 1)[0]
+
+
+def add_jira_status(test_key, test_status, test_comment):
+    '''
+    Save test status and comments to update Jira later
+    '''
+    if test_status == 'Fail':
+        if test_key in jira_tests_status and jira_tests_status[test_key][2]:
+            test_comment = '{}\n{}'.format(jira_tests_status[test_key][2], test_comment)
+        jira_tests_status[test_key] = (test_key, 'Fail', test_comment)
+    elif test_status == 'Pass':
+        # Don't overwrite previous fails
+        if test_key not in jira_tests_status:
+            jira_tests_status[test_key] = (test_key, 'Pass', test_comment)
+
+
+def change_all_jira_status():
+    '''
+    Iterate over all jira test cases, update their status in Jira and clear the dictionary
+    '''
+    for test_status in jira_tests_status.itervalues():
+        change_jira_status_with_config(*test_status)
+    jira_tests_status.clear()
+
+
+def change_jira_status_with_config(test_key, test_status, test_comment):
     '''
     Read Jira configuration properties and update test status in Jira
     '''
@@ -46,6 +86,8 @@ def change_jira_status_with_config(test_key, test_status):
     if config.getboolean_optional('Jira', 'enabled'):
         labels = config.get_optional('Jira', 'labels')
         comments = config.get_optional('Jira', 'comments')
+        if test_comment:
+            comments = '{}\n{}'.format(comments, test_comment) if comments else test_comment
         fixversion = config.get_optional('Jira', 'fixversion')
         build = config.get_optional('Jira', 'build')
         onlyifchanges = config.getboolean_optional('Jira', 'onlyifchanges')

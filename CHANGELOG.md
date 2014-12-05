@@ -1,6 +1,15 @@
 seleniumtid changelog
 =====================
 
+v0.6
+----
+
+*Release date: 2014-12-05*
+
+  * Multiple tests of a class can be linked to the same Jira Test Case
+  * If test fails, the error message will be added as a comment to the Jira Test Case Execution
+  * Update Jira Test Cases also in lettuce tests 
+
 v0.5
 ----
 

@@ -12,8 +12,9 @@ been supplied.
 from lettuce import before, after, world
 from seleniumtid import selenium_driver
 from seleniumtid.utils import Utils
+from seleniumtid.jira import add_jira_status, change_all_jira_status
 import logging
-import sys
+import re
 
 
 @before.each_scenario
@@ -23,6 +24,8 @@ def setup_driver(scenario):
     # Create driver
     if not hasattr(world, 'driver') or not world.driver:
         world.driver = selenium_driver.connect()
+        world.utils = Utils(world.driver)
+        world.remote_video_node = world.utils.get_remote_video_node()
     # Add implicitly wait
     implicitly_wait = selenium_driver.config.get_optional('Common', 'implicitly_wait')
     if (implicitly_wait):
@@ -35,20 +38,56 @@ def setup_driver(scenario):
 @after.each_scenario
 def teardown_driver(scenario):
     # Check test result
-    result = sys.exc_info()
-    if result != (None, None, None):
-        # TODO: the error check is wrong, never enters here
-        Utils(world.driver).capture_screenshot(scenario.name.replace(' ', '_'))
+    if scenario.failed:
+        # TODO: never enters here in scenarios with datasets
+        test_status = 'Fail'
+        print dir(scenario)
+        test_comment = "The scenario '{}' has failed: {}".format(scenario.name, None)
+        world.utils.capture_screenshot(scenario.name.replace(' ', '_'))
+    else:
+        test_status = 'Pass'
+        test_comment = None
 
     # Close browser and stop driver
-    reuse_driver = selenium_driver.config.get_optional('Common', 'reuse_driver')
+    reuse_driver = selenium_driver.config.getboolean_optional('Common', 'reuse_driver')
     if not reuse_driver:
-        world.driver.quit()
-        world.driver = None
+        finalize_driver(scenario.name.replace(' ', '_'), not scenario.failed)
+
+    # Save test status to be updated later
+    test_key = get_jira_key_from_scenario(scenario)
+    add_jira_status(test_key, test_status, test_comment)
 
 
 @after.all
 def teardown_driver_all(total):
     if hasattr(world, 'driver') and world.driver:
-        world.driver.quit()
-        world.driver = None
+        finalize_driver('multiple_tests')
+    # Update tests status in Jira
+    change_all_jira_status()
+
+
+def finalize_driver(video_name, test_passed=True):
+    # Get session id to request the saved video
+    session_id = world.driver.session_id
+
+    # Close browser and stop driver
+    world.driver.quit()
+    world.driver = None
+
+    # Download saved video if video is enabled or if test fails
+    if world.remote_video_node and (selenium_driver.config.getboolean_optional('Server', 'video_enabled')
+                                    or not test_passed):
+        video_name = video_name if test_passed else 'error_{}'.format(video_name)
+        world.utils.download_remote_video(world.remote_video_node, session_id, video_name)
+
+
+def get_jira_key_from_scenario(scenario):
+    '''
+    Extract Jira Test Case key from scenario tags
+    '''
+    jira_regex = re.compile('jira\(\'(.*?)\'\)')
+    for tag in scenario.tags:
+        match = jira_regex.search(tag)
+        if match:
+            return match.group(1)
+    return None

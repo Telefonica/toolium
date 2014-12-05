@@ -64,7 +64,7 @@ init:
 	# mkdir -p $(TMP)/rpmbuild/BUILD
 	# mkdir -p $(TMP)/rpmbuild/RPMS
 
-sdist:
+sdist: init venv
 	@echo ">>> Creating source distribution..."
 	$(VENV)/$(BIN)/python setup.py sdist
 	@echo ">>> OK. TGZ generated in $(ROOT)/dist"
