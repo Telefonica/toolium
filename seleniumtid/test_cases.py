@@ -14,7 +14,8 @@ import logging
 import sys
 from seleniumtid import selenium_driver
 from seleniumtid.utils import Utils
-from seleniumtid.jira import change_all_jira_status, get_error_message_from_exception
+from seleniumtid.jira import change_all_jira_status
+from seleniumtid.config_driver import get_error_message_from_exception
 
 
 class BasicTestCase(unittest.TestCase):

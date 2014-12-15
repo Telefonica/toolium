@@ -57,7 +57,7 @@ class Utils(object):
         '''
         for entry in self.driver.get_log(log_type):
             message = entry['message'].rstrip().encode('utf-8')
-            self.logger.debug('{0} - {1}: {2}'.format(log_type.title(), entry['level'], message))
+            self.logger.debug('{0} - {1}: {2}'.format(log_type.capitalize(), entry['level'], message))
 
     def wait_until_element_not_visible(self, locator, timeout=10):
         '''

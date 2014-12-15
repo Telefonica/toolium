@@ -13,6 +13,19 @@ from selenium import webdriver
 from appium import webdriver as appiumdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import logging
+from nose.tools import assert_is_not_none
+
+
+def get_error_message_from_exception(exception):
+    '''
+    Extract first line of exception message
+    '''
+    try:
+        error_message = exception.msg
+    except AttributeError:
+        # Get error message in ddt tests
+        error_message = exception.message
+    return error_message.split('\n', 1)[0]
 
 
 class ConfigDriver(object):
@@ -26,12 +39,19 @@ class ConfigDriver(object):
         """
         driver = None
         browser = self.config.get('Browser', 'browser')
-        if self.config.getboolean_optional('Server', 'enabled'):
-            self.logger.info("Creating remote driver (browser = {0})".format(browser))
-            driver = self._create_remotedriver()
-        else:
-            self.logger.info("Creating local driver (browser = {0})".format(browser))
-            driver = self._create_localdriver()
+        try:
+            if self.config.getboolean_optional('Server', 'enabled'):
+                self.logger.info("Creating remote driver (browser = {0})".format(browser))
+                driver = self._create_remotedriver()
+            else:
+                self.logger.info("Creating local driver (browser = {0})".format(browser))
+                driver = self._create_localdriver()
+        except Exception as exc:
+            error_message = get_error_message_from_exception(exc)
+            message = "{0} driver can not be launched: {1}".format(browser.capitalize(), error_message)
+            self.logger.error(message)
+            raise
+
         return driver
 
     def _create_remotedriver(self):
@@ -55,6 +75,7 @@ class ConfigDriver(object):
         browser = self.config.get('Browser', 'browser')
         browser_name = browser.split('-')[0]
         capabilities = capabilities_list.get(browser_name)
+        assert_is_not_none(capabilities, 'Unknown driver {0}'.format(browser_name))
 
         # Add browser version
         try:
@@ -103,16 +124,10 @@ class ConfigDriver(object):
                           'phantomjs': self._setup_phantomjs,
                           'android': self._setup_appium,
                           'iphone': self._setup_appium}
+        setup_driver_method = browser_config.get(browser_name)
+        assert_is_not_none(setup_driver_method, 'Unknown driver {0}'.format(browser_name))
 
-        def unknown_driver():
-            assert False, 'Unknown driver {0}'.format(browser_name)
-
-        try:
-            return browser_config.get(browser_name, unknown_driver)()
-        except Exception as exc:
-            message = "{0} driver can not be launched: {1}".format(browser_name.title(), exc)
-            self.logger.error(message)
-            assert False, message
+        return setup_driver_method()
 
     def _setup_firefox(self):
         """
