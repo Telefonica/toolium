@@ -13,7 +13,7 @@ import unittest
 import logging
 import sys
 from seleniumtid import selenium_driver
-from seleniumtid.utils import Utils
+from seleniumtid.utils import Utils, classproperty
 from seleniumtid.jira import change_all_jira_status
 from seleniumtid.config_driver import get_error_message_from_exception
 
@@ -52,9 +52,18 @@ class BasicTestCase(unittest.TestCase):
 
 
 class SeleniumTestCase(BasicTestCase):
-    driver = None
+    _driver = None
     utils = None
     remote_video_node = None
+
+    @classproperty
+    @classmethod
+    def driver(cls):
+        '''
+        This method allows to autocomplete self.driver in IDEs
+        :rtype selenium.webdriver.remote.webdriver.WebDriver
+        '''
+        return cls._driver
 
     @classmethod
     def tearDownClass(cls):
@@ -62,18 +71,18 @@ class SeleniumTestCase(BasicTestCase):
         super(SeleniumTestCase, cls).tearDownClass()
 
         # Stop driver
-        if SeleniumTestCase.driver:
+        if SeleniumTestCase._driver:
             class_name = cls.get_subclass_name()
             cls._finalize_driver(class_name)
 
     @classmethod
     def _finalize_driver(cls, video_name, test_passed=True):
         # Get session id to request the saved video
-        session_id = cls.driver.session_id
+        session_id = cls._driver.session_id
 
         # Close browser and stop driver
-        cls.driver.quit()
-        cls.driver = None
+        cls._driver.quit()
+        cls._driver = None
 
         # Download saved video if video is enabled or if test fails
         if cls.remote_video_node and (selenium_driver.config.getboolean_optional('Server', 'video_enabled')
@@ -83,9 +92,9 @@ class SeleniumTestCase(BasicTestCase):
 
     def setUp(self):
         # Create driver
-        if not SeleniumTestCase.driver:
-            SeleniumTestCase.driver = selenium_driver.connect()
-            SeleniumTestCase.utils = Utils(SeleniumTestCase.driver)
+        if not SeleniumTestCase._driver:
+            SeleniumTestCase._driver = selenium_driver.connect()
+            SeleniumTestCase.utils = Utils(SeleniumTestCase._driver)
             SeleniumTestCase.remote_video_node = SeleniumTestCase.utils.get_remote_video_node()
 
         # Get common configuration of reusing driver
@@ -94,7 +103,7 @@ class SeleniumTestCase(BasicTestCase):
         self.utils.set_implicit_wait()
         # Maximize browser
         if selenium_driver.is_maximizable():
-            SeleniumTestCase.driver.maximize_window()
+            SeleniumTestCase._driver.maximize_window()
         # Call BasicTestCase setUp
         super(SeleniumTestCase, self).setUp()
 

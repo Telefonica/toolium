@@ -18,11 +18,19 @@ from seleniumtid.pageelements.page_element import PageElement
 class PageObject(unittest.TestCase):
     def __init__(self, driver=None):
         self.logger = logging.getLogger(__name__)
-        self.driver = driver if driver else selenium_driver.driver
+        self._driver = driver if driver else selenium_driver.driver
         self.config = selenium_driver.config
         self.init_page_elements()
         if driver:
             self._update_page_elements_driver()
+
+    @property
+    def driver(self):
+        '''
+        This method allows to autocomplete self.driver in IDEs
+        :rtype selenium.webdriver.remote.webdriver.WebDriver
+        '''
+        return self._driver
 
     def init_page_elements(self):
         '''

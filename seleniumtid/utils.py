@@ -157,3 +157,11 @@ class Utils(object):
         except (requests.exceptions.ConnectionError, KeyError):
             record_videos = 'false'
         return True if record_videos == 'true' else False
+
+
+class classproperty (property):
+    '''
+    Subclass property to make classmethod properties possible
+    '''
+    def __get__(self, cls, owner):
+        return self.fget.__get__(None, owner)()

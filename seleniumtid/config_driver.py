@@ -36,6 +36,7 @@ class ConfigDriver(object):
     def create_driver(self):
         """
         Create a selenium driver using specified config properties
+        :rtype selenium.webdriver.remote.webdriver.WebDriver
         """
         driver = None
         browser = self.config.get('Browser', 'browser')
