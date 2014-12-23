@@ -21,12 +21,13 @@ Configure a virtual environment with the required packages:
 virtualenv ENV
 source ENV/bin/activate
 pip install -r requirements.txt
+pip install -r requirements_dev.txt
 ```
 
 The following packages will be installed:
-  * selenium (http://docs.seleniumhq.org)
+  * requests (http://docs.python-requests.org)
+  * selenium (http://docs.seleniumhq.org/)
   * Appium-Python-Client (https://github.com/appium/python-client)
-  * lettuce (http://lettuce.it)
 
 Documentation
 -------------
