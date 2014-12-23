@@ -6,7 +6,7 @@ v0.7
 
 *Release date: 2015-01-??*
 
-  * ??
+  * Allow to autocomplete self.driver and self.utils in IDEs
 
 v0.6
 ----

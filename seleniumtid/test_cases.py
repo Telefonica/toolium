@@ -128,3 +128,14 @@ class SeleniumTestCase(BasicTestCase):
         # Stop driver
         if not self.reuse_driver:
             SeleniumTestCase._finalize_driver(test_name, self._test_passed)
+
+
+class AppiumTestCase(SeleniumTestCase):
+    @classproperty
+    @classmethod
+    def driver(cls):
+        '''
+        This method allows to autocomplete self.driver in IDEs
+        :rtype appium.webdriver.webdriver.WebDriver
+        '''
+        return cls._driver
