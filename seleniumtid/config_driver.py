@@ -13,7 +13,6 @@ from selenium import webdriver
 from appium import webdriver as appiumdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import logging
-from nose.tools import assert_is_not_none
 
 
 def get_error_message_from_exception(exception):
@@ -76,7 +75,8 @@ class ConfigDriver(object):
         browser = self.config.get('Browser', 'browser')
         browser_name = browser.split('-')[0]
         capabilities = capabilities_list.get(browser_name)
-        assert_is_not_none(capabilities, 'Unknown driver {0}'.format(browser_name))
+        if not capabilities:
+            raise Exception('Unknown driver {0}'.format(browser_name))
 
         # Add browser version
         try:
@@ -126,7 +126,8 @@ class ConfigDriver(object):
                           'android': self._setup_appium,
                           'iphone': self._setup_appium}
         setup_driver_method = browser_config.get(browser_name)
-        assert_is_not_none(setup_driver_method, 'Unknown driver {0}'.format(browser_name))
+        if not setup_driver_method:
+            raise Exception('Unknown driver {0}'.format(browser_name))
 
         return setup_driver_method()
 
