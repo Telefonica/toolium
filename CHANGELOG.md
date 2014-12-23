@@ -1,6 +1,14 @@
 seleniumtid changelog
 =====================
 
+v0.7
+----
+
+*Release date: 2014-12-23*
+
+  * Allow to autocomplete self.driver and self.utils in IDEs
+  * Remove non-mandatory requirements
+
 v0.6
 ----
 

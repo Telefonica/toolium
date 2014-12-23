@@ -15,10 +15,18 @@ from seleniumtid import selenium_driver
 class PageElement(object):
     def __init__(self, by, value):
         self.locator = (by, value)
-        self.driver = selenium_driver.driver
+        self._driver = selenium_driver.driver
+
+    @property
+    def driver(self):
+        '''
+        This method allows to autocomplete self.driver in IDEs
+        :rtype selenium.webdriver.remote.webdriver.WebDriver
+        '''
+        return self._driver
 
     def set_driver(self, driver):
-        self.driver = driver
+        self._driver = driver
 
     def element(self):
         return self.driver.find_element(*self.locator)

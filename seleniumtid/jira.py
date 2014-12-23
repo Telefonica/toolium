@@ -14,6 +14,7 @@ import urllib
 import urllib2
 import re
 from seleniumtid import selenium_driver
+from seleniumtid.config_driver import get_error_message_from_exception
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -41,18 +42,6 @@ def jira(test_key):
             add_jira_status(test_key, 'Pass', None)
         return modified_test
     return decorator
-
-
-def get_error_message_from_exception(exception):
-    '''
-    Extract first line of exception message
-    '''
-    try:
-        error_message = exception.msg
-    except AttributeError:
-        # Get error message in ddt tests
-        error_message = exception.message
-    return error_message.split('\n', 1)[0]
 
 
 def add_jira_status(test_key, test_status, test_comment):
