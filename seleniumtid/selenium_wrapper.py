@@ -26,6 +26,8 @@ class SeleniumWrapper(object):
     screenshots_number = None
     videos_path = None
     videos_number = None
+    output_directory = None
+    baseline_directory = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -44,6 +46,7 @@ class SeleniumWrapper(object):
                 print '[ERR] Properties config file not found: {}'.format(conf_properties_file)
             else:
                 cls.config.update_from_system_properties()
+
                 # Unique screenshots and videos directories
                 date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
                 browser_info = cls.config.get('Browser', 'browser').replace('-', '_')
@@ -51,6 +54,15 @@ class SeleniumWrapper(object):
                 cls.screenshots_number = 1
                 cls.videos_path = os.path.join(os.getcwd(), 'dist', 'videos', date + '_' + browser_info)
                 cls.videos_number = 1
+
+                # Unique visualtests directories
+                if cls.config.getboolean_optional('Server', 'visualtests_enabled'):
+                    visual_path = os.path.join(os.getcwd(), 'dist', 'visualtests')
+                    cls.output_directory = os.path.join(visual_path, date + '_' + browser_info)
+                    cls.baseline_directory = os.path.join(visual_path, 'baseline')
+                    for i in (cls.output_directory, cls.baseline_directory):
+                        if not os.path.exists(i):
+                            os.makedirs(i)
 
             # Create new instance
             cls._instance = super(SeleniumWrapper, cls).__new__(cls, *args, **kwargs)

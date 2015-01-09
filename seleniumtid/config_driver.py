@@ -12,6 +12,9 @@ been supplied.
 from selenium import webdriver
 from appium import webdriver as appiumdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from needle.driver import NeedleWebDriverMixin
+from types import MethodType
+from selenium.webdriver.remote.webdriver import WebDriver
 import logging
 
 
@@ -51,6 +54,13 @@ class ConfigDriver(object):
             message = "{0} driver can not be launched: {1}".format(browser.capitalize(), error_message)
             self.logger.error(message)
             raise
+
+        if self.config.getboolean_optional('Server', 'visualtests_enabled'):
+            # Add 'public' methods of NeedleWebDriverMixin to the new driver
+            for method_name in vars(NeedleWebDriverMixin):
+                if not method_name.startswith('__'):
+                    bound_method = MethodType(getattr(NeedleWebDriverMixin, method_name).__func__, driver, WebDriver)
+                    setattr(driver, method_name, bound_method)
 
         return driver
 

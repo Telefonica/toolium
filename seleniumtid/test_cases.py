@@ -16,6 +16,9 @@ from seleniumtid import selenium_driver
 from seleniumtid.utils import Utils, classproperty
 from seleniumtid.jira import change_all_jira_status
 from seleniumtid.config_driver import get_error_message_from_exception
+from needle.cases import NeedleTestCase
+from needle.engines.perceptualdiff_engine import Engine
+from types import MethodType
 
 
 class BasicTestCase(unittest.TestCase):
@@ -106,6 +109,16 @@ class SeleniumTestCase(BasicTestCase):
             SeleniumTestCase._utils = Utils(SeleniumTestCase._driver)
             SeleniumTestCase.remote_video_node = SeleniumTestCase._utils.get_remote_video_node()
 
+        # Configure visual tests
+        if selenium_driver.config.getboolean_optional('Server', 'visualtests_enabled'):
+            self.output_directory = selenium_driver.output_directory
+            self.baseline_directory = selenium_driver.baseline_directory
+            self.engine = Engine()
+            self.capture = False
+            self.save_baseline = selenium_driver.config.getboolean_optional('Server', 'visualtests_save')
+            self.compareScreenshot = MethodType(NeedleTestCase.compareScreenshot.__func__, self, SeleniumTestCase)  # @UndefinedVariable @IgnorePep8
+            self._assertScreenshot = MethodType(NeedleTestCase.assertScreenshot.__func__, self, SeleniumTestCase)  # @UndefinedVariable @IgnorePep8
+
         # Get common configuration of reusing driver
         self.reuse_driver = selenium_driver.config.getboolean_optional('Common', 'reuse_driver')
         # Set implicitly wait
@@ -128,6 +141,22 @@ class SeleniumTestCase(BasicTestCase):
         # Stop driver
         if not self.reuse_driver:
             SeleniumTestCase._finalize_driver(test_name, self._test_passed)
+
+    def assertScreenshot(self, element_or_selector, filename_or_file, threshold=0):
+        """
+        Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
+
+        :param element_or_selector:
+            Either a CSS selector as a string or a :py:class:`~needle.driver.NeedleWebElement` object that represents
+            the element to capture.
+        :param filename_or_file:
+            If a string, then assumed to be the filename for the screenshot, which will be appended with ``.png``.
+            Otherwise assumed to be a file object for the baseline image.
+        :param threshold:
+            The threshold for triggering a test failure.
+        """
+        if selenium_driver.config.getboolean_optional('Server', 'visualtests_enabled'):
+            self._assertScreenshot(element_or_selector, filename_or_file, threshold)
 
 
 class AppiumTestCase(SeleniumTestCase):
