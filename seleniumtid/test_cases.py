@@ -16,9 +16,12 @@ from seleniumtid import selenium_driver
 from seleniumtid.utils import Utils, classproperty
 from seleniumtid.jira import change_all_jira_status
 from seleniumtid.config_driver import get_error_message_from_exception
-from needle.cases import NeedleTestCase
-from needle.engines.perceptualdiff_engine import Engine
 from types import MethodType
+try:
+    from needle.cases import NeedleTestCase
+    from needle.engines.perceptualdiff_engine import Engine
+except ImportError:
+    pass
 
 
 class BasicTestCase(unittest.TestCase):

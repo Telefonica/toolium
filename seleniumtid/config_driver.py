@@ -12,9 +12,12 @@ been supplied.
 from selenium import webdriver
 from appium import webdriver as appiumdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from needle.driver import NeedleWebDriverMixin
+from selenium.webdriver.remote.webdriver import WebDriver as RemoteDriver
 from types import MethodType
-from selenium.webdriver.remote.webdriver import WebDriver
+try:
+    from needle.driver import NeedleWebDriverMixin
+except ImportError:
+    pass
 import logging
 
 
@@ -34,6 +37,9 @@ class ConfigDriver(object):
     def __init__(self, config):
         self.logger = logging.getLogger(__name__)
         self.config = config.deepcopy()
+        if (self.config.getboolean_optional('Server', 'visualtests_enabled')
+                and 'NeedleWebDriverMixin' not in globals()):
+            raise Exception('The visual tests are enabled in properties.conf, but needle is not installed')
 
     def create_driver(self):
         """
@@ -59,7 +65,8 @@ class ConfigDriver(object):
             # Add 'public' methods of NeedleWebDriverMixin to the new driver
             for method_name in vars(NeedleWebDriverMixin):
                 if not method_name.startswith('__'):
-                    bound_method = MethodType(getattr(NeedleWebDriverMixin, method_name).__func__, driver, WebDriver)
+                    bound_method = MethodType(getattr(NeedleWebDriverMixin, method_name).__func__, driver,
+                                              RemoteDriver)
                     setattr(driver, method_name, bound_method)
 
         return driver
