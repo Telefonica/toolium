@@ -60,9 +60,11 @@ class SeleniumWrapper(object):
                     visual_path = os.path.join(os.getcwd(), 'dist', 'visualtests')
                     cls.output_directory = os.path.join(visual_path, date + '_' + browser_info)
                     cls.baseline_directory = os.path.join(visual_path, 'baseline')
-                    for i in (cls.output_directory, cls.baseline_directory):
-                        if not os.path.exists(i):
-                            os.makedirs(i)
+                    if not os.path.exists(cls.baseline_directory):
+                        os.makedirs(cls.baseline_directory)
+                    if not cls.config.getboolean_optional('Server', 'visualtests_save'):
+                        if not os.path.exists(cls.output_directory):
+                            os.makedirs(cls.output_directory)
 
             # Create new instance
             cls._instance = super(SeleniumWrapper, cls).__new__(cls, *args, **kwargs)

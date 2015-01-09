@@ -159,7 +159,14 @@ class SeleniumTestCase(BasicTestCase):
             The threshold for triggering a test failure.
         """
         if selenium_driver.config.getboolean_optional('Server', 'visualtests_enabled'):
-            self._assertScreenshot(element_or_selector, filename_or_file, threshold)
+            try:
+                self._assertScreenshot(element_or_selector, filename_or_file, threshold)
+            except IOError as exc:
+                # If the baseline does not exist, repeat the assert saving the screenshot
+                if (not selenium_driver.config.getboolean_optional('Server', 'visualtests_save') and
+                        'You might want to re-run this test in baseline-saving mode' in exc.message):
+                    self.save_baseline = True
+                    self._assertScreenshot(element_or_selector, filename_or_file, threshold)
 
 
 class AppiumTestCase(SeleniumTestCase):
