@@ -158,6 +158,7 @@ class SeleniumTestCase(BasicTestCase):
         :param threshold:
             The threshold for triggering a test failure.
         """
+        save_message = "Visual screenshot '{}' saved in visualtests/baseline folder"
         if selenium_driver.config.getboolean_optional('Server', 'visualtests_enabled'):
             try:
                 self._assertScreenshot(element_or_selector, filename_or_file, threshold)
@@ -167,6 +168,9 @@ class SeleniumTestCase(BasicTestCase):
                         'You might want to re-run this test in baseline-saving mode' in exc.message):
                     self.save_baseline = True
                     self._assertScreenshot(element_or_selector, filename_or_file, threshold)
+                    self.logger.debug(save_message.format(filename_or_file))
+        if selenium_driver.config.getboolean_optional('Server', 'visualtests_save'):
+            self.logger.debug(save_message.format(filename_or_file))
 
 
 class AppiumTestCase(SeleniumTestCase):

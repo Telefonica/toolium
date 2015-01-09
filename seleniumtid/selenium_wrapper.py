@@ -59,7 +59,7 @@ class SeleniumWrapper(object):
                 if cls.config.getboolean_optional('Server', 'visualtests_enabled'):
                     visual_path = os.path.join(os.getcwd(), 'dist', 'visualtests')
                     cls.output_directory = os.path.join(visual_path, date + '_' + browser_info)
-                    cls.baseline_directory = os.path.join(visual_path, 'baseline')
+                    cls.baseline_directory = os.path.join(visual_path, 'baseline', browser_info)
                     if not os.path.exists(cls.baseline_directory):
                         os.makedirs(cls.baseline_directory)
                     if not cls.config.getboolean_optional('Server', 'visualtests_save'):
