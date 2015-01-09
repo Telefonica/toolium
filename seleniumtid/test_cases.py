@@ -20,6 +20,7 @@ from types import MethodType
 try:
     from needle.cases import NeedleTestCase
     from needle.engines.perceptualdiff_engine import Engine
+    from needle.driver import NeedleWebElement
 except ImportError:
     pass
 
@@ -182,3 +183,23 @@ class AppiumTestCase(SeleniumTestCase):
         :rtype appium.webdriver.webdriver.WebDriver
         '''
         return cls._driver
+
+    def setUp(self, *args, **kwargs):
+        # Call SeleniumTestCase setUp
+        super(AppiumTestCase, self).setUp()
+        # Configure visual tests
+        if selenium_driver.config.getboolean_optional('Server', 'visualtests_enabled'):
+            NeedleWebElement.get_dimensions = MethodType(self._get_dimensions.__func__, None, NeedleWebElement)
+
+    def _get_dimensions(self):
+        '''
+        Returns dimensions of an Appium Element
+        '''
+        location = self.location
+        size = self.size
+        d = dict()
+        d['left'] = location['x']
+        d['top'] = location['y']
+        d['width'] = size['width']
+        d['height'] = size['height']
+        return d
