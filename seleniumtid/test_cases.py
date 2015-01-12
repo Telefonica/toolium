@@ -19,7 +19,8 @@ from seleniumtid.config_driver import get_error_message_from_exception
 from types import MethodType
 try:
     from needle.cases import NeedleTestCase
-    from needle.engines.perceptualdiff_engine import Engine
+    from needle.engines.perceptualdiff_engine import Engine as diff_Engine
+    from needle.engines.pil_engine import Engine as pil_Engine
     from needle.driver import NeedleWebElement
 except ImportError:
     pass
@@ -117,7 +118,8 @@ class SeleniumTestCase(BasicTestCase):
         if selenium_driver.config.getboolean_optional('Server', 'visualtests_enabled'):
             self.output_directory = selenium_driver.output_directory
             self.baseline_directory = selenium_driver.baseline_directory
-            self.engine = Engine()
+            engine_type = selenium_driver.config.get_optional('Server', 'visualtests_engine', 'pil')
+            self.engine = diff_Engine() if engine_type == 'perceptualdiff' else pil_Engine()
             self.capture = False
             self.save_baseline = selenium_driver.config.getboolean_optional('Server', 'visualtests_save')
             self.compareScreenshot = MethodType(NeedleTestCase.compareScreenshot.__func__, self, SeleniumTestCase)  # @UndefinedVariable @IgnorePep8

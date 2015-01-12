@@ -8,7 +8,8 @@ v0.8
 
   * Add visual testing to SeleniumTestCase and AppiumTestCase  
     New config property 'visualtests_enabled' in [Server] section to compare screenshots with the baseline images  
-    New config property 'visualtests_save' in [Server] section to overwrite baseline images with actual screenshots
+    New config property 'visualtests_save' in [Server] section to overwrite baseline images with actual screenshots  
+    New config property 'visualtests_engine' in [Server] section to select image engine (pil or perceptualdiff)
 
 v0.7
 ----
