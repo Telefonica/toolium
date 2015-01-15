@@ -107,8 +107,9 @@ class ConfigDriver(object):
                               'windows_7': 'VISTA',
                               'windows_8': 'WIN8',
                               'linux': 'LINUX',
+                              'android': 'ANDROID',
                               'mac': 'MAC'}
-            capabilities['platform'] = platforms_list.get(browser.split('-')[3])
+            capabilities['platform'] = platforms_list.get(browser.split('-')[3], browser.split('-')[3])
         except IndexError:
             pass
 
