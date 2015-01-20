@@ -9,7 +9,7 @@ consent of Telefonica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
-from lettuce import before, after, world
+from lettuce import before, after, world  # @UnresolvedImport
 from seleniumtid import selenium_driver
 from seleniumtid.utils import Utils
 from seleniumtid.jira import add_jira_status, change_all_jira_status
