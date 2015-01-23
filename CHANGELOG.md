@@ -1,6 +1,13 @@
 seleniumtid changelog
 =====================
 
+v0.8.1
+------
+
+*Release date: 2015-01-??*
+
+  * Fixed minor bugs
+
 v0.8
 ----
 
