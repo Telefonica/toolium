@@ -13,6 +13,7 @@ from lettuce import before, after, world  # @UnresolvedImport
 from seleniumtid import selenium_driver
 from seleniumtid.utils import Utils
 from seleniumtid.jira import add_jira_status, change_all_jira_status
+from seleniumtid.visual_test import VisualTest
 import logging
 import re
 
@@ -26,6 +27,8 @@ def setup_driver(scenario):
         world.driver = selenium_driver.connect()
         world.utils = Utils(world.driver)
         world.remote_video_node = world.utils.get_remote_video_node()
+    # Configure visual tests
+    world.assertScreenshot = VisualTest().assertScreenshot
     # Add implicitly wait
     implicitly_wait = selenium_driver.config.get_optional('Common', 'implicitly_wait')
     if (implicitly_wait):
