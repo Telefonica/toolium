@@ -27,8 +27,13 @@ def setup_driver(scenario):
         world.driver = selenium_driver.connect()
         world.utils = Utils(world.driver)
         world.remote_video_node = world.utils.get_remote_video_node()
+
     # Configure visual tests
-    world.assertScreenshot = VisualTest().assertScreenshot
+    def assertScreenshot(element_or_selector, filename, threshold=0):
+        file_suffix = scenario.name.replace(' ', '_')
+        VisualTest().assertScreenshot(element_or_selector, filename, file_suffix, threshold)
+    world.assertScreenshot = assertScreenshot
+
     # Add implicitly wait
     implicitly_wait = selenium_driver.config.get_optional('Common', 'implicitly_wait')
     if (implicitly_wait):

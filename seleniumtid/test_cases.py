@@ -106,8 +106,6 @@ class SeleniumTestCase(BasicTestCase):
             SeleniumTestCase._driver = selenium_driver.connect()
             SeleniumTestCase._utils = Utils(SeleniumTestCase._driver)
             SeleniumTestCase.remote_video_node = SeleniumTestCase._utils.get_remote_video_node()
-        # Configure visual tests
-        self.assertScreenshot = VisualTest().assertScreenshot
         # Get common configuration of reusing driver
         self.reuse_driver = selenium_driver.config.getboolean_optional('Common', 'reuse_driver')
         # Set implicitly wait
@@ -130,6 +128,20 @@ class SeleniumTestCase(BasicTestCase):
         # Stop driver
         if not self.reuse_driver:
             SeleniumTestCase._finalize_driver(test_name, self._test_passed)
+
+    def assertScreenshot(self, element_or_selector, filename, threshold=0):
+        """
+        Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
+
+        :param element_or_selector:
+            Either a CSS selector as a string or a WebElement object that represents the element to capture.
+        :param filename:
+            The filename for the screenshot, which will be appended with ``.png``.
+        :param threshold:
+            The threshold for triggering a test failure.
+        """
+        file_suffix = self.get_method_name()
+        VisualTest().assertScreenshot(element_or_selector, filename, file_suffix, threshold)
 
 
 class AppiumTestCase(SeleniumTestCase):

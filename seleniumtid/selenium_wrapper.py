@@ -28,6 +28,7 @@ class SeleniumWrapper(object):
     videos_number = None
     output_directory = None
     baseline_directory = None
+    visual_number = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -65,6 +66,7 @@ class SeleniumWrapper(object):
                     if not cls.config.getboolean_optional('Server', 'visualtests_save'):
                         if not os.path.exists(cls.output_directory):
                             os.makedirs(cls.output_directory)
+                    cls.visual_number = 1
 
             # Create new instance
             cls._instance = super(SeleniumWrapper, cls).__new__(cls, *args, **kwargs)
