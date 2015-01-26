@@ -82,7 +82,11 @@ class Utils(object):
             port = selenium_driver.config.get('Server', 'port')
             session_id = self.driver.session_id
             url = 'http://{}:{}/grid/api/testsession?session={}'.format(host, port, session_id)
-            response = requests.get(url).json()
+            try:
+                response = requests.get(url).json()
+            except ValueError:
+                # The remote node is not a grid node
+                return remote_node
 
             # Extract remote node from response
             remote_node = urlparse(response['proxyId']).hostname
