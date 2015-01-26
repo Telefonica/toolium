@@ -1,6 +1,14 @@
 seleniumtid changelog
 =====================
 
+v0.8.1
+------
+
+*Release date: 2015-01-26*
+
+  * Fixed minor bugs
+  * Add visual testing to lettuce tests
+
 v0.8
 ----
 

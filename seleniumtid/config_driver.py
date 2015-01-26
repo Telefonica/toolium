@@ -39,7 +39,7 @@ class ConfigDriver(object):
         self.config = config.deepcopy()
         if (self.config.getboolean_optional('Server', 'visualtests_enabled')
                 and 'NeedleWebDriverMixin' not in globals()):
-            raise Exception('The visual tests are enabled in properties.conf, but needle is not installed')
+            raise Exception('The visual tests are enabled in properties.cfg, but needle is not installed')
 
     def create_driver(self):
         """
