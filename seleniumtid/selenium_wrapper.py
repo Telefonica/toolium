@@ -45,7 +45,7 @@ class SeleniumWrapper(object):
         self.config.set('Files', 'properties', 'conf/properties.cfg')
         self.config.update_from_system_properties()
         conf_logging_file = self.config.get('Files', 'logging')
-        conf_properties_file = self.config.get('Files', 'properties')
+        conf_properties_files = self.config.get('Files', 'properties')
 
         # Configure logger
         try:
@@ -54,14 +54,16 @@ class SeleniumWrapper(object):
             print '[WARN] Logging config file not found: {}'.format(conf_logging_file)
         self.logger = logging.getLogger(__name__)
 
-        # Configure properties
-        result = self.config.read(conf_properties_file)
-        if len(result) == 0:
-            message = 'Properties config file not found: {}'.format(conf_properties_file)
-            self.logger.error(message)
-            raise Exception(message)
+        # Configure properties (last files could override properties)
+        for conf_properties_file in conf_properties_files.split(';'):
+            result = self.config.read(conf_properties_file)
+            if len(result) == 0:
+                message = 'Properties config file not found: {}'.format(conf_properties_file)
+                self.logger.error(message)
+                raise Exception(message)
+            self.logger.debug('Reading properties from file: {}'.format(conf_properties_file))
 
-        self.logger.debug('Reading properties from file: {}'.format(conf_properties_file))
+        # Override properties with system properties
         self.config.update_from_system_properties()
 
         # Unique screenshots and videos directories
