@@ -1,6 +1,13 @@
 seleniumtid changelog
 =====================
 
+v0.8.2
+------
+
+*Release date: 2015-02-??*
+
+  * Logging and properties config files can be specified with a system property: Files_logging and Files_properties
+
 v0.8.1
 ------
 

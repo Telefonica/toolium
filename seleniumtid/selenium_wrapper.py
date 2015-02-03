@@ -32,8 +32,15 @@ class SeleniumWrapper(object):
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
+            # Get config filenames from system properties
+            cls.config.add_section('Files')
+            cls.config.set('Files', 'logging', 'conf/logging.conf')
+            cls.config.set('Files', 'properties', 'conf/properties.cfg')
+            cls.config.update_from_system_properties()
+            conf_logging_file = cls.config.get('Files', 'logging')
+            conf_properties_file = cls.config.get('Files', 'properties')
+
             # Configure logger
-            conf_logging_file = 'conf/logging.conf'
             try:
                 logging.config.fileConfig(conf_logging_file)
             except Exception:
@@ -41,32 +48,34 @@ class SeleniumWrapper(object):
             cls.logger = logging.getLogger(__name__)
 
             # Configure properties
-            conf_properties_file = 'conf/properties.cfg'
             result = cls.config.read(conf_properties_file)
             if len(result) == 0:
-                print '[ERR] Properties config file not found: {}'.format(conf_properties_file)
-            else:
-                cls.config.update_from_system_properties()
+                message = 'Properties config file not found: {}'.format(conf_properties_file)
+                cls.logger.error(message)
+                raise Exception(message)
 
-                # Unique screenshots and videos directories
-                date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
-                browser_info = cls.config.get('Browser', 'browser').replace('-', '_')
-                cls.screenshots_path = os.path.join(os.getcwd(), 'dist', 'screenshots', date + '_' + browser_info)
-                cls.screenshots_number = 1
-                cls.videos_path = os.path.join(os.getcwd(), 'dist', 'videos', date + '_' + browser_info)
-                cls.videos_number = 1
+            cls.logger.debug('Reading properties from file: {}'.format(conf_properties_file))
+            cls.config.update_from_system_properties()
 
-                # Unique visualtests directories
-                if cls.config.getboolean_optional('Server', 'visualtests_enabled'):
-                    visual_path = os.path.join(os.getcwd(), 'dist', 'visualtests')
-                    cls.output_directory = os.path.join(visual_path, date + '_' + browser_info)
-                    cls.baseline_directory = os.path.join(visual_path, 'baseline', browser_info)
-                    if not os.path.exists(cls.baseline_directory):
-                        os.makedirs(cls.baseline_directory)
-                    if not cls.config.getboolean_optional('Server', 'visualtests_save'):
-                        if not os.path.exists(cls.output_directory):
-                            os.makedirs(cls.output_directory)
-                    cls.visual_number = 1
+            # Unique screenshots and videos directories
+            date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
+            browser_info = cls.config.get('Browser', 'browser').replace('-', '_')
+            cls.screenshots_path = os.path.join(os.getcwd(), 'dist', 'screenshots', date + '_' + browser_info)
+            cls.screenshots_number = 1
+            cls.videos_path = os.path.join(os.getcwd(), 'dist', 'videos', date + '_' + browser_info)
+            cls.videos_number = 1
+
+            # Unique visualtests directories
+            if cls.config.getboolean_optional('Server', 'visualtests_enabled'):
+                visual_path = os.path.join(os.getcwd(), 'dist', 'visualtests')
+                cls.output_directory = os.path.join(visual_path, date + '_' + browser_info)
+                cls.baseline_directory = os.path.join(visual_path, 'baseline', browser_info)
+                if not os.path.exists(cls.baseline_directory):
+                    os.makedirs(cls.baseline_directory)
+                if not cls.config.getboolean_optional('Server', 'visualtests_save'):
+                    if not os.path.exists(cls.output_directory):
+                        os.makedirs(cls.output_directory)
+                cls.visual_number = 1
 
             # Create new instance
             cls._instance = super(SeleniumWrapper, cls).__new__(cls, *args, **kwargs)
