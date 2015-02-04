@@ -17,11 +17,9 @@ from seleniumtid.config_parser import ExtendedConfigParser
 
 
 class SeleniumWrapper(object):
-    # Singleton instance
-    _instance = None
     driver = None
     logger = None
-    config = ExtendedConfigParser()
+    config = None
     screenshots_path = None
     screenshots_number = None
     videos_path = None
@@ -30,52 +28,69 @@ class SeleniumWrapper(object):
     baseline_directory = None
     visual_number = None
 
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            # Configure logger
-            conf_logging_file = 'conf/logging.conf'
-            try:
-                logging.config.fileConfig(conf_logging_file)
-            except Exception:
-                print '[WARN] Logging config file not found: {}'.format(conf_logging_file)
-            cls.logger = logging.getLogger(__name__)
+    def configure(self):
+        '''
+        Configure initial selenium instance using logging and properties files
+        '''
+        # The instance only can be configured one time
+        if self.config:
+            return
 
-            # Configure properties
-            conf_properties_file = 'conf/properties.cfg'
-            result = cls.config.read(conf_properties_file)
+        # Create an empty config object
+        self.config = ExtendedConfigParser()
+
+        # Get config filenames from system properties
+        self.config.add_section('Files')
+        self.config.set('Files', 'logging', 'conf/logging.conf')
+        self.config.set('Files', 'properties', 'conf/properties.cfg')
+        self.config.update_from_system_properties()
+        conf_logging_file = self.config.get('Files', 'logging')
+        conf_properties_files = self.config.get('Files', 'properties')
+
+        # Configure logger
+        try:
+            logging.config.fileConfig(conf_logging_file)
+        except Exception:
+            print '[WARN] Logging config file not found: {}'.format(conf_logging_file)
+        self.logger = logging.getLogger(__name__)
+
+        # Configure properties (last files could override properties)
+        for conf_properties_file in conf_properties_files.split(';'):
+            result = self.config.read(conf_properties_file)
             if len(result) == 0:
-                print '[ERR] Properties config file not found: {}'.format(conf_properties_file)
-            else:
-                cls.config.update_from_system_properties()
+                message = 'Properties config file not found: {}'.format(conf_properties_file)
+                self.logger.error(message)
+                raise Exception(message)
+            self.logger.debug('Reading properties from file: {}'.format(conf_properties_file))
 
-                # Unique screenshots and videos directories
-                date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
-                browser_info = cls.config.get('Browser', 'browser').replace('-', '_')
-                cls.screenshots_path = os.path.join(os.getcwd(), 'dist', 'screenshots', date + '_' + browser_info)
-                cls.screenshots_number = 1
-                cls.videos_path = os.path.join(os.getcwd(), 'dist', 'videos', date + '_' + browser_info)
-                cls.videos_number = 1
+        # Override properties with system properties
+        self.config.update_from_system_properties()
 
-                # Unique visualtests directories
-                if cls.config.getboolean_optional('Server', 'visualtests_enabled'):
-                    visual_path = os.path.join(os.getcwd(), 'dist', 'visualtests')
-                    cls.output_directory = os.path.join(visual_path, date + '_' + browser_info)
-                    cls.baseline_directory = os.path.join(visual_path, 'baseline', browser_info)
-                    if not os.path.exists(cls.baseline_directory):
-                        os.makedirs(cls.baseline_directory)
-                    if not cls.config.getboolean_optional('Server', 'visualtests_save'):
-                        if not os.path.exists(cls.output_directory):
-                            os.makedirs(cls.output_directory)
-                    cls.visual_number = 1
+        # Unique screenshots and videos directories
+        date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
+        browser_info = self.config.get('Browser', 'browser').replace('-', '_')
+        self.screenshots_path = os.path.join(os.getcwd(), 'dist', 'screenshots', date + '_' + browser_info)
+        self.screenshots_number = 1
+        self.videos_path = os.path.join(os.getcwd(), 'dist', 'videos', date + '_' + browser_info)
+        self.videos_number = 1
 
-            # Create new instance
-            cls._instance = super(SeleniumWrapper, cls).__new__(cls, *args, **kwargs)
-        return cls._instance
+        # Unique visualtests directories
+        if self.config.getboolean_optional('Server', 'visualtests_enabled'):
+            visual_path = os.path.join(os.getcwd(), 'dist', 'visualtests')
+            self.output_directory = os.path.join(visual_path, date + '_' + browser_info)
+            self.baseline_directory = os.path.join(visual_path, 'baseline', browser_info)
+            if not os.path.exists(self.baseline_directory):
+                os.makedirs(self.baseline_directory)
+            if not self.config.getboolean_optional('Server', 'visualtests_save'):
+                if not os.path.exists(self.output_directory):
+                    os.makedirs(self.output_directory)
+            self.visual_number = 1
 
     def connect(self):
         """
         Set up the browser driver
         """
+        self.configure()
         self.driver = ConfigDriver(self.config).create_driver()
         return self.driver
 

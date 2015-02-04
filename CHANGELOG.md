@@ -1,6 +1,14 @@
 seleniumtid changelog
 =====================
 
+v0.8.2
+------
+
+*Release date: 2015-02-04*
+
+  * Logging and properties config files can be specified with a system property: *Files_logging* and *Files_properties*  
+    *Files_properties* allows multiple files separated by ;
+
 v0.8.1
 ------
 
