@@ -96,6 +96,7 @@ class SeleniumTestCase(BasicTestCase):
         # Close browser and stop driver
         cls._driver.quit()
         cls._driver = None
+        SeleniumTestCase._driver = None
 
         # Download saved video if video is enabled or if test fails
         if cls.remote_video_node and (selenium_driver.config.getboolean_optional('Server', 'video_enabled')
