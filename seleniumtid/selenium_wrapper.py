@@ -19,7 +19,7 @@ from seleniumtid.config_parser import ExtendedConfigParser
 class SeleniumWrapper(object):
     driver = None
     logger = None
-    config = None
+    config = ExtendedConfigParser()
     screenshots_path = None
     screenshots_number = None
     videos_path = None
@@ -32,11 +32,7 @@ class SeleniumWrapper(object):
         '''
         Configure initial selenium instance using logging and properties files
         '''
-        # The instance only can be configured one time
-        if self.config:
-            return
-
-        # Create an empty config object
+        # Initialize the config object
         self.config = ExtendedConfigParser()
 
         # Get config filenames from system properties
@@ -49,9 +45,9 @@ class SeleniumWrapper(object):
 
         # Configure logger
         try:
-            logging.config.fileConfig(conf_logging_file)
-        except Exception:
-            print '[WARN] Logging config file not found: {}'.format(conf_logging_file)
+            logging.config.fileConfig(conf_logging_file, None, False)
+        except Exception as exc:
+            print "[WARN] Error reading logging config file '{}': {}".format(conf_logging_file, exc)
         self.logger = logging.getLogger(__name__)
 
         # Configure properties (last files could override properties)
