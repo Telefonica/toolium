@@ -28,9 +28,9 @@ class SeleniumWrapper(object):
     baseline_directory = None
     visual_number = None
 
-    def configure(self):
+    def configure_basic(self):
         '''
-        Configure initial selenium instance using logging and properties files
+        Configure initial selenium instance using logging and properties files for basic test cases
         '''
         # Initialize the config object
         self.config = ExtendedConfigParser()
@@ -61,6 +61,13 @@ class SeleniumWrapper(object):
 
         # Override properties with system properties
         self.config.update_from_system_properties()
+
+    def configure(self):
+        '''
+        Configure initial selenium instance using logging and properties files for Selenium or Appium tests
+        '''
+        # Initialize the config object
+        self.configure_basic()
 
         # Unique screenshots and videos directories
         date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
