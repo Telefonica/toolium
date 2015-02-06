@@ -36,9 +36,10 @@ class BasicTestCase(unittest.TestCase):
         change_all_jira_status()
 
     def setUp(self):
-        # Configure properties and logger files
+        # Configure logger and properties
         if not isinstance(self, SeleniumTestCase):
-            selenium_driver.configure_basic()
+            selenium_driver.configure_logger()
+            selenium_driver.configure_properties()
         # Configure logger
         self.logger = logging.getLogger(__name__)
         self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))

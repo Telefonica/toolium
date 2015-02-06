@@ -36,6 +36,13 @@ class VisualTest(object):
         self.save_baseline = selenium_driver.config.getboolean_optional('Server', 'visualtests_save')
         NeedleWebElement.get_dimensions = MethodType(self._get_dimensions.__func__, None, NeedleWebElement)
 
+        # Create folders
+        if not os.path.exists(self.baseline_directory):
+            os.makedirs(self.baseline_directory)
+        if not self.save_baseline:
+            if not os.path.exists(self.output_directory):
+                os.makedirs(self.output_directory)
+
     def assertScreenshot(self, element_or_selector, filename, file_suffix, threshold=0):
         """
         Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
