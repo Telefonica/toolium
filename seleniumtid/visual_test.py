@@ -12,7 +12,6 @@ been supplied.
 import logging
 import os
 from seleniumtid import selenium_driver
-from types import MethodType
 try:
     from needle.engines.perceptualdiff_engine import Engine as diff_Engine
     from needle.engines.pil_engine import Engine as pil_Engine
@@ -34,7 +33,6 @@ class VisualTest(object):
         self.engine = diff_Engine() if engine_type == 'perceptualdiff' else pil_Engine()
         self.capture = False
         self.save_baseline = selenium_driver.config.getboolean_optional('Server', 'visualtests_save')
-        NeedleWebElement.get_dimensions = MethodType(self._get_dimensions.__func__, None, NeedleWebElement)
 
         # Create folders
         if not os.path.exists(self.baseline_directory):
@@ -83,16 +81,3 @@ class VisualTest(object):
             selenium_driver.visual_number += 1
             # Compare the screenshots
             self.engine.assertSameFiles(output_file, baseline_file, threshold)
-
-    def _get_dimensions(self):
-        '''
-        Returns dimensions of a Web Element
-        '''
-        location = self.location
-        size = self.size
-        d = dict()
-        d['left'] = location['x']
-        d['top'] = location['y']
-        d['width'] = size['width']
-        d['height'] = size['height']
-        return d
