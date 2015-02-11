@@ -4,7 +4,7 @@ seleniumtid changelog
 v0.8.3
 ------
 
-*Release date: 2015-02-??*
+*Release date: 2015-02-11*
 
   * Read properties file before each test to allow executing tests with different configurations (android, iphone, ...)
 
