@@ -22,6 +22,9 @@ class SeleniumWrapper(object):
     driver = None
     logger = None
     config = ExtendedConfigParser()
+    conf_properties_files = None
+    conf_logging_file = None
+    browser_info = None
     screenshots_path = None
     screenshots_number = None
     videos_path = None
@@ -32,50 +35,89 @@ class SeleniumWrapper(object):
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            # Configure logger
-            conf_logging_file = 'conf/logging.conf'
-            try:
-                logging.config.fileConfig(conf_logging_file)
-            except Exception:
-                print '[WARN] Logging config file not found: {}'.format(conf_logging_file)
-            cls.logger = logging.getLogger(__name__)
-
-            # Configure properties
-            conf_properties_file = 'conf/properties.cfg'
-            result = cls.config.read(conf_properties_file)
-            if len(result) == 0:
-                print '[ERR] Properties config file not found: {}'.format(conf_properties_file)
-            else:
-                cls.config.update_from_system_properties()
-
-                # Unique screenshots and videos directories
-                date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
-                browser_info = cls.config.get('Browser', 'browser').replace('-', '_')
-                cls.screenshots_path = os.path.join(os.getcwd(), 'dist', 'screenshots', date + '_' + browser_info)
-                cls.screenshots_number = 1
-                cls.videos_path = os.path.join(os.getcwd(), 'dist', 'videos', date + '_' + browser_info)
-                cls.videos_number = 1
-
-                # Unique visualtests directories
-                if cls.config.getboolean_optional('Server', 'visualtests_enabled'):
-                    visual_path = os.path.join(os.getcwd(), 'dist', 'visualtests')
-                    cls.output_directory = os.path.join(visual_path, date + '_' + browser_info)
-                    cls.baseline_directory = os.path.join(visual_path, 'baseline', browser_info)
-                    if not os.path.exists(cls.baseline_directory):
-                        os.makedirs(cls.baseline_directory)
-                    if not cls.config.getboolean_optional('Server', 'visualtests_save'):
-                        if not os.path.exists(cls.output_directory):
-                            os.makedirs(cls.output_directory)
-                    cls.visual_number = 1
-
             # Create new instance
             cls._instance = super(SeleniumWrapper, cls).__new__(cls, *args, **kwargs)
         return cls._instance
+
+    def configure_logger(self):
+        '''
+        Configure selenium instance logger
+        '''
+        # Get logging filename from system properties
+        try:
+            conf_logging_file = os.environ["Files_logging"]
+        except KeyError:
+            conf_logging_file = 'conf/logging.conf'
+
+        # Configure logger if logging filename has changed
+        if self.conf_logging_file != conf_logging_file:
+            try:
+                logging.config.fileConfig(conf_logging_file, None, False)
+            except Exception as exc:
+                print "[WARN] Error reading logging config file '{}': {}".format(conf_logging_file, exc)
+            self.conf_logging_file = conf_logging_file
+            self.logger = logging.getLogger(__name__)
+
+    def configure_properties(self):
+        '''
+        Configure selenium instance properties
+        '''
+        # Get properties filename from system properties
+        try:
+            conf_properties_files = os.environ["Files_properties"]
+        except KeyError:
+            conf_properties_files = 'conf/properties.cfg'
+
+        # Configure config if properties filename has changed
+        if self.conf_properties_files != conf_properties_files:
+            # Initialize the config object
+            self.config = ExtendedConfigParser()
+            self.conf_properties_files = conf_properties_files
+
+            # Configure properties (last files could override properties)
+            for conf_properties_file in conf_properties_files.split(';'):
+                result = self.config.read(conf_properties_file)
+                if len(result) == 0:
+                    message = 'Properties config file not found: {}'.format(conf_properties_file)
+                    self.logger.error(message)
+                    raise Exception(message)
+                self.logger.debug('Reading properties from file: {}'.format(conf_properties_file))
+
+            # Override properties with system properties
+            self.config.update_from_system_properties()
+
+    def configure(self):
+        '''
+        Configure initial selenium instance using logging and properties files for Selenium or Appium tests
+        '''
+        # Configure logger
+        self.configure_logger()
+        # Initialize the config object
+        self.configure_properties()
+
+        # Configure folders if browser has changed
+        browser_info = self.config.get('Browser', 'browser').replace('-', '_')
+        if self.browser_info != browser_info:
+            self.browser_info = browser_info
+
+            # Unique screenshots and videos directories
+            date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
+            self.screenshots_path = os.path.join(os.getcwd(), 'dist', 'screenshots', date + '_' + browser_info)
+            self.screenshots_number = 1
+            self.videos_path = os.path.join(os.getcwd(), 'dist', 'videos', date + '_' + browser_info)
+            self.videos_number = 1
+
+            # Unique visualtests directories
+            visual_path = os.path.join(os.getcwd(), 'dist', 'visualtests')
+            self.output_directory = os.path.join(visual_path, date + '_' + browser_info)
+            self.baseline_directory = os.path.join(visual_path, 'baseline', browser_info)
+            self.visual_number = 1
 
     def connect(self):
         """
         Set up the browser driver
         """
+        self.configure()
         self.driver = ConfigDriver(self.config).create_driver()
         return self.driver
 
