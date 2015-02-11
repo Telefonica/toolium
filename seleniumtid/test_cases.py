@@ -36,6 +36,10 @@ class BasicTestCase(unittest.TestCase):
         change_all_jira_status()
 
     def setUp(self):
+        # Configure logger and properties
+        if not isinstance(self, SeleniumTestCase):
+            selenium_driver.configure_logger()
+            selenium_driver.configure_properties()
         # Configure logger
         self.logger = logging.getLogger(__name__)
         self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
@@ -93,6 +97,7 @@ class SeleniumTestCase(BasicTestCase):
         # Close browser and stop driver
         cls._driver.quit()
         cls._driver = None
+        SeleniumTestCase._driver = None
 
         # Download saved video if video is enabled or if test fails
         if cls.remote_video_node and (selenium_driver.config.getboolean_optional('Server', 'video_enabled')
