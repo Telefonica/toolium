@@ -170,12 +170,25 @@ class ConfigDriver(object):
         try:
             for pref, pref_value in dict(self.config.items('FirefoxPreferences')).iteritems():
                 self.logger.debug("Added firefox preference: {0} = {1}".format(pref, pref_value))
-                pref_value = int(pref_value) if pref in ('browser.download.folderList') else pref_value
-                profile.set_preference(pref, pref_value)
+                profile.set_preference(pref, self._convert_property_type(pref_value))
         except NoSectionError:
             pass
 
         return profile
+
+    def _convert_property_type(self, value):
+        '''
+        Converts the string value in a boolean, integer or string
+        '''
+        if value in ('true', 'True'):
+            return True
+        elif value in ('false', 'False'):
+            return False
+        else:
+            try:
+                return int(value)
+            except ValueError:
+                return value
 
     def _setup_chrome(self):
         """
@@ -194,7 +207,7 @@ class ConfigDriver(object):
         try:
             for pref, pref_value in dict(self.config.items('ChromePreferences')).iteritems():
                 self.logger.debug("Added chrome preference: {0} = {1}".format(pref, pref_value))
-                prefs[pref] = pref_value
+                prefs[pref] = self._convert_property_type(pref_value)
             if len(prefs) > 0:
                 options.add_experimental_option("prefs", prefs)
         except NoSectionError:
