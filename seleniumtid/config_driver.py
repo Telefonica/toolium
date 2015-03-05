@@ -13,6 +13,7 @@ from selenium import webdriver
 from appium import webdriver as appiumdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteDriver
+from ConfigParser import NoSectionError
 from types import MethodType
 try:
     from needle.driver import NeedleWebDriverMixin
@@ -74,6 +75,7 @@ class ConfigDriver(object):
     def _create_remotedriver(self):
         """
         Create a driver in a remote server
+        View valid capabilities in https://code.google.com/p/selenium/wiki/DesiredCapabilities
         """
         # Get server url
         server_host = self.config.get('Server', 'host')
@@ -116,6 +118,10 @@ class ConfigDriver(object):
         if browser_name == 'opera':
             capabilities['opera.autostart'] = True
             capabilities['opera.arguments'] = '-fullscreen'
+        elif browser_name == 'firefox':
+            capabilities['firefox_profile'] = self._create_firefox_profile().encoded
+        elif browser_name == 'chrome':
+            capabilities['chromeOptions'] = self._create_chrome_options().to_capabilities()["chromeOptions"]
 
         if browser_name == 'android' or browser_name == 'iphone':
             # Add Appium server capabilities
@@ -153,9 +159,36 @@ class ConfigDriver(object):
         """
         Setup Firefox webdriver
         """
+        return webdriver.Firefox(firefox_profile=self._create_firefox_profile())
+
+    def _create_firefox_profile(self):
+        # create Firefox profile
         profile = webdriver.FirefoxProfile()
         profile.native_events_enabled = True
-        return webdriver.Firefox(firefox_profile=profile)
+
+        # Add Firefox preferences
+        try:
+            for pref, pref_value in dict(self.config.items('FirefoxPreferences')).iteritems():
+                self.logger.debug("Added firefox preference: {0} = {1}".format(pref, pref_value))
+                profile.set_preference(pref, self._convert_property_type(pref_value))
+        except NoSectionError:
+            pass
+
+        return profile
+
+    def _convert_property_type(self, value):
+        '''
+        Converts the string value in a boolean, integer or string
+        '''
+        if value in ('true', 'True'):
+            return True
+        elif value in ('false', 'False'):
+            return False
+        else:
+            try:
+                return int(value)
+            except ValueError:
+                return value
 
     def _setup_chrome(self):
         """
@@ -163,10 +196,26 @@ class ConfigDriver(object):
         """
         chromedriver = self.config.get('Browser', 'chromedriver_path')
         self.logger.debug("Chrome driver path given in properties: {0}".format(chromedriver))
+        return webdriver.Chrome(chromedriver, chrome_options=self._create_chrome_options())
+
+    def _create_chrome_options(self):
+        # Create Chrome options
         options = webdriver.ChromeOptions()
+
+        # Add Chrome preferences
+        prefs = dict()
+        try:
+            for pref, pref_value in dict(self.config.items('ChromePreferences')).iteritems():
+                self.logger.debug("Added chrome preference: {0} = {1}".format(pref, pref_value))
+                prefs[pref] = self._convert_property_type(pref_value)
+            if len(prefs) > 0:
+                options.add_experimental_option("prefs", prefs)
+        except NoSectionError:
+            pass
+
         # Temporal option to solve https://code.google.com/p/chromedriver/issues/detail?id=799
         options.add_argument("test-type")
-        return webdriver.Chrome(chromedriver, chrome_options=options)
+        return options
 
     def _setup_safari(self):
         """
