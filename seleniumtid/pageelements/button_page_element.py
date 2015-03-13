@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-(c) Copyright 2014 Telefonica, I+D. Printed in Spain (Europe). All Rights
+(c) Copyright 2015 Telefonica, I+D. Printed in Spain (Europe). All Rights
 Reserved.
 
 The copyright to the software program(s) is property of Telefonica I+D.
@@ -9,10 +9,9 @@ consent of Telefonica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
-from page_element import PageElement
-from text_page_element import Text
-from input_text_page_element import InputText
-from select_page_element import Select
-from button_page_element import Button
+from seleniumtid.pageelements.page_element import PageElement
 
-__all__ = ['PageElement', 'Text', 'InputText', 'Select', 'Button']
+
+class Button(PageElement):
+    def click(self):
+        self.element().click()
