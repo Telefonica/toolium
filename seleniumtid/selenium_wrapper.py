@@ -133,7 +133,7 @@ class SeleniumWrapper(object):
         Returns true if the tests must be executed in a browser
         '''
         appium_app = self.config.get_optional('AppiumCapabilities', 'app')
-        return not self.is_mobile_test() or appium_app in ('chrome', 'safari')
+        return not self.is_mobile_test() or appium_app in ('chrome', 'chromium', 'browser', 'safari')
 
     def is_maximizable(self):
         '''
