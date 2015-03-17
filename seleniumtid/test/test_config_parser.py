@@ -36,7 +36,7 @@ optional_boolean_values = (
 @ddt
 class ExtendedConfigParserTests(unittest.TestCase):
     def setUp(self):
-        conf_properties_file = 'conf/properties.cfg'
+        conf_properties_file = 'seleniumtid/test/conf/properties.cfg'
         self.config = ExtendedConfigParser()
         self.config.read(conf_properties_file)
 

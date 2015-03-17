@@ -38,8 +38,11 @@ web_tests = (
 
 @ddt
 class SeleniumWrapperTests(unittest.TestCase):
+    conf_folder = 'seleniumtid/test/conf/'
+
     def setUp(self):
-        os.environ["Files_properties"] = 'conf/properties.cfg'
+        os.environ["Files_logging"] = self.conf_folder + 'logging.conf'
+        os.environ["Files_properties"] = self.conf_folder + 'properties.cfg'
         self.wrapper = SeleniumWrapper()
         self.wrapper.configure_logger()
         self.wrapper.configure_properties()
@@ -55,14 +58,14 @@ class SeleniumWrapperTests(unittest.TestCase):
         self.assertEquals(self.wrapper, new_wrapper)
 
     def test_configure_properties(self):
-        os.environ["Files_properties"] = 'conf/properties.cfg'
+        os.environ["Files_properties"] = self.conf_folder + 'properties.cfg'
         self.wrapper.configure_properties()
         self.assertEquals('firefox', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEquals('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
         self.assertEquals(None, self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_android(self):
-        os.environ["Files_properties"] = 'conf/android-properties.cfg'
+        os.environ["Files_properties"] = self.conf_folder + 'android-properties.cfg'
         self.wrapper.configure_properties()
         self.assertEquals('android', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEquals(None, self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
@@ -70,7 +73,8 @@ class SeleniumWrapperTests(unittest.TestCase):
                           self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_two_files(self):
-        os.environ["Files_properties"] = 'conf/properties.cfg;conf/android-properties.cfg'
+        os.environ["Files_properties"] = (self.conf_folder + 'properties.cfg;' + self.conf_folder +
+                                          'android-properties.cfg')
         self.wrapper.configure_properties()
         self.assertEquals('android', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEquals('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
@@ -78,7 +82,8 @@ class SeleniumWrapperTests(unittest.TestCase):
                           self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_two_files_android_first(self):
-        os.environ["Files_properties"] = 'conf/android-properties.cfg;conf/properties.cfg'
+        os.environ["Files_properties"] = (self.conf_folder + 'android-properties.cfg;' + self.conf_folder +
+                                          'properties.cfg')
         self.wrapper.configure_properties()
         self.assertEquals('firefox', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEquals('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
@@ -86,11 +91,11 @@ class SeleniumWrapperTests(unittest.TestCase):
                           self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_file_not_found(self):
-        os.environ["Files_properties"] = 'conf/notfound-properties.cfg'
+        os.environ["Files_properties"] = self.conf_folder + 'notfound-properties.cfg'
         self.assertRaisesRegexp(Exception, 'Properties config file not found', self.wrapper.configure_properties)
 
     def test_configure_logger_file_not_found(self):
-        os.environ["Files_logging"] = 'conf/notfound-properties.cfg'
+        os.environ["Files_logging"] = self.conf_folder + 'notfound-logging.conf'
         self.wrapper.configure_logger()
         self.wrapper.logger.info('No error, default logging configuration')
 

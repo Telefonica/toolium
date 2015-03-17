@@ -52,9 +52,9 @@ default:
 	@echo "    sdist         - Build a tar.gz software distribution of the package"
 # @echo "    rpm           - Create $(PACKAGE) rpm"
 	@echo "    egg           - Create python egg"
-# @echo "    unittest      - Execute unit tests"
+	@echo "    unittest      - Execute unit tests"
 	@echo "    doc           - Build sphinx documentation"
-# @echo "    coverage      - Execute unittests and code coverage"
+	@echo "    coverage      - Execute unittests and code coverage"
 	@echo "    pylint        - Run pylint"
 	@echo
 
@@ -101,10 +101,10 @@ $(VENV): $(REQ) $(TESTREQ)
 	$@/$(BIN)/easy_install Pillow; \
 	$@/$(BIN)/pip install --upgrade -r $(TESTREQ); \
 
-disabled-unittest: init venv
+unittest: init venv
 	$(VENV)/$(BIN)/nosetests $(UNIT_TEST_ARGS)
 
-disabled-coverage: init venv
+coverage: init venv
 	$(VENV)/$(BIN)/nosetests $(COVERAGE_ARGS) $(UNIT_TEST_ARGS)
 	@echo ">>> OK. Coverage reports generated in $(ROOT)/dist"
 
@@ -135,4 +135,4 @@ clean:
 	rm -rf $(TMP) dist/ *.egg-info/ build/
 	@echo
 
-.PHONY: all clean venv install sdist egg doc pylint
+.PHONY: all clean venv install sdist egg unittest doc coverage pylint

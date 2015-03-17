@@ -4,3 +4,4 @@ unittest2             # lettuce tests
 lettuce               # lettuce tests
 needle                # visual tests
 ddt
+coverage
