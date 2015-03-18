@@ -1,13 +1,20 @@
 seleniumtid changelog
 =====================
 
+v0.8.5
+------
+
+*Release date: 2015-03-??*
+
+  * Add Button page element
+
 v0.8.4
 ------
 
 *Release date: 2015-03-05*
 
   * Allow to set firefox and chrome preferences from properties file  
-    New config section [FirefoxPreferences] with firefox preferences, e.g. 'browser.download.dir = /tmp'
+    New config section [FirefoxPreferences] with firefox preferences, e.g. 'browser.download.dir = /tmp'  
     New config section [ChromePreferences] with chrome preferences, e.g. 'download.default_directory = /tmp'
 
 v0.8.3

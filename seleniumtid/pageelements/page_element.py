@@ -29,4 +29,8 @@ class PageElement(object):
         self._driver = driver
 
     def element(self):
+        """
+        :return: web element object
+        :rtype selenium.webdriver.remote.webelement.WebElement
+        """
         return self.driver.find_element(*self.locator)
