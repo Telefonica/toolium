@@ -20,6 +20,8 @@ from seleniumtid.config_driver import get_error_message_from_exception
 
 
 class BasicTestCase(unittest.TestCase):
+    """A class whose instances are api test cases."""
+
     @classmethod
     def get_subclass_name(cls):
         return cls.__name__
@@ -57,6 +59,13 @@ class BasicTestCase(unittest.TestCase):
 
 
 class SeleniumTestCase(BasicTestCase):
+    """A class whose instances are Selenium test cases.
+
+    Attributes:
+        _driver: webdriver instance
+        _utils: test utils instance
+        remote_video_node: hostname of the remote node if it has enabled a video recorder
+    """
     _driver = None
     _utils = None
     remote_video_node = None
@@ -64,19 +73,17 @@ class SeleniumTestCase(BasicTestCase):
     @classproperty
     @classmethod
     def driver(cls):
-        '''
-        This method allows to autocomplete self.driver in IDEs
-        :rtype selenium.webdriver.remote.webdriver.WebDriver
-        '''
+        """This method allows to autocomplete self.driver in IDEs
+        :rtype: selenium.webdriver.remote.webdriver.WebDriver
+        """
         return cls._driver
 
     @classproperty
     @classmethod
     def utils(cls):
-        '''
-        This method allows to autocomplete self.utils in IDEs
-        :rtype seleniumtid.utils.Utils
-        '''
+        """This method allows to autocomplete self.utils in IDEs
+        :rtype: seleniumtid.utils.Utils
+        """
         return cls._utils
 
     @classmethod
@@ -135,8 +142,7 @@ class SeleniumTestCase(BasicTestCase):
             SeleniumTestCase._finalize_driver(test_name, self._test_passed)
 
     def assertScreenshot(self, element_or_selector, filename, threshold=0):
-        """
-        Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
+        """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
 
         :param element_or_selector:
             Either a CSS selector as a string or a WebElement object that represents the element to capture.
@@ -150,11 +156,21 @@ class SeleniumTestCase(BasicTestCase):
 
 
 class AppiumTestCase(SeleniumTestCase):
+    """A class whose instances are Appium test cases.
+
+    Attributes:
+      app_strings: dict with application strings
+    """
+    app_strings = {}
+
     @classproperty
     @classmethod
     def driver(cls):
-        '''
-        This method allows to autocomplete self.driver in IDEs
-        :rtype appium.webdriver.webdriver.WebDriver
-        '''
+        """This method allows to autocomplete self.driver in IDEs
+        :rtype: appium.webdriver.webdriver.WebDriver
+        """
         return cls._driver
+
+    def setUp(self):
+        super(AppiumTestCase, self).setUp()
+        AppiumTestCase.app_strings = self.driver.app_strings()
