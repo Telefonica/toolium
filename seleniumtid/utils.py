@@ -163,7 +163,7 @@ class Utils(object):
         return True if record_videos == 'true' else False
 
 
-class classproperty (property):
+class classproperty(property):
     '''
     Subclass property to make classmethod properties possible
     '''

@@ -4,7 +4,7 @@ seleniumtid changelog
 v0.8.5
 ------
 
-*Release date: 2015-03-??*
+*Release date: 2015-03-23*
 
   * Add Button page element
   * AppiumTestCase has a new attribute app_strings, a dict with application strings in the active language

@@ -62,29 +62,27 @@ class SeleniumTestCase(BasicTestCase):
     """A class whose instances are Selenium test cases.
 
     Attributes:
-        _driver: webdriver instance
-        _utils: test utils instance
+        driver: webdriver instance
+        utils: test utils instance
         remote_video_node: hostname of the remote node if it has enabled a video recorder
     """
     _driver = None
     _utils = None
     remote_video_node = None
 
-    @classproperty
-    @classmethod
-    def driver(cls):
+    @property
+    def driver(self):
         """This method allows to autocomplete self.driver in IDEs
         :rtype: selenium.webdriver.remote.webdriver.WebDriver
         """
-        return cls._driver
+        return self._driver
 
-    @classproperty
-    @classmethod
-    def utils(cls):
+    @property
+    def utils(self):
         """This method allows to autocomplete self.utils in IDEs
         :rtype: seleniumtid.utils.Utils
         """
-        return cls._utils
+        return self._utils
 
     @classmethod
     def tearDownClass(cls):
@@ -159,18 +157,17 @@ class AppiumTestCase(SeleniumTestCase):
     """A class whose instances are Appium test cases.
 
     Attributes:
-      app_strings: dict with application strings
+        app_strings: dict with application strings
     """
     app_strings = {}
 
-    @classproperty
-    @classmethod
-    def driver(cls):
+    @property
+    def driver(self):
         """This method allows to autocomplete self.driver in IDEs
         :rtype: appium.webdriver.webdriver.WebDriver
         """
-        return cls._driver
+        return self._driver
 
     def setUp(self):
         super(AppiumTestCase, self).setUp()
-        AppiumTestCase.app_strings = self.driver.app_strings()
+        AppiumTestCase.app_strings = self._driver.app_strings()
