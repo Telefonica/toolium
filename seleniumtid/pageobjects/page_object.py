@@ -13,6 +13,7 @@ import unittest
 import logging
 from seleniumtid import selenium_driver
 from seleniumtid.pageelements.page_element import PageElement
+from seleniumtid.test_cases import AppiumTestCase
 
 
 class PageObject(unittest.TestCase):
@@ -20,6 +21,7 @@ class PageObject(unittest.TestCase):
         self.logger = logging.getLogger(__name__)
         self._driver = driver if driver else selenium_driver.driver
         self.config = selenium_driver.config
+        self.app_strings = AppiumTestCase.app_strings
         self.init_page_elements()
         if driver:
             self._update_page_elements_driver()
