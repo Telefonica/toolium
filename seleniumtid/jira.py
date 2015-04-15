@@ -40,6 +40,7 @@ def jira(test_key):
                 add_jira_status(test_key, 'Fail', test_comment)
                 raise
             add_jira_status(test_key, 'Pass', None)
+        modified_test.__name__ = test_item.__name__
         return modified_test
     return decorator
 
