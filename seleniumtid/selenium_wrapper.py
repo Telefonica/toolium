@@ -40,14 +40,14 @@ class SeleniumWrapper(object):
         return cls._instance
 
     def configure_logger(self):
-        '''
-        Configure selenium instance logger
-        '''
+        """Configure selenium instance logger"""
         # Get logging filename from system properties
         try:
             conf_logging_file = os.environ["Files_logging"]
         except KeyError:
-            conf_logging_file = 'conf/logging.conf'
+            conf_logging_file = os.path.join('conf', 'logging.conf')
+
+        # Get logger filename from system properties
         try:
             log_filename = os.path.normpath(os.environ["Files_log_filename"]).replace('\\', '\\\\')
         except KeyError:
@@ -63,14 +63,12 @@ class SeleniumWrapper(object):
             self.logger = logging.getLogger(__name__)
 
     def configure_properties(self):
-        '''
-        Configure selenium instance properties
-        '''
+        """Configure selenium instance properties"""
         # Get properties filename from system properties
         try:
             conf_properties_files = os.environ["Files_properties"]
         except KeyError:
-            conf_properties_files = 'conf/properties.cfg'
+            conf_properties_files = os.path.join('conf', 'properties.cfg')
 
         # Configure config if properties filename has changed
         if self.conf_properties_files != conf_properties_files:
@@ -91,9 +89,7 @@ class SeleniumWrapper(object):
             self.config.update_from_system_properties()
 
     def configure(self):
-        '''
-        Configure initial selenium instance using logging and properties files for Selenium or Appium tests
-        '''
+        """Configure initial selenium instance using logging and properties files for Selenium or Appium tests"""
         # Configure logger
         self.configure_logger()
         # Initialize the config object
@@ -118,30 +114,34 @@ class SeleniumWrapper(object):
             self.visual_number = 1
 
     def connect(self):
-        """
-        Set up the browser driver
+        """Set up the selenium driver and connect to the server
+
+        :returns: selenium driver
         """
         self.configure()
         self.driver = ConfigDriver(self.config).create_driver()
         return self.driver
 
     def is_mobile_test(self):
-        '''
-        Returns true if the tests must be executed in a mobile
-        '''
+        """Check if actual test must be executed in a mobile
+
+        :returns: true if test must be executed in a mobile
+        """
         browser_name = self.config.get('Browser', 'browser').split('-')[0]
         return browser_name in ('android', 'iphone')
 
     def is_web_test(self):
-        '''
-        Returns true if the tests must be executed in a browser
-        '''
+        """Check if actual test must be executed in a browser
+
+        :returns: true if test must be executed in a browser
+        """
         appium_app = self.config.get_optional('AppiumCapabilities', 'app')
         return not self.is_mobile_test() or appium_app in ('chrome', 'chromium', 'browser', 'safari')
 
     def is_maximizable(self):
-        '''
-        Returns true if the browser is maximizable
-        '''
+        """Check if the browser is maximizable
+
+        :returns: true if the browser is maximizable
+        """
         browser_name = self.config.get('Browser', 'browser').split('-')[0]
         return not self.is_mobile_test() and browser_name != 'opera'

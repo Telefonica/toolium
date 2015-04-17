@@ -1,6 +1,14 @@
 seleniumtid changelog
 =====================
 
+v0.8.6
+------
+
+*Release date: 2015-04-17*
+
+  * Add wait_until_element_visible method in utils class
+  * Logger filename can be specified with a system property: *Files_log_filename*
+
 v0.8.5
 ------
 
