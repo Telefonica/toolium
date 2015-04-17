@@ -48,11 +48,15 @@ class SeleniumWrapper(object):
             conf_logging_file = os.environ["Files_logging"]
         except KeyError:
             conf_logging_file = 'conf/logging.conf'
+        try:
+            log_filename = os.path.normpath(os.environ["Files_log_filename"]).replace('\\', '\\\\')
+        except KeyError:
+            log_filename = 'selenium.log'
 
         # Configure logger if logging filename has changed
         if self.conf_logging_file != conf_logging_file:
             try:
-                logging.config.fileConfig(conf_logging_file, None, False)
+                logging.config.fileConfig(conf_logging_file, {'logfilename': log_filename}, False)
             except Exception as exc:
                 print "[WARN] Error reading logging config file '{}': {}".format(conf_logging_file, exc)
             self.conf_logging_file = conf_logging_file
