@@ -13,6 +13,7 @@ been supplied.
 
 import unittest
 import logging
+import abc
 
 from seleniumtid import selenium_driver
 from seleniumtid.pageelements.page_element import PageElement
@@ -20,6 +21,8 @@ from seleniumtid.test_cases import AppiumTestCase
 
 
 class PageObject(unittest.TestCase):
+    __metaclass__ = abc.ABCMeta
+
     def __init__(self, driver=None):
         self.logger = logging.getLogger(__name__)
         self._driver = driver if driver else selenium_driver.driver
@@ -39,11 +42,9 @@ class PageObject(unittest.TestCase):
         """
         return self._driver
 
+    @abc.abstractmethod
     def init_page_elements(self):
-        """Method to initialize page elements
-        Must be overridden by subclasses
-        """
-        pass
+        """Method to initialize page elements"""
 
     def _update_page_elements_driver(self):
         """Assign driver to all page elements of this page object"""
