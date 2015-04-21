@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-'''
-(c) Copyright 2014 Telefonica, I+D. Printed in Spain (Europe). All Rights
+
+u"""
+(c) Copyright 2014 Telefónica, I+D. Printed in Spain (Europe). All Rights
 Reserved.
 
-The copyright to the software program(s) is property of Telefonica I+D.
+The copyright to the software program(s) is property of Telefónica I+D.
 The program(s) may be used and or copied only with the express written
-consent of Telefonica I+D or in accordance with the terms and conditions
+consent of Telefónica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
-'''
+"""
+
 import unittest
 import logging
 import sys
@@ -73,14 +75,20 @@ class SeleniumTestCase(BasicTestCase):
 
     @property
     def driver(self):
-        """This method allows to autocomplete self.driver in IDEs
+        """Get the Selenium driver
+         This method allows to autocomplete self.driver in IDEs
+
+        :returns: Selenium driver
         :rtype: selenium.webdriver.remote.webdriver.WebDriver
         """
         return self._driver
 
     @property
     def utils(self):
-        """This method allows to autocomplete self.utils in IDEs
+        """Get the utils object
+         This method allows to autocomplete self.utils in IDEs
+
+        :returns: utils object
         :rtype: seleniumtid.utils.Utils
         """
         return self._utils
@@ -164,7 +172,10 @@ class AppiumTestCase(SeleniumTestCase):
 
     @property
     def driver(self):
-        """This method allows to autocomplete self.driver in IDEs
+        """Get the Appium driver
+         This method allows to autocomplete self.driver in IDEs
+
+        :returns: Appium driver
         :rtype: appium.webdriver.webdriver.WebDriver
         """
         return self._driver

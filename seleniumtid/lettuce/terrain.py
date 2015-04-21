@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-'''
-(c) Copyright 2014 Telefonica, I+D. Printed in Spain (Europe). All Rights
+
+u"""
+(c) Copyright 2014 Telefónica, I+D. Printed in Spain (Europe). All Rights
 Reserved.
 
-The copyright to the software program(s) is property of Telefonica I+D.
+The copyright to the software program(s) is property of Telefónica I+D.
 The program(s) may be used and or copied only with the express written
-consent of Telefonica I+D or in accordance with the terms and conditions
+consent of Telefónica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
-'''
+"""
+
 import logging
 import re
 
@@ -77,6 +79,11 @@ def teardown_driver_all(total):
 
 
 def finalize_driver(video_name, test_passed=True):
+    """Close browser, stop driver and download test video
+
+    :param video_name: video name
+    :param test_passed: test execution status
+    """
     # Get session id to request the saved video
     session_id = world.driver.session_id
 
@@ -92,9 +99,11 @@ def finalize_driver(video_name, test_passed=True):
 
 
 def get_jira_key_from_scenario(scenario):
-    '''
-    Extract Jira Test Case key from scenario tags
-    '''
+    """Extract Jira Test Case key from scenario tags
+
+    :param scenario: lettuce scenario
+    :returns: Jira test case key
+    """
     jira_regex = re.compile('jira\(\'(.*?)\'\)')
     for tag in scenario.tags:
         match = jira_regex.search(tag)

@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-'''
-(c) Copyright 2015 Telefonica, I+D. Printed in Spain (Europe). All Rights
+
+u"""
+(c) Copyright 2015 Telefónica, I+D. Printed in Spain (Europe). All Rights
 Reserved.
 
-The copyright to the software program(s) is property of Telefonica I+D.
+The copyright to the software program(s) is property of Telefónica I+D.
 The program(s) may be used and or copied only with the express written
-consent of Telefonica I+D or in accordance with the terms and conditions
+consent of Telefónica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
-'''
+"""
+
 import logging
 import os
 
@@ -45,8 +47,7 @@ class VisualTest(object):
                 os.makedirs(self.output_directory)
 
     def assertScreenshot(self, element_or_selector, filename, file_suffix, threshold=0):
-        """
-        Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
+        """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
 
         :param element_or_selector:
             Either a CSS selector as a string or a WebElement object that represents the element to capture.

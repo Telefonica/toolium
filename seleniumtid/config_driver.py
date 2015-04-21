@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-'''
-(c) Copyright 2014 Telefonica, I+D. Printed in Spain (Europe). All Rights
+
+u"""
+(c) Copyright 2014 Telefónica, I+D. Printed in Spain (Europe). All Rights
 Reserved.
 
-The copyright to the software program(s) is property of Telefonica I+D.
+The copyright to the software program(s) is property of Telefónica I+D.
 The program(s) may be used and or copied only with the express written
-consent of Telefonica I+D or in accordance with the terms and conditions
+consent of Telefónica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
-'''
+"""
+
 from ConfigParser import NoSectionError
 from types import MethodType
 
@@ -26,9 +28,11 @@ import logging
 
 
 def get_error_message_from_exception(exception):
-    '''
-    Extract first line of exception message
-    '''
+    """Extract first line of exception message
+
+    :param exception: exception object
+    :returns: first line of exception message
+    """
     try:
         error_message = exception.msg
     except AttributeError:
@@ -46,8 +50,9 @@ class ConfigDriver(object):
             raise Exception('The visual tests are enabled in properties.cfg, but needle is not installed')
 
     def create_driver(self):
-        """
-        Create a selenium driver using specified config properties
+        """Create a selenium driver using specified config properties
+
+        :returns: a new selenium driver
         :rtype selenium.webdriver.remote.webdriver.WebDriver
         """
         driver = None
@@ -76,9 +81,10 @@ class ConfigDriver(object):
         return driver
 
     def _create_remotedriver(self):
-        """
-        Create a driver in a remote server
+        """Create a driver in a remote server
         View valid capabilities in https://code.google.com/p/selenium/wiki/DesiredCapabilities
+
+        :returns: a new remote selenium driver
         """
         # Get server url
         server_host = self.config.get('Server', 'host')
@@ -139,8 +145,9 @@ class ConfigDriver(object):
             return webdriver.Remote(command_executor=server_url, desired_capabilities=capabilities)
 
     def _create_localdriver(self):
-        """
-        Create a driver in local machine
+        """Create a driver in local machine
+
+        :returns: a new local selenium driver
         """
         browser = self.config.get('Browser', 'browser')
         browser_name = browser.split('-')[0]
@@ -159,13 +166,18 @@ class ConfigDriver(object):
         return setup_driver_method()
 
     def _setup_firefox(self):
-        """
-        Setup Firefox webdriver
+        """Setup Firefox webdriver
+
+        :returns: a new local Firefox driver
         """
         return webdriver.Firefox(firefox_profile=self._create_firefox_profile())
 
     def _create_firefox_profile(self):
-        # create Firefox profile
+        """Create and configure a firefox profile
+
+        :returns: firefox profile
+        """
+        # Create Firefox profile
         profile = webdriver.FirefoxProfile()
         profile.native_events_enabled = True
 
@@ -180,9 +192,11 @@ class ConfigDriver(object):
         return profile
 
     def _convert_property_type(self, value):
-        '''
-        Converts the string value in a boolean, integer or string
-        '''
+        """Converts the string value in a boolean, integer or string
+
+        :param value: string value
+        :returns: boolean, integer or string value
+        """
         if value in ('true', 'True'):
             return True
         elif value in ('false', 'False'):
@@ -194,14 +208,19 @@ class ConfigDriver(object):
                 return value
 
     def _setup_chrome(self):
-        """
-        Setup Chrome webdriver
+        """Setup Chrome webdriver
+
+        :returns: a new local Chrome driver
         """
         chromedriver = self.config.get('Browser', 'chromedriver_path')
         self.logger.debug("Chrome driver path given in properties: {0}".format(chromedriver))
         return webdriver.Chrome(chromedriver, chrome_options=self._create_chrome_options())
 
     def _create_chrome_options(self):
+        """Create and configure a chrome options object
+
+        :returns: chrome options object
+        """
         # Create Chrome options
         options = webdriver.ChromeOptions()
 
@@ -221,14 +240,16 @@ class ConfigDriver(object):
         return options
 
     def _setup_safari(self):
-        """
-        Setup Safari webdriver
+        """Setup Safari webdriver
+
+        :returns: a new local Safari driver
         """
         return webdriver.Safari()
 
     def _setup_opera(self):
-        """
-        Setup Opera webdriver
+        """Setup Opera webdriver
+
+        :returns: a new local Opera driver
         """
         seleniumserver = self.config.get('Browser', 'seleniumserver_path')
         self.logger.debug("Selenium server path given in properties: {0}".format(seleniumserver))
@@ -238,24 +259,27 @@ class ConfigDriver(object):
         return webdriver.Opera(seleniumserver, desired_capabilities=capabilities)
 
     def _setup_explorer(self):
-        """
-        Setup Internet Explorer webdriver
+        """Setup Internet Explorer webdriver
+
+        :returns: a new local Internet Explorer driver
         """
         explorerdriver = self.config.get('Browser', 'explorerdriver_path')
         self.logger.debug("Explorer driver path given in properties: {0}".format(explorerdriver))
         return webdriver.Ie(explorerdriver)
 
     def _setup_phantomjs(self):
-        """
-        Setup phantomjs webdriver
+        """Setup phantomjs webdriver
+
+        :returns: a new local phantomjs driver
         """
         phantomdriver = self.config.get('Browser', 'phantomdriver_path')
         self.logger.debug("Phantom driver path given in properties: {0}".format(phantomdriver))
         return webdriver.PhantomJS(executable_path=phantomdriver)
 
     def _setup_appium(self):
-        """
-        Setup Android webdriver
+        """Setup Appium webdriver
+
+        :returns: a new remote Appium driver
         """
         self.config.set('Server', 'host', '127.0.0.1')
         self.config.set('Server', 'port', '4723')

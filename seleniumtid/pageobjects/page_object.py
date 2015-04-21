@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-'''
-(c) Copyright 2014 Telefonica, I+D. Printed in Spain (Europe). All Rights
+
+u"""
+(c) Copyright 2014 Telefónica, I+D. Printed in Spain (Europe). All Rights
 Reserved.
 
-The copyright to the software program(s) is property of Telefonica I+D.
+The copyright to the software program(s) is property of Telefónica I+D.
 The program(s) may be used and or copied only with the express written
-consent of Telefonica I+D or in accordance with the terms and conditions
+consent of Telefónica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
-'''
+"""
+
 import unittest
 import logging
 
@@ -29,23 +31,22 @@ class PageObject(unittest.TestCase):
 
     @property
     def driver(self):
-        '''
-        This method allows to autocomplete self.driver in IDEs
-        :rtype selenium.webdriver.remote.webdriver.WebDriver
-        '''
+        """Get the Selenium driver
+         This method allows to autocomplete self.driver in IDEs
+
+        :returns: Selenium driver
+        :rtype: selenium.webdriver.remote.webdriver.WebDriver
+        """
         return self._driver
 
     def init_page_elements(self):
-        '''
-        Method to initialize page elements
+        """Method to initialize page elements
         Must be overridden by subclasses
-        '''
+        """
         pass
 
     def _update_page_elements_driver(self):
-        '''
-        Assign driver to all page elements of this page object
-        '''
+        """Assign driver to all page elements of this page object"""
         for element in self.__dict__.values():
             if isinstance(element, PageElement):
                 element.set_driver(self.driver)
