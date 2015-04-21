@@ -1,6 +1,13 @@
 seleniumtid changelog
 =====================
 
+v0.9.0
+------
+
+*Release date: 2015-04-??*
+
+  * Output path (screenshots, videos, visualtests) can be specified with a system property: *Files_output_path*
+
 v0.8.6
 ------
 

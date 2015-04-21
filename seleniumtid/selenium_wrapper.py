@@ -43,13 +43,13 @@ class SeleniumWrapper(object):
         """Configure selenium instance logger"""
         # Get logging filename from system properties
         try:
-            conf_logging_file = os.environ["Files_logging"]
+            conf_logging_file = os.environ['Files_logging']
         except KeyError:
             conf_logging_file = os.path.join('conf', 'logging.conf')
 
         # Get logger filename from system properties
         try:
-            log_filename = os.path.normpath(os.environ["Files_log_filename"]).replace('\\', '\\\\')
+            log_filename = os.path.normpath(os.environ['Files_log_filename']).replace('\\', '\\\\')
         except KeyError:
             log_filename = 'selenium.log'
 
@@ -66,7 +66,7 @@ class SeleniumWrapper(object):
         """Configure selenium instance properties"""
         # Get properties filename from system properties
         try:
-            conf_properties_files = os.environ["Files_properties"]
+            conf_properties_files = os.environ['Files_properties']
         except KeyError:
             conf_properties_files = os.path.join('conf', 'properties.cfg')
 
@@ -100,17 +100,22 @@ class SeleniumWrapper(object):
         if self.browser_info != browser_info:
             self.browser_info = browser_info
 
+            # Get output path from system properties
+            try:
+                output_path = os.environ['Files_output_path']
+            except KeyError:
+                output_path = os.path.join(os.getcwd(), 'dist')
+
             # Unique screenshots and videos directories
             date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
-            self.screenshots_path = os.path.join(os.getcwd(), 'dist', 'screenshots', date + '_' + browser_info)
+            self.screenshots_path = os.path.join(output_path, 'screenshots', date + '_' + browser_info)
             self.screenshots_number = 1
-            self.videos_path = os.path.join(os.getcwd(), 'dist', 'videos', date + '_' + browser_info)
+            self.videos_path = os.path.join(output_path, 'videos', date + '_' + browser_info)
             self.videos_number = 1
 
             # Unique visualtests directories
-            visual_path = os.path.join(os.getcwd(), 'dist', 'visualtests')
-            self.output_directory = os.path.join(visual_path, date + '_' + browser_info)
-            self.baseline_directory = os.path.join(visual_path, 'baseline', browser_info)
+            self.output_directory = os.path.join(output_path, 'visualtests', date + '_' + browser_info)
+            self.baseline_directory = os.path.join(output_path, 'visualtests', 'baseline', browser_info)
             self.visual_number = 1
 
     def connect(self):
