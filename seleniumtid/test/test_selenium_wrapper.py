@@ -10,11 +10,11 @@ stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
 import unittest
-from seleniumtid.config_parser import ExtendedConfigParser
-from seleniumtid.selenium_wrapper import SeleniumWrapper
-from ddt import ddt, data, unpack
 import logging
 import os
+
+from seleniumtid.selenium_wrapper import SeleniumWrapper
+from ddt import ddt, data, unpack
 import mock
 
 

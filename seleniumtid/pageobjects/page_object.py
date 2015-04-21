@@ -11,6 +11,7 @@ been supplied.
 '''
 import unittest
 import logging
+
 from seleniumtid import selenium_driver
 from seleniumtid.pageelements.page_element import PageElement
 from seleniumtid.test_cases import AppiumTestCase

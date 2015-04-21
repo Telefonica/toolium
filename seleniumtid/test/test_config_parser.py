@@ -10,9 +10,11 @@ stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
 import unittest
+import os
+
 from seleniumtid.config_parser import ExtendedConfigParser
 from ddt import ddt, data, unpack
-import os
+
 
 optional_values = (
     ('No section', 'No option', None, None),

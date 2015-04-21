@@ -9,13 +9,14 @@ consent of Telefonica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
+import logging
+import re
+
 from lettuce import before, after, world  # @UnresolvedImport
 from seleniumtid import selenium_driver
 from seleniumtid.utils import Utils
 from seleniumtid.jira import add_jira_status, change_all_jira_status
 from seleniumtid.visual_test import VisualTest
-import logging
-import re
 
 
 @before.each_scenario
@@ -32,6 +33,7 @@ def setup_driver(scenario):
     def assertScreenshot(element_or_selector, filename, threshold=0):
         file_suffix = scenario.name.replace(' ', '_')
         VisualTest().assertScreenshot(element_or_selector, filename, file_suffix, threshold)
+
     world.assertScreenshot = assertScreenshot
 
     # Add implicitly wait

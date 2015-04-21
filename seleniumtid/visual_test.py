@@ -11,7 +11,10 @@ been supplied.
 '''
 import logging
 import os
+
 from seleniumtid import selenium_driver
+
+
 try:
     from needle.engines.perceptualdiff_engine import Engine as diff_Engine
     from needle.engines.pil_engine import Engine as pil_Engine

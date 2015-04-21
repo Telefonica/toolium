@@ -63,7 +63,7 @@ class ExtendedConfigParser(ConfigParser.ConfigParser):
         Get defined system properties and update config properties
         '''
         [self._update_from_system_property(section, option)
-            for section in self.sections() for option in self.options(section)]
+         for section in self.sections() for option in self.options(section)]
 
     def _update_from_system_property(self, section, option):
         '''

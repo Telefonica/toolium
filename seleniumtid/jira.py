@@ -13,15 +13,16 @@ import logging
 import urllib
 import urllib2
 import re
+
 from seleniumtid import selenium_driver
 from seleniumtid.config_driver import get_error_message_from_exception
 
+
+"""Configuration"""
 # Configure logger
 logger = logging.getLogger(__name__)
-
 # Base url of the test execution service
 JIRA_EXECUTION_URL = 'http://qacore02.hi.inet/jira/test-case-execution'
-
 # Dict to save tuples with jira keys, their test status and comments
 jira_tests_status = {}
 
@@ -30,6 +31,7 @@ def jira(test_key):
     '''
     Decorator to update test status in Jira
     '''
+
     def decorator(test_item):
         def modified_test(*args, **kwargs):
             try:
@@ -40,8 +42,10 @@ def jira(test_key):
                 add_jira_status(test_key, 'Fail', test_comment)
                 raise
             add_jira_status(test_key, 'Pass', None)
+
         modified_test.__name__ = test_item.__name__
         return modified_test
+
     return decorator
 
 

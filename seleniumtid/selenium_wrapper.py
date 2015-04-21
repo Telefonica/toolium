@@ -12,6 +12,7 @@ been supplied.
 import logging.config
 import os
 import datetime
+
 from seleniumtid.config_driver import ConfigDriver
 from seleniumtid.config_parser import ExtendedConfigParser
 

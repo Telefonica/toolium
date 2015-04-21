@@ -9,12 +9,15 @@ consent of Telefonica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
 '''
+from ConfigParser import NoSectionError
+from types import MethodType
+
 from selenium import webdriver
 from appium import webdriver as appiumdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteDriver
-from ConfigParser import NoSectionError
-from types import MethodType
+
+
 try:
     from needle.driver import NeedleWebDriverMixin
 except ImportError:
@@ -39,7 +42,7 @@ class ConfigDriver(object):
         self.logger = logging.getLogger(__name__)
         self.config = config.deepcopy()
         if (self.config.getboolean_optional('Server', 'visualtests_enabled')
-                and 'NeedleWebDriverMixin' not in globals()):
+            and 'NeedleWebDriverMixin' not in globals()):
             raise Exception('The visual tests are enabled in properties.cfg, but needle is not installed')
 
     def create_driver(self):

@@ -11,12 +11,14 @@ been supplied.
 '''
 import logging
 import os
-from seleniumtid import selenium_driver
+from urlparse import urlparse
+import time
+
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import requests
-from urlparse import urlparse
-import time
+
+from seleniumtid import selenium_driver
 
 
 class Utils(object):
@@ -173,5 +175,6 @@ class classproperty(property):
     '''
     Subclass property to make classmethod properties possible
     '''
+
     def __get__(self, cls, owner):
         return self.fget.__get__(None, owner)()
