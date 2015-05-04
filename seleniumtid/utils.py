@@ -59,6 +59,12 @@ class Utils(object):
             message = entry['message'].rstrip().encode('utf-8')
             self.logger.debug('{0} - {1}: {2}'.format(log_type.capitalize(), entry['level'], message))
 
+    def wait_until_element_visible(self, locator, timeout=10):
+        '''
+        Search element by locator and wait until it is visible
+        '''
+        WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(locator))
+
     def wait_until_element_not_visible(self, locator, timeout=10):
         '''
         Search element by locator and wait until it is not visible
