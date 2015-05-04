@@ -182,4 +182,21 @@ class AppiumTestCase(SeleniumTestCase):
 
     def setUp(self):
         super(AppiumTestCase, self).setUp()
-        AppiumTestCase.app_strings = self._driver.app_strings()
+        if not AppiumTestCase.app_strings:
+            AppiumTestCase.app_strings = self._driver.app_strings()
+
+    def tearDown(self):
+        # Call SeleniumTestCase tearDown
+        super(AppiumTestCase, self).tearDown()
+
+        # Remove app strings
+        if not self.reuse_driver:
+            AppiumTestCase.app_strings = None
+
+    @classmethod
+    def tearDownClass(cls):
+        # Call SeleniumTestCase tearDownClass
+        super(AppiumTestCase, cls).tearDownClass()
+
+        # Remove app strings
+        AppiumTestCase.app_strings = None

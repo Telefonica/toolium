@@ -4,9 +4,10 @@ seleniumtid changelog
 v0.9.0
 ------
 
-*Release date: 2015-04-??*
+*Release date: 2015-05-??*
 
   * Output path (screenshots, videos, visualtests) can be specified with a system property: *Files_output_path*
+  * Update app_strings in Appium tests only if the driver has changed
 
 v0.8.6
 ------
