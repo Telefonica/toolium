@@ -84,4 +84,10 @@ class VisualTest(object):
             element.get_screenshot().save(output_file)
             selenium_driver.visual_number += 1
             # Compare the screenshots
-            self.engine.assertSameFiles(output_file, baseline_file, threshold)
+            try:
+                self.engine.assertSameFiles(output_file, baseline_file, threshold)
+            except AssertionError as exc:
+                if selenium_driver.config.getboolean_optional('Server', 'visualtests_fail'):
+                    raise exc
+                else:
+                    self.logger.warn('Visual error: {}'.format(exc.message))
