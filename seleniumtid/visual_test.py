@@ -48,10 +48,9 @@ class VisualTest(object):
         # Create folders
         if not os.path.exists(self.baseline_directory):
             os.makedirs(self.baseline_directory)
-        if not self.save_baseline:
-            if not os.path.exists(self.output_directory):
-                os.makedirs(self.output_directory)
-                self.copy_template()
+        if not self.save_baseline and not os.path.exists(self.output_directory):
+            os.makedirs(self.output_directory)
+            self.copy_template()
 
     def assertScreenshot(self, element_or_selector, filename, file_suffix, threshold=0):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
@@ -94,11 +93,11 @@ class VisualTest(object):
             try:
                 self.engine.assertSameFiles(output_file, baseline_file, threshold)
             except AssertionError as exc:
-                self.add_to_report(file_suffix, output_file, baseline_file)
+                self.add_to_report(file_suffix, output_file, baseline_file, exc.message)
                 if selenium_driver.config.getboolean_optional('Server', 'visualtests_fail'):
                     raise exc
                 else:
-                    self.logger.warn('Visual error: {}'.format(exc.message))
+                    self.logger.warn('Visual error: {}'.format(exc.msg))
 
     def copy_template(self):
         """Copy html template and css file to output directory"""
@@ -107,7 +106,7 @@ class VisualTest(object):
         css_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources', self.css_name)
         shutil.copyfile(css_path, os.path.join(self.output_directory, self.css_name))
 
-    def get_html_row(self, test_name, output_file, baseline_file):
+    def get_html_row(self, test_name, output_file, baseline_file, message):
         """Create the html row with the result of a visual test
 
         :param test_name: test name
@@ -121,19 +120,23 @@ class VisualTest(object):
         row += '<td>' + img.format(baseline_file) + '</td>'
         row += '<td>' + img.format(output_file) + '</td>'
         diff_file = output_file.replace('.png', '.diff.png')
-        diff_row = img.format(diff_file) if os.path.exists(diff_file) else ''
+        diff_row = ''
+        if os.path.exists(diff_file):
+            diff_row = img.format(diff_file)
+        elif message.find('Image dimensions do not match'):
+            diff_row = 'Wrong dimensions'
         row += '<td>' + diff_row + '</td>'
         row += '</tr>'
         return row
 
-    def add_to_report(self, test_name, output_file, baseline_file):
+    def add_to_report(self, test_name, output_file, baseline_file, message):
         """Add the result of a visual test to the html report
 
         :param test_name: test name
         :param output_file: output file path
         :param baseline_file: baseline file path
         """
-        row = self.get_html_row(test_name, output_file, baseline_file)
+        row = self.get_html_row(test_name, output_file, baseline_file, message)
         with open(os.path.join(self.output_directory, self.report_name), "r+") as f:
             report = f.read()
             index = report.find('</tbody>')
