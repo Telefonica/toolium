@@ -10,6 +10,7 @@ v0.9.0
   * Update app_strings in Appium tests only if the driver has changed
   * With a visual assertion error, the test can fail or give an error message and continue
     New config property 'visualtests_fail' in [Server] section to fail the test when there is a visual error
+  * Create a html report with the visual tests results
 
 v0.8.6
 ------
