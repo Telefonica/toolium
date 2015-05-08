@@ -82,3 +82,4 @@ tmp
 
 # Drivies
 */test/dist
+*/test/resources/*.diff.png

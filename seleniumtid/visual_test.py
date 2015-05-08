@@ -14,6 +14,7 @@ been supplied.
 import logging
 import os
 import shutil
+import re
 
 from seleniumtid import selenium_driver
 
@@ -48,21 +49,30 @@ class VisualTest(object):
         # Create folders
         if not os.path.exists(self.baseline_directory):
             os.makedirs(self.baseline_directory)
-        if not self.save_baseline and not os.path.exists(self.output_directory):
-            os.makedirs(self.output_directory)
-            self.copy_template()
+        if not self.save_baseline:
+            if not os.path.exists(self.output_directory):
+                os.makedirs(self.output_directory)
+            self._copy_template()
+
+    def _copy_template(self):
+        """Copy html template and css file to output directory"""
+        orig_template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources', self.template_name)
+        dst_template_path = os.path.join(self.output_directory, self.report_name)
+        if not os.path.exists(dst_template_path):
+            shutil.copyfile(orig_template_path, dst_template_path)
+        orig_css_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources', self.css_name)
+        dst_css_path = os.path.join(self.output_directory, self.css_name)
+        if not os.path.exists(dst_css_path):
+            shutil.copyfile(orig_css_path, dst_css_path)
 
     def assertScreenshot(self, element_or_selector, filename, file_suffix, threshold=0):
-        """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
+        """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold
 
-        :param element_or_selector:
-            Either a CSS selector as a string or a WebElement object that represents the element to capture.
-        :param filename:
-            The filename for the screenshot, which will be appended with ``.png``.
-        :param file_suffix:
-            A string to be appended to the output filename.
-        :param threshold:
-            The threshold for triggering a test failure.
+        :param element_or_selector: either a CSS selector as a string or a WebElement object that represents the
+                    element to capture
+        :param filename: the filename for the screenshot, which will be appended with ``.png``
+        :param file_suffix: a string to be appended to the output filename
+        :param threshold: the threshold for triggering a test failure
         """
         if not selenium_driver.config.getboolean_optional('Server', 'visualtests_enabled'):
             return
@@ -90,56 +100,69 @@ class VisualTest(object):
             element.get_screenshot().save(output_file)
             selenium_driver.visual_number += 1
             # Compare the screenshots
-            try:
-                self.engine.assertSameFiles(output_file, baseline_file, threshold)
-            except AssertionError as exc:
-                self.add_to_report(file_suffix, output_file, baseline_file, exc.message)
-                if selenium_driver.config.getboolean_optional('Server', 'visualtests_fail'):
-                    raise exc
-                else:
-                    self.logger.warn('Visual error: {}'.format(exc.msg))
+            self._compare_files(file_suffix, output_file, baseline_file, threshold)
 
-    def copy_template(self):
-        """Copy html template and css file to output directory"""
-        template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources', self.template_name)
-        shutil.copyfile(template_path, os.path.join(self.output_directory, self.report_name))
-        css_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources', self.css_name)
-        shutil.copyfile(css_path, os.path.join(self.output_directory, self.css_name))
-
-    def get_html_row(self, test_name, output_file, baseline_file, message):
-        """Create the html row with the result of a visual test
+    def _compare_files(self, test_name, image_file, baseline_file, threshold):
+        """Compare two image files and add result to the html report
 
         :param test_name: test name
-        :param output_file: output file path
-        :param baseline_file: baseline file path
-        :returns: str with the html row
+        :param image_file: image file path
+        :param baseline_file: baseline image file path
+        :param threshold:
+        :returns: error message
         """
-        img = '<img style="width: 100%" onclick="window.open(this.src)" src="file://{}"/></td>'
-        row = '<tr>'
-        row += '<td>' + test_name + '</td>'
-        row += '<td>' + img.format(baseline_file) + '</td>'
-        row += '<td>' + img.format(output_file) + '</td>'
-        diff_file = output_file.replace('.png', '.diff.png')
-        diff_row = ''
-        if os.path.exists(diff_file):
-            diff_row = img.format(diff_file)
-        elif message.find('Image dimensions do not match'):
-            diff_row = 'Wrong dimensions'
-        row += '<td>' + diff_row + '</td>'
-        row += '</tr>'
-        return row
+        try:
+            self.engine.assertSameFiles(image_file, baseline_file, threshold)
+            return None
+        except AssertionError as exc:
+            self._add_to_report(test_name, image_file, baseline_file, exc.message)
+            if selenium_driver.config.getboolean_optional('Server', 'visualtests_fail'):
+                raise exc
+            else:
+                self.logger.warn('Visual error: {}'.format(exc.message))
+                return exc.message
 
-    def add_to_report(self, test_name, output_file, baseline_file, message):
+    def _add_to_report(self, test_name, image_file, baseline_file, message=''):
         """Add the result of a visual test to the html report
 
         :param test_name: test name
-        :param output_file: output file path
-        :param baseline_file: baseline file path
+        :param image_file: image file path
+        :param baseline_file: baseline image file path
+        :param message: error message
         """
-        row = self.get_html_row(test_name, output_file, baseline_file, message)
+        row = self._get_html_row(test_name, image_file, baseline_file, message)
         with open(os.path.join(self.output_directory, self.report_name), "r+") as f:
             report = f.read()
             index = report.find('</tbody>')
             report = report[:index] + row + report[index:]
             f.seek(0)
             f.write(report)
+
+    def _get_html_row(self, test_name, image_file, baseline_file, message=''):
+        """Create the html row with the result of a visual test
+
+        :param test_name: test name
+        :param image_file: image file path
+        :param baseline_file: baseline image file path
+        :param message: error message
+        :returns: str with the html row
+        """
+        img = '<img style="width: 100%" onclick="window.open(this.src)" src="file://{}"/></td>'
+        row = '<tr>'
+        row += '<td>' + test_name + '</td>'
+        row += '<td>' + img.format(baseline_file) + '</td>'
+        row += '<td>' + img.format(image_file) + '</td>'
+        diff_file = image_file.replace('.png', '.diff.png')
+        diff_row = ''
+        if os.path.exists(diff_file):
+            diff_row = img.format(diff_file)
+        elif 'Image dimensions do not match' in message or message == '':
+            diff_row = 'Image dimensions do not match'
+        elif 'by a distance of' in message:
+            m = re.search('\(by a distance of (.*)\)', message)
+            diff_row = 'Distance of ' + m.group(1)
+        else:
+            diff_row = message
+        row += '<td>' + diff_row + '</td>'
+        row += '</tr>'
+        return row

@@ -40,7 +40,8 @@ optional_boolean_values = (
 @ddt
 class ExtendedConfigParserTests(unittest.TestCase):
     def setUp(self):
-        conf_properties_file = 'seleniumtid/test/conf/properties.cfg'
+        root_path = os.path.dirname(os.path.realpath(__file__))
+        conf_properties_file = os.path.join(root_path, 'conf', 'properties.cfg')
         self.config = ExtendedConfigParser()
         self.config.read(conf_properties_file)
 
