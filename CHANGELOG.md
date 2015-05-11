@@ -11,6 +11,7 @@ v0.9.0
   * With a visual assertion error, the test can fail or give an error message and continue
     New config property 'visualtests_fail' in [Server] section to fail the test when there is a visual error
   * Create a html report with the visual tests results
+  * Add assertFullScreenshot method in SeleniumTestCase
 
 v0.8.6
 ------

@@ -17,7 +17,7 @@ import shutil
 import re
 
 from seleniumtid import selenium_driver
-
+from selenium.webdriver.remote.webdriver import WebDriver
 
 try:
     from needle.engines.perceptualdiff_engine import Engine as diff_Engine
@@ -69,7 +69,7 @@ class VisualTest(object):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold
 
         :param element_or_selector: either a CSS selector as a string or a WebElement object that represents the
-                    element to capture
+                    element to capture. If None, a full screenshot is taken.
         :param filename: the filename for the screenshot, which will be appended with ``.png``
         :param file_suffix: a string to be appended to the output filename
         :param threshold: the threshold for triggering a test failure
@@ -78,13 +78,14 @@ class VisualTest(object):
             return
 
         # Search element
-        if not isinstance(element_or_selector, NeedleWebElement):
-            if element_or_selector.startswith('//'):
-                element = self.driver.find_element_by_xpath(element_or_selector)
-            else:
-                element = self.driver.find_element_by_css_selector(element_or_selector)
-        else:
+        if element_or_selector is None:
+            element = None
+        elif isinstance(element_or_selector, NeedleWebElement):
             element = element_or_selector
+        elif '//' in element_or_selector:
+            element = self.driver.find_element_by_xpath(element_or_selector)
+        else:
+            element = self.driver.find_element_by_css_selector(element_or_selector)
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         unique_name = '{0:0=2d}_{1}__{2}.png'.format(selenium_driver.visual_number, filename, file_suffix)
@@ -93,11 +94,17 @@ class VisualTest(object):
         # Determine whether we should save the baseline image
         if self.save_baseline or not os.path.exists(baseline_file):
             # Save the baseline screenshot and bail out
-            element.get_screenshot().save(baseline_file)
+            if element:
+                element.get_screenshot().save(baseline_file)
+            else:
+                self.driver.save_screenshot(baseline_file)
             self.logger.debug("Visual screenshot '{}' saved in visualtests/baseline folder".format(filename))
         else:
             # Save the new screenshot
-            element.get_screenshot().save(output_file)
+            if element:
+                element.get_screenshot().save(output_file)
+            else:
+                self.driver.save_screenshot(output_file)
             selenium_driver.visual_number += 1
             # Compare the screenshots
             self._compare_files(file_suffix, output_file, baseline_file, threshold)

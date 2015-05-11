@@ -161,6 +161,17 @@ class SeleniumTestCase(BasicTestCase):
         file_suffix = self.get_method_name()
         VisualTest().assertScreenshot(element_or_selector, filename, file_suffix, threshold)
 
+    def assertFullScreenshot(self, filename, threshold=0):
+        """Assert that a driver screenshot is the same as a screenshot on disk, within a given threshold.
+
+        :param filename:
+            The filename for the screenshot, which will be appended with ``.png``.
+        :param threshold:
+            The threshold for triggering a test failure.
+        """
+        file_suffix = self.get_method_name()
+        VisualTest().assertScreenshot(None, filename, file_suffix, threshold)
+
 
 class AppiumTestCase(SeleniumTestCase):
     """A class whose instances are Appium test cases.
