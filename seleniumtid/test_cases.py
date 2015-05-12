@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
-'''
-(c) Copyright 2014 Telefonica, I+D. Printed in Spain (Europe). All Rights
+
+u"""
+(c) Copyright 2014 Telefónica, I+D. Printed in Spain (Europe). All Rights
 Reserved.
 
-The copyright to the software program(s) is property of Telefonica I+D.
+The copyright to the software program(s) is property of Telefónica I+D.
 The program(s) may be used and or copied only with the express written
-consent of Telefonica I+D or in accordance with the terms and conditions
+consent of Telefónica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
-'''
+"""
+
 import unittest
 import logging
 import sys
+
 from seleniumtid import selenium_driver
-from seleniumtid.utils import Utils, classproperty
+from seleniumtid.utils import Utils
 from seleniumtid.jira import change_all_jira_status
 from seleniumtid.visual_test import VisualTest
 from seleniumtid.config_driver import get_error_message_from_exception
@@ -72,14 +75,20 @@ class SeleniumTestCase(BasicTestCase):
 
     @property
     def driver(self):
-        """This method allows to autocomplete self.driver in IDEs
+        """Get the Selenium driver
+         This method allows to autocomplete self.driver in IDEs
+
+        :returns: Selenium driver
         :rtype: selenium.webdriver.remote.webdriver.WebDriver
         """
         return self._driver
 
     @property
     def utils(self):
-        """This method allows to autocomplete self.utils in IDEs
+        """Get the utils object
+         This method allows to autocomplete self.utils in IDEs
+
+        :returns: utils object
         :rtype: seleniumtid.utils.Utils
         """
         return self._utils
@@ -152,6 +161,17 @@ class SeleniumTestCase(BasicTestCase):
         file_suffix = self.get_method_name()
         VisualTest().assertScreenshot(element_or_selector, filename, file_suffix, threshold)
 
+    def assertFullScreenshot(self, filename, threshold=0):
+        """Assert that a driver screenshot is the same as a screenshot on disk, within a given threshold.
+
+        :param filename:
+            The filename for the screenshot, which will be appended with ``.png``.
+        :param threshold:
+            The threshold for triggering a test failure.
+        """
+        file_suffix = self.get_method_name()
+        VisualTest().assertScreenshot(None, filename, file_suffix, threshold)
+
 
 class AppiumTestCase(SeleniumTestCase):
     """A class whose instances are Appium test cases.
@@ -163,11 +183,31 @@ class AppiumTestCase(SeleniumTestCase):
 
     @property
     def driver(self):
-        """This method allows to autocomplete self.driver in IDEs
+        """Get the Appium driver
+         This method allows to autocomplete self.driver in IDEs
+
+        :returns: Appium driver
         :rtype: appium.webdriver.webdriver.WebDriver
         """
         return self._driver
 
     def setUp(self):
         super(AppiumTestCase, self).setUp()
-        AppiumTestCase.app_strings = self._driver.app_strings()
+        if not AppiumTestCase.app_strings:
+            AppiumTestCase.app_strings = self._driver.app_strings()
+
+    def tearDown(self):
+        # Call SeleniumTestCase tearDown
+        super(AppiumTestCase, self).tearDown()
+
+        # Remove app strings
+        if not self.reuse_driver:
+            AppiumTestCase.app_strings = None
+
+    @classmethod
+    def tearDownClass(cls):
+        # Call SeleniumTestCase tearDownClass
+        super(AppiumTestCase, cls).tearDownClass()
+
+        # Remove app strings
+        AppiumTestCase.app_strings = None

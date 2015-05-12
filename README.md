@@ -26,6 +26,7 @@ Configure a virtual environment with the required packages:
 virtualenv ENV
 source ENV/bin/activate
 pip install -r requirements.txt
+easy_install pillow
 pip install -r requirements_dev.txt
 ```
 

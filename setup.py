@@ -19,6 +19,7 @@ setup(
     name='seleniumtid',
     version=__VERSION__,
     packages=['seleniumtid', 'seleniumtid.pageobjects', 'seleniumtid.pageelements', 'seleniumtid.lettuce'],
+    package_data={'': ['resources/VisualTestsTemplate.html', 'resources/bootstrap.min.css']},
     url='',
     license='',
     author='Telefonica I+D',

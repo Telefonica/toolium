@@ -1,7 +1,8 @@
 pylint==1.1.0
 Sphinx==1.2.3
-unittest2             # lettuce tests
-lettuce               # lettuce tests
+# lettuce is commented temporally due to a bug in linecache2: https://github.com/testing-cabal/linecache2/issues/2
+#lettuce               # lettuce tests
 needle                # visual tests
 ddt
 coverage
+mock

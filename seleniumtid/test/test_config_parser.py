@@ -1,18 +1,22 @@
 # -*- coding: utf-8 -*-
-'''
-(c) Copyright 2015 Telefonica, I+D. Printed in Spain (Europe). All Rights
+
+u"""
+(c) Copyright 2015 Telefónica, I+D. Printed in Spain (Europe). All Rights
 Reserved.
 
-The copyright to the software program(s) is property of Telefonica I+D.
+The copyright to the software program(s) is property of Telefónica I+D.
 The program(s) may be used and or copied only with the express written
-consent of Telefonica I+D or in accordance with the terms and conditions
+consent of Telefónica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
-'''
+"""
+
 import unittest
+import os
+
 from seleniumtid.config_parser import ExtendedConfigParser
 from ddt import ddt, data, unpack
-import os
+
 
 optional_values = (
     ('No section', 'No option', None, None),
@@ -36,7 +40,8 @@ optional_boolean_values = (
 @ddt
 class ExtendedConfigParserTests(unittest.TestCase):
     def setUp(self):
-        conf_properties_file = 'seleniumtid/test/conf/properties.cfg'
+        root_path = os.path.dirname(os.path.realpath(__file__))
+        conf_properties_file = os.path.join(root_path, 'conf', 'properties.cfg')
         self.config = ExtendedConfigParser()
         self.config.read(conf_properties_file)
 
