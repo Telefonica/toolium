@@ -13,6 +13,9 @@ v0.9.0
     New config property 'fail' in [VisualTests] section to fail the test when there is a visual error
   * Create a html report with the visual tests results
     New config property 'complete_report' in [VisualTests] section to include also correct visual assertions in report
+  * Configure multiple baseline name for different browsers, languages and versions
+    New config property 'baseline_name' in [VisualTests] section to configure the name of the baseline folder
+    Allow {browser}, {language} and {platformVersion} variables, i.e. baseline_name = {browser}-{language}. The default baseline_name is {browser}.
   * Add assertFullScreenshot method in SeleniumTestCase
 
 v0.8.6

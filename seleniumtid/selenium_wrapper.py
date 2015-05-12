@@ -118,7 +118,15 @@ class SeleniumWrapper(object):
 
             # Unique visualtests directories
             self.output_directory = os.path.join(output_path, 'visualtests', date + '_' + browser_info)
-            self.baseline_directory = os.path.join(output_path, 'visualtests', 'baseline', browser_info)
+            baseline_name = self.config.get_optional('VisualTests', 'baseline_name')
+            if baseline_name:
+                language = self.config.get_optional('AppiumCapabilities', 'language', '')
+                platform_version = self.config.get_optional('AppiumCapabilities', 'platformVersion', '')
+                baseline_name = baseline_name.replace('{browser}', browser_info).replace('{language}', language)
+                baseline_name = baseline_name.replace('{platformVersion}', platform_version)
+            else:
+                baseline_name = browser_info
+            self.baseline_directory = os.path.join(output_path, 'visualtests', 'baseline', baseline_name)
             self.visual_number = 1
 
     def connect(self):
