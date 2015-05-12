@@ -14,6 +14,7 @@ been supplied.
 import ConfigParser
 import io
 import os
+import logging
 
 
 class ExtendedConfigParser(ConfigParser.ConfigParser):
@@ -84,3 +85,25 @@ class ExtendedConfigParser(ConfigParser.ConfigParser):
             self.set(section, option, os.environ[property_name])
         except KeyError:
             pass
+
+    @staticmethod
+    def get_config_from_file(conf_properties_files):
+        """Reads properties files and saves them to a config object
+
+        :param conf_properties_files: comma-separated list of properties files
+        :returns: config object
+        """
+        # Initialize the config object
+        config = ExtendedConfigParser()
+        logger = logging.getLogger(__name__)
+
+        # Configure properties (last files could override properties)
+        for conf_properties_file in conf_properties_files.split(';'):
+            result = config.read(conf_properties_file)
+            if len(result) == 0:
+                message = 'Properties config file not found: {}'.format(conf_properties_file)
+                logger.error(message)
+                raise Exception(message)
+            logger.debug('Reading properties from file: {}'.format(conf_properties_file))
+
+        return config
