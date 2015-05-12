@@ -45,7 +45,7 @@ class ConfigDriver(object):
     def __init__(self, config):
         self.logger = logging.getLogger(__name__)
         self.config = config.deepcopy()
-        if (self.config.getboolean_optional('Server', 'visualtests_enabled')
+        if (self.config.getboolean_optional('VisualTests', 'enabled')
             and 'NeedleWebDriverMixin' not in globals()):
             raise Exception('The visual tests are enabled in properties.cfg, but needle is not installed')
 
@@ -70,7 +70,7 @@ class ConfigDriver(object):
             self.logger.error(message)
             raise
 
-        if self.config.getboolean_optional('Server', 'visualtests_enabled'):
+        if self.config.getboolean_optional('VisualTests', 'enabled'):
             # Add 'public' methods of NeedleWebDriverMixin to the new driver
             for method_name in vars(NeedleWebDriverMixin):
                 if not method_name.startswith('__'):

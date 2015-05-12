@@ -31,9 +31,9 @@ class VisualTests(unittest.TestCase):
     def setUp(self):
         # Configure common properties
         os.environ["Files_properties"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
-        os.environ["Server_visualtests_enabled"] = 'true'
-        os.environ["Server_visualtests_fail"] = 'false'
-        os.environ["Server_visualtests_engine"] = 'pil'
+        os.environ["VisualTests_enabled"] = 'true'
+        os.environ["VisualTests_fail"] = 'false'
+        os.environ["VisualTests_engine"] = 'pil'
         selenium_driver.configure()
         # Create html report in dist/visualtests
         selenium_driver.output_directory = os.path.join(self.root_path, 'dist', 'visualtests')
@@ -78,7 +78,7 @@ class VisualTests(unittest.TestCase):
         self.assertIn('by a distance of 522.65', message)
 
     def test_compare_files_diff_fail(self):
-        selenium_driver.config.set('Server', 'visualtests_fail', 'true')
+        selenium_driver.config.set('VisualTests', 'fail', 'true')
 
         with self.assertRaises(AssertionError):
             VisualTest()._compare_files(self.get_method_name(), self.file_v1, self.file_v2, 0)
@@ -89,49 +89,50 @@ class VisualTests(unittest.TestCase):
         self.assertEquals('', message)
 
     def test_compare_files_size_fail(self):
-        selenium_driver.config.set('Server', 'visualtests_fail', 'true')
+        selenium_driver.config.set('VisualTests', 'fail', 'true')
 
         with self.assertRaises(AssertionError):
             VisualTest()._compare_files(self.get_method_name(), self.file_v1, self.file_v1_small, 0)
 
     def test_compare_files_perceptualdiff_equals(self):
-        selenium_driver.config.set('Server', 'visualtests_engine', 'perceptualdiff')
+        selenium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
 
         message = VisualTest()._compare_files(self.get_method_name(), self.file_v1, self.file_v1, 0)
         self.assertIsNone(message)
 
     def test_compare_files_perceptualdiff_diff(self):
-        selenium_driver.config.set('Server', 'visualtests_engine', 'perceptualdiff')
+        selenium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
 
         visual = VisualTest()
         message = visual._compare_files(self.get_method_name(), self.file_v1, self.file_v2, 0)
         self.assertIn('3114 pixels are different', message)
 
     def test_compare_files_perceptualdiff_diff_fail(self):
-        selenium_driver.config.set('Server', 'visualtests_engine', 'perceptualdiff')
-        selenium_driver.config.set('Server', 'visualtests_fail', 'true')
+        selenium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
+        selenium_driver.config.set('VisualTests', 'fail', 'true')
 
         with self.assertRaises(AssertionError):
             VisualTest()._compare_files(self.get_method_name(), self.file_v1, self.file_v2, 0)
 
     def test_compare_files_perceptualdiff_size(self):
-        selenium_driver.config.set('Server', 'visualtests_engine', 'perceptualdiff')
+        selenium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
 
         message = VisualTest()._compare_files(self.get_method_name(), self.file_v1, self.file_v1_small, 0)
         self.assertIn('Image dimensions do not match', message)
 
     def test_compare_files_perceptualdiff_size_fail(self):
-        selenium_driver.config.set('Server', 'visualtests_engine', 'perceptualdiff')
-        selenium_driver.config.set('Server', 'visualtests_fail', 'true')
+        selenium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
+        selenium_driver.config.set('VisualTests', 'fail', 'true')
 
         with self.assertRaises(AssertionError):
             VisualTest()._compare_files(self.get_method_name(), self.file_v1, self.file_v1_small, 0)
 
     def test_get_html_row(self):
-        row = VisualTest()._get_html_row(self.get_method_name(), self.file_v1, self.file_v2)
+        row = VisualTest()._get_html_row('diff', self.get_method_name(), self.file_v1, self.file_v2)
         print row
 
     def test_add_to_report(self):
         visual = VisualTest()
-        visual._add_to_report(self.get_method_name(), self.file_v1, self.file_v2, 'first')
-        visual._add_to_report(self.get_method_name(), self.file_v1, self.file_v2, 'second')
+        visual._add_to_report('diff', self.get_method_name(), self.file_v1, self.file_v2, 'diff')
+        visual._add_to_report('equal', self.get_method_name(), self.file_v1, self.file_v1)
+        visual._add_to_report('baseline', self.get_method_name(), self.file_v1, None, 'Added to baseline')
