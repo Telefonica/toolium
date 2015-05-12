@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
-'''
-(c) Copyright 2014 Telefonica, I+D. Printed in Spain (Europe). All Rights
+
+u"""
+(c) Copyright 2014 Telefónica, I+D. Printed in Spain (Europe). All Rights
 Reserved.
 
-The copyright to the software program(s) is property of Telefonica I+D.
+The copyright to the software program(s) is property of Telefónica I+D.
 The program(s) may be used and or copied only with the express written
-consent of Telefonica I+D or in accordance with the terms and conditions
+consent of Telefónica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
-'''
+"""
+
 import logging.config
 import os
 import datetime
+
 from seleniumtid.config_driver import ConfigDriver
 from seleniumtid.config_parser import ExtendedConfigParser
 
@@ -43,13 +46,13 @@ class SeleniumWrapper(object):
         """Configure selenium instance logger"""
         # Get logging filename from system properties
         try:
-            conf_logging_file = os.environ["Files_logging"]
+            conf_logging_file = os.environ['Files_logging']
         except KeyError:
             conf_logging_file = os.path.join('conf', 'logging.conf')
 
         # Get logger filename from system properties
         try:
-            log_filename = os.path.normpath(os.environ["Files_log_filename"]).replace('\\', '\\\\')
+            log_filename = os.path.normpath(os.environ['Files_log_filename']).replace('\\', '\\\\')
         except KeyError:
             log_filename = 'selenium.log'
 
@@ -66,7 +69,7 @@ class SeleniumWrapper(object):
         """Configure selenium instance properties"""
         # Get properties filename from system properties
         try:
-            conf_properties_files = os.environ["Files_properties"]
+            conf_properties_files = os.environ['Files_properties']
         except KeyError:
             conf_properties_files = os.path.join('conf', 'properties.cfg')
 
@@ -100,17 +103,30 @@ class SeleniumWrapper(object):
         if self.browser_info != browser_info:
             self.browser_info = browser_info
 
+            # Get output path from system properties
+            try:
+                output_path = os.environ['Files_output_path']
+            except KeyError:
+                output_path = os.path.join(os.getcwd(), 'dist')
+
             # Unique screenshots and videos directories
             date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
-            self.screenshots_path = os.path.join(os.getcwd(), 'dist', 'screenshots', date + '_' + browser_info)
+            self.screenshots_path = os.path.join(output_path, 'screenshots', date + '_' + browser_info)
             self.screenshots_number = 1
-            self.videos_path = os.path.join(os.getcwd(), 'dist', 'videos', date + '_' + browser_info)
+            self.videos_path = os.path.join(output_path, 'videos', date + '_' + browser_info)
             self.videos_number = 1
 
             # Unique visualtests directories
-            visual_path = os.path.join(os.getcwd(), 'dist', 'visualtests')
-            self.output_directory = os.path.join(visual_path, date + '_' + browser_info)
-            self.baseline_directory = os.path.join(visual_path, 'baseline', browser_info)
+            self.output_directory = os.path.join(output_path, 'visualtests', date + '_' + browser_info)
+            baseline_name = self.config.get_optional('VisualTests', 'baseline_name')
+            if baseline_name:
+                language = self.config.get_optional('AppiumCapabilities', 'language', '')
+                platform_version = self.config.get_optional('AppiumCapabilities', 'platformVersion', '')
+                baseline_name = baseline_name.replace('{browser}', browser_info).replace('{language}', language)
+                baseline_name = baseline_name.replace('{platformVersion}', platform_version)
+            else:
+                baseline_name = browser_info
+            self.baseline_directory = os.path.join(output_path, 'visualtests', 'baseline', baseline_name)
             self.visual_number = 1
 
     def connect(self):

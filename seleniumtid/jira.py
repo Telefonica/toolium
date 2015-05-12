@@ -1,35 +1,41 @@
 # -*- coding: utf-8 -*-
-'''
-(c) Copyright 2014 Telefonica, I+D. Printed in Spain (Europe). All Rights
+
+u"""
+(c) Copyright 2014 Telefónica, I+D. Printed in Spain (Europe). All Rights
 Reserved.
 
-The copyright to the software program(s) is property of Telefonica I+D.
+The copyright to the software program(s) is property of Telefónica I+D.
 The program(s) may be used and or copied only with the express written
-consent of Telefonica I+D or in accordance with the terms and conditions
+consent of Telefónica I+D or in accordance with the terms and conditions
 stipulated in the agreement/contract under which the program(s) have
 been supplied.
-'''
+"""
+
 import logging
 import urllib
 import urllib2
 import re
+
 from seleniumtid import selenium_driver
 from seleniumtid.config_driver import get_error_message_from_exception
 
+
+"""Configuration"""
 # Configure logger
 logger = logging.getLogger(__name__)
-
 # Base url of the test execution service
 JIRA_EXECUTION_URL = 'http://qacore02.hi.inet/jira/test-case-execution'
-
 # Dict to save tuples with jira keys, their test status and comments
 jira_tests_status = {}
 
 
 def jira(test_key):
-    '''
-    Decorator to update test status in Jira
-    '''
+    """Decorator to update test status in Jira
+
+    :param test_key: test case key in Jira
+    :returns: jira test
+    """
+
     def decorator(test_item):
         def modified_test(*args, **kwargs):
             try:
@@ -40,15 +46,20 @@ def jira(test_key):
                 add_jira_status(test_key, 'Fail', test_comment)
                 raise
             add_jira_status(test_key, 'Pass', None)
+
         modified_test.__name__ = test_item.__name__
         return modified_test
+
     return decorator
 
 
 def add_jira_status(test_key, test_status, test_comment):
-    '''
-    Save test status and comments to update Jira later
-    '''
+    """Save test status and comments to update Jira later
+
+    :param test_key: test case key in Jira
+    :param test_status: test case status
+    :param test_comment: test case comments
+    """
     if test_status == 'Fail':
         if test_key in jira_tests_status and jira_tests_status[test_key][2]:
             test_comment = '{}\n{}'.format(jira_tests_status[test_key][2], test_comment)
@@ -60,18 +71,19 @@ def add_jira_status(test_key, test_status, test_comment):
 
 
 def change_all_jira_status():
-    '''
-    Iterate over all jira test cases, update their status in Jira and clear the dictionary
-    '''
+    """Iterate over all jira test cases, update their status in Jira and clear the dictionary"""
     for test_status in jira_tests_status.itervalues():
         change_jira_status_with_config(*test_status)
     jira_tests_status.clear()
 
 
 def change_jira_status_with_config(test_key, test_status, test_comment):
-    '''
-    Read Jira configuration properties and update test status in Jira
-    '''
+    """Read Jira configuration properties and update test status in Jira
+
+    :param test_key: test case key in Jira
+    :param test_status: test case status
+    :param test_comment: test case comments
+    """
     config = selenium_driver.config
     if config.getboolean_optional('Jira', 'enabled'):
         labels = config.get_optional('Jira', 'labels')
@@ -86,9 +98,18 @@ def change_jira_status_with_config(test_key, test_status, test_comment):
 
 def change_jira_status(test_key, test_status, labels=None, comments=None, fixversion=None, build=None,
                        onlyifchanges=False):
-    '''
-    Update test status in Jira
-    '''
+    """Update test status in Jira
+
+    :param test_key: test case key in Jira
+    :param test_status: test case status
+    :param labels: test case labels
+    :param comments: test case comments
+    :param fixversion: test case fix version
+    :param build: test case build
+    :param onlyifchanges:
+        if true, only create a new execution if the test status has changed
+        if false, create a new execution always
+    """
     logger.info("Updating Test Case '{0}' in Jira with status {1}".format(test_key, test_status))
     jira_execution_url = '{0}?jiraTestCaseId={1}&jiraStatus={2}'.format(JIRA_EXECUTION_URL, test_key, test_status)
     if labels:
