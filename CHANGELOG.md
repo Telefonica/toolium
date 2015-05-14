@@ -7,6 +7,7 @@ v0.9.1
 *Release date: 2015-05-??*
 
   * Add swipe method in Utils to allow swipe over an element
+  * Only one property file is mandatory if *Files_properties* has multiple values
 
 v0.9.0
 ------

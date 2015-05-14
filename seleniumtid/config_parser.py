@@ -98,12 +98,23 @@ class ExtendedConfigParser(ConfigParser.ConfigParser):
         logger = logging.getLogger(__name__)
 
         # Configure properties (last files could override properties)
-        for conf_properties_file in conf_properties_files.split(';'):
+        found = False
+        files_list = conf_properties_files.split(';')
+        for conf_properties_file in files_list:
             result = config.read(conf_properties_file)
             if len(result) == 0:
                 message = 'Properties config file not found: {}'.format(conf_properties_file)
-                logger.error(message)
-                raise Exception(message)
-            logger.debug('Reading properties from file: {}'.format(conf_properties_file))
+                if len(files_list) == 1:
+                    logger.error(message)
+                    raise Exception(message)
+                else:
+                    logger.warn('Properties config file not found: {}'.format(conf_properties_file))
+            else:
+                logger.debug('Reading properties from file: {}'.format(conf_properties_file))
+                found = True
+        if not found:
+            message = 'Any of the properties config files has been found'
+            logger.error(message)
+            raise Exception(message)
 
         return config
