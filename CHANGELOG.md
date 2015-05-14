@@ -1,6 +1,13 @@
 seleniumtid changelog
 =====================
 
+v0.9.1
+------
+
+*Release date: 2015-05-??*
+
+  * Add swipe method in Utils to allow swipe over an element
+
 v0.9.0
 ------
 
