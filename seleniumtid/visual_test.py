@@ -17,12 +17,14 @@ import shutil
 import re
 
 from seleniumtid import selenium_driver
-from selenium.webdriver.remote.webdriver import WebDriver
+
 
 try:
     from needle.engines.perceptualdiff_engine import Engine as diff_Engine
     from needle.engines.pil_engine import Engine as pil_Engine
     from needle.driver import NeedleWebElement
+    from types import MethodType
+    from PIL import Image
 except ImportError:
     pass
 
@@ -46,6 +48,10 @@ class VisualTest(object):
         self.capture = False
         self.save_baseline = selenium_driver.config.getboolean_optional('VisualTests', 'save')
 
+        # Add a new method to solve a window size problem in iOS
+        NeedleWebElement.get_screenshot_resized = MethodType(self._get_screenshot_resized.__func__, None,
+                                                             NeedleWebElement)
+
         # Create folders
         if not os.path.exists(self.baseline_directory):
             os.makedirs(self.baseline_directory)
@@ -53,6 +59,41 @@ class VisualTest(object):
             if not os.path.exists(self.output_directory):
                 os.makedirs(self.output_directory)
             self._copy_template()
+
+    def get_element_screenshot(self, element):
+        """
+        Returns a screenshot of this element as a PIL image.
+
+        :param element: webdriver element
+        """
+        browser_name = selenium_driver.config.get('Browser', 'browser').split('-')[0]
+        if browser_name == 'iphone':
+            return element.get_screenshot_resized(self.driver.get_window_size())
+        else:
+            return element.get_screenshot()
+
+    def _get_screenshot_resized(self, window_size):
+        """
+        Returns a screenshot of this element as a PIL image.
+        Resize initial screenshot to windows size to solve an iOS problem.
+
+        :param window_size: dict with windows size
+        """
+        size = (window_size['width'], window_size['height'])
+        d = self.get_dimensions()
+
+        # Cast values to int in order for _ImageCrop not to break
+        d['left'] = int(d['left'])
+        d['top'] = int(d['top'])
+        d['width'] = int(d['width'])
+        d['height'] = int(d['height'])
+
+        return self._parent.get_screenshot_as_image().resize(size, Image.ANTIALIAS).crop((
+            d['left'],
+            d['top'],
+            d['left'] + d['width'],
+            d['top'] + d['height'],
+        ))
 
     def _copy_template(self):
         """Copy html template and css file to output directory"""
@@ -96,7 +137,7 @@ class VisualTest(object):
         if self.save_baseline or not os.path.exists(baseline_file):
             # Save the baseline screenshot and bail out
             if element:
-                element.get_screenshot().save(baseline_file)
+                self.get_element_screenshot(element).save(baseline_file)
             else:
                 self.driver.save_screenshot(baseline_file)
             if selenium_driver.config.getboolean_optional('VisualTests', 'complete_report'):
@@ -105,7 +146,7 @@ class VisualTest(object):
         else:
             # Save the new screenshot
             if element:
-                element.get_screenshot().save(output_file)
+                self.get_element_screenshot(element).save(output_file)
             else:
                 self.driver.save_screenshot(output_file)
             selenium_driver.visual_number += 1
