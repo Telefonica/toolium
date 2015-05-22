@@ -44,6 +44,7 @@ class VisualTests(unittest.TestCase):
         self.file_v1_small = os.path.join(self.root_path, 'resources', 'register_v1_small.png')
         VisualTests.file_diff = os.path.join(self.root_path, 'resources', 'register_v1.diff.png')
         VisualTests.file_diff_backup = os.path.join(self.root_path, 'resources', 'register_v1_backup.diff.png')
+        self.file_v1_excluded = os.path.join(self.root_path, 'resources', 'register_v1_excluded.tmp.png')
 
         # Move previous diff file
         if os.path.exists(self.file_diff):
@@ -136,3 +137,21 @@ class VisualTests(unittest.TestCase):
         visual._add_to_report('diff', self.get_method_name(), self.file_v1, self.file_v2, 'diff')
         visual._add_to_report('equal', self.get_method_name(), self.file_v1, self.file_v1)
         visual._add_to_report('baseline', self.get_method_name(), self.file_v1, None, 'Added to baseline')
+
+    def test_exclude_element_from_image_file(self):
+        class FakeElement():
+            def get_dimensions(self):
+                return {'left': 250, 'top': 40, 'width': 300, 'height': 40}
+        element = FakeElement()
+        shutil.copyfile(self.file_v1, self.file_v1_excluded)
+
+        VisualTest.exclude_element_from_image_file(self.file_v1_excluded, element)
+
+    def test_exclude_element_from_image_file_outofimage(self):
+        class FakeElement():
+            def get_dimensions(self):
+                return {'left': 250, 'top': 40, 'width': 1500, 'height': 500}
+        element = FakeElement()
+        shutil.copyfile(self.file_v1, self.file_v1_excluded)
+
+        VisualTest.exclude_element_from_image_file(self.file_v1_excluded, element)

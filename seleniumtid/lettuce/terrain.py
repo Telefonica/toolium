@@ -32,9 +32,9 @@ def setup_driver(scenario):
         world.remote_video_node = world.utils.get_remote_video_node()
 
     # Configure visual tests
-    def assertScreenshot(element_or_selector, filename, threshold=0):
+    def assertScreenshot(element_or_selector, filename, threshold=0, exclude_element=None):
         file_suffix = scenario.name.replace(' ', '_')
-        VisualTest().assertScreenshot(element_or_selector, filename, file_suffix, threshold)
+        VisualTest().assertScreenshot(element_or_selector, filename, file_suffix, threshold, exclude_element)
 
     world.assertScreenshot = assertScreenshot
 

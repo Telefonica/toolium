@@ -17,12 +17,13 @@ import shutil
 import re
 
 from seleniumtid import selenium_driver
-from selenium.webdriver.remote.webdriver import WebDriver
 
 try:
     from needle.engines.perceptualdiff_engine import Engine as diff_Engine
     from needle.engines.pil_engine import Engine as pil_Engine
     from needle.driver import NeedleWebElement
+    from types import MethodType
+    from PIL import Image
 except ImportError:
     pass
 
@@ -46,6 +47,9 @@ class VisualTest(object):
         self.capture = False
         self.save_baseline = selenium_driver.config.getboolean_optional('VisualTests', 'save')
 
+        # Override get_screenshot method to solve a window size problem in iOS and allow to exclude an element
+        NeedleWebElement.get_screenshot = MethodType(self._get_screenshot.__func__, None, NeedleWebElement)
+
         # Create folders
         if not os.path.exists(self.baseline_directory):
             os.makedirs(self.baseline_directory)
@@ -53,6 +57,38 @@ class VisualTest(object):
             if not os.path.exists(self.output_directory):
                 os.makedirs(self.output_directory)
             self._copy_template()
+
+    def _get_screenshot(self, exclude_elements=[]):
+        """Returns a screenshot of this element as a PIL image.
+
+        :param exclude_elements: WebElement objects to be excluded
+        :returns: Image object with the screenshot
+        """
+        d = self.get_dimensions()
+
+        # Cast values to int in order for _ImageCrop not to break
+        d['left'] = int(d['left'])
+        d['top'] = int(d['top'])
+        d['width'] = int(d['width'])
+        d['height'] = int(d['height'])
+
+        # Get screenshot
+        img = self._parent.get_screenshot_as_image()
+
+        # Resize image in iOS
+        if selenium_driver.config.get('Browser', 'browser').split('-')[0] == 'iphone':
+            window_size = selenium_driver.driver.get_window_size()
+            size = (window_size['width'], window_size['height'])
+            img = img.resize(size, Image.ANTIALIAS)
+
+        # Exclude elements
+        for element in exclude_elements:
+            img = VisualTest.exclude_element_from_image(img, element)
+
+        # Crop image
+        img = img.crop((d['left'], d['top'], d['left'] + d['width'], d['top'] + d['height']))
+
+        return img
 
     def _copy_template(self):
         """Copy html template and css file to output directory"""
@@ -65,27 +101,23 @@ class VisualTest(object):
         if not os.path.exists(dst_css_path):
             shutil.copyfile(orig_css_path, dst_css_path)
 
-    def assertScreenshot(self, element_or_selector, filename, file_suffix, threshold=0):
+    def assertScreenshot(self, element_or_selector, filename, file_suffix, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold
 
-        :param element_or_selector: either a CSS selector as a string or a WebElement object that represents the
-                    element to capture. If None, a full screenshot is taken.
+        :param element_or_selector: either a CSS/XPATH selector as a string or a WebElement object.
+                                    If None, a full screenshot is taken.
         :param filename: the filename for the screenshot, which will be appended with ``.png``
         :param file_suffix: a string to be appended to the output filename
         :param threshold: the threshold for triggering a test failure
+        :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
+                                 from the assertion.
         """
         if not selenium_driver.config.getboolean_optional('VisualTests', 'enabled'):
             return
 
-        # Search element
-        if element_or_selector is None:
-            element = None
-        elif isinstance(element_or_selector, NeedleWebElement):
-            element = element_or_selector
-        elif '//' in element_or_selector:
-            element = self.driver.find_element_by_xpath(element_or_selector)
-        else:
-            element = self.driver.find_element_by_css_selector(element_or_selector)
+        # Search elements
+        element = self.get_element(element_or_selector)
+        exclude_elements = [self.get_element(exclude_element) for exclude_element in exclude_elements]
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         unique_name = '{0:0=2d}_{1}__{2}.png'.format(selenium_driver.visual_number, filename, file_suffix)
@@ -96,21 +128,39 @@ class VisualTest(object):
         if self.save_baseline or not os.path.exists(baseline_file):
             # Save the baseline screenshot and bail out
             if element:
-                element.get_screenshot().save(baseline_file)
+                element.get_screenshot(exclude_elements).save(baseline_file)
             else:
                 self.driver.save_screenshot(baseline_file)
+                self.exclude_elements_from_image_file(baseline_file, exclude_elements)
             if selenium_driver.config.getboolean_optional('VisualTests', 'complete_report'):
                 self._add_to_report('baseline', report_name, baseline_file, None, 'Added to baseline')
             self.logger.debug("Visual screenshot '{}' saved in visualtests/baseline folder".format(filename))
         else:
             # Save the new screenshot
             if element:
-                element.get_screenshot().save(output_file)
+                element.get_screenshot(exclude_elements).save(output_file)
             else:
                 self.driver.save_screenshot(output_file)
+                self.exclude_elements_from_image_file(output_file, exclude_elements)
             selenium_driver.visual_number += 1
             # Compare the screenshots
             self._compare_files(report_name, output_file, baseline_file, threshold)
+
+    def get_element(self, element_or_selector):
+        """Search element by xpath or css
+
+        :param element_or_selector: either a CSS/XPATH selector as a string or a WebElement object
+        :returns: WebElement object
+        """
+        if element_or_selector is None:
+            element = None
+        elif isinstance(element_or_selector, NeedleWebElement):
+            element = element_or_selector
+        elif '//' in element_or_selector:
+            element = self.driver.find_element_by_xpath(element_or_selector)
+        else:
+            element = self.driver.find_element_by_css_selector(element_or_selector)
+        return element
 
     def _compare_files(self, report_name, image_file, baseline_file, threshold):
         """Compare two image files and add result to the html report
@@ -133,6 +183,44 @@ class VisualTest(object):
             else:
                 self.logger.warn('Visual error: {}'.format(exc.message))
                 return exc.message
+
+    @staticmethod
+    def exclude_elements_from_image_file(image_file, elements):
+        """Modify image file hiding elements with a black rectangle
+
+        :param image_file: image file path
+        :param elements: WebElement objects to be excluded
+        """
+        if len(elements) == 0:
+            return
+
+        img = Image.open(image_file)
+        for element in elements:
+            img = VisualTest.exclude_element_from_image(img, element)
+        img.save(image_file, "PNG")
+
+    @staticmethod
+    def exclude_element_from_image(img, element):
+        """Modify image object hiding an element with a black rectangle
+
+        :param img: image object
+        :param element: WebElement object to be excluded
+        """
+        if element is None:
+            return img
+
+        img = img.convert("RGBA")
+        pixdata = img.load()
+        d = element.get_dimensions()
+
+        for y in xrange(d['top'], d['top'] + d['height']):
+            for x in xrange(d['left'], d['left'] + d['width']):
+                try:
+                    pixdata[x, y] = (0, 0, 0, 255)
+                except IndexError:
+                    pass
+
+        return img
 
     def _add_to_report(self, result, report_name, image_file, baseline_file, message=None):
         """Add the result of a visual test to the html report

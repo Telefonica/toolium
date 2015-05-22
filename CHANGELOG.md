@@ -1,6 +1,15 @@
 seleniumtid changelog
 =====================
 
+v0.9.1
+------
+
+*Release date: 2015-05-21*
+
+  * Add swipe method in Utils to allow swipe over an element
+  * Only one property file is mandatory if *Files_properties* has multiple values
+  * Allow to exclude elements from visual screenshots
+
 v0.9.0
 ------
 
