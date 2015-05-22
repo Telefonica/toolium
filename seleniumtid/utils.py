@@ -197,6 +197,27 @@ class Utils(object):
             record_videos = 'false'
         return True if record_videos == 'true' else False
 
+    @staticmethod
+    def get_center(element):
+        """Get center coordinates of an element
+
+        :param element: webdriver element
+        :returns: dict with center coordinates
+        """
+        return {'x': element.location['x'] + (element.size['width'] / 2),
+                'y': element.location['y'] + (element.size['height'] / 2)}
+
+    def swipe(self, element, x, y, duration=None):
+        """Swipe over an element
+
+        :param element: webdriver element
+        :param x: horizontal movement
+        :param y: vertical movement
+        :param duration: time to take the swipe, in ms.
+        """
+        center = self.get_center(element)
+        self.driver.swipe(center['x'], center['y'], center['x'] + x, center['y'] + y, duration)
+
 
 class classproperty(property):
     """Subclass property to make classmethod properties possible"""

@@ -76,17 +76,8 @@ class SeleniumWrapper(object):
         # Configure config if properties filename has changed
         if self.conf_properties_files != conf_properties_files:
             # Initialize the config object
-            self.config = ExtendedConfigParser()
+            self.config = ExtendedConfigParser.get_config_from_file(conf_properties_files)
             self.conf_properties_files = conf_properties_files
-
-            # Configure properties (last files could override properties)
-            for conf_properties_file in conf_properties_files.split(';'):
-                result = self.config.read(conf_properties_file)
-                if len(result) == 0:
-                    message = 'Properties config file not found: {}'.format(conf_properties_file)
-                    self.logger.error(message)
-                    raise Exception(message)
-                self.logger.debug('Reading properties from file: {}'.format(conf_properties_file))
 
             # Override properties with system properties
             self.config.update_from_system_properties()
