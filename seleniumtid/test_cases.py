@@ -179,7 +179,7 @@ class AppiumTestCase(SeleniumTestCase):
     Attributes:
         app_strings: dict with application strings
     """
-    app_strings = {}
+    app_strings = None
 
     @property
     def driver(self):
@@ -193,7 +193,7 @@ class AppiumTestCase(SeleniumTestCase):
 
     def setUp(self):
         super(AppiumTestCase, self).setUp()
-        if not AppiumTestCase.app_strings:
+        if AppiumTestCase.app_strings is None and not selenium_driver.is_web_test():
             AppiumTestCase.app_strings = self._driver.app_strings()
 
     def tearDown(self):
