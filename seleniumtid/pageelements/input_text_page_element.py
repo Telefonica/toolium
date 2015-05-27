@@ -12,7 +12,7 @@ been supplied.
 """
 
 from seleniumtid.pageelements.page_element import PageElement
-
+from seleniumtid import selenium_driver
 
 class InputText(PageElement):
     @property
@@ -21,4 +21,7 @@ class InputText(PageElement):
 
     @text.setter
     def text(self, value):
-        self.element().send_keys(value)
+        if selenium_driver.is_ios_test():
+            self.element().set_value(value)
+        else:
+            self.element().send_keys(value)
