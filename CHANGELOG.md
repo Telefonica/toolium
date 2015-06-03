@@ -1,6 +1,15 @@
 seleniumtid changelog
 =====================
 
+v0.9.2
+------
+
+*Release date: 2015-06-02*
+
+  * Allow to find elements by ios_uiautomation in visual assertions
+  * Fix app_strings error in mobile web tests
+  * Use set_value instead of send_keys to run tests faster
+
 v0.9.1
 ------
 

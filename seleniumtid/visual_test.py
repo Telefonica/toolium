@@ -158,6 +158,8 @@ class VisualTest(object):
             element = element_or_selector
         elif '//' in element_or_selector:
             element = self.driver.find_element_by_xpath(element_or_selector)
+        elif element_or_selector.startswith('.'):
+            element = self.driver.find_element_by_ios_uiautomation(element_or_selector)
         else:
             element = self.driver.find_element_by_css_selector(element_or_selector)
         return element

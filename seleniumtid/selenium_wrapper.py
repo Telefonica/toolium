@@ -137,6 +137,14 @@ class SeleniumWrapper(object):
         browser_name = self.config.get('Browser', 'browser').split('-')[0]
         return browser_name in ('android', 'iphone')
 
+    def is_ios_test(self):
+        """Check if actual test must be executed in a iOS mobile
+
+        :returns: true if test must be executed in an iOS mobile
+        """
+        browser_name = self.config.get('Browser', 'browser').split('-')[0]
+        return browser_name == 'iphone'
+
     def is_web_test(self):
         """Check if actual test must be executed in a browser
 
