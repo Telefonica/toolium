@@ -1,6 +1,13 @@
 seleniumtid changelog
 =====================
 
+v0.9.3
+------
+
+*Release date: 2015-06-15*
+
+  * Fix set_value and app_strings errors in mobile web tests
+
 v0.9.2
 ------
 

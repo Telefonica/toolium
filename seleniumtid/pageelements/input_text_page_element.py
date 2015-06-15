@@ -21,7 +21,7 @@ class InputText(PageElement):
 
     @text.setter
     def text(self, value):
-        if selenium_driver.is_ios_test():
+        if selenium_driver.is_ios_test() and not selenium_driver.is_web_test():
             self.element().set_value(value)
         else:
             self.element().send_keys(value)

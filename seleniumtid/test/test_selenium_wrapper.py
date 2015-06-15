@@ -190,15 +190,15 @@ mobile_tests = (
 )
 
 web_tests = (
-    ('android-4.1.2-on-android', 'C:/TestApp.apk', False),
-    ('android', 'C:/TestApp.apk', False),
-    ('android', 'chrome', True),
-    ('android', 'chromium', True),
-    ('android', 'browser', True),
-    ('iphone', '/tmp/TestApp.zip', False),
-    ('iphone', 'safari', True),
-    ('firefox-4.1.2-on-android', '', True),
-    ('firefox', '', True),
+    ('android-4.1.2-on-android', 'C:/TestApp.apk', None, False),
+    ('android', 'C:/TestApp.apk', None, False),
+    ('android', None, 'chrome', True),
+    ('android', None, 'chromium', True),
+    ('android', None, 'browser', True),
+    ('iphone', '/tmp/TestApp.zip', None, False),
+    ('iphone', None, 'safari', True),
+    ('firefox-4.1.2-on-android', None, None, True),
+    ('firefox', None, None, True),
 )
 
 maximizable_browsers = (
@@ -285,9 +285,10 @@ class SeleniumWrapperTests(SeleniumWrapperCommon):
 
     @data(*web_tests)
     @unpack
-    def test_is_web_test(self, browser, appium_app, is_web):
+    def test_is_web_test(self, browser, appium_app, appium_browser_name, is_web):
         self.wrapper.config.set('Browser', 'browser', browser)
         self.wrapper.config.set('AppiumCapabilities', 'app', appium_app)
+        self.wrapper.config.set('AppiumCapabilities', 'browserName', appium_browser_name)
         self.assertEquals(is_web, self.wrapper.is_web_test())
 
     @data(*maximizable_browsers)
