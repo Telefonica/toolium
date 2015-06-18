@@ -12,16 +12,12 @@ been supplied.
 """
 
 import logging
-import urllib
-import urllib2
-import re
-
+import requests
 from seleniumtid import selenium_driver
 from seleniumtid.config_driver import get_error_message_from_exception
 
 
 """Configuration"""
-# Configure logger
 logger = logging.getLogger(__name__)
 # Base url of the test execution service
 JIRA_EXECUTION_URL = 'http://qacore02.hi.inet/jira/test-case-execution'
@@ -111,31 +107,13 @@ def change_jira_status(test_key, test_status, labels=None, comments=None, fixver
         if false, create a new execution always
     """
     logger.info("Updating Test Case '{0}' in Jira with status {1}".format(test_key, test_status))
-    jira_execution_url = '{0}?jiraTestCaseId={1}&jiraStatus={2}'.format(JIRA_EXECUTION_URL, test_key, test_status)
-    if labels:
-        jira_execution_url += '&labels={0}'.format(urllib.quote(labels))
-    if comments:
-        jira_execution_url += '&comments={0}'.format(urllib.quote(comments))
-    if fixversion:
-        jira_execution_url += '&version={0}'.format(urllib.quote(fixversion))
-    if build:
-        jira_execution_url += '&build={0}'.format(urllib.quote(build))
+    payload = {'jiraTestCaseId': test_key, 'jiraStatus': test_status, 'labels': labels, 'comments': comments,
+               'version': fixversion, 'build': build}
     if onlyifchanges:
-        jira_execution_url += '&onlyIfStatusChanges=true'
-
-    try:
-        response = urllib2.urlopen(jira_execution_url)
-        logger.debug(response.read().strip(' \t\n\r'))
-        response.close()
-    except urllib2.HTTPError as exc:
-        # Extract error message from the HTTP response
-        message = re.search('.*<u>(.*)</u></p><p>.*', exc.read())
-        if message:
-            error_message = message.group(1)
-        else:
-            message = re.search('.*<title>(.*)</title>.*', exc.read())
-            if message:
-                error_message = message.group(1)
-        logger.warn("Error updating Test Case '{0}': [{1}] {2}".format(test_key, exc.code, error_message))
-    except urllib2.URLError as exc:
-        logger.warn("Error updating Test Case '{0}': {1}".format(test_key, exc.reason))
+        payload['onlyIfStatusChanges'] = 'true'
+    response = requests.get(JIRA_EXECUTION_URL, params=payload)
+    logger.debug("Request url: {}".format(response.url))
+    if response.status_code >= 400:
+        logger.warn("Error updating Test Case '{}': [{}] {}".format(test_key, response.status_code, response.content))
+    else:
+        logger.debug("Response content: {}".format(response.content))
