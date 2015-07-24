@@ -5,4 +5,4 @@ Sphinx==1.2.3
 needle                # visual tests
 ddt
 coverage
-mock
+mock==1.0.1
