@@ -132,10 +132,18 @@ class ConfigDriver(object):
         elif browser_name == 'chrome':
             capabilities['chromeOptions'] = self._create_chrome_options().to_capabilities()["chromeOptions"]
 
+        # Add custom driver capabilities
+        try:
+            for cap, cap_value in dict(self.config.items('Capabilities')).iteritems():
+                self.logger.debug("Added server capability: {0} = {1}".format(cap, cap_value))
+                capabilities[cap] = cap_value
+        except NoSectionError:
+            pass
+
         if browser_name == 'android' or browser_name == 'iphone':
             # Add Appium server capabilities
             for cap, cap_value in dict(self.config.items('AppiumCapabilities')).iteritems():
-                self.logger.debug("Added server capability: {0} = {1}".format(cap, cap_value))
+                self.logger.debug("Added Appium server capability: {0} = {1}".format(cap, cap_value))
                 capabilities[cap] = cap_value
 
             # Create remote appium driver

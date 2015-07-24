@@ -11,11 +11,7 @@ pip install seleniumtid -i http://artifactory.hi.inet/artifactory/api/pypi/pypi/
 Requirements
 ------------
 
-Python 2.7.4 (http://www.python.org)
-
-distribute 0.6.36 (https://pypi.python.org/pypi/distribute)
-
-pip 1.3.1 (https://pypi.python.org/pypi/pip)
+Python 2.7 (http://www.python.org)
 
 Installation
 ------------
