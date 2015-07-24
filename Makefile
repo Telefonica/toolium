@@ -22,7 +22,7 @@ else
 	LIB = lib/python2.7
 	TGZ_EXT = tar.gz
 	PYTHON ?= $(shell which python2.7)
-	PYTHON_EXE = PYTHON
+	PYTHON_EXE = python2.7
 endif
 
 TMP=$(ROOT)/tmp
@@ -98,7 +98,7 @@ $(VENV): $(REQ) $(TESTREQ)
 	export GIT_SSL_NO_VERIFY=true; \
 	$(VIRTUALENV) --no-site-packages --distribute -p $(PYTHON) $@; \
 	$@/$(BIN)/pip install --upgrade -r $(REQ); \
-	$@/$(BIN)/easy_install Pillow; \
+	$@/$(BIN)/easy_install --upgrade Pillow; \
 	$@/$(BIN)/pip install --upgrade -r $(TESTREQ); \
 
 unittest: init venv
