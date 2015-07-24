@@ -19,9 +19,8 @@ from appium import webdriver as appiumdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteDriver
 
-
 try:
-    from needle.driver import NeedleWebDriverMixin
+    from needle.driver import NeedleWebDriverMixin, NeedleWebElement
 except ImportError:
     pass
 import logging
@@ -71,14 +70,31 @@ class ConfigDriver(object):
             raise
 
         if self.config.getboolean_optional('VisualTests', 'enabled'):
-            # Add 'public' methods of NeedleWebDriverMixin to the new driver
-            for method_name in vars(NeedleWebDriverMixin):
-                if not method_name.startswith('__'):
-                    bound_method = MethodType(getattr(NeedleWebDriverMixin, method_name).__func__, driver,
-                                              RemoteDriver)
-                    setattr(driver, method_name, bound_method)
+            self._update_needle_objects(driver, browser)
 
         return driver
+
+    def _update_needle_objects(self, driver, browser):
+        """Add Needle methods to driver and add Appium methods to NeedleWebElement
+
+        :param driver: driver object
+        :param browser: browser property
+        """
+        # Add 'public' methods of NeedleWebDriverMixin to the new driver
+        for method_name in vars(NeedleWebDriverMixin):
+            if not method_name.startswith('__'):
+                bound_method = MethodType(getattr(NeedleWebDriverMixin, method_name).__func__, driver,
+                                          RemoteDriver)
+                setattr(driver, method_name, bound_method)
+
+        browser_name = browser.split('-')[0]
+        if browser_name == 'android' or browser_name == 'iphone':
+            # Add 'public' methods of AppiumWebElement to the NeedleWebElement class
+            for method_name in vars(appiumdriver.WebElement):
+                if not method_name.startswith('__') and not method_name == 'location_in_view':
+                    unbound_method = MethodType(getattr(appiumdriver.WebElement, method_name).__func__,
+                                                None, NeedleWebElement)
+                    setattr(NeedleWebElement, method_name, unbound_method)
 
     def _create_remotedriver(self):
         """Create a driver in a remote server
