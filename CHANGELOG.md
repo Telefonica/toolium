@@ -7,6 +7,7 @@ v0.10.0
 *Release date: 2015-09-??*
 
   * Add support to Edge Windows browser
+  * New config property 'summary_prefix' in [Jira] section to modify default TCE summary
 
 v0.9.3
 ------
