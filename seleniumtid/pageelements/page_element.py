@@ -15,9 +15,18 @@ from seleniumtid import selenium_driver
 
 
 class PageElement(object):
-    def __init__(self, by, value):
+
+    def __init__(self, by, value, parent=None):
+        """
+        Initialize the PageElement object with the given locator components.
+
+        If parent is not None, find_element will be performed over it, instead of
+        using the driver's method, so it can find nested elements.
+        """
+
         self.locator = (by, value)
         self._driver = selenium_driver.driver
+        self.parent = parent
 
     @property
     def driver(self):
@@ -38,3 +47,9 @@ class PageElement(object):
         :rtype selenium.webdriver.remote.webelement.WebElement
         """
         return self.driver.find_element(*self.locator)
+
+    def scroll_element_into_view(self):
+        """Scroll element into view"""
+
+        y = self.element().location['y']
+        self.driver.execute_script('window.scrollTo(0, {0})'.format(y))
