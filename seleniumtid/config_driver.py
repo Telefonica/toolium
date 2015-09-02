@@ -19,9 +19,8 @@ from appium import webdriver as appiumdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteDriver
 
-
 try:
-    from needle.driver import NeedleWebDriverMixin
+    from needle.driver import NeedleWebDriverMixin, NeedleWebElement
 except ImportError:
     pass
 import logging
@@ -38,7 +37,7 @@ def get_error_message_from_exception(exception):
     except AttributeError:
         # Get error message in ddt tests
         error_message = exception.message
-    return error_message.split('\n', 1)[0]
+    return error_message.split('\n', 1)[0] if error_message else ''
 
 
 class ConfigDriver(object):
@@ -71,14 +70,31 @@ class ConfigDriver(object):
             raise
 
         if self.config.getboolean_optional('VisualTests', 'enabled'):
-            # Add 'public' methods of NeedleWebDriverMixin to the new driver
-            for method_name in vars(NeedleWebDriverMixin):
-                if not method_name.startswith('__'):
-                    bound_method = MethodType(getattr(NeedleWebDriverMixin, method_name).__func__, driver,
-                                              RemoteDriver)
-                    setattr(driver, method_name, bound_method)
+            self._update_needle_objects(driver, browser)
 
         return driver
+
+    def _update_needle_objects(self, driver, browser):
+        """Add Needle methods to driver and add Appium methods to NeedleWebElement
+
+        :param driver: driver object
+        :param browser: browser property
+        """
+        # Add 'public' methods of NeedleWebDriverMixin to the new driver
+        for method_name in vars(NeedleWebDriverMixin):
+            if not method_name.startswith('__'):
+                bound_method = MethodType(getattr(NeedleWebDriverMixin, method_name).__func__, driver,
+                                          RemoteDriver)
+                setattr(driver, method_name, bound_method)
+
+        browser_name = browser.split('-')[0]
+        if browser_name == 'android' or browser_name == 'iphone':
+            # Add 'public' methods of AppiumWebElement to the NeedleWebElement class
+            for method_name in vars(appiumdriver.WebElement):
+                if not method_name.startswith('__') and not method_name == 'location_in_view':
+                    unbound_method = MethodType(getattr(appiumdriver.WebElement, method_name).__func__,
+                                                None, NeedleWebElement)
+                    setattr(NeedleWebElement, method_name, unbound_method)
 
     def _create_remotedriver(self):
         """Create a driver in a remote server
@@ -132,10 +148,18 @@ class ConfigDriver(object):
         elif browser_name == 'chrome':
             capabilities['chromeOptions'] = self._create_chrome_options().to_capabilities()["chromeOptions"]
 
+        # Add custom driver capabilities
+        try:
+            for cap, cap_value in dict(self.config.items('Capabilities')).iteritems():
+                self.logger.debug("Added server capability: {0} = {1}".format(cap, cap_value))
+                capabilities[cap] = cap_value
+        except NoSectionError:
+            pass
+
         if browser_name == 'android' or browser_name == 'iphone':
             # Add Appium server capabilities
             for cap, cap_value in dict(self.config.items('AppiumCapabilities')).iteritems():
-                self.logger.debug("Added server capability: {0} = {1}".format(cap, cap_value))
+                self.logger.debug("Added Appium server capability: {0} = {1}".format(cap, cap_value))
                 capabilities[cap] = cap_value
 
             # Create remote appium driver

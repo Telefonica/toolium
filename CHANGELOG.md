@@ -4,9 +4,12 @@ seleniumtid changelog
 v0.9.3
 ------
 
-*Release date: 2015-06-15*
+*Release date: 2015-07-24*
 
+  * Allow to set custom driver capabilities from properties file
+    New config section [Capabilities] with driver capabilities
   * Fix set_value and app_strings errors in mobile web tests
+  * Fix set_value error in iOS tests when using needle
 
 v0.9.2
 ------

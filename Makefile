@@ -22,7 +22,7 @@ else
 	LIB = lib/python2.7
 	TGZ_EXT = tar.gz
 	PYTHON ?= $(shell which python2.7)
-	PYTHON_EXE = PYTHON
+	PYTHON_EXE = python2.7
 endif
 
 TMP=$(ROOT)/tmp
