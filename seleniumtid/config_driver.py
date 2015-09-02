@@ -37,7 +37,7 @@ def get_error_message_from_exception(exception):
     except AttributeError:
         # Get error message in ddt tests
         error_message = exception.message
-    return error_message.split('\n', 1)[0]
+    return error_message.split('\n', 1)[0] if error_message else ''
 
 
 class ConfigDriver(object):
