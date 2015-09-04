@@ -12,10 +12,11 @@ been supplied.
 """
 
 import logging
+
 import requests
+
 from seleniumtid import selenium_driver
 from seleniumtid.config_driver import get_error_message_from_exception
-
 
 """Configuration"""
 logger = logging.getLogger(__name__)
@@ -82,34 +83,36 @@ def change_jira_status_with_config(test_key, test_status, test_comment):
     """
     config = selenium_driver.config
     if config.getboolean_optional('Jira', 'enabled'):
+        summary_prefix = config.get_optional('Jira', 'summary_prefix')
         labels = config.get_optional('Jira', 'labels')
         comments = config.get_optional('Jira', 'comments')
         if test_comment:
             comments = '{}\n{}'.format(comments, test_comment) if comments else test_comment
-        fixversion = config.get_optional('Jira', 'fixversion')
+        fix_version = config.get_optional('Jira', 'fixversion')
         build = config.get_optional('Jira', 'build')
-        onlyifchanges = config.getboolean_optional('Jira', 'onlyifchanges')
-        change_jira_status(test_key, test_status, labels, comments, fixversion, build, onlyifchanges)
+        only_if_changes = config.getboolean_optional('Jira', 'onlyifchanges')
+        change_jira_status(test_key, test_status, summary_prefix, labels, comments, fix_version, build, only_if_changes)
 
 
-def change_jira_status(test_key, test_status, labels=None, comments=None, fixversion=None, build=None,
-                       onlyifchanges=False):
+def change_jira_status(test_key, test_status, summary_prefix=None, labels=None, comments=None, fix_version=None,
+                       build=None, only_if_changes=False):
     """Update test status in Jira
 
     :param test_key: test case key in Jira
     :param test_status: test case status
+    :param summary_prefix: test case summary prefix
     :param labels: test case labels
     :param comments: test case comments
-    :param fixversion: test case fix version
+    :param fix_version: test case fix version
     :param build: test case build
-    :param onlyifchanges:
+    :param only_if_changes:
         if true, only create a new execution if the test status has changed
         if false, create a new execution always
     """
     logger.info("Updating Test Case '{0}' in Jira with status {1}".format(test_key, test_status))
-    payload = {'jiraTestCaseId': test_key, 'jiraStatus': test_status, 'labels': labels, 'comments': comments,
-               'version': fixversion, 'build': build}
-    if onlyifchanges:
+    payload = {'jiraTestCaseId': test_key, 'jiraStatus': test_status, 'summaryPrefix': summary_prefix, 'labels': labels, 'comments': comments,
+               'version': fix_version, 'build': build}
+    if only_if_changes:
         payload['onlyIfStatusChanges'] = 'true'
     response = requests.get(JIRA_EXECUTION_URL, params=payload)
     logger.debug("Request url: {}".format(response.url))

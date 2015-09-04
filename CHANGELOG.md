@@ -1,6 +1,16 @@
 seleniumtid changelog
 =====================
 
+v0.10.0
+-------
+
+*Release date: 2015-09-??*
+
+  * Add support to Edge Windows browser
+  * New config property 'summary_prefix' in [Jira] section to modify default TCE summary
+  * Add scroll_element_into_view method to PageElement that scroll to element
+  * Add parent parameter to PageElement when element must be found from parent
+
 v0.9.3
 ------
 

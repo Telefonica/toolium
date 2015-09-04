@@ -113,6 +113,7 @@ class ConfigDriver(object):
                              'safari': DesiredCapabilities.SAFARI,
                              'opera': DesiredCapabilities.OPERA,
                              'iexplore': DesiredCapabilities.INTERNETEXPLORER,
+                             'edge': DesiredCapabilities.EDGE,
                              'phantomjs': DesiredCapabilities.PHANTOMJS,
                              'android': DesiredCapabilities.ANDROID,
                              'iphone': DesiredCapabilities.IPHONE}
@@ -180,6 +181,7 @@ class ConfigDriver(object):
                           'safari': self._setup_safari,
                           'opera': self._setup_opera,
                           'iexplore': self._setup_explorer,
+                          'edge': self._setup_edge,
                           'phantomjs': self._setup_phantomjs,
                           'android': self._setup_appium,
                           'iphone': self._setup_appium}
@@ -290,6 +292,15 @@ class ConfigDriver(object):
         explorerdriver = self.config.get('Browser', 'explorerdriver_path')
         self.logger.debug("Explorer driver path given in properties: {0}".format(explorerdriver))
         return webdriver.Ie(explorerdriver)
+
+    def _setup_edge(self):
+        """Setup Edge webdriver
+
+        :returns: a new local Edge driver
+        """
+        edgedriver = self.config.get('Browser', 'edgedriver_path')
+        self.logger.debug("Edge driver path given in properties: {0}".format(edgedriver))
+        return webdriver.Edge(edgedriver)
 
     def _setup_phantomjs(self):
         """Setup phantomjs webdriver
