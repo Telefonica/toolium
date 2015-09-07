@@ -10,6 +10,7 @@ v0.10.0
   * New config property 'summary_prefix' in [Jira] section to modify default TCE summary
   * Add scroll_element_into_view method to PageElement that scroll to element
   * Add parent parameter to PageElement when element must be found from parent
+  * Page elements can be defined as class attributes, it is no longer necessary to define them as instance attributes in init_page_elements()
 
 v0.9.3
 ------
