@@ -13,7 +13,7 @@ been supplied.
 
 import unittest
 import logging
-import abc
+import inspect
 
 from seleniumtid import selenium_driver
 from seleniumtid.pageelements.page_element import PageElement
@@ -21,16 +21,13 @@ from seleniumtid.test_cases import AppiumTestCase
 
 
 class PageObject(unittest.TestCase):
-    __metaclass__ = abc.ABCMeta
-
     def __init__(self, driver=None):
         self.logger = logging.getLogger(__name__)
         self._driver = driver if driver else selenium_driver.driver
         self.config = selenium_driver.config
         self.app_strings = AppiumTestCase.app_strings
         self.init_page_elements()
-        if driver:
-            self._update_page_elements_driver()
+        self._update_page_elements_driver()
 
     @property
     def driver(self):
@@ -42,12 +39,12 @@ class PageObject(unittest.TestCase):
         """
         return self._driver
 
-    @abc.abstractmethod
     def init_page_elements(self):
         """Method to initialize page elements"""
+        pass
 
     def _update_page_elements_driver(self):
         """Assign driver to all page elements of this page object"""
-        for element in self.__dict__.values():
+        for element in self.__dict__.values() + self.__class__.__dict__.values():
             if isinstance(element, PageElement):
                 element.set_driver(self.driver)

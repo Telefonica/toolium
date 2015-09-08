@@ -28,7 +28,7 @@ class PageElement(object):
         :param parent: parent element (WebElement or PageElement)
         """
         self.locator = (by, value)
-        self._driver = selenium_driver.driver
+        self._driver = None
         self.parent = parent
 
     @property

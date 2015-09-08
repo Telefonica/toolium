@@ -15,7 +15,6 @@ import unittest
 import os
 import shutil
 
-import sys
 from seleniumtid.visual_test import VisualTest
 from seleniumtid import selenium_driver
 
@@ -150,6 +149,7 @@ class VisualTests(unittest.TestCase):
         class FakeElement():
             def get_dimensions(self):
                 return {'left': 250, 'top': 40, 'width': 300, 'height': 40}
+
         elements = [FakeElement()]
 
         visual.exclude_elements_from_image_file(image_file, elements)
@@ -168,6 +168,7 @@ class VisualTests(unittest.TestCase):
         class FakeElement():
             def get_dimensions(self):
                 return {'left': 250, 'top': 40, 'width': 1500, 'height': 500}
+
         elements = [FakeElement()]
 
         visual.exclude_elements_from_image_file(image_file, elements)
