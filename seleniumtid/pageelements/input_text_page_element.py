@@ -14,6 +14,7 @@ been supplied.
 from seleniumtid.pageelements.page_element import PageElement
 from seleniumtid import selenium_driver
 
+
 class InputText(PageElement):
     @property
     def text(self):

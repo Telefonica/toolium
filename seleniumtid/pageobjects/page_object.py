@@ -13,7 +13,6 @@ been supplied.
 
 import unittest
 import logging
-import inspect
 
 from seleniumtid import selenium_driver
 from seleniumtid.pageelements.page_element import PageElement

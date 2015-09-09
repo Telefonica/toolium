@@ -13,8 +13,6 @@ been supplied.
 
 from selenium.webdriver.remote.webelement import WebElement
 
-from seleniumtid import selenium_driver
-
 
 class PageElement(object):
     def __init__(self, by, value, parent=None):
@@ -42,6 +40,7 @@ class PageElement(object):
         return self._driver
 
     def set_driver(self, driver):
+        """Set Selenium driver"""
         self._driver = driver
 
     def element(self):
@@ -57,6 +56,5 @@ class PageElement(object):
 
     def scroll_element_into_view(self):
         """Scroll element into view"""
-
         y = self.element().location['y']
         self.driver.execute_script('window.scrollTo(0, {0})'.format(y))
