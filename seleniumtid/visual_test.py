@@ -40,8 +40,8 @@ class VisualTest(object):
 
         self.logger = logging.getLogger(__name__)
         self.driver = selenium_driver.driver
-        self.output_directory = selenium_driver.output_directory
-        self.baseline_directory = selenium_driver.baseline_directory
+        self.output_directory = selenium_driver.visual_output_directory
+        self.baseline_directory = selenium_driver.visual_baseline_directory
         engine_type = selenium_driver.config.get_optional('VisualTests', 'engine', 'pil')
         self.engine = diff_Engine() if engine_type == 'perceptualdiff' else pil_Engine()
         self.capture = False

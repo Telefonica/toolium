@@ -41,9 +41,9 @@ class Utils(object):
         :param name: screenshot name suffix
         """
         filename = '{0:0=2d}_{1}.png'.format(selenium_driver.screenshots_number, name)
-        filepath = os.path.join(selenium_driver.screenshots_path, filename)
-        if not os.path.exists(selenium_driver.screenshots_path):
-            os.makedirs(selenium_driver.screenshots_path)
+        filepath = os.path.join(selenium_driver.screenshots_directory, filename)
+        if not os.path.exists(selenium_driver.screenshots_directory):
+            os.makedirs(selenium_driver.screenshots_directory)
         if self.driver.get_screenshot_as_file(filepath):
             self.logger.info("Screenshot saved in " + filepath)
             selenium_driver.screenshots_number += 1
@@ -180,9 +180,9 @@ class Utils(object):
         :param video_name: video name
         """
         filename = '{0:0=2d}_{1}.mp4'.format(selenium_driver.videos_number, video_name)
-        filepath = os.path.join(selenium_driver.videos_path, filename)
-        if not os.path.exists(selenium_driver.videos_path):
-            os.makedirs(selenium_driver.videos_path)
+        filepath = os.path.join(selenium_driver.videos_directory, filename)
+        if not os.path.exists(selenium_driver.videos_directory):
+            os.makedirs(selenium_driver.videos_directory)
         response = requests.get(video_url)
         open(filepath, 'wb').write(response.content)
         self.logger.info("Video saved in '{}'".format(filepath))
