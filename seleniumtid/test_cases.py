@@ -68,30 +68,13 @@ class SeleniumTestCase(BasicTestCase):
         driver: webdriver instance
         utils: test utils instance
         remote_video_node: hostname of the remote node if it has enabled a video recorder
+
+    :type driver: selenium.webdriver.remote.webdriver.WebDriver
+    :type utils: seleniumtid.utils.Utils
     """
-    _driver = None
-    _utils = None
+    driver = None
+    utils = None
     remote_video_node = None
-
-    @property
-    def driver(self):
-        """Get the Selenium driver
-         This method allows to autocomplete self.driver in IDEs
-
-        :returns: Selenium driver
-        :rtype: selenium.webdriver.remote.webdriver.WebDriver
-        """
-        return self._driver
-
-    @property
-    def utils(self):
-        """Get the utils object
-         This method allows to autocomplete self.utils in IDEs
-
-        :returns: utils object
-        :rtype: seleniumtid.utils.Utils
-        """
-        return self._utils
 
     @classmethod
     def tearDownClass(cls):
@@ -99,39 +82,39 @@ class SeleniumTestCase(BasicTestCase):
         super(SeleniumTestCase, cls).tearDownClass()
 
         # Stop driver
-        if SeleniumTestCase._driver:
+        if SeleniumTestCase.driver:
             class_name = cls.get_subclass_name()
             cls._finalize_driver(class_name)
 
     @classmethod
     def _finalize_driver(cls, video_name, test_passed=True):
         # Get session id to request the saved video
-        session_id = cls._driver.session_id
+        session_id = cls.driver.session_id
 
         # Close browser and stop driver
-        cls._driver.quit()
-        cls._driver = None
-        SeleniumTestCase._driver = None
+        cls.driver.quit()
+        cls.driver = None
+        SeleniumTestCase.driver = None
 
         # Download saved video if video is enabled or if test fails
         if cls.remote_video_node and (selenium_driver.config.getboolean_optional('Server', 'video_enabled')
                                       or not test_passed):
             video_name = video_name if test_passed else 'error_{}'.format(video_name)
-            cls._utils.download_remote_video(cls.remote_video_node, session_id, video_name)
+            cls.utils.download_remote_video(cls.remote_video_node, session_id, video_name)
 
     def setUp(self):
         # Create driver
-        if not SeleniumTestCase._driver:
-            SeleniumTestCase._driver = selenium_driver.connect()
-            SeleniumTestCase._utils = Utils(SeleniumTestCase._driver)
-            SeleniumTestCase.remote_video_node = SeleniumTestCase._utils.get_remote_video_node()
+        if not SeleniumTestCase.driver:
+            SeleniumTestCase.driver = selenium_driver.connect()
+            SeleniumTestCase.utils = Utils(SeleniumTestCase.driver)
+            SeleniumTestCase.remote_video_node = SeleniumTestCase.utils.get_remote_video_node()
         # Get common configuration of reusing driver
         self.reuse_driver = selenium_driver.config.getboolean_optional('Common', 'reuse_driver')
         # Set implicitly wait
-        self._utils.set_implicit_wait()
+        self.utils.set_implicit_wait()
         # Maximize browser
         if selenium_driver.is_maximizable():
-            SeleniumTestCase._driver.maximize_window()
+            SeleniumTestCase.driver.maximize_window()
         # Call BasicTestCase setUp
         super(SeleniumTestCase, self).setUp()
 
@@ -142,7 +125,7 @@ class SeleniumTestCase(BasicTestCase):
         # Capture screenshot on error
         test_name = self.get_subclassmethod_name().replace('.', '_')
         if not self._test_passed:
-            self._utils.capture_screenshot(test_name)
+            self.utils.capture_screenshot(test_name)
 
         # Stop driver
         if not self.reuse_driver:
@@ -189,12 +172,12 @@ class AppiumTestCase(SeleniumTestCase):
         :returns: Appium driver
         :rtype: appium.webdriver.webdriver.WebDriver
         """
-        return self._driver
+        return super(AppiumTestCase, self).driver
 
     def setUp(self):
         super(AppiumTestCase, self).setUp()
         if AppiumTestCase.app_strings is None and not selenium_driver.is_web_test():
-            AppiumTestCase.app_strings = self._driver.app_strings()
+            AppiumTestCase.app_strings = self.driver.app_strings()
 
     def tearDown(self):
         # Call SeleniumTestCase tearDown

@@ -21,24 +21,19 @@ from seleniumtid.utils import Utils
 
 
 class PageObject(unittest.TestCase):
+    """
+    :type driver: selenium.webdriver.remote.webdriver.WebDriver
+    :type utils: seleniumtid.utils.Utils
+    """
+
     def __init__(self, driver=None):
         self.logger = logging.getLogger(__name__)
-        self._driver = driver if driver else selenium_driver.driver
+        self.driver = driver if driver else selenium_driver.driver
         self.utils = Utils(self.driver)
         self.config = selenium_driver.config
         self.app_strings = AppiumTestCase.app_strings
         self.init_page_elements()
         self._update_page_elements()
-
-    @property
-    def driver(self):
-        """Get the Selenium driver
-         This method allows to autocomplete self.driver in IDEs
-
-        :returns: Selenium driver
-        :rtype: selenium.webdriver.remote.webdriver.WebDriver
-        """
-        return self._driver
 
     def init_page_elements(self):
         """Method to initialize page elements"""

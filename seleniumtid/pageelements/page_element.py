@@ -16,8 +16,12 @@ from selenium.webdriver.remote.webelement import WebElement
 
 class PageElement(object):
     """
+    :type driver: selenium.webdriver.remote.webdriver.WebDriver
     :type utils: seleniumtid.utils.Utils
     """
+    driver = None
+    utils = None
+
     def __init__(self, by, value, parent=None):
         """Initialize the PageElement object with the given locator components.
 
@@ -29,23 +33,11 @@ class PageElement(object):
         :param parent: parent element (WebElement or PageElement)
         """
         self.locator = (by, value)
-        self._driver = None
-        self.utils = None
         self.parent = parent
-
-    @property
-    def driver(self):
-        """Get the Selenium driver
-         This method allows to autocomplete self.driver in IDEs
-
-        :returns: Selenium driver
-        :rtype: selenium.webdriver.remote.webdriver.WebDriver
-        """
-        return self._driver
 
     def set_driver(self, driver):
         """Set Selenium driver"""
-        self._driver = driver
+        self.driver = driver
 
     def set_utils(self, utils):
         """Set utils instance"""
