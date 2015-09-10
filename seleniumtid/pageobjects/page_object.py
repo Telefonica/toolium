@@ -17,16 +17,18 @@ import logging
 from seleniumtid import selenium_driver
 from seleniumtid.pageelements.page_element import PageElement
 from seleniumtid.test_cases import AppiumTestCase
+from seleniumtid.utils import Utils
 
 
 class PageObject(unittest.TestCase):
     def __init__(self, driver=None):
         self.logger = logging.getLogger(__name__)
         self._driver = driver if driver else selenium_driver.driver
+        self.utils = Utils(self.driver)
         self.config = selenium_driver.config
         self.app_strings = AppiumTestCase.app_strings
         self.init_page_elements()
-        self._update_page_elements_driver()
+        self._update_page_elements()
 
     @property
     def driver(self):
@@ -42,8 +44,9 @@ class PageObject(unittest.TestCase):
         """Method to initialize page elements"""
         pass
 
-    def _update_page_elements_driver(self):
-        """Assign driver to all page elements of this page object"""
+    def _update_page_elements(self):
+        """Copy driver and utils instances to all page elements of this page object"""
         for element in self.__dict__.values() + self.__class__.__dict__.values():
             if isinstance(element, PageElement):
                 element.set_driver(self.driver)
+                element.set_utils(self.utils)
