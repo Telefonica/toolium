@@ -66,21 +66,24 @@ class Utils(object):
 
         :param locator: locator element
         :param timeout: max time to wait
+        :returns: the element if it is visible or False
         """
-        WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(locator))
+        return WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(locator))
 
     def wait_until_element_not_visible(self, locator, timeout=10):
         """Search element by locator and wait until it is not visible
 
         :param locator: locator element
         :param timeout: max time to wait
+        :returns: the element if it is not visible or False
         """
         # Remove implicit wait
         self.driver.implicitly_wait(0)
         # Wait for invisibility
-        WebDriverWait(self.driver, timeout).until(EC.invisibility_of_element_located(locator))
+        element = WebDriverWait(self.driver, timeout).until(EC.invisibility_of_element_located(locator))
         # Restore implicit wait from properties
         self.set_implicit_wait()
+        return element
 
     def get_remote_node(self):
         """Return the remote node that it's executing the actual test session
