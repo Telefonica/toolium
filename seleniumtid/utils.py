@@ -67,6 +67,7 @@ class Utils(object):
         :param locator: locator element
         :param timeout: max time to wait
         :returns: the element if it is visible or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement
         """
         return WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(locator))
 
@@ -76,6 +77,7 @@ class Utils(object):
         :param locator: locator element
         :param timeout: max time to wait
         :returns: the element if it is not visible or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement
         """
         # Remove implicit wait
         self.driver.implicitly_wait(0)

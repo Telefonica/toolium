@@ -54,7 +54,7 @@ class PageElement(object):
     def element(self):
         """Find WebElement using element locator
         :return: web element object
-        :rtype selenium.webdriver.remote.webelement.WebElement
+        :rtype: selenium.webdriver.remote.webelement.WebElement
         """
         if self.parent and isinstance(self.parent, WebElement):
             return self.parent.find_element(*self.locator)
@@ -66,3 +66,19 @@ class PageElement(object):
         """Scroll element into view"""
         y = self.element().location['y']
         self.driver.execute_script('window.scrollTo(0, {0})'.format(y))
+
+    def wait_until_visible(self, timeout=10):
+        """Search element and wait until it is visible
+
+        :param timeout: max time to wait
+        :returns: web element if it is visible or False
+        """
+        return self.utils.wait_until_element_visible(self.locator, timeout)
+
+    def wait_until_not_visible(self, timeout=10):
+        """Search element and wait until it is not visible
+
+        :param timeout: max time to wait
+        :returns: web element if it is not visible or False
+        """
+        return self.utils.wait_until_element_not_visible(self.locator, timeout)
