@@ -101,7 +101,7 @@ class VisualTest(object):
         if not os.path.exists(dst_css_path):
             shutil.copyfile(orig_css_path, dst_css_path)
 
-    def assertScreenshot(self, element_or_selector, filename, file_suffix, threshold=0, exclude_elements=[]):
+    def assertScreenshot(self, element_or_selector, filename, file_suffix=None, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold
 
         :param element_or_selector: either a CSS/XPATH selector as a string or a WebElement object.
@@ -120,7 +120,8 @@ class VisualTest(object):
         exclude_elements = [self.get_element(exclude_element) for exclude_element in exclude_elements]
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
-        unique_name = '{0:0=2d}_{1}__{2}.png'.format(selenium_driver.visual_number, filename, file_suffix)
+        filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
+        unique_name = '{0:0=2d}_{1}.png'.format(selenium_driver.visual_number, filename_with_suffix)
         output_file = os.path.join(self.output_directory, unique_name)
         report_name = '{} ({})'.format(file_suffix, filename)
 

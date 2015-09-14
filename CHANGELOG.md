@@ -11,7 +11,7 @@ v0.10.0
   * Add scroll_element_into_view method to PageElement that scroll to element
   * Add parent parameter to PageElement when element must be found from parent
   * Page elements can be defined as class attributes, it is no longer necessary to define them as instance attributes in init_page_elements()
-  * Add wait_until_visible and wait_until_not_visible methods to PageElement
+  * Add wait_until_visible, wait_until_not_visible and assertScreenshot methods to PageElement
 
 v0.9.3
 ------
