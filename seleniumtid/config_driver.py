@@ -52,9 +52,8 @@ class ConfigDriver(object):
         """Create a selenium driver using specified config properties
 
         :returns: a new selenium driver
-        :rtype selenium.webdriver.remote.webdriver.WebDriver
+        :rtype: selenium.webdriver.remote.webdriver.WebDriver
         """
-        driver = None
         browser = self.config.get('Browser', 'browser')
         try:
             if self.config.getboolean_optional('Server', 'enabled'):

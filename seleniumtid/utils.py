@@ -41,9 +41,9 @@ class Utils(object):
         :param name: screenshot name suffix
         """
         filename = '{0:0=2d}_{1}.png'.format(selenium_driver.screenshots_number, name)
-        filepath = os.path.join(selenium_driver.screenshots_path, filename)
-        if not os.path.exists(selenium_driver.screenshots_path):
-            os.makedirs(selenium_driver.screenshots_path)
+        filepath = os.path.join(selenium_driver.screenshots_directory, filename)
+        if not os.path.exists(selenium_driver.screenshots_directory):
+            os.makedirs(selenium_driver.screenshots_directory)
         if self.driver.get_screenshot_as_file(filepath):
             self.logger.info("Screenshot saved in " + filepath)
             selenium_driver.screenshots_number += 1
@@ -66,21 +66,26 @@ class Utils(object):
 
         :param locator: locator element
         :param timeout: max time to wait
+        :returns: the element if it is visible or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement
         """
-        WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(locator))
+        return WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(locator))
 
     def wait_until_element_not_visible(self, locator, timeout=10):
         """Search element by locator and wait until it is not visible
 
         :param locator: locator element
         :param timeout: max time to wait
+        :returns: the element if it is not visible or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement
         """
         # Remove implicit wait
         self.driver.implicitly_wait(0)
         # Wait for invisibility
-        WebDriverWait(self.driver, timeout).until(EC.invisibility_of_element_located(locator))
+        element = WebDriverWait(self.driver, timeout).until(EC.invisibility_of_element_located(locator))
         # Restore implicit wait from properties
         self.set_implicit_wait()
+        return element
 
     def get_remote_node(self):
         """Return the remote node that it's executing the actual test session
@@ -175,9 +180,9 @@ class Utils(object):
         :param video_name: video name
         """
         filename = '{0:0=2d}_{1}.mp4'.format(selenium_driver.videos_number, video_name)
-        filepath = os.path.join(selenium_driver.videos_path, filename)
-        if not os.path.exists(selenium_driver.videos_path):
-            os.makedirs(selenium_driver.videos_path)
+        filepath = os.path.join(selenium_driver.videos_directory, filename)
+        if not os.path.exists(selenium_driver.videos_directory):
+            os.makedirs(selenium_driver.videos_directory)
         response = requests.get(video_url)
         open(filepath, 'wb').write(response.content)
         self.logger.info("Video saved in '{}'".format(filepath))

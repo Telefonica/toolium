@@ -24,6 +24,46 @@ from seleniumtid.config_driver import get_error_message_from_exception
 
 class BasicTestCase(unittest.TestCase):
     """A class whose instances are api test cases."""
+    _config_directory = None
+    _output_directory = None
+    _config_properties_filenames = None
+    _config_log_filename = None
+    _output_log_filename = None
+
+    def set_config_directory(self, config_directory):
+        """Set directory where configuration files are saved
+
+        :param config_directory: configuration directory path
+        """
+        self._config_directory = config_directory
+
+    def set_output_directory(self, output_directory):
+        """Set output directory where log file and screenshots will be saved
+
+        :param output_directory: output directory path
+        """
+        self._output_directory = output_directory
+
+    def set_config_properties_filenames(self, *filenames):
+        """Set properties files used to configure test cases
+
+        :param filenames: list of properties filenames
+        """
+        self._config_properties_filenames = ';'.join(filenames)
+
+    def set_config_log_filename(self, filename):
+        """Set logging configuration file
+
+        :param filename: logging configuration filename
+        """
+        self._config_log_filename = filename
+
+    def set_output_log_filename(self, filename):
+        """Set logging output file
+
+        :param filename: logging configuration filename
+        """
+        self._output_log_filename = filename
 
     @classmethod
     def get_subclass_name(cls):
@@ -43,8 +83,9 @@ class BasicTestCase(unittest.TestCase):
     def setUp(self):
         # Configure logger and properties
         if not isinstance(self, SeleniumTestCase):
-            selenium_driver.configure_logger()
-            selenium_driver.configure_properties()
+            selenium_driver.configure(False, self._config_directory, self._output_directory,
+                                      self._config_properties_filenames, self._config_log_filename,
+                                      self._output_log_filename)
         # Configure logger
         self.logger = logging.getLogger(__name__)
         self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
@@ -68,30 +109,13 @@ class SeleniumTestCase(BasicTestCase):
         driver: webdriver instance
         utils: test utils instance
         remote_video_node: hostname of the remote node if it has enabled a video recorder
+
+    :type driver: selenium.webdriver.remote.webdriver.WebDriver
+    :type utils: seleniumtid.utils.Utils
     """
-    _driver = None
-    _utils = None
+    driver = None
+    utils = None
     remote_video_node = None
-
-    @property
-    def driver(self):
-        """Get the Selenium driver
-         This method allows to autocomplete self.driver in IDEs
-
-        :returns: Selenium driver
-        :rtype: selenium.webdriver.remote.webdriver.WebDriver
-        """
-        return self._driver
-
-    @property
-    def utils(self):
-        """Get the utils object
-         This method allows to autocomplete self.utils in IDEs
-
-        :returns: utils object
-        :rtype: seleniumtid.utils.Utils
-        """
-        return self._utils
 
     @classmethod
     def tearDownClass(cls):
@@ -99,39 +123,42 @@ class SeleniumTestCase(BasicTestCase):
         super(SeleniumTestCase, cls).tearDownClass()
 
         # Stop driver
-        if SeleniumTestCase._driver:
+        if SeleniumTestCase.driver:
             class_name = cls.get_subclass_name()
             cls._finalize_driver(class_name)
 
     @classmethod
     def _finalize_driver(cls, video_name, test_passed=True):
         # Get session id to request the saved video
-        session_id = cls._driver.session_id
+        session_id = cls.driver.session_id
 
         # Close browser and stop driver
-        cls._driver.quit()
-        cls._driver = None
-        SeleniumTestCase._driver = None
+        cls.driver.quit()
+        cls.driver = None
+        SeleniumTestCase.driver = None
 
         # Download saved video if video is enabled or if test fails
         if cls.remote_video_node and (selenium_driver.config.getboolean_optional('Server', 'video_enabled')
                                       or not test_passed):
             video_name = video_name if test_passed else 'error_{}'.format(video_name)
-            cls._utils.download_remote_video(cls.remote_video_node, session_id, video_name)
+            cls.utils.download_remote_video(cls.remote_video_node, session_id, video_name)
 
     def setUp(self):
         # Create driver
-        if not SeleniumTestCase._driver:
-            SeleniumTestCase._driver = selenium_driver.connect()
-            SeleniumTestCase._utils = Utils(SeleniumTestCase._driver)
-            SeleniumTestCase.remote_video_node = SeleniumTestCase._utils.get_remote_video_node()
+        if not SeleniumTestCase.driver:
+            selenium_driver.configure(True, self._config_directory, self._output_directory,
+                                      self._config_properties_filenames, self._config_log_filename,
+                                      self._output_log_filename)
+            SeleniumTestCase.driver = selenium_driver.connect()
+            SeleniumTestCase.utils = Utils(SeleniumTestCase.driver)
+            SeleniumTestCase.remote_video_node = SeleniumTestCase.utils.get_remote_video_node()
         # Get common configuration of reusing driver
         self.reuse_driver = selenium_driver.config.getboolean_optional('Common', 'reuse_driver')
         # Set implicitly wait
-        self._utils.set_implicit_wait()
+        self.utils.set_implicit_wait()
         # Maximize browser
         if selenium_driver.is_maximizable():
-            SeleniumTestCase._driver.maximize_window()
+            SeleniumTestCase.driver.maximize_window()
         # Call BasicTestCase setUp
         super(SeleniumTestCase, self).setUp()
 
@@ -142,7 +169,7 @@ class SeleniumTestCase(BasicTestCase):
         # Capture screenshot on error
         test_name = self.get_subclassmethod_name().replace('.', '_')
         if not self._test_passed:
-            self._utils.capture_screenshot(test_name)
+            self.utils.capture_screenshot(test_name)
 
         # Stop driver
         if not self.reuse_driver:
@@ -189,12 +216,12 @@ class AppiumTestCase(SeleniumTestCase):
         :returns: Appium driver
         :rtype: appium.webdriver.webdriver.WebDriver
         """
-        return self._driver
+        return super(AppiumTestCase, self).driver
 
     def setUp(self):
         super(AppiumTestCase, self).setUp()
         if AppiumTestCase.app_strings is None and not selenium_driver.is_web_test():
-            AppiumTestCase.app_strings = self._driver.app_strings()
+            AppiumTestCase.app_strings = self.driver.app_strings()
 
     def tearDown(self):
         # Call SeleniumTestCase tearDown

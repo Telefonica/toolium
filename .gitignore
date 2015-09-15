@@ -75,12 +75,13 @@ Docs
 .sonar
 .coverage
 tmp
+output
 
 # Database
 *.sqlite3
 *.db3
 
-# Drivies
-*/test/dist
+# Tests
+*/test/output
 */test/resources/*.diff.png
 */test/resources/*.tmp.png
