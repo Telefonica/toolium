@@ -133,6 +133,7 @@ class ConfigDriver(object):
             platforms_list = {'xp': 'XP',
                               'windows_7': 'VISTA',
                               'windows_8': 'WIN8',
+                              'windows_10': 'WINDOWS',
                               'linux': 'LINUX',
                               'android': 'ANDROID',
                               'mac': 'MAC'}

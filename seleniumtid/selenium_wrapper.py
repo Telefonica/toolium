@@ -194,4 +194,4 @@ class SeleniumWrapper(object):
         :returns: true if the browser is maximizable
         """
         browser_name = self.config.get('Browser', 'browser').split('-')[0]
-        return not self.is_mobile_test() and browser_name != 'opera'
+        return not self.is_mobile_test() and browser_name != 'opera' and browser_name != 'edge'
