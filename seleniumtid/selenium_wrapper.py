@@ -123,7 +123,8 @@ class SeleniumWrapper(object):
                 baseline_name = baseline_name.replace('{platformVersion}', platform_version)
             else:
                 baseline_name = browser_info
-            self.visual_baseline_directory = os.path.join(self.visual_output_directory, 'baseline', baseline_name)
+            self.visual_baseline_directory = os.path.join(self.output_directory, 'visualtests', 'baseline',
+                                                          baseline_name)
             self.visual_number = 1
 
     def configure(self, is_selenium_test=True, tc_config_directory=None, tc_output_directory=None,
