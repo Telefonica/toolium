@@ -53,10 +53,9 @@ class VisualTest(object):
         # Create folders
         if not os.path.exists(self.baseline_directory):
             os.makedirs(self.baseline_directory)
-        if not self.save_baseline:
-            if not os.path.exists(self.output_directory):
-                os.makedirs(self.output_directory)
-            self._copy_template()
+        if not os.path.exists(self.output_directory):
+            os.makedirs(self.output_directory)
+        self._copy_template()
 
     def _get_screenshot(self, exclude_elements=[]):
         """Returns a screenshot of this element as a PIL image.
@@ -125,25 +124,24 @@ class VisualTest(object):
         output_file = os.path.join(self.output_directory, unique_name)
         report_name = '{} ({})'.format(file_suffix, filename)
 
+        # Save the new screenshot
+        if element:
+            element.get_screenshot(exclude_elements).save(output_file)
+        else:
+            self.driver.save_screenshot(output_file)
+            self.exclude_elements_from_image_file(output_file, exclude_elements)
+        selenium_driver.visual_number += 1
+
         # Determine whether we should save the baseline image
         if self.save_baseline or not os.path.exists(baseline_file):
-            # Save the baseline screenshot and bail out
-            if element:
-                element.get_screenshot(exclude_elements).save(baseline_file)
-            else:
-                self.driver.save_screenshot(baseline_file)
-                self.exclude_elements_from_image_file(baseline_file, exclude_elements)
+            # Copy screenshot to baseline
+            shutil.copyfile(output_file, baseline_file)
+
             if selenium_driver.config.getboolean_optional('VisualTests', 'complete_report'):
-                self._add_to_report('baseline', report_name, baseline_file, None, 'Added to baseline')
+                self._add_to_report('baseline', report_name, output_file, None, 'Added to baseline')
+
             self.logger.debug("Visual screenshot '{}' saved in visualtests/baseline folder".format(filename))
         else:
-            # Save the new screenshot
-            if element:
-                element.get_screenshot(exclude_elements).save(output_file)
-            else:
-                self.driver.save_screenshot(output_file)
-                self.exclude_elements_from_image_file(output_file, exclude_elements)
-            selenium_driver.visual_number += 1
             # Compare the screenshots
             self._compare_files(report_name, output_file, baseline_file, threshold)
 
