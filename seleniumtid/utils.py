@@ -25,6 +25,11 @@ from seleniumtid import selenium_driver
 
 class Utils(object):
     def __init__(self, driver):
+        """Initialize Utils instance
+
+        :param driver: webdriver instance
+        :type driver: selenium.webdriver.remote.webdriver.WebDriver
+        """
         self.driver = driver
         # Configure logger
         self.logger = logging.getLogger(__name__)
