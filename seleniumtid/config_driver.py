@@ -13,6 +13,7 @@ been supplied.
 
 from ConfigParser import NoSectionError
 from types import MethodType
+import ast
 
 from selenium import webdriver
 from appium import webdriver as appiumdriver
@@ -227,6 +228,8 @@ class ConfigDriver(object):
             return True
         elif value in ('false', 'False'):
             return False
+        elif str(value).startswith('{') and str(value).endswith('}'):
+            return ast.literal_eval(value)
         else:
             try:
                 return int(value)
@@ -258,6 +261,17 @@ class ConfigDriver(object):
                 prefs[pref] = self._convert_property_type(pref_value)
             if len(prefs) > 0:
                 options.add_experimental_option("prefs", prefs)
+        except NoSectionError:
+            pass
+
+        # Add Chrome mobile emulation options
+        prefs = dict()
+        try:
+            for pref, pref_value in dict(self.config.items('ChromeMobileEmulation')).iteritems():
+                self.logger.debug("Added chrome mobile emulation option: {0} = {1}".format(pref, pref_value))
+                prefs[pref] = self._convert_property_type(pref_value)
+            if len(prefs) > 0:
+                options.add_experimental_option("mobileEmulation", prefs)
         except NoSectionError:
             pass
 
