@@ -15,7 +15,6 @@ import unittest
 import os
 import shutil
 
-import sys
 from seleniumtid.visual_test import VisualTest
 from seleniumtid import selenium_driver
 
@@ -30,13 +29,13 @@ class VisualTests(unittest.TestCase):
             shutil.rmtree(cls.visual_path)
 
         # Configure common properties
-        os.environ["Files_properties"] = os.path.join(cls.root_path, 'conf', 'properties.cfg')
+        os.environ["Config_prop_filenames"] = os.path.join(cls.root_path, 'conf', 'properties.cfg')
         os.environ["VisualTests_enabled"] = 'true'
         os.environ["VisualTests_fail"] = 'false'
         os.environ["VisualTests_engine"] = 'pil'
 
         # Create html report in dist/visualtests
-        selenium_driver.output_directory = os.path.join(cls.root_path, 'dist', 'visualtests')
+        selenium_driver.visual_output_directory = os.path.join(cls.root_path, 'dist', 'visualtests')
 
         # Get file paths
         cls.file_v1 = os.path.join(cls.root_path, 'resources', 'register_v1.png')
@@ -49,13 +48,13 @@ class VisualTests(unittest.TestCase):
 
     def tearDown(self):
         # Remove previous conf properties
-        selenium_driver.conf_properties_files = None
+        selenium_driver.config_properties_filenames = None
 
     @classmethod
     def tearDownClass(cls):
         # Remove environment properties
         try:
-            del os.environ["Files_properties"]
+            del os.environ["Config_prop_filenames"]
             del os.environ["VisualTests_enabled"]
             del os.environ["VisualTests_fail"]
             del os.environ["VisualTests_engine"]
@@ -150,6 +149,7 @@ class VisualTests(unittest.TestCase):
         class FakeElement():
             def get_dimensions(self):
                 return {'left': 250, 'top': 40, 'width': 300, 'height': 40}
+
         elements = [FakeElement()]
 
         visual.exclude_elements_from_image_file(image_file, elements)
@@ -168,6 +168,7 @@ class VisualTests(unittest.TestCase):
         class FakeElement():
             def get_dimensions(self):
                 return {'left': 250, 'top': 40, 'width': 1500, 'height': 500}
+
         elements = [FakeElement()]
 
         visual.exclude_elements_from_image_file(image_file, elements)

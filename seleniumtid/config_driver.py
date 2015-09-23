@@ -13,6 +13,7 @@ been supplied.
 
 from ConfigParser import NoSectionError
 from types import MethodType
+import ast
 
 from selenium import webdriver
 from appium import webdriver as appiumdriver
@@ -52,9 +53,8 @@ class ConfigDriver(object):
         """Create a selenium driver using specified config properties
 
         :returns: a new selenium driver
-        :rtype selenium.webdriver.remote.webdriver.WebDriver
+        :rtype: selenium.webdriver.remote.webdriver.WebDriver
         """
-        driver = None
         browser = self.config.get('Browser', 'browser')
         try:
             if self.config.getboolean_optional('Server', 'enabled'):
@@ -113,6 +113,7 @@ class ConfigDriver(object):
                              'safari': DesiredCapabilities.SAFARI,
                              'opera': DesiredCapabilities.OPERA,
                              'iexplore': DesiredCapabilities.INTERNETEXPLORER,
+                             'edge': DesiredCapabilities.EDGE,
                              'phantomjs': DesiredCapabilities.PHANTOMJS,
                              'android': DesiredCapabilities.ANDROID,
                              'iphone': DesiredCapabilities.IPHONE}
@@ -133,6 +134,7 @@ class ConfigDriver(object):
             platforms_list = {'xp': 'XP',
                               'windows_7': 'VISTA',
                               'windows_8': 'WIN8',
+                              'windows_10': 'WINDOWS',
                               'linux': 'LINUX',
                               'android': 'ANDROID',
                               'mac': 'MAC'}
@@ -180,6 +182,7 @@ class ConfigDriver(object):
                           'safari': self._setup_safari,
                           'opera': self._setup_opera,
                           'iexplore': self._setup_explorer,
+                          'edge': self._setup_edge,
                           'phantomjs': self._setup_phantomjs,
                           'android': self._setup_appium,
                           'iphone': self._setup_appium}
@@ -225,6 +228,8 @@ class ConfigDriver(object):
             return True
         elif value in ('false', 'False'):
             return False
+        elif str(value).startswith('{') and str(value).endswith('}'):
+            return ast.literal_eval(value)
         else:
             try:
                 return int(value)
@@ -259,6 +264,17 @@ class ConfigDriver(object):
         except NoSectionError:
             pass
 
+        # Add Chrome mobile emulation options
+        prefs = dict()
+        try:
+            for pref, pref_value in dict(self.config.items('ChromeMobileEmulation')).iteritems():
+                self.logger.debug("Added chrome mobile emulation option: {0} = {1}".format(pref, pref_value))
+                prefs[pref] = self._convert_property_type(pref_value)
+            if len(prefs) > 0:
+                options.add_experimental_option("mobileEmulation", prefs)
+        except NoSectionError:
+            pass
+
         # Temporal option to solve https://code.google.com/p/chromedriver/issues/detail?id=799
         options.add_argument("test-type")
         return options
@@ -290,6 +306,15 @@ class ConfigDriver(object):
         explorerdriver = self.config.get('Browser', 'explorerdriver_path')
         self.logger.debug("Explorer driver path given in properties: {0}".format(explorerdriver))
         return webdriver.Ie(explorerdriver)
+
+    def _setup_edge(self):
+        """Setup Edge webdriver
+
+        :returns: a new local Edge driver
+        """
+        edgedriver = self.config.get('Browser', 'edgedriver_path')
+        self.logger.debug("Edge driver path given in properties: {0}".format(edgedriver))
+        return webdriver.Edge(edgedriver)
 
     def _setup_phantomjs(self):
         """Setup phantomjs webdriver

@@ -40,8 +40,8 @@ class VisualTest(object):
 
         self.logger = logging.getLogger(__name__)
         self.driver = selenium_driver.driver
-        self.output_directory = selenium_driver.output_directory
-        self.baseline_directory = selenium_driver.baseline_directory
+        self.output_directory = selenium_driver.visual_output_directory
+        self.baseline_directory = selenium_driver.visual_baseline_directory
         engine_type = selenium_driver.config.get_optional('VisualTests', 'engine', 'pil')
         self.engine = diff_Engine() if engine_type == 'perceptualdiff' else pil_Engine()
         self.capture = False
@@ -53,10 +53,9 @@ class VisualTest(object):
         # Create folders
         if not os.path.exists(self.baseline_directory):
             os.makedirs(self.baseline_directory)
-        if not self.save_baseline:
-            if not os.path.exists(self.output_directory):
-                os.makedirs(self.output_directory)
-            self._copy_template()
+        if not os.path.exists(self.output_directory):
+            os.makedirs(self.output_directory)
+        self._copy_template()
 
     def _get_screenshot(self, exclude_elements=[]):
         """Returns a screenshot of this element as a PIL image.
@@ -101,7 +100,7 @@ class VisualTest(object):
         if not os.path.exists(dst_css_path):
             shutil.copyfile(orig_css_path, dst_css_path)
 
-    def assertScreenshot(self, element_or_selector, filename, file_suffix, threshold=0, exclude_elements=[]):
+    def assertScreenshot(self, element_or_selector, filename, file_suffix=None, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold
 
         :param element_or_selector: either a CSS/XPATH selector as a string or a WebElement object.
@@ -120,29 +119,29 @@ class VisualTest(object):
         exclude_elements = [self.get_element(exclude_element) for exclude_element in exclude_elements]
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
-        unique_name = '{0:0=2d}_{1}__{2}.png'.format(selenium_driver.visual_number, filename, file_suffix)
+        filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
+        unique_name = '{0:0=2d}_{1}.png'.format(selenium_driver.visual_number, filename_with_suffix)
         output_file = os.path.join(self.output_directory, unique_name)
         report_name = '{} ({})'.format(file_suffix, filename)
 
+        # Save the new screenshot
+        if element:
+            element.get_screenshot(exclude_elements).save(output_file)
+        else:
+            self.driver.save_screenshot(output_file)
+            self.exclude_elements_from_image_file(output_file, exclude_elements)
+        selenium_driver.visual_number += 1
+
         # Determine whether we should save the baseline image
         if self.save_baseline or not os.path.exists(baseline_file):
-            # Save the baseline screenshot and bail out
-            if element:
-                element.get_screenshot(exclude_elements).save(baseline_file)
-            else:
-                self.driver.save_screenshot(baseline_file)
-                self.exclude_elements_from_image_file(baseline_file, exclude_elements)
+            # Copy screenshot to baseline
+            shutil.copyfile(output_file, baseline_file)
+
             if selenium_driver.config.getboolean_optional('VisualTests', 'complete_report'):
-                self._add_to_report('baseline', report_name, baseline_file, None, 'Added to baseline')
+                self._add_to_report('baseline', report_name, output_file, None, 'Added to baseline')
+
             self.logger.debug("Visual screenshot '{}' saved in visualtests/baseline folder".format(filename))
         else:
-            # Save the new screenshot
-            if element:
-                element.get_screenshot(exclude_elements).save(output_file)
-            else:
-                self.driver.save_screenshot(output_file)
-                self.exclude_elements_from_image_file(output_file, exclude_elements)
-            selenium_driver.visual_number += 1
             # Compare the screenshots
             self._compare_files(report_name, output_file, baseline_file, threshold)
 

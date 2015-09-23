@@ -1,6 +1,20 @@
 seleniumtid changelog
 =====================
 
+v0.10.0
+-------
+
+*Release date: 2015-09-23*
+
+  * Add support to Edge Windows browser
+  * New config property 'summary_prefix' in [Jira] section to modify default TCE summary
+  * Add scroll_element_into_view method to PageElement that scroll to element
+  * Add parent parameter to PageElement when element must be found from parent
+  * Page elements can be defined as class attributes, it is no longer necessary to define them as instance attributes in init_page_elements()
+  * Add wait_until_visible, wait_until_not_visible and assertScreenshot methods to PageElement
+  * Allow to set Chrome mobile options from properties file  
+    New config section [ChromeMobileEmulation] with mobile emulation options, e.g. 'deviceName = Google Nexus 5'
+
 v0.9.3
 ------
 

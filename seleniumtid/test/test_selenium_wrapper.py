@@ -28,8 +28,8 @@ class SeleniumWrapperCommon(unittest.TestCase):
     def tearDown(self):
         # Remove environment properties
         try:
-            del os.environ["Files_logging"]
-            del os.environ["Files_properties"]
+            del os.environ["Config_log_filename"]
+            del os.environ["Config_prop_filenames"]
             del os.environ["Browser_browser"]
         except KeyError:
             pass
@@ -39,19 +39,21 @@ class SeleniumWrapperCommon(unittest.TestCase):
 
 class SeleniumWrapperPropertiesTests(SeleniumWrapperCommon):
     def setUp(self):
-        os.environ["Files_logging"] = os.path.join(self.root_path, 'conf', 'logging.conf')
+        os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
         self.wrapper = SeleniumWrapper()
+        self.wrapper.config_directory = ''
+        self.wrapper.output_directory = ''
         self.wrapper.configure_logger()
 
     def test_configure_properties(self):
-        os.environ["Files_properties"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
+        os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
         self.wrapper.configure_properties()
         self.assertEquals('firefox', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEquals('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
         self.assertEquals(None, self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_android(self):
-        os.environ["Files_properties"] = os.path.join(self.root_path, 'conf', 'android-properties.cfg')
+        os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'android-properties.cfg')
         self.wrapper.configure_properties()
         self.assertEquals('android', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEquals(None, self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
@@ -59,7 +61,7 @@ class SeleniumWrapperPropertiesTests(SeleniumWrapperCommon):
                           self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_two_files(self):
-        os.environ["Files_properties"] = (os.path.join(self.root_path, 'conf', 'properties.cfg') + ';' +
+        os.environ["Config_prop_filenames"] = (os.path.join(self.root_path, 'conf', 'properties.cfg') + ';' +
                                           os.path.join(self.root_path, 'conf', 'android-properties.cfg'))
         self.wrapper.configure_properties()
         self.assertEquals('android', self.wrapper.config.get('Browser', 'browser'))  # get last value
@@ -68,7 +70,7 @@ class SeleniumWrapperPropertiesTests(SeleniumWrapperCommon):
                           self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_two_files_android_first(self):
-        os.environ["Files_properties"] = (os.path.join(self.root_path, 'conf', 'android-properties.cfg') + ';' +
+        os.environ["Config_prop_filenames"] = (os.path.join(self.root_path, 'conf', 'android-properties.cfg') + ';' +
                                           os.path.join(self.root_path, 'conf', 'properties.cfg'))
         self.wrapper.configure_properties()
         self.assertEquals('firefox', self.wrapper.config.get('Browser', 'browser'))  # get last value
@@ -77,7 +79,7 @@ class SeleniumWrapperPropertiesTests(SeleniumWrapperCommon):
                           self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_system_property(self):
-        os.environ["Files_properties"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
+        os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
         os.environ["Browser_browser"] = 'opera'
         self.wrapper.configure_properties()
         self.assertEquals('opera', self.wrapper.config.get('Browser', 'browser'))
@@ -87,12 +89,12 @@ class SeleniumWrapperPropertiesTests(SeleniumWrapperCommon):
         self.assertRaisesRegexp(Exception, 'Properties config file not found', self.wrapper.configure_properties)
 
     def test_configure_properties_file_not_found(self):
-        os.environ["Files_properties"] = os.path.join(self.root_path, 'conf', 'notfound-properties.cfg')
+        os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'notfound-properties.cfg')
         self.assertRaisesRegexp(Exception, 'Properties config file not found', self.wrapper.configure_properties)
 
     def test_configure_properties_no_changes(self):
         # Configure properties
-        os.environ["Files_properties"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
+        os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
         self.wrapper.configure_properties()
         self.assertEquals('firefox', self.wrapper.config.get('Browser', 'browser'))
 
@@ -109,7 +111,7 @@ class SeleniumWrapperPropertiesTests(SeleniumWrapperCommon):
 
     def test_configure_properties_change_configuration_file(self):
         # Configure properties
-        os.environ["Files_properties"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
+        os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
         self.wrapper.configure_properties()
         self.assertEquals('firefox', self.wrapper.config.get('Browser', 'browser'))
 
@@ -119,7 +121,7 @@ class SeleniumWrapperPropertiesTests(SeleniumWrapperCommon):
         self.assertEquals(new_browser, self.wrapper.config.get('Browser', 'browser'))
 
         # Change file and try to configure again
-        os.environ["Files_properties"] = os.path.join(self.root_path, 'conf', 'android-properties.cfg')
+        os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'android-properties.cfg')
         self.wrapper.configure_properties()
 
         # Check that configuration has been initialized
@@ -129,9 +131,11 @@ class SeleniumWrapperPropertiesTests(SeleniumWrapperCommon):
 class SeleniumWrapperLoggerTests(SeleniumWrapperCommon):
     def setUp(self):
         self.wrapper = SeleniumWrapper()
+        self.wrapper.config_directory = ''
+        self.wrapper.output_directory = ''
 
     def test_configure_logger(self):
-        os.environ["Files_logging"] = os.path.join(self.root_path, 'conf', 'logging.conf')
+        os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
         self.wrapper.configure_logger()
         self.assertEquals('DEBUG', logging.getLevelName(self.wrapper.logger.getEffectiveLevel()))
 
@@ -140,13 +144,13 @@ class SeleniumWrapperLoggerTests(SeleniumWrapperCommon):
         self.wrapper.logger.info('No error, default logging configuration')
 
     def test_configure_logger_file_not_found(self):
-        os.environ["Files_logging"] = os.path.join(self.root_path, 'conf', 'notfound-logging.conf')
+        os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'notfound-logging.conf')
         self.wrapper.configure_logger()
         self.wrapper.logger.info('No error, default logging configuration')
 
     def test_configure_logger_no_changes(self):
         # Configure logger
-        os.environ["Files_logging"] = os.path.join(self.root_path, 'conf', 'logging.conf')
+        os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
         self.wrapper.configure_logger()
         logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
         self.assertEquals('DEBUG', logging.getLevelName(logger.level))
@@ -164,7 +168,7 @@ class SeleniumWrapperLoggerTests(SeleniumWrapperCommon):
 
     def test_configure_logger_change_configuration_file(self):
         # Configure logger
-        os.environ["Files_logging"] = os.path.join(self.root_path, 'conf', 'logging.conf')
+        os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
         logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
         self.assertEquals('DEBUG', logging.getLevelName(logger.level))
 
@@ -174,7 +178,7 @@ class SeleniumWrapperLoggerTests(SeleniumWrapperCommon):
         self.assertEquals(new_level, logging.getLevelName(logger.level))
 
         # Change file and try to configure again
-        os.environ["Files_logging"] = os.path.join(self.root_path, 'conf', 'warn-logging.conf')
+        os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'warn-logging.conf')
         self.wrapper.configure_logger()
 
         # Check that configuration has been initialized
@@ -216,8 +220,8 @@ maximizable_browsers = (
 @ddt
 class SeleniumWrapperTests(SeleniumWrapperCommon):
     def setUp(self):
-        os.environ["Files_logging"] = os.path.join(self.root_path, 'conf', 'logging.conf')
-        os.environ["Files_properties"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
+        os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
+        os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
         self.wrapper = SeleniumWrapper()
         self.wrapper.configure()
 
@@ -256,7 +260,7 @@ class SeleniumWrapperTests(SeleniumWrapperCommon):
         self.wrapper.screenshots_number += 1
 
         # Change browser and try to configure again
-        os.environ["Files_properties"] = os.path.join(self.root_path, 'conf', 'android-properties.cfg')
+        os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'android-properties.cfg')
         self.wrapper.configure()
 
         # Check that configuration has been initialized
@@ -271,6 +275,7 @@ class SeleniumWrapperTests(SeleniumWrapperCommon):
         instance.create_driver.return_value = expected_driver
 
         # Check the returned driver
+        self.wrapper.configure()
         self.assertEquals(expected_driver, self.wrapper.connect())
 
         # Check that the wrapper has been configured

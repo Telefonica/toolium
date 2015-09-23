@@ -27,6 +27,7 @@ def setup_driver(scenario):
     world.logger = logging.getLogger()
     # Create driver
     if not hasattr(world, 'driver') or not world.driver:
+        selenium_driver.configure()
         world.driver = selenium_driver.connect()
         world.utils = Utils(world.driver)
         world.remote_video_node = world.utils.get_remote_video_node()
