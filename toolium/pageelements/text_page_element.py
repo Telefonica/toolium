@@ -11,7 +11,7 @@ stipulated in the agreement/contract under which the program(s) have
 been supplied.
 """
 
-from seleniumtid.pageelements.page_element import PageElement
+from toolium.pageelements.page_element import PageElement
 
 
 class Text(PageElement):

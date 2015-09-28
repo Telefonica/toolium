@@ -15,7 +15,7 @@ import unittest
 import logging
 import os
 
-from seleniumtid.selenium_wrapper import SeleniumWrapper
+from toolium.selenium_wrapper import SeleniumWrapper
 from ddt import ddt, data, unpack
 import mock
 
@@ -267,7 +267,7 @@ class SeleniumWrapperTests(SeleniumWrapperCommon):
         self.assertEquals('android', self.wrapper.config.get('Browser', 'browser'))
         self.assertEquals(1, self.wrapper.screenshots_number)
 
-    @mock.patch('seleniumtid.selenium_wrapper.ConfigDriver')
+    @mock.patch('toolium.selenium_wrapper.ConfigDriver')
     def test_connect(self, ConfigDriver):
         # Mock data
         expected_driver = 'WEBDRIVER'

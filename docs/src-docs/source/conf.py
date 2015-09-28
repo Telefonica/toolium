@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# seleniumtid documentation build configuration file, created by
+# toolium documentation build configuration file, created by
 # sphinx-quickstart on Mon Mar 31 17:34:16 2014.
 #
 # This file is execfile()d with the current directory set to its
@@ -52,7 +52,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'seleniumtid'
+project = u'toolium'
 copyright = u'2014, Telefónica I+D'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -191,7 +191,7 @@ html_theme = 'default'
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'seleniumtiddoc'
+htmlhelp_basename = 'tooliumdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -211,7 +211,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'seleniumtid.tex', u'seleniumtid Documentation',
+    ('index', 'toolium.tex', u'toolium Documentation',
      u'Telefónica I+D', 'manual'),
 ]
 
@@ -241,7 +241,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'seleniumtid', u'seleniumtid Documentation',
+    ('index', 'toolium', u'toolium Documentation',
      [u'Telefónica I+D'], 1)
 ]
 
@@ -255,8 +255,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'seleniumtid', u'seleniumtid Documentation',
-     u'Telefónica I+D', 'seleniumtid', 'One line description of project.',
+    ('index', 'toolium', u'toolium Documentation',
+     u'Telefónica I+D', 'toolium', 'One line description of project.',
      'Miscellaneous'),
 ]
 

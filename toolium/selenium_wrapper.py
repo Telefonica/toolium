@@ -15,8 +15,8 @@ import logging.config
 import os
 import datetime
 
-from seleniumtid.config_driver import ConfigDriver
-from seleniumtid.config_parser import ExtendedConfigParser
+from toolium.config_driver import ConfigDriver
+from toolium.config_parser import ExtendedConfigParser
 
 
 class SeleniumWrapper(object):

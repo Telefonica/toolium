@@ -16,9 +16,9 @@ import unittest
 from selenium.webdriver.common.by import By
 import mock
 
-from seleniumtid.pageobjects.page_object import PageObject
-from seleniumtid.pageelements import input_text_page_element, select_page_element
-from seleniumtid.pageelements import *
+from toolium.pageobjects.page_object import PageObject
+from toolium.pageelements import input_text_page_element, select_page_element
+from toolium.pageelements import *
 
 child_element = 'child_element'
 mock_element = None

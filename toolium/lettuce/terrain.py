@@ -15,10 +15,10 @@ import logging
 import re
 
 from lettuce import before, after, world  # @UnresolvedImport
-from seleniumtid import selenium_driver
-from seleniumtid.utils import Utils
-from seleniumtid.jira import add_jira_status, change_all_jira_status
-from seleniumtid.visual_test import VisualTest
+from toolium import selenium_driver
+from toolium.utils import Utils
+from toolium.jira import add_jira_status, change_all_jira_status
+from toolium.visual_test import VisualTest
 
 
 @before.each_scenario

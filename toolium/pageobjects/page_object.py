@@ -14,16 +14,16 @@ been supplied.
 import unittest
 import logging
 
-from seleniumtid import selenium_driver
-from seleniumtid.pageelements.page_element import PageElement
-from seleniumtid.test_cases import AppiumTestCase
-from seleniumtid.utils import Utils
+from toolium import selenium_driver
+from toolium.pageelements.page_element import PageElement
+from toolium.test_cases import AppiumTestCase
+from toolium.utils import Utils
 
 
 class PageObject(unittest.TestCase):
     """
     :type driver: selenium.webdriver.remote.webdriver.WebDriver
-    :type utils: seleniumtid.utils.Utils
+    :type utils: toolium.utils.Utils
     """
 
     def __init__(self, driver=None):

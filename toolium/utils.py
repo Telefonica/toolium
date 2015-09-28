@@ -20,7 +20,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import requests
 
-from seleniumtid import selenium_driver
+from toolium import selenium_driver
 
 
 class Utils(object):

@@ -11,20 +11,18 @@ stipulated in the agreement/contract under which the program(s) have
 been supplied.
 """
 
-from selenium.webdriver.support.ui import Select as SeleniumSelect
+from toolium.pageelements.page_element import PageElement
+from toolium import selenium_driver
 
-from seleniumtid.pageelements.page_element import PageElement
 
-
-class Select(PageElement):
+class InputText(PageElement):
     @property
-    def option(self):
-        return self.select_object.first_selected_option.text
+    def text(self):
+        return self.element().get_attribute("value")
 
-    @option.setter
-    def option(self, value):
-        self.select_object.select_by_visible_text(value)
-
-    @property
-    def select_object(self):
-        return SeleniumSelect(self.element())
+    @text.setter
+    def text(self, value):
+        if selenium_driver.is_ios_test() and not selenium_driver.is_web_test():
+            self.element().set_value(value)
+        else:
+            self.element().send_keys(value)

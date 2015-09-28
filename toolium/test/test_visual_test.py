@@ -15,8 +15,8 @@ import unittest
 import os
 import shutil
 
-from seleniumtid.visual_test import VisualTest
-from seleniumtid import selenium_driver
+from toolium.visual_test import VisualTest
+from toolium import selenium_driver
 
 
 class VisualTests(unittest.TestCase):

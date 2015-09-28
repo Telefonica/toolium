@@ -13,13 +13,13 @@ been supplied.
 
 from selenium.webdriver.remote.webelement import WebElement
 
-from seleniumtid.visual_test import VisualTest
+from toolium.visual_test import VisualTest
 
 
 class PageElement(object):
     """
     :type driver: selenium.webdriver.remote.webdriver.WebDriver
-    :type utils: seleniumtid.utils.Utils
+    :type utils: toolium.utils.Utils
     """
     driver = None
     utils = None

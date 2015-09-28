@@ -15,11 +15,11 @@ import unittest
 import logging
 import sys
 
-from seleniumtid import selenium_driver
-from seleniumtid.utils import Utils
-from seleniumtid.jira import change_all_jira_status
-from seleniumtid.visual_test import VisualTest
-from seleniumtid.config_driver import get_error_message_from_exception
+from toolium import selenium_driver
+from toolium.utils import Utils
+from toolium.jira import change_all_jira_status
+from toolium.visual_test import VisualTest
+from toolium.config_driver import get_error_message_from_exception
 
 
 class BasicTestCase(unittest.TestCase):
@@ -111,7 +111,7 @@ class SeleniumTestCase(BasicTestCase):
         remote_video_node: hostname of the remote node if it has enabled a video recorder
 
     :type driver: selenium.webdriver.remote.webdriver.WebDriver
-    :type utils: seleniumtid.utils.Utils
+    :type utils: toolium.utils.Utils
     """
     driver = None
     utils = None

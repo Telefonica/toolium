@@ -14,7 +14,7 @@ been supplied.
 import unittest
 import os
 
-from seleniumtid.config_parser import ExtendedConfigParser
+from toolium.config_parser import ExtendedConfigParser
 from ddt import ddt, data, unpack
 
 

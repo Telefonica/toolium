@@ -15,8 +15,8 @@ import logging
 
 import requests
 
-from seleniumtid import selenium_driver
-from seleniumtid.config_driver import get_error_message_from_exception
+from toolium import selenium_driver
+from toolium.config_driver import get_error_message_from_exception
 
 """Configuration"""
 logger = logging.getLogger(__name__)
