@@ -1,11 +1,11 @@
-Selenium TID Python
-===================
+Toolium
+=======
 
-*seleniumtid* is a python library for testing api, web and mobile applications using requests, selenium and appium tools
+*toolium* is a python library for testing api, web and mobile applications using requests, selenium and appium tools
 
 Last version of this library can be installed with pip from internal artifactory:
 ```
-pip install seleniumtid -i http://artifactory.hi.inet/artifactory/api/pypi/pypi/simple
+pip install toolium -i http://artifactory.hi.inet/artifactory/api/pypi/pypi/simple
 ```
 
 Requirements
@@ -34,6 +34,6 @@ The following packages will be installed:
 Documentation
 -------------
 
-See seleniumtid docs in http://quality/jenkins/job/selenium-tid-python/docs/
+See toolium docs in http://quality/jenkins/job/toolium/docs/
 
 Release notes: [CHANGELOG.md](/CHANGELOG.md)

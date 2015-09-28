@@ -1,59 +1,67 @@
-seleniumtid packages
-====================
+toolium packages
+================
 
 .. toctree::
 
-    seleniumtid.lettuce
-    seleniumtid.pageelements
-    seleniumtid.pageobjects
+    toolium.lettuce
+    toolium.pageelements
+    toolium.pageobjects
 
-seleniumtid modules
-===================
+toolium modules
+===============
 
-seleniumtid.config_driver
--------------------------
+toolium.config_driver
+---------------------
 
-.. automodule:: seleniumtid.config_driver
+.. automodule:: toolium.config_driver
     :members:
     :undoc-members:
     :show-inheritance:
 
-seleniumtid.config_parser
--------------------------
+toolium.config_parser
+---------------------
 
-.. automodule:: seleniumtid.config_parser
+.. automodule:: toolium.config_parser
     :members:
     :undoc-members:
     :show-inheritance:
 
-seleniumtid.jira
-----------------
+toolium.driver_wrapper
+----------------------
 
-.. automodule:: seleniumtid.jira
+.. automodule:: toolium.driver_wrapper
     :members:
     :undoc-members:
     :show-inheritance:
 
-seleniumtid.selenium_test_case
-------------------------------
+toolium.jira
+------------
 
-.. automodule:: seleniumtid.selenium_test_case
+.. automodule:: toolium.jira
     :members:
     :undoc-members:
     :show-inheritance:
 
-seleniumtid.selenium_wrapper
-----------------------------
+toolium.test_cases
+------------------
 
-.. automodule:: seleniumtid.selenium_wrapper
+.. automodule:: toolium.test_cases
     :members:
     :undoc-members:
     :show-inheritance:
 
-seleniumtid.utils
------------------
+toolium.utils
+-------------
 
-.. automodule:: seleniumtid.utils
+.. automodule:: toolium.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+toolium.visual_test
+-------------------
+
+.. automodule:: toolium.visual_test
     :members:
     :undoc-members:
     :show-inheritance:

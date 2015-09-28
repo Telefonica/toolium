@@ -1,10 +1,10 @@
-seleniumtid.lettuce package
-===========================
+toolium.lettuce package
+=======================
 
-seleniumtid.lettuce.terrain
----------------------------
+toolium.lettuce.terrain
+-----------------------
 
-.. automodule:: seleniumtid.lettuce.terrain
+.. automodule:: toolium.lettuce.terrain
     :members:
     :undoc-members:
     :show-inheritance:

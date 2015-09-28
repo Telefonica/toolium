@@ -1,5 +1,12 @@
-seleniumtid changelog
-=====================
+toolium changelog
+=================
+
+v0.11.0
+-------
+
+*Release date: 2015-10-??*
+
+  * Rename library from seleniumtid to toolium
 
 v0.10.0
 -------

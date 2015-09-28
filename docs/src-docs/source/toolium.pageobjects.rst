@@ -1,10 +1,10 @@
-seleniumtid.pageobjects package
-===============================
+toolium.pageobjects package
+===========================
 
-seleniumtid.pageobjects.page_object
------------------------------------
+toolium.pageobjects.page_object
+-------------------------------
 
-.. automodule:: seleniumtid.pageobjects.page_object
+.. automodule:: toolium.pageobjects.page_object
     :members:
     :undoc-members:
     :show-inheritance:

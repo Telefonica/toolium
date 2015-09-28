@@ -1,34 +1,42 @@
-seleniumtid.pageelements package
-================================
+toolium.pageelements package
+============================
 
-seleniumtid.pageelements.input_text_page_element
-------------------------------------------------
+toolium.pageelements.button_page_element
+----------------------------------------
 
-.. automodule:: seleniumtid.pageelements.input_text_page_element
+.. automodule:: toolium.pageelements.button_page_element
     :members:
     :undoc-members:
     :show-inheritance:
 
-seleniumtid.pageelements.page_element
--------------------------------------
-
-.. automodule:: seleniumtid.pageelements.page_element
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-seleniumtid.pageelements.select_page_element
+toolium.pageelements.input_text_page_element
 --------------------------------------------
 
-.. automodule:: seleniumtid.pageelements.select_page_element
+.. automodule:: toolium.pageelements.input_text_page_element
     :members:
     :undoc-members:
     :show-inheritance:
 
-seleniumtid.pageelements.text_page_element
-------------------------------------------
+toolium.pageelements.page_element
+---------------------------------
 
-.. automodule:: seleniumtid.pageelements.text_page_element
+.. automodule:: toolium.pageelements.page_element
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+toolium.pageelements.select_page_element
+----------------------------------------
+
+.. automodule:: toolium.pageelements.select_page_element
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+toolium.pageelements.text_page_element
+--------------------------------------
+
+.. automodule:: toolium.pageelements.text_page_element
     :members:
     :undoc-members:
     :show-inheritance:
