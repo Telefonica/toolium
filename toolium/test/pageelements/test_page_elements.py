@@ -91,7 +91,7 @@ class TestPageElements(unittest.TestCase):
         self.assertEquals(username_value, 'input text value')
 
     def test_set_inputtext(self):
-        input_text_page_element.selenium_driver.is_ios_test = mock.MagicMock(return_value=False)
+        input_text_page_element.toolium_driver.is_ios_test = mock.MagicMock(return_value=False)
 
         page_object = LoginPageObject(self.driver)
         page_object.username.text = 'new input value'

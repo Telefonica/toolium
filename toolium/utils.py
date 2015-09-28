@@ -20,7 +20,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import requests
 
-from toolium import selenium_driver
+from toolium import toolium_driver
 
 
 class Utils(object):
@@ -36,7 +36,7 @@ class Utils(object):
 
     def set_implicit_wait(self):
         """Read timeout from configuration properties and set the implicit wait"""
-        implicitly_wait = selenium_driver.config.get_optional('Common', 'implicitly_wait')
+        implicitly_wait = toolium_driver.config.get_optional('Common', 'implicitly_wait')
         if implicitly_wait:
             self.driver.implicitly_wait(implicitly_wait)
 
@@ -45,13 +45,13 @@ class Utils(object):
 
         :param name: screenshot name suffix
         """
-        filename = '{0:0=2d}_{1}.png'.format(selenium_driver.screenshots_number, name)
-        filepath = os.path.join(selenium_driver.screenshots_directory, filename)
-        if not os.path.exists(selenium_driver.screenshots_directory):
-            os.makedirs(selenium_driver.screenshots_directory)
+        filename = '{0:0=2d}_{1}.png'.format(toolium_driver.screenshots_number, name)
+        filepath = os.path.join(toolium_driver.screenshots_directory, filename)
+        if not os.path.exists(toolium_driver.screenshots_directory):
+            os.makedirs(toolium_driver.screenshots_directory)
         if self.driver.get_screenshot_as_file(filepath):
             self.logger.info("Screenshot saved in " + filepath)
-            selenium_driver.screenshots_number += 1
+            toolium_driver.screenshots_number += 1
 
     def print_all_selenium_logs(self):
         """Print all selenium logs"""
@@ -99,10 +99,10 @@ class Utils(object):
         """
         logging.getLogger("requests").setLevel(logging.WARNING)
         remote_node = None
-        if selenium_driver.config.getboolean_optional('Server', 'enabled'):
+        if toolium_driver.config.getboolean_optional('Server', 'enabled'):
             # Request session info from grid hub
-            host = selenium_driver.config.get('Server', 'host')
-            port = selenium_driver.config.get('Server', 'port')
+            host = toolium_driver.config.get('Server', 'host')
+            port = toolium_driver.config.get('Server', 'port')
             session_id = self.driver.session_id
             url = 'http://{}:{}/grid/api/testsession?session={}'.format(host, port, session_id)
             try:
@@ -184,14 +184,14 @@ class Utils(object):
         :param video_url: video url
         :param video_name: video name
         """
-        filename = '{0:0=2d}_{1}.mp4'.format(selenium_driver.videos_number, video_name)
-        filepath = os.path.join(selenium_driver.videos_directory, filename)
-        if not os.path.exists(selenium_driver.videos_directory):
-            os.makedirs(selenium_driver.videos_directory)
+        filename = '{0:0=2d}_{1}.mp4'.format(toolium_driver.videos_number, video_name)
+        filepath = os.path.join(toolium_driver.videos_directory, filename)
+        if not os.path.exists(toolium_driver.videos_directory):
+            os.makedirs(toolium_driver.videos_directory)
         response = requests.get(video_url)
         open(filepath, 'wb').write(response.content)
         self.logger.info("Video saved in '{}'".format(filepath))
-        selenium_driver.videos_number += 1
+        toolium_driver.videos_number += 1
 
     def _is_remote_video_enabled(self, remote_node):
         """Check if the remote node has the video recorder enabled

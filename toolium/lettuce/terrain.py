@@ -15,7 +15,7 @@ import logging
 import re
 
 from lettuce import before, after, world  # @UnresolvedImport
-from toolium import selenium_driver
+from toolium import toolium_driver
 from toolium.utils import Utils
 from toolium.jira import add_jira_status, change_all_jira_status
 from toolium.visual_test import VisualTest
@@ -27,8 +27,8 @@ def setup_driver(scenario):
     world.logger = logging.getLogger()
     # Create driver
     if not hasattr(world, 'driver') or not world.driver:
-        selenium_driver.configure()
-        world.driver = selenium_driver.connect()
+        toolium_driver.configure()
+        world.driver = toolium_driver.connect()
         world.utils = Utils(world.driver)
         world.remote_video_node = world.utils.get_remote_video_node()
 
@@ -40,11 +40,11 @@ def setup_driver(scenario):
     world.assertScreenshot = assertScreenshot
 
     # Add implicitly wait
-    implicitly_wait = selenium_driver.config.get_optional('Common', 'implicitly_wait')
+    implicitly_wait = toolium_driver.config.get_optional('Common', 'implicitly_wait')
     if (implicitly_wait):
         world.driver.implicitly_wait(implicitly_wait)
     # Maximize browser
-    if selenium_driver.is_maximizable():
+    if toolium_driver.is_maximizable():
         world.driver.maximize_window()
 
 
@@ -62,7 +62,7 @@ def teardown_driver(scenario):
         test_comment = None
 
     # Close browser and stop driver
-    reuse_driver = selenium_driver.config.getboolean_optional('Common', 'reuse_driver')
+    reuse_driver = toolium_driver.config.getboolean_optional('Common', 'reuse_driver')
     if not reuse_driver:
         finalize_driver(scenario.name.replace(' ', '_'), not scenario.failed)
 
@@ -93,7 +93,7 @@ def finalize_driver(video_name, test_passed=True):
     world.driver = None
 
     # Download saved video if video is enabled or if test fails
-    if world.remote_video_node and (selenium_driver.config.getboolean_optional('Server', 'video_enabled')
+    if world.remote_video_node and (toolium_driver.config.getboolean_optional('Server', 'video_enabled')
                                     or not test_passed):
         video_name = video_name if test_passed else 'error_{}'.format(video_name)
         world.utils.download_remote_video(world.remote_video_node, session_id, video_name)

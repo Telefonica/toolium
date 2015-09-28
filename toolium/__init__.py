@@ -11,7 +11,7 @@ stipulated in the agreement/contract under which the program(s) have
 been supplied.
 """
 
-from toolium.selenium_wrapper import SeleniumWrapper
+from toolium.driver_wrapper import DriverWrapper
 
-# Get selenium instance
-selenium_driver = SeleniumWrapper()
+# Get wrapper instance
+toolium_driver = DriverWrapper()

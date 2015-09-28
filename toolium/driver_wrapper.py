@@ -19,7 +19,7 @@ from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
 
 
-class SeleniumWrapper(object):
+class DriverWrapper(object):
     # Singleton instance
     _instance = None
     driver = None
@@ -45,7 +45,7 @@ class SeleniumWrapper(object):
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             # Create new instance
-            cls._instance = super(SeleniumWrapper, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super(DriverWrapper, cls).__new__(cls, *args, **kwargs)
         return cls._instance
 
     def get_configured_value(self, system_property_name, specific_value, default_value):
@@ -67,7 +67,7 @@ class SeleniumWrapper(object):
         # Get config and output logger files
         config_log_filename = self.get_configured_value('Config_log_filename', tc_config_log_filename, 'logging.conf')
         config_log_filename = os.path.join(self.config_directory, config_log_filename)
-        output_log_filename = self.get_configured_value('Output_log_filename', tc_output_log_filename, 'selenium.log')
+        output_log_filename = self.get_configured_value('Output_log_filename', tc_output_log_filename, 'toolium.log')
         output_log_filename = os.path.join(self.output_directory, output_log_filename)
         output_log_filename = output_log_filename.replace('\\', '\\\\')
 

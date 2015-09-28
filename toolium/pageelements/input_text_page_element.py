@@ -12,7 +12,7 @@ been supplied.
 """
 
 from toolium.pageelements.page_element import PageElement
-from toolium import selenium_driver
+from toolium import toolium_driver
 
 
 class InputText(PageElement):
@@ -22,7 +22,7 @@ class InputText(PageElement):
 
     @text.setter
     def text(self, value):
-        if selenium_driver.is_ios_test() and not selenium_driver.is_web_test():
+        if toolium_driver.is_ios_test() and not toolium_driver.is_web_test():
             self.element().set_value(value)
         else:
             self.element().send_keys(value)

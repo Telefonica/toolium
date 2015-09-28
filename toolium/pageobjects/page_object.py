@@ -14,7 +14,7 @@ been supplied.
 import unittest
 import logging
 
-from toolium import selenium_driver
+from toolium import toolium_driver
 from toolium.pageelements.page_element import PageElement
 from toolium.test_cases import AppiumTestCase
 from toolium.utils import Utils
@@ -28,9 +28,9 @@ class PageObject(unittest.TestCase):
 
     def __init__(self, driver=None):
         self.logger = logging.getLogger(__name__)
-        self.driver = driver if driver else selenium_driver.driver
+        self.driver = driver if driver else toolium_driver.driver
         self.utils = Utils(self.driver)
-        self.config = selenium_driver.config
+        self.config = toolium_driver.config
         self.app_strings = AppiumTestCase.app_strings
         self.init_page_elements()
         self._update_page_elements()

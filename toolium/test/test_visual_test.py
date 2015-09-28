@@ -16,7 +16,7 @@ import os
 import shutil
 
 from toolium.visual_test import VisualTest
-from toolium import selenium_driver
+from toolium import toolium_driver
 
 
 class VisualTests(unittest.TestCase):
@@ -35,7 +35,7 @@ class VisualTests(unittest.TestCase):
         os.environ["VisualTests_engine"] = 'pil'
 
         # Create html report in dist/visualtests
-        selenium_driver.visual_output_directory = os.path.join(cls.root_path, 'dist', 'visualtests')
+        toolium_driver.visual_output_directory = os.path.join(cls.root_path, 'dist', 'visualtests')
 
         # Get file paths
         cls.file_v1 = os.path.join(cls.root_path, 'resources', 'register_v1.png')
@@ -44,11 +44,11 @@ class VisualTests(unittest.TestCase):
 
     def setUp(self):
         # Configure properties
-        selenium_driver.configure()
+        toolium_driver.configure()
 
     def tearDown(self):
         # Remove previous conf properties
-        selenium_driver.config_properties_filenames = None
+        toolium_driver.config_properties_filenames = None
 
     @classmethod
     def tearDownClass(cls):
@@ -70,7 +70,7 @@ class VisualTests(unittest.TestCase):
         self.assertIn('by a distance of 522.65', message)
 
     def test_compare_files_diff_fail(self):
-        selenium_driver.config.set('VisualTests', 'fail', 'true')
+        toolium_driver.config.set('VisualTests', 'fail', 'true')
 
         with self.assertRaises(AssertionError):
             VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v2, 0)
@@ -81,19 +81,19 @@ class VisualTests(unittest.TestCase):
         self.assertEquals('', message)
 
     def test_compare_files_size_fail(self):
-        selenium_driver.config.set('VisualTests', 'fail', 'true')
+        toolium_driver.config.set('VisualTests', 'fail', 'true')
 
         with self.assertRaises(AssertionError):
             VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v1_small, 0)
 
     def test_compare_files_perceptualdiff_equals(self):
-        selenium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
+        toolium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
 
         message = VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v1, 0)
         self.assertIsNone(message)
 
     def test_compare_files_perceptualdiff_diff(self):
-        selenium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
+        toolium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
         visual = VisualTest()
 
         # Copy image file
@@ -104,8 +104,8 @@ class VisualTests(unittest.TestCase):
         self.assertIn('3114 pixels are different', message)
 
     def test_compare_files_perceptualdiff_diff_fail(self):
-        selenium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
-        selenium_driver.config.set('VisualTests', 'fail', 'true')
+        toolium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
+        toolium_driver.config.set('VisualTests', 'fail', 'true')
         visual = VisualTest()
 
         # Copy image file
@@ -116,14 +116,14 @@ class VisualTests(unittest.TestCase):
             visual._compare_files(self._testMethodName, image_file, self.file_v2, 0)
 
     def test_compare_files_perceptualdiff_size(self):
-        selenium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
+        toolium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
 
         message = VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v1_small, 0)
         self.assertIn('Image dimensions do not match', message)
 
     def test_compare_files_perceptualdiff_size_fail(self):
-        selenium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
-        selenium_driver.config.set('VisualTests', 'fail', 'true')
+        toolium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
+        toolium_driver.config.set('VisualTests', 'fail', 'true')
 
         with self.assertRaises(AssertionError):
             VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v1_small, 0)
@@ -139,7 +139,7 @@ class VisualTests(unittest.TestCase):
         visual._add_to_report('baseline', self._testMethodName, self.file_v1, None, 'Added to baseline')
 
     def test_exclude_element_from_image_file(self):
-        selenium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
+        toolium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
         visual = VisualTest()
 
         # Copy image file

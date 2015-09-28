@@ -16,7 +16,7 @@ import os
 import shutil
 import re
 
-from toolium import selenium_driver
+from toolium import toolium_driver
 
 try:
     from needle.engines.perceptualdiff_engine import Engine as diff_Engine
@@ -35,17 +35,17 @@ class VisualTest(object):
     report_name = 'VisualTests.html'
 
     def __init__(self):
-        if not selenium_driver.config.getboolean_optional('VisualTests', 'enabled'):
+        if not toolium_driver.config.getboolean_optional('VisualTests', 'enabled'):
             return
 
         self.logger = logging.getLogger(__name__)
-        self.driver = selenium_driver.driver
-        self.output_directory = selenium_driver.visual_output_directory
-        self.baseline_directory = selenium_driver.visual_baseline_directory
-        engine_type = selenium_driver.config.get_optional('VisualTests', 'engine', 'pil')
+        self.driver = toolium_driver.driver
+        self.output_directory = toolium_driver.visual_output_directory
+        self.baseline_directory = toolium_driver.visual_baseline_directory
+        engine_type = toolium_driver.config.get_optional('VisualTests', 'engine', 'pil')
         self.engine = diff_Engine() if engine_type == 'perceptualdiff' else pil_Engine()
         self.capture = False
-        self.save_baseline = selenium_driver.config.getboolean_optional('VisualTests', 'save')
+        self.save_baseline = toolium_driver.config.getboolean_optional('VisualTests', 'save')
 
         # Override get_screenshot method to solve a window size problem in iOS and allow to exclude an element
         NeedleWebElement.get_screenshot = MethodType(self._get_screenshot.__func__, None, NeedleWebElement)
@@ -75,8 +75,8 @@ class VisualTest(object):
         img = self._parent.get_screenshot_as_image()
 
         # Resize image in iOS
-        if selenium_driver.config.get('Browser', 'browser').split('-')[0] == 'iphone':
-            window_size = selenium_driver.driver.get_window_size()
+        if toolium_driver.config.get('Browser', 'browser').split('-')[0] == 'iphone':
+            window_size = toolium_driver.driver.get_window_size()
             size = (window_size['width'], window_size['height'])
             img = img.resize(size, Image.ANTIALIAS)
 
@@ -111,7 +111,7 @@ class VisualTest(object):
         :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
                                  from the assertion.
         """
-        if not selenium_driver.config.getboolean_optional('VisualTests', 'enabled'):
+        if not toolium_driver.config.getboolean_optional('VisualTests', 'enabled'):
             return
 
         # Search elements
@@ -120,7 +120,7 @@ class VisualTest(object):
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
-        unique_name = '{0:0=2d}_{1}.png'.format(selenium_driver.visual_number, filename_with_suffix)
+        unique_name = '{0:0=2d}_{1}.png'.format(toolium_driver.visual_number, filename_with_suffix)
         output_file = os.path.join(self.output_directory, unique_name)
         report_name = '{} ({})'.format(file_suffix, filename)
 
@@ -130,14 +130,14 @@ class VisualTest(object):
         else:
             self.driver.save_screenshot(output_file)
             self.exclude_elements_from_image_file(output_file, exclude_elements)
-        selenium_driver.visual_number += 1
+        toolium_driver.visual_number += 1
 
         # Determine whether we should save the baseline image
         if self.save_baseline or not os.path.exists(baseline_file):
             # Copy screenshot to baseline
             shutil.copyfile(output_file, baseline_file)
 
-            if selenium_driver.config.getboolean_optional('VisualTests', 'complete_report'):
+            if toolium_driver.config.getboolean_optional('VisualTests', 'complete_report'):
                 self._add_to_report('baseline', report_name, output_file, None, 'Added to baseline')
 
             self.logger.debug("Visual screenshot '{}' saved in visualtests/baseline folder".format(filename))
@@ -174,12 +174,12 @@ class VisualTest(object):
         """
         try:
             self.engine.assertSameFiles(image_file, baseline_file, threshold)
-            if selenium_driver.config.getboolean_optional('VisualTests', 'complete_report'):
+            if toolium_driver.config.getboolean_optional('VisualTests', 'complete_report'):
                 self._add_to_report('equal', report_name, image_file, baseline_file)
             return None
         except AssertionError as exc:
             self._add_to_report('diff', report_name, image_file, baseline_file, exc.message)
-            if selenium_driver.config.getboolean_optional('VisualTests', 'fail'):
+            if toolium_driver.config.getboolean_optional('VisualTests', 'fail'):
                 raise exc
             else:
                 self.logger.warn('Visual error: {}'.format(exc.message))

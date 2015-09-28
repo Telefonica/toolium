@@ -15,12 +15,12 @@ import unittest
 import logging
 import os
 
-from toolium.selenium_wrapper import SeleniumWrapper
+from toolium.driver_wrapper import DriverWrapper
 from ddt import ddt, data, unpack
 import mock
 
 
-class SeleniumWrapperCommon(unittest.TestCase):
+class DriverWrapperCommon(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.root_path = os.path.dirname(os.path.realpath(__file__))
@@ -34,13 +34,13 @@ class SeleniumWrapperCommon(unittest.TestCase):
         except KeyError:
             pass
         # Remove previous wrapper instance
-        SeleniumWrapper._instance = None
+        DriverWrapper._instance = None
 
 
-class SeleniumWrapperPropertiesTests(SeleniumWrapperCommon):
+class DriverWrapperPropertiesTests(DriverWrapperCommon):
     def setUp(self):
         os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
-        self.wrapper = SeleniumWrapper()
+        self.wrapper = DriverWrapper()
         self.wrapper.config_directory = ''
         self.wrapper.output_directory = ''
         self.wrapper.configure_logger()
@@ -85,7 +85,7 @@ class SeleniumWrapperPropertiesTests(SeleniumWrapperCommon):
         self.assertEquals('opera', self.wrapper.config.get('Browser', 'browser'))
 
     def test_configure_properties_file_not_configured(self):
-        # Exception raised because default config file doesn't exist in selenium-tid-python
+        # Exception raised because in this case default config file doesn't exist
         self.assertRaisesRegexp(Exception, 'Properties config file not found', self.wrapper.configure_properties)
 
     def test_configure_properties_file_not_found(self):
@@ -128,9 +128,9 @@ class SeleniumWrapperPropertiesTests(SeleniumWrapperCommon):
         self.assertEquals('android', self.wrapper.config.get('Browser', 'browser'))
 
 
-class SeleniumWrapperLoggerTests(SeleniumWrapperCommon):
+class DriverWrapperLoggerTests(DriverWrapperCommon):
     def setUp(self):
-        self.wrapper = SeleniumWrapper()
+        self.wrapper = DriverWrapper()
         self.wrapper.config_directory = ''
         self.wrapper.output_directory = ''
 
@@ -218,11 +218,11 @@ maximizable_browsers = (
 
 
 @ddt
-class SeleniumWrapperTests(SeleniumWrapperCommon):
+class DriverWrapperTests(DriverWrapperCommon):
     def setUp(self):
         os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
         os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
-        self.wrapper = SeleniumWrapper()
+        self.wrapper = DriverWrapper()
         self.wrapper.configure()
 
     def test_singleton(self):
@@ -231,7 +231,7 @@ class SeleniumWrapperTests(SeleniumWrapperCommon):
         self.wrapper.config.set('Browser', 'browser', new_browser)
 
         # Request a new wrapper
-        new_wrapper = SeleniumWrapper()
+        new_wrapper = DriverWrapper()
 
         # Check that wrapper and new_wrapper are the same object
         self.assertEquals(new_browser, self.wrapper.config.get('Browser', 'browser'))
@@ -267,7 +267,7 @@ class SeleniumWrapperTests(SeleniumWrapperCommon):
         self.assertEquals('android', self.wrapper.config.get('Browser', 'browser'))
         self.assertEquals(1, self.wrapper.screenshots_number)
 
-    @mock.patch('toolium.selenium_wrapper.ConfigDriver')
+    @mock.patch('toolium.driver_wrapper.ConfigDriver')
     def test_connect(self, ConfigDriver):
         # Mock data
         expected_driver = 'WEBDRIVER'
