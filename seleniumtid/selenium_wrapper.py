@@ -138,6 +138,15 @@ class SeleniumWrapper(object):
         :param tc_config_log_filename: test case specific logging config filename
         :param tc_output_log_filename: test case specific output logger filename
         """
+        # Add warning message when old system properties are configured
+        deprecated = (('Files_properties', 'Config_directory and Config_prop_filenames'),
+                      ('Files_logging', 'Config_directory and Config_log_filename'),
+                      ('Files_log_filename', 'Output_directory and Output_log_filename'),
+                      ('Files_output_path', 'Output_directory'))
+        for prop in deprecated:
+            if self.get_configured_value(prop[0], None, None):
+                print('[WARN] {} system property is deprecated, use {} instead'.format(prop[0], prop[1]))
+
         # Get config and output directories
         self.config_directory = self.get_configured_value('Config_directory', tc_config_directory,
                                                           os.path.join(os.getcwd(), 'conf'))

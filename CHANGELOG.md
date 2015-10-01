@@ -14,6 +14,10 @@ v0.10.0
   * Add wait_until_visible, wait_until_not_visible and assertScreenshot methods to PageElement
   * Allow to set Chrome mobile options from properties file  
     New config section [ChromeMobileEmulation] with mobile emulation options, e.g. 'deviceName = Google Nexus 5'
+  * Configuration system properties has been renamed  
+    Old properties: Files_output_path, Files_log_filename, Files_properties, Files_logging,  
+    New properties: Output_directory, Output_log_filename, Config_directory, Config_prop_filenames, Config_log_filename
+  * Add set_config_* and set_output_* test case methods to configure output and config files instead of using configuration system properties
 
 v0.9.3
 ------
