@@ -1,7 +1,7 @@
 Toolium
 =======
 
-*toolium* is a python library for testing api, web and mobile applications using requests, selenium and appium tools
+*toolium* is a wrapper tool for testing api, web and mobile applications using requests, selenium and appium libraries
 
 Last version of this library can be installed with pip from internal artifactory:
 ```
