@@ -31,7 +31,6 @@ except ImportError:
 class VisualTest(object):
     template_name = 'VisualTestsTemplate.html'
     row_template_name = 'VisualTestsRowTemplate.html'
-    css_name = 'bootstrap.min.css'
     report_name = 'VisualTests.html'
 
     def __init__(self):
@@ -90,15 +89,11 @@ class VisualTest(object):
         return img
 
     def _copy_template(self):
-        """Copy html template and css file to output directory"""
+        """Copy html template to output directory"""
         orig_template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources', self.template_name)
         dst_template_path = os.path.join(self.output_directory, self.report_name)
         if not os.path.exists(dst_template_path):
             shutil.copyfile(orig_template_path, dst_template_path)
-        orig_css_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources', self.css_name)
-        dst_css_path = os.path.join(self.output_directory, self.css_name)
-        if not os.path.exists(dst_css_path):
-            shutil.copyfile(orig_css_path, dst_css_path)
 
     def assertScreenshot(self, element_or_selector, filename, file_suffix=None, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold
@@ -251,13 +246,7 @@ class VisualTest(object):
         :returns: str with the html row
         """
         img = '<img style="width: 100%" onclick="window.open(this.src)" src="file://{}"/></td>'
-        if result == 'equal':
-            result_class = 'success'
-        elif result == 'diff':
-            result_class = 'danger'
-        else:
-            result_class = ''
-        row = '<tr class=' + result_class + '>'
+        row = '<tr class=' + result + '>'
         row += '<td>' + report_name + '</td>'
 
         # baseline column

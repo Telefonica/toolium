@@ -19,7 +19,7 @@ setup(
     name='toolium',
     version=__VERSION__,
     packages=['toolium', 'toolium.pageobjects', 'toolium.pageelements', 'toolium.lettuce'],
-    package_data={'': ['resources/VisualTestsTemplate.html', 'resources/bootstrap.min.css']},
+    package_data={'': ['resources/VisualTestsTemplate.html']},
     url='',
     license='',
     author='Telefonica I+D',
