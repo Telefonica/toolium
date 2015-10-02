@@ -1,23 +1,29 @@
 # -*- coding: utf-8 -*-
-
 u"""
-(c) Copyright 2015 Telefónica, I+D. Printed in Spain (Europe). All Rights
-Reserved.
+Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
+This file is part of Toolium.
 
-The copyright to the software program(s) is property of Telefónica I+D.
-The program(s) may be used and or copied only with the express written
-consent of Telefónica I+D or in accordance with the terms and conditions
-stipulated in the agreement/contract under which the program(s) have
-been supplied.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
 
 import unittest
 import logging
 import os
 
-from toolium.driver_wrapper import DriverWrapper
 from ddt import ddt, data, unpack
 import mock
+
+from toolium.driver_wrapper import DriverWrapper
 
 
 class DriverWrapperCommon(unittest.TestCase):
@@ -62,7 +68,7 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
 
     def test_configure_properties_two_files(self):
         os.environ["Config_prop_filenames"] = (os.path.join(self.root_path, 'conf', 'properties.cfg') + ';' +
-                                          os.path.join(self.root_path, 'conf', 'android-properties.cfg'))
+                                               os.path.join(self.root_path, 'conf', 'android-properties.cfg'))
         self.wrapper.configure_properties()
         self.assertEquals('android', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEquals('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
@@ -71,7 +77,7 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
 
     def test_configure_properties_two_files_android_first(self):
         os.environ["Config_prop_filenames"] = (os.path.join(self.root_path, 'conf', 'android-properties.cfg') + ';' +
-                                          os.path.join(self.root_path, 'conf', 'properties.cfg'))
+                                               os.path.join(self.root_path, 'conf', 'properties.cfg'))
         self.wrapper.configure_properties()
         self.assertEquals('firefox', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEquals('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties

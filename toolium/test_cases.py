@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
-
 u"""
-(c) Copyright 2014 Telefónica, I+D. Printed in Spain (Europe). All Rights
-Reserved.
+Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
+This file is part of Toolium.
 
-The copyright to the software program(s) is property of Telefónica I+D.
-The program(s) may be used and or copied only with the express written
-consent of Telefónica I+D or in accordance with the terms and conditions
-stipulated in the agreement/contract under which the program(s) have
-been supplied.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
 
 import unittest
@@ -84,8 +89,8 @@ class BasicTestCase(unittest.TestCase):
         # Configure logger and properties
         if not isinstance(self, SeleniumTestCase):
             toolium_driver.configure(False, self._config_directory, self._output_directory,
-                                      self._config_properties_filenames, self._config_log_filename,
-                                      self._output_log_filename)
+                                     self._config_properties_filenames, self._config_log_filename,
+                                     self._output_log_filename)
         # Configure logger
         self.logger = logging.getLogger(__name__)
         self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
@@ -147,8 +152,8 @@ class SeleniumTestCase(BasicTestCase):
         # Create driver
         if not SeleniumTestCase.driver:
             toolium_driver.configure(True, self._config_directory, self._output_directory,
-                                      self._config_properties_filenames, self._config_log_filename,
-                                      self._output_log_filename)
+                                     self._config_properties_filenames, self._config_log_filename,
+                                     self._output_log_filename)
             SeleniumTestCase.driver = toolium_driver.connect()
             SeleniumTestCase.utils = Utils(SeleniumTestCase.driver)
             SeleniumTestCase.remote_video_node = SeleniumTestCase.utils.get_remote_video_node()
