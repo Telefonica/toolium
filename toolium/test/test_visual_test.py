@@ -20,6 +20,8 @@ import unittest
 import os
 import shutil
 
+from PIL import Image
+
 from toolium.visual_test import VisualTest
 from toolium import toolium_driver
 
@@ -67,21 +69,21 @@ class VisualTests(unittest.TestCase):
             pass
 
     def test_compare_files_equals(self):
-        message = VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v1, 0)
+        message = VisualTest().compare_files(self._testMethodName, self.file_v1, self.file_v1, 0)
         self.assertIsNone(message)
 
     def test_compare_files_diff(self):
-        message = VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v2, 0)
+        message = VisualTest().compare_files(self._testMethodName, self.file_v1, self.file_v2, 0)
         self.assertIn('by a distance of 522.65', message)
 
     def test_compare_files_diff_fail(self):
         toolium_driver.config.set('VisualTests', 'fail', 'true')
 
         with self.assertRaises(AssertionError):
-            VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v2, 0)
+            VisualTest().compare_files(self._testMethodName, self.file_v1, self.file_v2, 0)
 
     def test_compare_files_size(self):
-        message = VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v1_small, 0)
+        message = VisualTest().compare_files(self._testMethodName, self.file_v1, self.file_v1_small, 0)
         # PIL returns an empty error
         self.assertEquals('', message)
 
@@ -89,12 +91,12 @@ class VisualTests(unittest.TestCase):
         toolium_driver.config.set('VisualTests', 'fail', 'true')
 
         with self.assertRaises(AssertionError):
-            VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v1_small, 0)
+            VisualTest().compare_files(self._testMethodName, self.file_v1, self.file_v1_small, 0)
 
     def test_compare_files_perceptualdiff_equals(self):
         toolium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
 
-        message = VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v1, 0)
+        message = VisualTest().compare_files(self._testMethodName, self.file_v1, self.file_v1, 0)
         self.assertIsNone(message)
 
     def test_compare_files_perceptualdiff_diff(self):
@@ -105,7 +107,7 @@ class VisualTests(unittest.TestCase):
         image_file = os.path.join(visual.output_directory, self._testMethodName + '.png')
         shutil.copyfile(self.file_v1, image_file)
 
-        message = visual._compare_files(self._testMethodName, image_file, self.file_v2, 0)
+        message = visual.compare_files(self._testMethodName, image_file, self.file_v2, 0)
         self.assertIn('3114 pixels are different', message)
 
     def test_compare_files_perceptualdiff_diff_fail(self):
@@ -118,12 +120,12 @@ class VisualTests(unittest.TestCase):
         shutil.copyfile(self.file_v1, image_file)
 
         with self.assertRaises(AssertionError):
-            visual._compare_files(self._testMethodName, image_file, self.file_v2, 0)
+            visual.compare_files(self._testMethodName, image_file, self.file_v2, 0)
 
     def test_compare_files_perceptualdiff_size(self):
         toolium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
 
-        message = VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v1_small, 0)
+        message = VisualTest().compare_files(self._testMethodName, self.file_v1, self.file_v1_small, 0)
         self.assertIn('Image dimensions do not match', message)
 
     def test_compare_files_perceptualdiff_size_fail(self):
@@ -131,7 +133,7 @@ class VisualTests(unittest.TestCase):
         toolium_driver.config.set('VisualTests', 'fail', 'true')
 
         with self.assertRaises(AssertionError):
-            VisualTest()._compare_files(self._testMethodName, self.file_v1, self.file_v1_small, 0)
+            VisualTest().compare_files(self._testMethodName, self.file_v1, self.file_v1_small, 0)
 
     def test_get_html_row(self):
         row = VisualTest()._get_html_row('diff', self._testMethodName, self.file_v1, self.file_v2)
@@ -143,7 +145,7 @@ class VisualTests(unittest.TestCase):
         visual._add_to_report('equal', self._testMethodName, self.file_v1, self.file_v1)
         visual._add_to_report('baseline', self._testMethodName, self.file_v1, None, 'Added to baseline')
 
-    def test_exclude_element_from_image_file(self):
+    def test_exclude_element(self):
         toolium_driver.config.set('VisualTests', 'engine', 'perceptualdiff')
         visual = VisualTest()
 
@@ -151,33 +153,39 @@ class VisualTests(unittest.TestCase):
         image_file = os.path.join(visual.output_directory, self._testMethodName + '.png')
         shutil.copyfile(self.file_v1, image_file)
 
-        class FakeElement():
-            def get_dimensions(self):
-                return {'left': 250, 'top': 40, 'width': 300, 'height': 40}
-
-        elements = [FakeElement()]
-
-        visual.exclude_elements_from_image_file(image_file, elements)
+        elements = [FakeElement(x=250, y=40, height=40, width=300)]
+        visual.exclude_elements(Image.open(image_file), elements)
 
         # Compare only to add image to visual report
-        message = visual._compare_files(self._testMethodName, image_file, image_file, 0)
+        message = visual.compare_files(self._testMethodName, image_file, image_file, 0)
         self.assertIsNone(message)
 
-    def test_exclude_element_from_image_file_outofimage(self):
+    def test_exclude_element_outofimage(self):
         visual = VisualTest()
 
         # Copy image file
         image_file = os.path.join(visual.output_directory, self._testMethodName + '.png')
         shutil.copyfile(self.file_v1, image_file)
 
-        class FakeElement():
-            def get_dimensions(self):
-                return {'left': 250, 'top': 40, 'width': 1500, 'height': 500}
-
-        elements = [FakeElement()]
-
-        visual.exclude_elements_from_image_file(image_file, elements)
+        elements = [FakeElement(x=250, y=40, height=50, width=1500)]
+        visual.exclude_elements(Image.open(image_file), elements)
 
         # Compare only to add image to visual report
-        message = visual._compare_files(self._testMethodName, image_file, image_file, 0)
+        message = visual.compare_files(self._testMethodName, image_file, image_file, 0)
         self.assertIsNone(message)
+
+
+class FakeElement():
+    def __init__(self, x, y, height, width):
+        self.x = x
+        self.y = y
+        self.height = height
+        self.width = width
+
+    @property
+    def location(self):
+        return {'x': self.x, 'y': self.y}
+
+    @property
+    def size(self):
+        return {'height': self.height, 'width': self.width}

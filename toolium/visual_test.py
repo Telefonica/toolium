@@ -20,14 +20,15 @@ import logging
 import os
 import shutil
 import re
+from StringIO import StringIO
+
+from selenium.webdriver.remote.webelement import WebElement
 
 from toolium import toolium_driver
 
 try:
     from needle.engines.perceptualdiff_engine import Engine as diff_Engine
     from needle.engines.pil_engine import Engine as pil_Engine
-    from needle.driver import NeedleWebElement
-    from types import MethodType
     from PIL import Image
 except ImportError:
     pass
@@ -35,87 +36,49 @@ except ImportError:
 
 class VisualTest(object):
     template_name = 'VisualTestsTemplate.html'
-    row_template_name = 'VisualTestsRowTemplate.html'
     report_name = 'VisualTests.html'
 
     def __init__(self):
         if not toolium_driver.config.getboolean_optional('VisualTests', 'enabled'):
             return
+        if 'diff_Engine' not in globals():
+            raise Exception('The visual tests are enabled, but needle is not installed')
 
         self.logger = logging.getLogger(__name__)
-        self.driver = toolium_driver.driver
         self.output_directory = toolium_driver.visual_output_directory
         self.baseline_directory = toolium_driver.visual_baseline_directory
         engine_type = toolium_driver.config.get_optional('VisualTests', 'engine', 'pil')
         self.engine = diff_Engine() if engine_type == 'perceptualdiff' else pil_Engine()
-        self.capture = False
         self.save_baseline = toolium_driver.config.getboolean_optional('VisualTests', 'save')
-
-        # Override get_screenshot method to solve a window size problem in iOS and allow to exclude an element
-        NeedleWebElement.get_screenshot = MethodType(self._get_screenshot.__func__, None, NeedleWebElement)
 
         # Create folders
         if not os.path.exists(self.baseline_directory):
             os.makedirs(self.baseline_directory)
         if not os.path.exists(self.output_directory):
             os.makedirs(self.output_directory)
-        self._copy_template()
 
-    def _get_screenshot(self, exclude_elements=[]):
-        """Returns a screenshot of this element as a PIL image.
-
-        :param exclude_elements: WebElement objects to be excluded
-        :returns: Image object with the screenshot
-        """
-        d = self.get_dimensions()
-
-        # Cast values to int in order for _ImageCrop not to break
-        d['left'] = int(d['left'])
-        d['top'] = int(d['top'])
-        d['width'] = int(d['width'])
-        d['height'] = int(d['height'])
-
-        # Get screenshot
-        img = self._parent.get_screenshot_as_image()
-
-        # Resize image in iOS
-        if toolium_driver.config.get('Browser', 'browser').split('-')[0] == 'iphone':
-            window_size = toolium_driver.driver.get_window_size()
-            size = (window_size['width'], window_size['height'])
-            img = img.resize(size, Image.ANTIALIAS)
-
-        # Exclude elements
-        for element in exclude_elements:
-            img = VisualTest.exclude_element_from_image(img, element)
-
-        # Crop image
-        img = img.crop((d['left'], d['top'], d['left'] + d['width'], d['top'] + d['height']))
-
-        return img
-
-    def _copy_template(self):
-        """Copy html template to output directory"""
+        # Copy html template to output directory
         orig_template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources', self.template_name)
         dst_template_path = os.path.join(self.output_directory, self.report_name)
         if not os.path.exists(dst_template_path):
             shutil.copyfile(orig_template_path, dst_template_path)
 
-    def assertScreenshot(self, element_or_selector, filename, file_suffix=None, threshold=0, exclude_elements=[]):
+    def assertScreenshot(self, element_or_locator, filename, file_suffix=None, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold
 
-        :param element_or_selector: either a CSS/XPATH selector as a string or a WebElement object.
-                                    If None, a full screenshot is taken.
+        :param element_or_locator: either a WebElement, a PageElement or an element locator as a tuple (locator_type,
+                                   locator_value). If None, a full screenshot is taken.
         :param filename: the filename for the screenshot, which will be appended with ``.png``
         :param file_suffix: a string to be appended to the output filename
         :param threshold: the threshold for triggering a test failure
-        :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
-                                 from the assertion.
+        :param exclude_elements: list of WebElements, a PageElement or element locators as a tuple (locator_type,
+                                 locator_value) that must be excluded from the assertion.
         """
         if not toolium_driver.config.getboolean_optional('VisualTests', 'enabled'):
             return
 
         # Search elements
-        element = self.get_element(element_or_selector)
+        element = self.get_element(element_or_locator)
         exclude_elements = [self.get_element(exclude_element) for exclude_element in exclude_elements]
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
@@ -124,12 +87,16 @@ class VisualTest(object):
         output_file = os.path.join(self.output_directory, unique_name)
         report_name = '{} ({})'.format(file_suffix, filename)
 
-        # Save the new screenshot
-        if element:
-            element.get_screenshot(exclude_elements).save(output_file)
+        # Get screenshot and modify it
+        if toolium_driver.is_ios_test() or (exclude_elements and len(exclude_elements) > 0) or element:
+            img = Image.open(StringIO(toolium_driver.driver.get_screenshot_as_png()))
+            img = self.ios_resize(img)
+            img = self.exclude_elements(img, exclude_elements)
+            img = self.crop_element(img, element)
+            img.save(output_file)
         else:
-            self.driver.save_screenshot(output_file)
-            self.exclude_elements_from_image_file(output_file, exclude_elements)
+            # Faster method if the screenshot must not be modified
+            toolium_driver.driver.save_screenshot(output_file)
         toolium_driver.visual_number += 1
 
         # Determine whether we should save the baseline image
@@ -143,27 +110,80 @@ class VisualTest(object):
             self.logger.debug("Visual screenshot '{}' saved in visualtests/baseline folder".format(filename))
         else:
             # Compare the screenshots
-            self._compare_files(report_name, output_file, baseline_file, threshold)
+            self.compare_files(report_name, output_file, baseline_file, threshold)
 
-    def get_element(self, element_or_selector):
-        """Search element by xpath or css
+    @staticmethod
+    def get_element(element_or_locator):
+        """Search element by its locator
 
-        :param element_or_selector: either a CSS/XPATH selector as a string or a WebElement object
+        :param element_or_locator: either a WebElement, a PageElement or an element locator as a tuple (locator_type,
+                                   locator_value).
         :returns: WebElement object
         """
-        if element_or_selector is None:
+        if element_or_locator is None:
             element = None
-        elif isinstance(element_or_selector, NeedleWebElement):
-            element = element_or_selector
-        elif '//' in element_or_selector:
-            element = self.driver.find_element_by_xpath(element_or_selector)
-        elif element_or_selector.startswith('.'):
-            element = self.driver.find_element_by_ios_uiautomation(element_or_selector)
+        elif isinstance(element_or_locator, WebElement):
+            element = element_or_locator
         else:
-            element = self.driver.find_element_by_css_selector(element_or_selector)
+            try:
+                # PageElement
+                element = element_or_locator.element()
+            except AttributeError:
+                element = toolium_driver.driver.find_element(*element_or_locator)
         return element
 
-    def _compare_files(self, report_name, image_file, baseline_file, threshold):
+    @staticmethod
+    def ios_resize(img):
+        """Resize image in iOS to fit window size
+
+        :param img: image object
+        :returns: modfied image object
+        """
+        if toolium_driver.is_ios_test():
+            window_size = toolium_driver.driver.get_window_size()
+            img = img.resize((window_size['width'], window_size['height']), Image.ANTIALIAS)
+        return img
+
+    @staticmethod
+    def crop_element(img, element):
+        """Crop image to fit element
+
+        :param img: image object
+        :param element: WebElement object
+        :returns: modfied image object
+        """
+        if element:
+            location = element.location
+            size = element.size
+            elem_box = (location['x'], location['y'], location['x'] + size['width'], location['y'] + size['height'])
+            img = img.crop(elem_box)
+        return img
+
+    @staticmethod
+    def exclude_elements(img, elements):
+        """Modify image hiding elements with a black rectangle
+
+        :param img: image object
+        :param elements: WebElement objects to be excluded
+        """
+        if elements and len(elements) > 0:
+            img = img.convert("RGBA")
+            pixel_data = img.load()
+
+            for element in elements:
+                location = element.location
+                size = element.size
+
+                for y in xrange(int(location['y']), int(location['y'] + size['height'])):
+                    for x in xrange(int(location['x']), int(location['x'] + size['width'])):
+                        try:
+                            pixel_data[x, y] = (0, 0, 0, 255)
+                        except IndexError:
+                            pass
+
+        return img
+
+    def compare_files(self, report_name, image_file, baseline_file, threshold):
         """Compare two image files and add result to the html report
 
         :param report_name: name to show in html report
@@ -185,44 +205,6 @@ class VisualTest(object):
                 self.logger.warn('Visual error: {}'.format(exc.message))
                 return exc.message
 
-    @staticmethod
-    def exclude_elements_from_image_file(image_file, elements):
-        """Modify image file hiding elements with a black rectangle
-
-        :param image_file: image file path
-        :param elements: WebElement objects to be excluded
-        """
-        if len(elements) == 0:
-            return
-
-        img = Image.open(image_file)
-        for element in elements:
-            img = VisualTest.exclude_element_from_image(img, element)
-        img.save(image_file, "PNG")
-
-    @staticmethod
-    def exclude_element_from_image(img, element):
-        """Modify image object hiding an element with a black rectangle
-
-        :param img: image object
-        :param element: WebElement object to be excluded
-        """
-        if element is None:
-            return img
-
-        img = img.convert("RGBA")
-        pixdata = img.load()
-        d = element.get_dimensions()
-
-        for y in xrange(d['top'], d['top'] + d['height']):
-            for x in xrange(d['left'], d['left'] + d['width']):
-                try:
-                    pixdata[x, y] = (0, 0, 0, 255)
-                except IndexError:
-                    pass
-
-        return img
-
     def _add_to_report(self, result, report_name, image_file, baseline_file, message=None):
         """Add the result of a visual test to the html report
 
@@ -240,7 +222,8 @@ class VisualTest(object):
             f.seek(0)
             f.write(report)
 
-    def _get_html_row(self, result, report_name, image_file, baseline_file, message=None):
+    @staticmethod
+    def _get_html_row(result, report_name, image_file, baseline_file, message=None):
         """Create the html row with the result of a visual test
 
         :param result: comparation result (equal, diff, baseline)
