@@ -25,8 +25,6 @@ from toolium.config_driver import get_error_message_from_exception
 
 """Configuration"""
 logger = logging.getLogger(__name__)
-# Base url of the test execution service
-JIRA_EXECUTION_URL = 'http://qacore02.hi.inet/jira/test-case-execution'
 # Dict to save tuples with jira keys, their test status and comments
 jira_tests_status = {}
 
@@ -88,6 +86,7 @@ def change_jira_status_with_config(test_key, test_status, test_comment):
     """
     config = toolium_driver.config
     if config.getboolean_optional('Jira', 'enabled'):
+        execution_url = config.get_optional('Jira', 'execution_url')
         summary_prefix = config.get_optional('Jira', 'summary_prefix')
         labels = config.get_optional('Jira', 'labels')
         comments = config.get_optional('Jira', 'comments')
@@ -96,13 +95,16 @@ def change_jira_status_with_config(test_key, test_status, test_comment):
         fix_version = config.get_optional('Jira', 'fixversion')
         build = config.get_optional('Jira', 'build')
         only_if_changes = config.getboolean_optional('Jira', 'onlyifchanges')
-        change_jira_status(test_key, test_status, summary_prefix, labels, comments, fix_version, build, only_if_changes)
+        change_jira_status(execution_url, test_key, test_status, summary_prefix, labels, comments, fix_version, build,
+                           only_if_changes)
 
 
-def change_jira_status(test_key, test_status, summary_prefix=None, labels=None, comments=None, fix_version=None,
+def change_jira_status(execution_url, test_key, test_status, summary_prefix=None, labels=None, comments=None,
+                       fix_version=None,
                        build=None, only_if_changes=False):
     """Update test status in Jira
 
+    :param execution_url: url of the jira test case execution service
     :param test_key: test case key in Jira
     :param test_status: test case status
     :param summary_prefix: test case summary prefix
@@ -120,7 +122,16 @@ def change_jira_status(test_key, test_status, summary_prefix=None, labels=None, 
                'version': fix_version, 'build': build}
     if only_if_changes:
         payload['onlyIfStatusChanges'] = 'true'
-    response = requests.get(JIRA_EXECUTION_URL, params=payload)
+    try:
+        response = requests.get(execution_url, params=payload)
+    except Exception as e:
+        if execution_url:
+            logger.warn(
+                "Error updating Test Case '{}' using execution_url '{}': {}".format(test_key, execution_url, e.message))
+        else:
+            logger.warn("Error updating Test Case '{}': execution_url is not configured".format(test_key))
+        return
+
     logger.debug("Request url: {}".format(response.url))
     if response.status_code >= 400:
         logger.warn("Error updating Test Case '{}': [{}] {}".format(test_key, response.status_code, response.content))

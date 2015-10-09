@@ -63,7 +63,7 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
         self.wrapper.configure_properties()
         self.assertEquals('android', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEquals(None, self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
-        self.assertEquals('http://qacore02/sites/seleniumExamples/ApiDemos-debug.apk',
+        self.assertEquals('http://invented_url/Demo.apk',
                           self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_two_files(self):
@@ -72,7 +72,7 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
         self.wrapper.configure_properties()
         self.assertEquals('android', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEquals('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
-        self.assertEquals('http://qacore02/sites/seleniumExamples/ApiDemos-debug.apk',
+        self.assertEquals('http://invented_url/Demo.apk',
                           self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_two_files_android_first(self):
@@ -81,7 +81,7 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
         self.wrapper.configure_properties()
         self.assertEquals('firefox', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEquals('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
-        self.assertEquals('http://qacore02/sites/seleniumExamples/ApiDemos-debug.apk',
+        self.assertEquals('http://invented_url/Demo.apk',
                           self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_system_property(self):
@@ -200,14 +200,14 @@ mobile_tests = (
 )
 
 web_tests = (
-    ('android-4.1.2-on-android', 'C:/TestApp.apk', None, False),
-    ('android', 'C:/TestApp.apk', None, False),
-    ('android', 'C:/TestApp.apk', '', False),
+    ('android-4.1.2-on-android', 'C:/Demo.apk', None, False),
+    ('android', 'C:/Demo.apk', None, False),
+    ('android', 'C:/Demo.apk', '', False),
     ('android', None, 'chrome', True),
     ('android', None, 'chromium', True),
     ('android', None, 'browser', True),
-    ('iphone', '/tmp/TestApp.zip', None, False),
-    ('iphone', '/tmp/TestApp.zip', '', False),
+    ('iphone', '/tmp/Demo.zip', None, False),
+    ('iphone', '/tmp/Demo.zip', '', False),
     ('iphone', None, 'safari', True),
     ('firefox-4.1.2-on-android', None, None, True),
     ('firefox', None, None, True),
