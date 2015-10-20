@@ -1,40 +1,40 @@
-toolium.pageelements package
-============================
+pageelements
+============
 
-toolium.pageelements.button_page_element
-----------------------------------------
+button_page_element
+-------------------
 
 .. automodule:: toolium.pageelements.button_page_element
     :members:
     :undoc-members:
     :show-inheritance:
 
-toolium.pageelements.input_text_page_element
---------------------------------------------
+input_text_page_element
+-----------------------
 
 .. automodule:: toolium.pageelements.input_text_page_element
     :members:
     :undoc-members:
     :show-inheritance:
 
-toolium.pageelements.page_element
----------------------------------
+page_element
+------------
 
 .. automodule:: toolium.pageelements.page_element
     :members:
     :undoc-members:
     :show-inheritance:
 
-toolium.pageelements.select_page_element
-----------------------------------------
+select_page_element
+-------------------
 
 .. automodule:: toolium.pageelements.select_page_element
     :members:
     :undoc-members:
     :show-inheritance:
 
-toolium.pageelements.text_page_element
---------------------------------------
+text_page_element
+-----------------
 
 .. automodule:: toolium.pageelements.text_page_element
     :members:

@@ -1,8 +1,8 @@
-toolium.lettuce package
-=======================
+lettuce
+=======
 
-toolium.lettuce.terrain
------------------------
+terrain
+-------
 
 .. automodule:: toolium.lettuce.terrain
     :members:
