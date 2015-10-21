@@ -3,3 +3,4 @@ include CHANGELOG.md
 include requirements.txt
 include VERSION
 include LICENSE
+include setup.py

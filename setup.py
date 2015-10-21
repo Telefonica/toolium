@@ -22,10 +22,6 @@ __VERSION__ = file('VERSION').read().strip()
 with open('requirements.txt') as f:
     required = f.read().splitlines()
 
-readme = []
-with open('README.md', 'r') as fh:
-    readme = fh.readlines()
-
 setup(
     name='toolium',
     version=__VERSION__,
@@ -35,8 +31,8 @@ setup(
     author='Rubén González Alonso, Telefónica I+D',
     author_email='ruben.gonzalezalonso@telefonica.com',
     url='https://github.com/telefonica/toolium',
-    description='Wrapper tool for Selenium and Appium libraries',
-    long_description='\n'.join(readme),
+    description='Wrapper tool for testing APIs, web and mobile applications using requests, selenium and appium libraries',
+    long_description='',
     keywords=['selenium', 'appium', 'webdriver', 'web automation', 'mobile automation'],
     classifiers=[
         'Development Status :: 3 - Alpha',

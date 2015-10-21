@@ -1,7 +1,9 @@
 Toolium
 =======
 
-*toolium* is a wrapper tool for testing APIs, web and mobile applications using requests, selenium and appium libraries
+*toolium* is a wrapper tool for testing APIs, web and mobile applications using requests, selenium and appium libraries  
+[![Build Status](https://travis-ci.org/Telefonica/toolium.svg?branch=master)](https://travis-ci.org/Telefonica/toolium.svg)
+[![Documentation Status](https://readthedocs.org/projects/toolium/badge/?version=latest)](http://toolium.readthedocs.org/en/latest/?badge=latest)
 
 Requirements
 ------------
