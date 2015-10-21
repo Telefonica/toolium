@@ -1,5 +1,13 @@
-seleniumtid changelog
-=====================
+toolium changelog
+=================
+
+v0.11.0
+-------
+
+*Release date: 2015-10-21*
+
+  * Rename library from seleniumtid to toolium
+  * Distributed under Apache Software License, Version 2
 
 v0.10.0
 -------
