@@ -76,6 +76,7 @@ Docs
 .coverage
 tmp
 output
+.eggs
 
 # Database
 *.sqlite3

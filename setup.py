@@ -20,14 +20,18 @@ from setuptools import setup
 
 __VERSION__ = file('VERSION').read().strip()
 with open('requirements.txt') as f:
-    required = f.read().splitlines()
+    install_requires = f.read().splitlines()
+with open('requirements_dev.txt') as f:
+    tests_require = f.read().splitlines()
 
 setup(
     name='toolium',
     version=__VERSION__,
     packages=['toolium', 'toolium.pageobjects', 'toolium.pageelements', 'toolium.lettuce'],
     package_data={'': ['resources/VisualTestsTemplate.html']},
-    install_requires=required,
+    install_requires=install_requires,
+    tests_require=tests_require,
+    test_suite='toolium.test',
     author='Rubén González Alonso, Telefónica I+D',
     author_email='ruben.gonzalezalonso@telefonica.com',
     url='https://github.com/telefonica/toolium',

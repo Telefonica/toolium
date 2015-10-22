@@ -1,6 +1,13 @@
 toolium changelog
 =================
 
+v0.11.1
+-------
+
+*Release date: 2015-11-??*
+
+  * Configure setup.py to execute tests with 'python setup.py test'
+
 v0.11.0
 -------
 
