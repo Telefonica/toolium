@@ -3,7 +3,7 @@ Toolium
 
 | *toolium* is a wrapper tool for testing APIs, web and mobile
   applications using requests, selenium and appium libraries
-| |Build Status| |Documentation Status|
+| |Build Status| |Coverage Status| |Documentation Status|
 
 Requirements
 ------------
@@ -50,3 +50,5 @@ Release notes: `CHANGELOG.rst </CHANGELOG.rst>`__
    :target: https://travis-ci.org/Telefonica/toolium.svg
 .. |Documentation Status| image:: https://readthedocs.org/projects/toolium/badge/?version=latest
    :target: http://toolium.readthedocs.org/en/latest/?badge=latest
+.. |Coverage Status| image:: https://coveralls.io/repos/Telefonica/toolium/badge.svg?branch=feature%2Fdocs&service=github
+   :target: https://coveralls.io/github/Telefonica/toolium?branch=feature%2Fdocs
