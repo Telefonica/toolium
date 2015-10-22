@@ -4,5 +4,6 @@ Sphinx==1.2.3
 #lettuce               # lettuce tests
 needle                # visual tests
 ddt
+nose
 coverage
 mock==1.0.1

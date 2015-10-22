@@ -19,24 +19,23 @@ limitations under the License.
 from setuptools import setup
 
 __VERSION__ = file('VERSION').read().strip()
-with open('requirements.txt') as f:
-    install_requires = f.read().splitlines()
-with open('requirements_dev.txt') as f:
-    tests_require = f.read().splitlines()
+def read_file(filepath):
+    with open(filepath) as f:
+        return f.read().splitlines()
 
 setup(
     name='toolium',
     version=__VERSION__,
     packages=['toolium', 'toolium.pageobjects', 'toolium.pageelements', 'toolium.lettuce'],
     package_data={'': ['resources/VisualTestsTemplate.html']},
-    install_requires=install_requires,
-    tests_require=tests_require,
+    install_requires=read_file('requirements.txt'),
+    tests_require=read_file('requirements_dev.txt'),
     test_suite='toolium.test',
     author='Rubén González Alonso, Telefónica I+D',
     author_email='ruben.gonzalezalonso@telefonica.com',
     url='https://github.com/telefonica/toolium',
     description='Wrapper tool for testing APIs, web and mobile applications using requests, selenium and appium libraries',
-    long_description='',
+    long_description=read_file('README.rst'),
     keywords=['selenium', 'appium', 'webdriver', 'web automation', 'mobile automation'],
     classifiers=[
         'Development Status :: 3 - Alpha',
