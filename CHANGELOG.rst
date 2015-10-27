@@ -6,6 +6,7 @@ v0.11.1
 
 *Release date: 2015-11-??*
 
+-  Fix initialization error when a page object contains another page object
 -  Configure setup.py to execute tests with 'python setup.py test'
 -  Convert markdown (.md) files to reStructuredText (.rst) and update long\_description with README.rst content
 

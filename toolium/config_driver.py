@@ -68,7 +68,7 @@ class ConfigDriver(object):
 
     def _create_remotedriver(self):
         """Create a driver in a remote server
-        View valid capabilities in https://code.google.com/p/selenium/wiki/DesiredCapabilities
+        View valid capabilities in https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
 
         :returns: a new remote selenium driver
         """

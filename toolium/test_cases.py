@@ -91,7 +91,8 @@ class BasicTestCase(unittest.TestCase):
             toolium_driver.configure(False, self._config_directory, self._output_directory,
                                      self._config_properties_filenames, self._config_log_filename,
                                      self._output_log_filename)
-        # Configure logger
+        # Get config and logger instances
+        self.config = toolium_driver.config
         self.logger = logging.getLogger(__name__)
         self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
 
