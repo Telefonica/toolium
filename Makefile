@@ -55,7 +55,6 @@ default:
 	@echo "    unittest      - Execute unit tests"
 	@echo "    doc           - Build sphinx documentation"
 	@echo "    coverage      - Execute unittests and code coverage"
-	@echo "    pylint        - Run pylint"
 	@echo
 
 init:
@@ -125,13 +124,9 @@ doc: venv
 	@echo
 	@echo "Build finished. The HTML pages are in $(SPHINXBUILDDIR)/html."
 
-pylint: init venv
-	$(VENV)/$(BIN)/pylint --rcfile=pylint.rc -f parseable $(APP) | tee dist/pylint.log
-	@echo ">>> OK. Pylint reports generated in $(ROOT)/dist"
-
 clean:
 	@echo ">>> Cleaning temporal files..."
 	rm -rf $(TMP) dist/ *.egg-info/ build/
 	@echo
 
-.PHONY: all clean venv install sdist egg unittest doc coverage pylint
+.PHONY: all clean venv install sdist egg unittest doc coverage
