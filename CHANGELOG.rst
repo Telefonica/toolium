@@ -8,6 +8,7 @@ v0.11.1
 
 -  Fix initialization error when a page object contains another page object
 -  Fix visual testing error if browser is phantomjs
+-  Fix firefox profile error in remote executions
 -  Configure setup.py to execute tests with 'python setup.py test'
 -  Convert markdown (.md) files to reStructuredText (.rst) and update long\_description with README.rst content
 

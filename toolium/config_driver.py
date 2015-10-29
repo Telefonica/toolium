@@ -183,6 +183,7 @@ class ConfigDriver(object):
             for pref, pref_value in dict(self.config.items('FirefoxPreferences')).iteritems():
                 self.logger.debug("Added firefox preference: {0} = {1}".format(pref, pref_value))
                 profile.set_preference(pref, self._convert_property_type(pref_value))
+            profile.update_preferences()
         except NoSectionError:
             pass
 
