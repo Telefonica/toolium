@@ -37,7 +37,7 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
 
-sys.path.insert(0, os.path.abspath('../../..'))
+sys.path.insert(0, os.path.abspath('../'))
 
 # -- General configuration ------------------------------------------------
 
@@ -69,7 +69,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'toolium'
+project = u'Toolium'
 copyright = u'2015, Telefónica I+D'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -77,8 +77,7 @@ copyright = u'2015, Telefónica I+D'
 # built documents.
 #
 # The short X.Y version.
-__VERSION__ = file('../../../VERSION').read().strip()
-version = __VERSION__
+version = file('../VERSION').read().strip()
 # The full version, including alpha/beta/rc tags.
 import subprocess
 
@@ -227,7 +226,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'toolium.tex', u'toolium Documentation',
+    ('index', 'Toolium.tex', u'Toolium Documentation',
      u'Rubén González Alonso, Telefónica I+D', 'manual'),
 ]
 
@@ -257,7 +256,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'toolium', u'toolium Documentation',
+    ('index', 'Toolium', u'Toolium Documentation',
      [u'Rubén González Alonso, Telefónica I+D'], 1)
 ]
 
@@ -271,9 +270,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'toolium', u'toolium Documentation',
+    ('index', 'Toolium', u'toolium Documentation',
      u'Rubén González Alonso, Telefónica I+D', 'toolium',
-     'Wrapper tool for testing APIs, web and mobile applications using requests, selenium and appium libraries.',
+     'Wrapper tool of Selenium and Appium libraries to test web and mobile applications in a single project.',
      'Miscellaneous'),
 ]
 

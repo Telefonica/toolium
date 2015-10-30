@@ -4,7 +4,7 @@ Toolium Changelog
 v0.11.1
 -------
 
-*Release date: 2015-11-??*
+*Release date: 2015-11-02*
 
 - New config property 'operadriver_path' in [Browser] section to configure the Opera Driver location
 - Fix initialization error when a page object contains another page object
@@ -33,11 +33,11 @@ v0.10.0
 - Page elements can be defined as class attributes, it is no longer necessary to define them as instance attributes in
   init_page_elements()
 - Add wait_until_visible, wait_until_not_visible and assertScreenshot methods to PageElement
-- | Allow to set Chrome mobile options from properties file
-  | New config section [ChromeMobileEmulation] with mobile emulation options, e.g. 'deviceName = Google Nexus 5'
-- | Configuration system properties has been renamed
-  | Old properties: Files_output_path, Files_log_filename, Files_properties, Files_logging
-  | New properties: Output_directory, Output_log_filename, Config_directory, Config_prop_filenames, Config_log_filename
+- Allow to set Chrome mobile options from properties file
+   New config section [ChromeMobileEmulation] with mobile emulation options, e.g. 'deviceName = Google Nexus 5'
+- Configuration system properties has been renamed
+   | Old properties: Files_output_path, Files_log_filename, Files_properties, Files_logging
+   | New properties: Output_directory, Output_log_filename, Config_directory, Config_prop_filenames, Config_log_filename
 - Add set_config_* and set_output_* test case methods to configure output and config files instead of using
   configuration system properties
 
@@ -46,8 +46,8 @@ v0.9.3
 
 *Release date: 2015-07-24*
 
-- | Allow to set custom driver capabilities from properties file
-  | New config section [Capabilities] with driver capabilities
+- Allow to set custom driver capabilities from properties file
+   New config section [Capabilities] with driver capabilities
 - Fix set_value and app_strings errors in mobile web tests
 - Fix set_value error in iOS tests when using needle
 
@@ -77,14 +77,14 @@ v0.9.0
 - Output path (screenshots, videos, visualtests) can be specified with a system property: *Files_output_path*
 - Update app_strings in Appium tests only if the driver has changed
 - Move visual properties from [Server] section to [VisualTests] section
-- | With a visual assertion error, the test can fail or give an error message and continue
-  | New config property 'fail' in [VisualTests] section to fail the test when there is a visual error
-- | Create a html report with the visual tests results
-  | New config property 'complete_report' in [VisualTests] section to include also correct visual assertions in report
-- | Configure multiple baseline name for different browsers, languages and versions
-  | New config property 'baseline_name' in [VisualTests] section to configure the name of the baseline folder
-  |    Allow {browser}, {language} and {platformVersion} variables, i.e. baseline_name = {browser}-{language}
-  |    The default baseline_name is {browser}.
+- With a visual assertion error, the test can fail or give an error message and continue
+   New config property 'fail' in [VisualTests] section to fail the test when there is a visual error
+- Create a html report with the visual tests results
+   New config property 'complete_report' in [VisualTests] section to include also correct visual assertions in report
+- Configure multiple baseline name for different browsers, languages and versions
+   | New config property 'baseline_name' in [VisualTests] section to configure the name of the baseline folder
+   | Allow {browser}, {language} and {platformVersion} variables, i.e. baseline_name = {browser}-{language}
+   | The default baseline_name is {browser}.
 - Add assertFullScreenshot method in SeleniumTestCase
 
 v0.8.6
@@ -108,9 +108,9 @@ v0.8.4
 
 *Release date: 2015-03-05*
 
-- | Allow to set firefox and chrome preferences from properties file
-  | New config section [FirefoxPreferences] with firefox preferences, e.g. 'browser.download.dir = /tmp'
-  | New config section [ChromePreferences] with chrome preferences, e.g. 'download.default_directory = /tmp'
+- Allow to set firefox and chrome preferences from properties file
+   | New config section [FirefoxPreferences] with firefox preferences, e.g. 'browser.download.dir = /tmp'
+   | New config section [ChromePreferences] with chrome preferences, e.g. 'download.default_directory = /tmp'
 
 v0.8.3
 ------
@@ -124,8 +124,8 @@ v0.8.2
 
 *Release date: 2015-02-04*
 
-- | Logging and properties config files can be specified with a system property: *Files_logging* and *Files_properties*
-  | *Files_properties* allows multiple files separated by ;
+- Logging and properties config files can be specified with a system property: *Files_logging* and *Files_properties*
+   *Files_properties* allows multiple files separated by ;
 
 v0.8.1
 ------
@@ -140,10 +140,10 @@ v0.8
 
 *Release date: 2015-01-20*
 
-- | Add visual testing to SeleniumTestCase and AppiumTestCase
-  | New config property 'visualtests_enabled' in [Server] section to enable visual testing
-  | New config property 'visualtests_save' in [Server] section to overwrite baseline images with actual screenshots
-  | New config property 'visualtests_engine' in [Server] section to select image engine (pil or perceptualdiff)
+- Add visual testing to SeleniumTestCase and AppiumTestCase
+   | New config property 'visualtests_enabled' in [Server] section to enable visual testing
+   | New config property 'visualtests_save' in [Server] section to overwrite baseline images with actual screenshots
+   | New config property 'visualtests_engine' in [Server] section to select image engine (pil or perceptualdiff)
 
 v0.7
 ----

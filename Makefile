@@ -8,8 +8,8 @@ MKD2PDF			?= $(shell which markdown-pdf)
 VIRTUALENV		?= virtualenv
 TEST			= tests
 SPHINXBUILD		= sphinx-build
-SPHINXSOURCEDIR	= docs/src-docs/source
-SPHINXBUILDDIR	= docs/src-docs/build
+SPHINXSOURCEDIR	= docs
+SPHINXBUILDDIR	= docs/build
 
 ifeq ($(OS),Windows_NT)
 	BIN = Scripts
