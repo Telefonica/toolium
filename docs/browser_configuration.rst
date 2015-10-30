@@ -41,16 +41,17 @@ iexplore, edge, safari, opera, phantomjs, iphone, android. ::
 
 **Safari**
 
-- No extra configuration is needed
+- Download `SafariDriver.safariextz <http://selenium-release.storage.googleapis.com/index.html>`_
+- Open file in Safari and install it
 
 **Opera**
 
-- Download `selenium-server-standalone-*.jar <http://selenium-release.storage.googleapis.com/index.html>`_
-- Save jar file in a local folder
+- Download `operadriver_*.zip <https://github.com/operasoftware/operachromiumdriver/releases>`_
+- Unzip file and save the executable in a local folder
 - Configure driver path in [Browser] section of properties.cfg file ::
 
     [Browser]
-    seleniumserver_path: C:\Drivers\selenium-server-standalone.jar
+    operadriver_path: C:\Drivers\operadriver.exe
 
 **PhantomJS**
 

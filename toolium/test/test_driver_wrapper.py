@@ -216,8 +216,9 @@ web_tests = (
 maximizable_browsers = (
     ('firefox-4.1.2-on-android', True),
     ('firefox', True),
-    ('opera-12.12-on-xp', False),
-    ('opera', False),
+    ('opera-12.12-on-xp', True),
+    ('opera', True),
+    ('edge', False),
     ('android', False),
     ('iphone', False),
 )

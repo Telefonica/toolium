@@ -6,6 +6,7 @@ v0.11.1
 
 *Release date: 2015-11-??*
 
+- New config property 'operadriver_path' in [Browser] section to configure the Opera Driver location
 - Fix initialization error when a page object contains another page object
 - Fix visual testing error if browser is phantomjs
 - Fix firefox profile error in remote executions

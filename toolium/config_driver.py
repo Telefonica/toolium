@@ -212,9 +212,9 @@ class ConfigDriver(object):
 
         :returns: a new local Chrome driver
         """
-        chromedriver = self.config.get('Browser', 'chromedriver_path')
-        self.logger.debug("Chrome driver path given in properties: {0}".format(chromedriver))
-        return webdriver.Chrome(chromedriver, chrome_options=self._create_chrome_options())
+        chrome_driver = self.config.get('Browser', 'chromedriver_path')
+        self.logger.debug("Chrome driver path given in properties: {0}".format(chrome_driver))
+        return webdriver.Chrome(chrome_driver, chrome_options=self._create_chrome_options())
 
     def _create_chrome_options(self):
         """Create and configure a chrome options object
@@ -262,39 +262,37 @@ class ConfigDriver(object):
 
         :returns: a new local Opera driver
         """
-        seleniumserver = self.config.get('Browser', 'seleniumserver_path')
-        self.logger.debug("Selenium server path given in properties: {0}".format(seleniumserver))
+        opera_driver = self.config.get('Browser', 'operadriver_path')
+        self.logger.debug("Opera driver path given in properties: {0}".format(opera_driver))
         capabilities = DesiredCapabilities.OPERA
-        capabilities['opera.autostart'] = True
-        capabilities['opera.arguments'] = '-fullscreen'
-        return webdriver.Opera(seleniumserver, desired_capabilities=capabilities)
+        return webdriver.Opera(executable_path=opera_driver, desired_capabilities=capabilities)
 
     def _setup_explorer(self):
         """Setup Internet Explorer webdriver
 
         :returns: a new local Internet Explorer driver
         """
-        explorerdriver = self.config.get('Browser', 'explorerdriver_path')
-        self.logger.debug("Explorer driver path given in properties: {0}".format(explorerdriver))
-        return webdriver.Ie(explorerdriver)
+        explorer_driver = self.config.get('Browser', 'explorerdriver_path')
+        self.logger.debug("Explorer driver path given in properties: {0}".format(explorer_driver))
+        return webdriver.Ie(explorer_driver)
 
     def _setup_edge(self):
         """Setup Edge webdriver
 
         :returns: a new local Edge driver
         """
-        edgedriver = self.config.get('Browser', 'edgedriver_path')
-        self.logger.debug("Edge driver path given in properties: {0}".format(edgedriver))
-        return webdriver.Edge(edgedriver)
+        edge_driver = self.config.get('Browser', 'edgedriver_path')
+        self.logger.debug("Edge driver path given in properties: {0}".format(edge_driver))
+        return webdriver.Edge(edge_driver)
 
     def _setup_phantomjs(self):
         """Setup phantomjs webdriver
 
         :returns: a new local phantomjs driver
         """
-        phantomdriver = self.config.get('Browser', 'phantomdriver_path')
-        self.logger.debug("Phantom driver path given in properties: {0}".format(phantomdriver))
-        return webdriver.PhantomJS(executable_path=phantomdriver)
+        phantom_driver = self.config.get('Browser', 'phantomdriver_path')
+        self.logger.debug("Phantom driver path given in properties: {0}".format(phantom_driver))
+        return webdriver.PhantomJS(executable_path=phantom_driver)
 
     def _setup_appium(self):
         """Setup Appium webdriver
