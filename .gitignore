@@ -69,13 +69,13 @@ dwsync.xml
 intermediate
 publish
 .idea
-Docs
 /*.html
 /reports
 .sonar
 .coverage
 tmp
 output
+.eggs
 
 # Database
 *.sqlite3

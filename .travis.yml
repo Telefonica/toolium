@@ -5,4 +5,6 @@ install:
     - pip install -r requirements.txt
     - pip install -r requirements_dev.txt
 script:
-    - python setup.py nosetests
+    - coverage run --source=toolium setup.py test
+after_success:
+    - coveralls

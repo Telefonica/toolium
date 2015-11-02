@@ -155,7 +155,8 @@ class VisualTest(object):
         if element:
             location = element.location
             size = element.size
-            elem_box = (location['x'], location['y'], location['x'] + size['width'], location['y'] + size['height'])
+            elem_box = (int(location['x']), int(location['y']), int(location['x'] + size['width']),
+                        int(location['y'] + size['height']))
             img = img.crop(elem_box)
         return img
 

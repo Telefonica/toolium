@@ -19,21 +19,43 @@ limitations under the License.
 from setuptools import setup
 
 __VERSION__ = file('VERSION').read().strip()
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
+
+
+def read_file(filepath):
+    with open(filepath) as f:
+        return f.read().splitlines()
+
+
+def get_long_description():
+    """Get README content and update rst urls
+
+    :returns: long description
+    """
+    docs_url = 'http://toolium.readthedocs.org/en/latest'
+    readme = read_file('README.rst')
+    description = []
+    for line in readme:
+        desc_line = line.replace('/docs/browser_configuration.rst', docs_url + '/browser_configuration.html')
+        desc_line = desc_line.replace('/CHANGELOG.rst', docs_url + '/changelog.html')
+        description.append(desc_line)
+    return description
+
 
 setup(
     name='toolium',
     version=__VERSION__,
     packages=['toolium', 'toolium.pageobjects', 'toolium.pageelements', 'toolium.lettuce'],
     package_data={'': ['resources/VisualTestsTemplate.html']},
-    install_requires=required,
+    install_requires=read_file('requirements.txt'),
+    tests_require=read_file('requirements_dev.txt'),
+    test_suite='toolium.test',
     author='Rubén González Alonso, Telefónica I+D',
     author_email='ruben.gonzalezalonso@telefonica.com',
     url='https://github.com/telefonica/toolium',
-    description='Wrapper tool for testing APIs, web and mobile applications using requests, selenium and appium libraries',
-    long_description='',
-    keywords=['selenium', 'appium', 'webdriver', 'web automation', 'mobile automation'],
+    description='Wrapper tool of Selenium and Appium libraries to test web and mobile applications in a single project',
+    long_description=get_long_description(),
+    keywords=['selenium', 'appium', 'webdriver', 'web automation', 'mobile automation', 'page object',
+              'visual testing'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

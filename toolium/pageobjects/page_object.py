@@ -40,6 +40,14 @@ class PageObject(unittest.TestCase):
         self.init_page_elements()
         self._update_page_elements()
 
+    def set_driver(self, driver):
+        """Set Selenium driver"""
+        self.driver = driver
+
+    def set_utils(self, utils):
+        """Set utils instance"""
+        self.utils = utils
+
     def init_page_elements(self):
         """Method to initialize page elements"""
         pass
@@ -50,3 +58,8 @@ class PageObject(unittest.TestCase):
             if isinstance(element, PageElement):
                 element.set_driver(self.driver)
                 element.set_utils(self.utils)
+            if isinstance(element, PageObject):
+                element.set_driver(self.driver)
+                element.set_utils(self.utils)
+                # If element is page object, update its page elements
+                element._update_page_elements()
