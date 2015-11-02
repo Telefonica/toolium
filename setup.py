@@ -31,13 +31,14 @@ def get_long_description():
 
     :returns: long description
     """
+    # Get readme content
+    with open('README.rst') as f:
+        readme = f.read()
+
+    # Change rst urls to ReadTheDocs html urls
     docs_url = 'http://toolium.readthedocs.org/en/latest'
-    readme = read_file('README.rst')
-    description = []
-    for line in readme:
-        desc_line = line.replace('/docs/browser_configuration.rst', docs_url + '/browser_configuration.html')
-        desc_line = desc_line.replace('/CHANGELOG.rst', docs_url + '/changelog.html')
-        description.append(desc_line)
+    description = readme.replace('/docs/browser_configuration.rst', docs_url + '/browser_configuration.html').replace(
+        '/CHANGELOG.rst', docs_url + '/changelog.html')
     return description
 
 
