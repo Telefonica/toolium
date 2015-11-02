@@ -4,16 +4,31 @@
    contain the root `toctree` directive.
 
 .. include:: ../README.rst
+    :end-before: Main Features
 
-Table of Contents
+Main Features
+-------------
+
+- `Choosing driver through a configuration file <browser_configuration.html>`_
+- Page Object pattern
+- Visual testing solution
+- Make a screenshot in the happenning of an error
+
+Library Reference
 -----------------
+
+.. toctree::
+   :hidden:
+
+   browser_configuration.rst
+   Changelog <changelog.rst>
 
 .. toctree::
    :maxdepth: 4
 
    toolium.rst
 
-Indices and tables
+Indices and Tables
 ==================
 
 * :ref:`genindex`

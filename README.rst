@@ -7,6 +7,15 @@ Toolium is a Python wrapper tool of Selenium and Appium libraries to test web an
 project. It provides a way of choosing and configuring the driver through a configuration file, implements a Page Object
 pattern and includes a simple visual testing solution.
 
+.. |Build Status| image:: https://travis-ci.org/Telefonica/toolium.svg?branch=master
+   :target: https://travis-ci.org/Telefonica/toolium.svg
+.. |Documentation Status| image:: https://readthedocs.org/projects/toolium/badge/?version=latest
+   :target: http://toolium.readthedocs.org/en/latest/?badge=latest
+.. |Coverage Status| image:: https://coveralls.io/repos/Telefonica/toolium/badge.svg?branch=feature%2Fdocs&service=github
+   :target: https://coveralls.io/github/Telefonica/toolium?branch=feature%2Fdocs
+.. |Code Health| image:: https://landscape.io/github/Telefonica/toolium/feature/docs/landscape.svg?style=flat
+   :target: https://landscape.io/github/Telefonica/toolium/feature/docs
+
 Getting Started
 ---------------
 
@@ -44,9 +53,6 @@ to use the library to test web, Android or iOS applications, in different scenar
     $ pip install -r requirements.txt
     $ nosetests
 
-Library documentation could be found in `ReadTheDocs <http://toolium.readthedocs.org>`_ and release notes in
-`CHANGELOG <http://toolium.readthedocs.org/en/latest/changelog.html>`_.
-
 Contributing
 ------------
 
@@ -57,23 +63,21 @@ Don't forget to run unit tests:
 
 .. code:: console
 
-    $ git clone git@github.com:*your_github_user*/toolium.git
+    $ git clone git@github.com:<your_github_user>/toolium.git
     $ cd toolium
     $ python setup.py test
 
 Main Features
 -------------
 
-- `Choosing driver through a configuration file <http://toolium.readthedocs.org/en/latest/browser_configuration.html>`_
+- `Choosing driver through a configuration file </docs/browser_configuration.rst>`_
 - Page Object pattern
 - Visual testing solution
 - Make a screenshot in the happenning of an error
 
-.. |Build Status| image:: https://travis-ci.org/Telefonica/toolium.svg?branch=master
-   :target: https://travis-ci.org/Telefonica/toolium.svg
-.. |Documentation Status| image:: https://readthedocs.org/projects/toolium/badge/?version=latest
-   :target: http://toolium.readthedocs.org/en/latest/?badge=latest
-.. |Coverage Status| image:: https://coveralls.io/repos/Telefonica/toolium/badge.svg?branch=feature%2Fdocs&service=github
-   :target: https://coveralls.io/github/Telefonica/toolium?branch=feature%2Fdocs
-.. |Code Health| image:: https://landscape.io/github/Telefonica/toolium/feature/docs/landscape.svg?style=flat
-   :target: https://landscape.io/github/Telefonica/toolium/feature/docs
+Documentation
+-------------
+
+Further information about features and fixes included in each release: `CHANGELOG </CHANGELOG.rst>`_.
+
+Complete library reference and documentation available at `ReadTheDocs <http://toolium.readthedocs.org>`_.
