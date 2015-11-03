@@ -19,7 +19,7 @@ pattern and includes a simple visual testing solution.
 Getting Started
 ---------------
 
-The requirements to install Toolium are `Python 2.7 <http://www.python.org>`_ and
+The requirements to install Toolium are `Python 2.7 or 3.3+ <http://www.python.org>`_ and
 `pip <https://pypi.python.org/pypi/pip>`_. If you use Python 2.7.9+, you don't need to install pip separately.
 
 Run ``pip install toolium`` to install the latest version from `PyPi <https://pypi.python.org/pypi/toolium>`_. It's
