@@ -76,6 +76,7 @@ publish
 tmp
 output
 .eggs
+.tox
 
 # Database
 *.sqlite3
