@@ -20,7 +20,15 @@ import logging
 import os
 import shutil
 import re
-from StringIO import StringIO
+
+try:
+    from io import BytesIO
+except ImportError:
+    from BytesIO import BytesIO
+try:
+    xrange
+except NameError:
+    xrange = range
 
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -89,7 +97,7 @@ class VisualTest(object):
 
         # Get screenshot and modify it
         if toolium_driver.is_ios_test() or (exclude_elements and len(exclude_elements) > 0) or element:
-            img = Image.open(StringIO(toolium_driver.driver.get_screenshot_as_png()))
+            img = Image.open(BytesIO(toolium_driver.driver.get_screenshot_as_png()))
             img = self.ios_resize(img)
             img = self.exclude_elements(img, exclude_elements)
             img = self.crop_element(img, element)
@@ -199,12 +207,12 @@ class VisualTest(object):
                 self._add_to_report('equal', report_name, image_file, baseline_file)
             return None
         except AssertionError as exc:
-            self._add_to_report('diff', report_name, image_file, baseline_file, exc.message)
+            self._add_to_report('diff', report_name, image_file, baseline_file, str(exc))
             if toolium_driver.config.getboolean_optional('VisualTests', 'fail'):
                 raise exc
             else:
-                self.logger.warn('Visual error: {}'.format(exc.message))
-                return exc.message
+                self.logger.warn('Visual error: {}'.format(str(exc)))
+                return str(exc)
 
     def _add_to_report(self, result, report_name, image_file, baseline_file, message=None):
         """Add the result of a visual test to the html report

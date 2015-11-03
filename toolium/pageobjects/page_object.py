@@ -54,7 +54,7 @@ class PageObject(unittest.TestCase):
 
     def _update_page_elements(self):
         """Copy driver and utils instances to all page elements of this page object"""
-        for element in self.__dict__.values() + self.__class__.__dict__.values():
+        for element in list(self.__dict__.values()) + list(self.__class__.__dict__.values()):
             if isinstance(element, PageElement):
                 element.set_driver(self.driver)
                 element.set_utils(self.utils)

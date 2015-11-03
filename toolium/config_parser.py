@@ -16,13 +16,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import ConfigParser
-import io
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import os
 import logging
 
 
-class ExtendedConfigParser(ConfigParser.ConfigParser):
+class ExtendedConfigParser(configparser.ConfigParser):
     def optionxform(self, optionstr):
         """Override default optionxform in ConfigParser"""
         return optionstr
@@ -38,7 +44,7 @@ class ExtendedConfigParser(ConfigParser.ConfigParser):
         """
         try:
             return self.get(section, option)
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        except (configparser.NoSectionError, configparser.NoOptionError):
             return default
 
     def getboolean_optional(self, section, option, default=False):
@@ -52,7 +58,7 @@ class ExtendedConfigParser(ConfigParser.ConfigParser):
         """
         try:
             return self.getboolean(section, option)
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        except (configparser.NoSectionError, configparser.NoOptionError):
             return default
 
     def deepcopy(self):
@@ -61,7 +67,7 @@ class ExtendedConfigParser(ConfigParser.ConfigParser):
         :returns: a copy of the config object
         """
         # Save actual config to a string
-        config_string = io.BytesIO()
+        config_string = StringIO()
         self.write(config_string)
 
         # We must reset the buffer ready for reading.

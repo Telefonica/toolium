@@ -59,7 +59,6 @@ def teardown_driver(scenario):
     if scenario.failed:
         # TODO: never enters here in scenarios with datasets
         test_status = 'Fail'
-        print dir(scenario)
         test_comment = "The scenario '{}' has failed: {}".format(scenario.name, None)
         world.utils.capture_screenshot(scenario.name.replace(' ', '_'))
     else:

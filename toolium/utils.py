@@ -16,9 +16,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 import logging
 import os
-from urlparse import urlparse
 import time
 
 from selenium.webdriver.support.ui import WebDriverWait

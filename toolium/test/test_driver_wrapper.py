@@ -301,8 +301,10 @@ class DriverWrapperTests(DriverWrapperCommon):
     @unpack
     def test_is_web_test(self, browser, appium_app, appium_browser_name, is_web):
         self.wrapper.config.set('Browser', 'browser', browser)
-        self.wrapper.config.set('AppiumCapabilities', 'app', appium_app)
-        self.wrapper.config.set('AppiumCapabilities', 'browserName', appium_browser_name)
+        if appium_app is not None:
+            self.wrapper.config.set('AppiumCapabilities', 'app', appium_app)
+        if appium_browser_name is not None:
+            self.wrapper.config.set('AppiumCapabilities', 'browserName', appium_browser_name)
         self.assertEquals(is_web, self.wrapper.is_web_test())
 
     @data(*maximizable_browsers)

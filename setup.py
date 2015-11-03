@@ -18,12 +18,10 @@ limitations under the License.
 
 from setuptools import setup
 
-__VERSION__ = file('VERSION').read().strip()
-
 
 def read_file(filepath):
     with open(filepath) as f:
-        return f.read().splitlines()
+        return f.read()
 
 
 def get_long_description():
@@ -32,8 +30,7 @@ def get_long_description():
     :returns: long description
     """
     # Get readme content
-    with open('README.rst') as f:
-        readme = f.read()
+    readme = read_file('README.rst')
 
     # Change rst urls to ReadTheDocs html urls
     docs_url = 'http://toolium.readthedocs.org/en/latest'
@@ -44,11 +41,11 @@ def get_long_description():
 
 setup(
     name='toolium',
-    version=__VERSION__,
+    version=read_file('VERSION').strip(),
     packages=['toolium', 'toolium.pageobjects', 'toolium.pageelements', 'toolium.lettuce'],
     package_data={'': ['resources/VisualTestsTemplate.html']},
-    install_requires=read_file('requirements.txt'),
-    tests_require=read_file('requirements_dev.txt'),
+    install_requires=read_file('requirements.txt').splitlines(),
+    tests_require=read_file('requirements_dev.txt').splitlines(),
     test_suite='toolium.test',
     author='Rubén González Alonso, Telefónica I+D',
     author_email='ruben.gonzalezalonso@telefonica.com',
