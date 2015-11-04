@@ -16,10 +16,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from page_element import PageElement
-from text_page_element import Text
-from input_text_page_element import InputText
-from select_page_element import Select
-from button_page_element import Button
+from toolium.pageelements.page_element import PageElement
+from toolium.pageelements.text_page_element import Text
+from toolium.pageelements.input_text_page_element import InputText
+from toolium.pageelements.select_page_element import Select
+from toolium.pageelements.button_page_element import Button
 
 __all__ = ['PageElement', 'Text', 'InputText', 'Select', 'Button']

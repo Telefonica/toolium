@@ -77,23 +77,23 @@ class TestPageElements(unittest.TestCase):
     def test_locator(self):
         page_object = LoginPageObject(self.driver)
 
-        self.assertEquals(page_object.title.locator, (By.ID, 'title'))
-        self.assertEquals(page_object.username.locator, (By.ID, 'username'))
-        self.assertEquals(page_object.password.locator, (By.ID, 'password'))
-        self.assertEquals(page_object.language.locator, (By.ID, 'language'))
-        self.assertEquals(page_object.login.locator, (By.ID, 'login'))
+        self.assertEqual(page_object.title.locator, (By.ID, 'title'))
+        self.assertEqual(page_object.username.locator, (By.ID, 'username'))
+        self.assertEqual(page_object.password.locator, (By.ID, 'password'))
+        self.assertEqual(page_object.language.locator, (By.ID, 'language'))
+        self.assertEqual(page_object.login.locator, (By.ID, 'login'))
 
     def test_get_text(self):
         page_object = LoginPageObject(self.driver)
         title_value = page_object.title.text
 
-        self.assertEquals(title_value, 'text value')
+        self.assertEqual(title_value, 'text value')
 
     def test_get_inputtext(self):
         page_object = LoginPageObject(self.driver)
         username_value = page_object.username.text
 
-        self.assertEquals(username_value, 'input text value')
+        self.assertEqual(username_value, 'input text value')
 
     def test_set_inputtext(self):
         input_text_page_element.toolium_driver.is_ios_test = mock.MagicMock(return_value=False)
@@ -101,7 +101,7 @@ class TestPageElements(unittest.TestCase):
         page_object = LoginPageObject(self.driver)
         page_object.username.text = 'new input value'
 
-        self.assertEquals(mock_element.send_keys.mock_calls, [mock.call('new input value')])
+        self.assertEqual(mock_element.send_keys.mock_calls, [mock.call('new input value')])
 
     def test_get_selected_option(self):
         select_page_element.SeleniumSelect = get_mock_select()
@@ -109,7 +109,7 @@ class TestPageElements(unittest.TestCase):
         page_object = LoginPageObject(self.driver)
         option = page_object.language.option
 
-        self.assertEquals(option, 'option value')
+        self.assertEqual(option, 'option value')
 
     def test_select_option(self):
         select_page_element.SeleniumSelect = get_mock_select()
@@ -117,12 +117,12 @@ class TestPageElements(unittest.TestCase):
         page_object = LoginPageObject(self.driver)
         page_object.language.option = 'new option value'
 
-        self.assertEquals(len(select_page_element.SeleniumSelect.mock_calls), 1)
-        self.assertEquals(select_page_element.SeleniumSelect().mock_calls,
+        self.assertEqual(len(select_page_element.SeleniumSelect.mock_calls), 1)
+        self.assertEqual(select_page_element.SeleniumSelect().mock_calls,
                           [mock.call.select_by_visible_text('new option value')])
 
     def test_click_button(self):
         page_object = LoginPageObject(self.driver)
         page_object.login.click()
 
-        self.assertEquals(mock_element.click.mock_calls, [mock.call()])
+        self.assertEqual(mock_element.click.mock_calls, [mock.call()])

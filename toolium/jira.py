@@ -72,7 +72,7 @@ def add_jira_status(test_key, test_status, test_comment):
 
 def change_all_jira_status():
     """Iterate over all jira test cases, update their status in Jira and clear the dictionary"""
-    for test_status in jira_tests_status.itervalues():
+    for test_status in jira_tests_status.values():
         change_jira_status_with_config(*test_status)
     jira_tests_status.clear()
 

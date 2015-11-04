@@ -54,17 +54,17 @@ class ExtendedConfigParserTests(unittest.TestCase):
     @unpack
     def test_get_optional(self, section, option, default, response):
         if default:
-            self.assertEquals(response, self.config.get_optional(section, option, default))
+            self.assertEqual(response, self.config.get_optional(section, option, default))
         else:
-            self.assertEquals(response, self.config.get_optional(section, option))
+            self.assertEqual(response, self.config.get_optional(section, option))
 
     @data(*optional_boolean_values)
     @unpack
     def test_getboolean_optional(self, section, option, default, response):
         if default:
-            self.assertEquals(response, self.config.getboolean_optional(section, option, default))
+            self.assertEqual(response, self.config.getboolean_optional(section, option, default))
         else:
-            self.assertEquals(response, self.config.getboolean_optional(section, option))
+            self.assertEqual(response, self.config.getboolean_optional(section, option))
 
     def test_deepcopy(self):
         section = 'AppiumCapabilities'
@@ -73,15 +73,15 @@ class ExtendedConfigParserTests(unittest.TestCase):
         new_value = 'Selendroid'
 
         # Check previous value
-        self.assertEquals(orig_value, self.config.get(section, option))
+        self.assertEqual(orig_value, self.config.get(section, option))
 
         # Copy config object and modify a property
         new_config = self.config.deepcopy()
         new_config.set(section, option, new_value)
 
         # Check that the value has no changed in original config
-        self.assertEquals(orig_value, self.config.get(section, option))
-        self.assertEquals(new_value, new_config.get(section, option))
+        self.assertEqual(orig_value, self.config.get(section, option))
+        self.assertEqual(new_value, new_config.get(section, option))
 
     def test_update_from_system_properties(self):
         section = 'AppiumCapabilities'
@@ -90,11 +90,11 @@ class ExtendedConfigParserTests(unittest.TestCase):
         new_value = 'iOS'
 
         # Check previous value
-        self.assertEquals(orig_value, self.config.get(section, option))
+        self.assertEqual(orig_value, self.config.get(section, option))
 
         # Change system property and update config
         os.environ[section + '_' + option] = new_value
         self.config.update_from_system_properties()
 
         # Check the new config value
-        self.assertEquals(new_value, self.config.get(section, option))
+        self.assertEqual(new_value, self.config.get(section, option))

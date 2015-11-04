@@ -8,18 +8,18 @@ project. It provides a way of choosing and configuring the driver through a conf
 pattern and includes a simple visual testing solution.
 
 .. |Build Status| image:: https://travis-ci.org/Telefonica/toolium.svg?branch=master
-   :target: https://travis-ci.org/Telefonica/toolium.svg
+   :target: https://travis-ci.org/Telefonica/toolium
 .. |Documentation Status| image:: https://readthedocs.org/projects/toolium/badge/?version=latest
-   :target: http://toolium.readthedocs.org/en/latest/?badge=latest
-.. |Coverage Status| image:: https://coveralls.io/repos/Telefonica/toolium/badge.svg?branch=feature%2Fdocs&service=github
-   :target: https://coveralls.io/github/Telefonica/toolium?branch=feature%2Fdocs
-.. |Code Health| image:: https://landscape.io/github/Telefonica/toolium/feature/docs/landscape.svg?style=flat
-   :target: https://landscape.io/github/Telefonica/toolium/feature/docs
+   :target: http://toolium.readthedocs.org/en/latest
+.. |Coverage Status| image:: https://coveralls.io/repos/Telefonica/toolium/badge.svg?branch=master&service=github
+   :target: https://coveralls.io/github/Telefonica/toolium
+.. |Code Health| image:: https://landscape.io/github/Telefonica/toolium/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/Telefonica/toolium/master
 
 Getting Started
 ---------------
 
-The requirements to install Toolium are `Python 2.7 <http://www.python.org>`_ and
+The requirements to install Toolium are `Python 2.7 or 3.3+ <http://www.python.org>`_ and
 `pip <https://pypi.python.org/pypi/pip>`_. If you use Python 2.7.9+, you don't need to install pip separately.
 
 Run ``pip install toolium`` to install the latest version from `PyPi <https://pypi.python.org/pypi/toolium>`_. It's

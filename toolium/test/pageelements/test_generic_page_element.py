@@ -66,35 +66,35 @@ class TestGenericPageElement(unittest.TestCase):
     def test_locator(self):
         page_object = LoginPageObject(self.driver)
 
-        self.assertEquals(page_object.username.locator, (By.NAME, 'username'))
-        self.assertEquals(page_object.password.locator, (By.ID, 'password'))
+        self.assertEqual(page_object.username.locator, (By.NAME, 'username'))
+        self.assertEqual(page_object.password.locator, (By.ID, 'password'))
 
     def test_get_element(self):
         page_object = LoginPageObject(self.driver)
         web_element = page_object.username.element()
 
-        self.assertEquals(web_element, mock_element)
-        self.assertEquals(self.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
+        self.assertEqual(web_element, mock_element)
+        self.assertEqual(self.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
 
     def test_get_element_with_parent(self):
         page_object = LoginPageObject(self.driver)
         web_element = page_object.password.element()
 
-        self.assertEquals(web_element, child_element)
-        self.assertEquals(self.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
-        self.assertEquals(mock_element.find_element.mock_calls, [mock.call(By.ID, 'password')])
+        self.assertEqual(web_element, child_element)
+        self.assertEqual(self.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
+        self.assertEqual(mock_element.find_element.mock_calls, [mock.call(By.ID, 'password')])
 
     def test_get_element_init_page(self):
         page_object = RegisterPageObject(self.driver)
         web_element = page_object.language.element()
 
-        self.assertEquals(web_element, mock_element)
-        self.assertEquals(self.driver.find_element.mock_calls, [mock.call(By.ID, 'language')])
+        self.assertEqual(web_element, mock_element)
+        self.assertEqual(self.driver.find_element.mock_calls, [mock.call(By.ID, 'language')])
 
     def test_get_element_with_parent_webelement(self):
         page_object = RegisterPageObject(self.driver)
         web_element = page_object.email.element()
 
-        self.assertEquals(web_element, child_element)
-        self.assertEquals(self.driver.find_element.mock_calls, [])
-        self.assertEquals(mock_element.find_element.mock_calls, [mock.call(By.ID, 'email')])
+        self.assertEqual(web_element, child_element)
+        self.assertEqual(self.driver.find_element.mock_calls, [])
+        self.assertEqual(mock_element.find_element.mock_calls, [mock.call(By.ID, 'email')])

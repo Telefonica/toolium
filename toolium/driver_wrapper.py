@@ -81,7 +81,7 @@ class DriverWrapper(object):
             try:
                 logging.config.fileConfig(config_log_filename, {'logfilename': output_log_filename}, False)
             except Exception as exc:
-                print "[WARN] Error reading logging config file '{}': {}".format(config_log_filename, exc)
+                print("[WARN] Error reading logging config file '{}': {}".format(config_log_filename, exc))
             self.config_log_filename = config_log_filename
             self.logger = logging.getLogger(__name__)
 

@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v0.11.2
+-------
+
+*In development*
+
+- Compatibility with Python 3
+
 v0.11.1
 -------
 

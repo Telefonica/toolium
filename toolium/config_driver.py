@@ -16,7 +16,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from ConfigParser import NoSectionError
+try:
+    from configparser import NoSectionError
+except ImportError:
+    from ConfigParser import NoSectionError
 import ast
 import logging
 
@@ -122,7 +125,7 @@ class ConfigDriver(object):
 
         # Add custom driver capabilities
         try:
-            for cap, cap_value in dict(self.config.items('Capabilities')).iteritems():
+            for cap, cap_value in dict(self.config.items('Capabilities')).items():
                 self.logger.debug("Added server capability: {0} = {1}".format(cap, cap_value))
                 capabilities[cap] = cap_value
         except NoSectionError:
@@ -130,7 +133,7 @@ class ConfigDriver(object):
 
         if browser_name == 'android' or browser_name == 'iphone':
             # Add Appium server capabilities
-            for cap, cap_value in dict(self.config.items('AppiumCapabilities')).iteritems():
+            for cap, cap_value in dict(self.config.items('AppiumCapabilities')).items():
                 self.logger.debug("Added Appium server capability: {0} = {1}".format(cap, cap_value))
                 capabilities[cap] = cap_value
 
@@ -180,7 +183,7 @@ class ConfigDriver(object):
 
         # Add Firefox preferences
         try:
-            for pref, pref_value in dict(self.config.items('FirefoxPreferences')).iteritems():
+            for pref, pref_value in dict(self.config.items('FirefoxPreferences')).items():
                 self.logger.debug("Added firefox preference: {0} = {1}".format(pref, pref_value))
                 profile.set_preference(pref, self._convert_property_type(pref_value))
             profile.update_preferences()
@@ -227,7 +230,7 @@ class ConfigDriver(object):
         # Add Chrome preferences
         prefs = dict()
         try:
-            for pref, pref_value in dict(self.config.items('ChromePreferences')).iteritems():
+            for pref, pref_value in dict(self.config.items('ChromePreferences')).items():
                 self.logger.debug("Added chrome preference: {0} = {1}".format(pref, pref_value))
                 prefs[pref] = self._convert_property_type(pref_value)
             if len(prefs) > 0:
@@ -238,7 +241,7 @@ class ConfigDriver(object):
         # Add Chrome mobile emulation options
         prefs = dict()
         try:
-            for pref, pref_value in dict(self.config.items('ChromeMobileEmulation')).iteritems():
+            for pref, pref_value in dict(self.config.items('ChromeMobileEmulation')).items():
                 self.logger.debug("Added chrome mobile emulation option: {0} = {1}".format(pref, pref_value))
                 prefs[pref] = self._convert_property_type(pref_value)
             if len(prefs) > 0:

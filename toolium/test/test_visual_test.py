@@ -21,9 +21,7 @@ import os
 import shutil
 
 from PIL import Image
-
 from needle.engines.pil_engine import Engine
-
 from selenium.webdriver.remote.webelement import WebElement
 import mock
 
@@ -93,7 +91,7 @@ class VisualTests(unittest.TestCase):
     def test_compare_files_size(self):
         message = self.visual.compare_files(self._testMethodName, self.file_v1, self.file_small, 0)
         # PIL returns an empty error
-        self.assertEquals('', message)
+        self.assertEqual('', message)
 
     def test_compare_files_size_fail(self):
         toolium_driver.config.set('VisualTests', 'fail', 'true')
@@ -104,7 +102,11 @@ class VisualTests(unittest.TestCase):
     def test_get_html_row(self):
         expected_row = '<tr class=diff><td>test_get_html_row</td><td><img style="width: 100%" onclick="window.open\(this.src\)" src="file://.*register_v2.png"/></td></td><td><img style="width: 100%" onclick="window.open\(this.src\)" src="file://.*register.png"/></td></td><td></td></tr>'
         row = self.visual._get_html_row('diff', self._testMethodName, self.file_v1, self.file_v2)
-        self.assertRegexpMatches(row, expected_row)
+        try:
+            assertRegex = self.assertRegex
+        except AttributeError:
+            assertRegex = self.assertRegexpMatches
+        assertRegex(row, expected_row)
 
     def test_exclude_elements(self):
         # Exclude element
@@ -154,14 +156,14 @@ class VisualTests(unittest.TestCase):
     def test_get_element_webelement(self):
         web_element = WebElement(None, 1)
         element = self.visual.get_element(web_element)
-        self.assertEquals(web_element, element)
+        self.assertEqual(web_element, element)
 
     def test_get_element_pageelement(self):
         page_element = mock.MagicMock()
         page_element.element.return_value = 'mock_element'
 
         element = self.visual.get_element(page_element)
-        self.assertEquals('mock_element', element)
+        self.assertEqual('mock_element', element)
         page_element.element.assert_called_with()
 
     def test_get_element_locator(self):
@@ -170,7 +172,7 @@ class VisualTests(unittest.TestCase):
         element_locator = (By.ID, 'element_id')
 
         element = self.visual.get_element(element_locator)
-        self.assertEquals('mock_element', element)
+        self.assertEqual('mock_element', element)
         toolium_driver.driver.find_element.assert_called_with(*element_locator)
 
     def test_assertScreenshot_full_and_save_baseline(self):
