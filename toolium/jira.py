@@ -100,8 +100,7 @@ def change_jira_status_with_config(test_key, test_status, test_comment):
 
 
 def change_jira_status(execution_url, test_key, test_status, summary_prefix=None, labels=None, comments=None,
-                       fix_version=None,
-                       build=None, only_if_changes=False):
+                       fix_version=None, build=None, only_if_changes=False):
     """Update test status in Jira
 
     :param execution_url: url of the jira test case execution service
@@ -126,8 +125,7 @@ def change_jira_status(execution_url, test_key, test_status, summary_prefix=None
         response = requests.get(execution_url, params=payload)
     except Exception as e:
         if execution_url:
-            logger.warn(
-                "Error updating Test Case '{}' using execution_url '{}': {}".format(test_key, execution_url, e.message))
+            logger.warn("Error updating Test Case '{}' using execution_url '{}': {}".format(test_key, execution_url, e))
         else:
             logger.warn("Error updating Test Case '{}': execution_url is not configured".format(test_key))
         return
@@ -136,4 +134,4 @@ def change_jira_status(execution_url, test_key, test_status, summary_prefix=None
     if response.status_code >= 400:
         logger.warn("Error updating Test Case '{}': [{}] {}".format(test_key, response.status_code, response.content))
     else:
-        logger.debug("Response content: {}".format(response.content))
+        logger.debug("Response content: {}".format(response.content.decode().splitlines()[0]))
