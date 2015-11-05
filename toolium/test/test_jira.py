@@ -75,3 +75,47 @@ class JiraTests(unittest.TestCase):
         expected_response = "Error updating Test Case 'TOOLIUM-1' using execution_url " \
                             "'http://server/execution_service': exception error"
         jira.logger.warn.assert_called_with(expected_response)
+
+    def test_jira_annotation_pass(self):
+        # Execute method with jira annotation
+        jira.jira_tests_status.clear()
+        MockTestClass().mock_test_pass()
+
+        # Check jira status
+        expected_status = {'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None)}
+        self.assertEqual(expected_status, jira.jira_tests_status)
+
+    def test_jira_annotation_fail(self):
+        # Execute method with jira annotation
+        jira.jira_tests_status.clear()
+        self.assertRaises(AssertionError, MockTestClass().mock_test_fail)
+
+        # Check jira status
+        expected_status = {'TOOLIUM-3': ('TOOLIUM-3', 'Fail', "The test 'test name' has failed: test error")}
+        self.assertEqual(expected_status, jira.jira_tests_status)
+
+    def test_jira_annotation_multiple(self):
+        # Execute methods with jira annotation
+        jira.jira_tests_status.clear()
+        MockTestClass().mock_test_pass()
+        self.assertRaises(AssertionError, MockTestClass().mock_test_fail)
+        MockTestClass().mock_test_pass()
+
+        # Check jira status
+        expected_status = {'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None),
+                           'TOOLIUM-3': ('TOOLIUM-3', 'Fail', "The test 'test name' has failed: test error"),
+                           'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None)}
+        self.assertEqual(expected_status, jira.jira_tests_status)
+
+
+class MockTestClass():
+    def get_method_name(self):
+        return 'test name'
+
+    @jira.jira(test_key='TOOLIUM-1')
+    def mock_test_pass(self):
+        pass
+
+    @jira.jira(test_key='TOOLIUM-3')
+    def mock_test_fail(self):
+        raise AssertionError('test error')

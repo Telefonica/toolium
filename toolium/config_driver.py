@@ -35,11 +35,9 @@ def get_error_message_from_exception(exception):
     :returns: first line of exception message
     """
     try:
-        error_message = exception.msg
-    except AttributeError:
-        # Get error message in ddt tests
-        error_message = exception.message
-    return error_message.split('\n', 1)[0] if error_message else ''
+        return str(exception).split('\n', 1)[0]
+    except Exception:
+        return ''
 
 
 class ConfigDriver(object):
