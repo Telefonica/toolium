@@ -46,10 +46,13 @@ class VisualTests(unittest.TestCase):
         cls.file_small = os.path.join(cls.root_path, 'resources', 'register_small.png')
 
     def setUp(self):
-        # Remove preivous visual path
+        # Remove previous visual path
         visual_path = os.path.join(self.root_path, 'output', 'visualtests')
         if os.path.exists(visual_path):
             shutil.rmtree(visual_path)
+
+        # Remove previous conf properties
+        toolium_driver.config_properties_filenames = None
 
         # Configure properties
         toolium_driver.configure(tc_config_directory=os.path.join(self.root_path, 'conf'),
@@ -60,10 +63,6 @@ class VisualTests(unittest.TestCase):
         self.visual = VisualTest()
         toolium_driver.visual_number = 1
 
-    def tearDown(self):
-        # Remove previous conf properties
-        toolium_driver.config_properties_filenames = None
-
     @classmethod
     def tearDownClass(cls):
         # Remove environment properties
@@ -73,6 +72,14 @@ class VisualTests(unittest.TestCase):
             del os.environ["VisualTests_engine"]
         except KeyError:
             pass
+
+        # Remove visual path
+        visual_path = os.path.join(cls.root_path, 'output', 'visualtests')
+        if os.path.exists(visual_path):
+            shutil.rmtree(visual_path)
+
+        # Remove conf properties
+        toolium_driver.config_properties_filenames = None
 
     def test_compare_files_equals(self):
         message = self.visual.compare_files(self._testMethodName, self.file_v1, self.file_v1, 0)
