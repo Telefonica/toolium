@@ -97,14 +97,27 @@ class BasicTestCase(unittest.TestCase):
         self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
 
     def tearDown(self):
-        # Check test result
-        result = sys.exc_info()[:2]
-        if result == (None, None):
+        # Get unit test exception
+        py2_exception = sys.exc_info()[1]
+        try:
+            # Python 3.4+
+            exception_info = self._outcome.errors[1][1]
+            exception = exception_info[1] if exception_info else None
+        except AttributeError:
+            try:
+                # Python 3.3
+                exceptions_list = self._outcomeForDoCleanups.failures + self._outcomeForDoCleanups.errors
+                exception = exceptions_list[0][1] if exceptions_list else None
+            except AttributeError:
+                # Python 2.7
+                exception = py2_exception
+
+        if not exception:
             self._test_passed = True
             self.logger.info("The test '{0}' has passed".format(self.get_subclassmethod_name()))
         else:
             self._test_passed = False
-            error_message = get_error_message_from_exception(result[1])
+            error_message = get_error_message_from_exception(exception)
             self.logger.error("The test '{0}' has failed: {1}".format(self.get_subclassmethod_name(), error_message))
 
 
