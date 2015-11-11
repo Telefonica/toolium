@@ -157,8 +157,8 @@ class SeleniumTestCase(BasicTestCase):
         SeleniumTestCase.driver = None
 
         # Download saved video if video is enabled or if test fails
-        if cls.remote_video_node and (toolium_driver.config.getboolean_optional('Server', 'video_enabled')
-                                      or not test_passed):
+        if cls.remote_video_node and (toolium_driver.config.getboolean_optional('Server', 'video_enabled') or
+                                          not test_passed):
             video_name = video_name if test_passed else 'error_{}'.format(video_name)
             cls.utils.download_remote_video(cls.remote_video_node, session_id, video_name)
 

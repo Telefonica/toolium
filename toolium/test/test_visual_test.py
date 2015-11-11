@@ -182,7 +182,7 @@ class VisualTests(unittest.TestCase):
         self.assertEqual('mock_element', element)
         toolium_driver.driver.find_element.assert_called_with(*element_locator)
 
-    def test_assertScreenshot_full_and_save_baseline(self):
+    def test_assert_screenshot_full_and_save_baseline(self):
         # Create driver mock
         def copy_file_side_effect(output_file):
             shutil.copyfile(self.file_v1, output_file)
@@ -199,7 +199,7 @@ class VisualTests(unittest.TestCase):
                                      'screenshot_full.png')
         Engine().assertSameFiles(output_file, baseline_file, 0)
 
-    def test_assertScreenshot_element_and_save_baseline(self):
+    def test_assert_screenshot_element_and_save_baseline(self):
         # Create element mock
         element = get_mock_element(x=250, y=40, height=40, width=300)
 
@@ -222,7 +222,7 @@ class VisualTests(unittest.TestCase):
                                      'screenshot_elem.png')
         Engine().assertSameFiles(output_file, baseline_file, 0)
 
-    def test_assertScreenshot_full_and_compare(self):
+    def test_assert_screenshot_full_and_compare(self):
         # Create driver mock
         def copy_file_side_effect(output_file):
             shutil.copyfile(self.file_v1, output_file)
@@ -239,7 +239,7 @@ class VisualTests(unittest.TestCase):
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
         toolium_driver.driver.save_screenshot.assert_called_with(output_file)
 
-    def test_assertScreenshot_element_and_compare(self):
+    def test_assert_screenshot_element_and_compare(self):
         # Add baseline image
         expected_image = os.path.join(self.root_path, 'resources', 'register_cropped_element.png')
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox-base',

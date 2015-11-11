@@ -20,6 +20,7 @@ import logging
 import re
 
 from lettuce import before, after, world  # @UnresolvedImport
+
 from toolium import toolium_driver
 from toolium.utils import Utils
 from toolium.jira import add_jira_status, change_all_jira_status
@@ -97,8 +98,8 @@ def finalize_driver(video_name, test_passed=True):
     world.driver = None
 
     # Download saved video if video is enabled or if test fails
-    if world.remote_video_node and (toolium_driver.config.getboolean_optional('Server', 'video_enabled')
-                                    or not test_passed):
+    if world.remote_video_node and (toolium_driver.config.getboolean_optional('Server', 'video_enabled') or
+                                        not test_passed):
         video_name = video_name if test_passed else 'error_{}'.format(video_name)
         world.utils.download_remote_video(world.remote_video_node, session_id, video_name)
 

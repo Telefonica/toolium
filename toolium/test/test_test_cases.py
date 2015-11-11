@@ -52,7 +52,7 @@ def run_mock(test_name):
 
 
 class BasicTestCaseTests(unittest.TestCase):
-    def test_tearDown_pass(self):
+    def test_tear_down_pass(self):
         # Configure logger mock
         logger = mock.MagicMock()
         logging.getLogger = mock.MagicMock(return_value=logger)
@@ -64,7 +64,7 @@ class BasicTestCaseTests(unittest.TestCase):
         expected_response = "The test 'MockTestClass.mock_pass' has passed"
         logger.info.assert_called_with(expected_response)
 
-    def test_tearDown_fail(self):
+    def test_tear_down_fail(self):
         # Configure logger mock
         logger = mock.MagicMock()
         logging.getLogger = mock.MagicMock(return_value=logger)
