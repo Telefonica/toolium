@@ -4,7 +4,7 @@ Toolium Changelog
 v0.11.2
 -------
 
-*In development*
+*Release date: 2015-11-11*
 
 - Compatibility with Python 3
 

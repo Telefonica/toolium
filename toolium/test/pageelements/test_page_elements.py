@@ -119,7 +119,7 @@ class TestPageElements(unittest.TestCase):
 
         self.assertEqual(len(select_page_element.SeleniumSelect.mock_calls), 1)
         self.assertEqual(select_page_element.SeleniumSelect().mock_calls,
-                          [mock.call.select_by_visible_text('new option value')])
+                         [mock.call.select_by_visible_text('new option value')])
 
     def test_click_button(self):
         page_object = LoginPageObject(self.driver)

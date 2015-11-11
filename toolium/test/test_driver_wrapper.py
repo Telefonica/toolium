@@ -64,7 +64,7 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
         self.assertEqual('android', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEqual(None, self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
         self.assertEqual('http://invented_url/Demo.apk',
-                          self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
+                         self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_two_files(self):
         os.environ["Config_prop_filenames"] = (os.path.join(self.root_path, 'conf', 'properties.cfg') + ';' +
@@ -73,7 +73,7 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
         self.assertEqual('android', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEqual('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
         self.assertEqual('http://invented_url/Demo.apk',
-                          self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
+                         self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_two_files_android_first(self):
         os.environ["Config_prop_filenames"] = (os.path.join(self.root_path, 'conf', 'android-properties.cfg') + ';' +
@@ -82,7 +82,7 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
         self.assertEqual('firefox', self.wrapper.config.get('Browser', 'browser'))  # get last value
         self.assertEqual('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
         self.assertEqual('http://invented_url/Demo.apk',
-                          self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
+                         self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_system_property(self):
         os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
