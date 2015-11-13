@@ -21,7 +21,9 @@ import os
 import shutil
 
 from PIL import Image
+
 from needle.engines.pil_engine import Engine
+
 from selenium.webdriver.remote.webelement import WebElement
 import mock
 
@@ -44,6 +46,7 @@ class VisualTests(unittest.TestCase):
         cls.file_v1 = os.path.join(cls.root_path, 'resources', 'register.png')
         cls.file_v2 = os.path.join(cls.root_path, 'resources', 'register_v2.png')
         cls.file_small = os.path.join(cls.root_path, 'resources', 'register_small.png')
+        cls.file_ios = os.path.join(cls.root_path, 'resources', 'ios.png')
 
     def setUp(self):
         # Remove previous visual path
@@ -115,6 +118,45 @@ class VisualTests(unittest.TestCase):
             assertRegex = self.assertRegexpMatches
         assertRegex(row, expected_row)
 
+    def assertImage(self, img, img_name, expected_image_filename):
+        """Save img in an image file and compare with the expected image
+
+        :param img: image object
+        :param img_name: temporary filename
+        :param expected_image_filename: filename of the expected image
+        """
+        # Save result image in output folder
+        result_file = os.path.join(self.visual.output_directory, img_name + '.png')
+        img.save(result_file)
+
+        # Output image and expected image must be equals
+        expected_image = os.path.join(self.root_path, 'resources', expected_image_filename + '.png')
+        Engine().assertSameFiles(result_file, expected_image, 0)
+
+    def test_crop_element(self):
+        # Create element mock
+        element = get_mock_element(x=250, y=40, height=40, width=300)
+
+        # Resize image
+        img = Image.open(self.file_v1)
+        img = self.visual.crop_element(img, element)
+
+        # Assert output image
+        self.assertImage(img, self._testMethodName, 'register_cropped_element')
+
+    def test_ios_resize(self):
+        # Create driver mock
+        toolium_driver.config.set('Browser', 'browser', 'iphone')
+        toolium_driver.driver = mock.MagicMock()
+        toolium_driver.driver.get_window_size.return_value = {'width': 375, 'height': 667}
+
+        # Resize image
+        img = Image.open(self.file_ios)
+        img = self.visual.ios_resize(img)
+
+        # Assert output image
+        self.assertImage(img, self._testMethodName, 'ios_resized')
+
     def test_exclude_elements(self):
         # Exclude element
         elements = [get_mock_element(x=250, y=40, height=40, width=300),
@@ -122,13 +164,8 @@ class VisualTests(unittest.TestCase):
         img = Image.open(self.file_v1)
         img = self.visual.exclude_elements(img, elements)
 
-        # Save result image in output folder
-        file_excluded = os.path.join(self.visual.output_directory, self._testMethodName + '.png')
-        img.save(file_excluded)
-
-        # Output image and expected image must be equals
-        expected_image = os.path.join(self.root_path, 'resources', 'register_exclude.png')
-        Engine().assertSameFiles(file_excluded, expected_image, 0)
+        # Assert output image
+        self.assertImage(img, self._testMethodName, 'register_exclude')
 
     def test_exclude_element_outofimage(self):
         # Exclude element
@@ -136,25 +173,16 @@ class VisualTests(unittest.TestCase):
         img = Image.open(self.file_v1)
         img = self.visual.exclude_elements(img, elements)
 
-        # Save result image in output folder
-        file_excluded = os.path.join(self.visual.output_directory, self._testMethodName + '.png')
-        img.save(file_excluded)
-
-        # Output image and expected image must be equals
-        expected_image = os.path.join(self.root_path, 'resources', 'register_exclude_outofimage.png')
-        Engine().assertSameFiles(file_excluded, expected_image, 0)
+        # Assert output image
+        self.assertImage(img, self._testMethodName, 'register_exclude_outofimage')
 
     def test_exclude_no_elements(self):
         # Exclude element
         img = Image.open(self.file_v1)
         img = self.visual.exclude_elements(img, [])
 
-        # Save result image in output folder
-        file_excluded = os.path.join(self.visual.output_directory, self._testMethodName + '.png')
-        img.save(file_excluded)
-
-        # Output image and initial image must be equals
-        Engine().assertSameFiles(file_excluded, self.file_v1, 0)
+        # Assert output image
+        self.assertImage(img, self._testMethodName, 'register')
 
     def test_get_element_none(self):
         element = self.visual.get_element(None)
@@ -257,6 +285,32 @@ class VisualTests(unittest.TestCase):
 
         self.visual.assertScreenshot(element, filename='screenshot_elem', file_suffix='screenshot_suffix')
         toolium_driver.driver.get_screenshot_as_png.assert_called_with()
+
+    def test_assert_screenshot_ios_resize_and_exclude(self):
+        # Exclude element
+        elements = [get_mock_element(x=0, y=0, height=24, width=375)]
+
+        # Create driver mock
+        toolium_driver.config.set('Browser', 'browser', 'iphone')
+        toolium_driver.driver = mock.MagicMock()
+        with open(self.file_ios, "rb") as f:
+            image_data = f.read()
+        toolium_driver.driver.get_screenshot_as_png.return_value = image_data
+        toolium_driver.driver.get_window_size.return_value = {'width': 375, 'height': 667}
+
+        self.visual.assertScreenshot(None, filename='screenshot_ios', file_suffix='screenshot_suffix',
+                                     exclude_elements=elements)
+        toolium_driver.driver.get_screenshot_as_png.assert_called_with()
+
+        # Check cropped image
+        expected_image = os.path.join(self.root_path, 'resources', 'ios_excluded.png')
+        output_file = os.path.join(self.visual.output_directory, '01_screenshot_ios__screenshot_suffix.png')
+        Engine().assertSameFiles(output_file, expected_image, 0)
+
+        # Output image and new baseline image must be equals
+        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox-base',
+                                     'screenshot_ios.png')
+        Engine().assertSameFiles(output_file, baseline_file, 0)
 
 
 @mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
