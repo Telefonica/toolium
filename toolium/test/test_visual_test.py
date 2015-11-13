@@ -21,9 +21,7 @@ import os
 import shutil
 
 from PIL import Image
-
 from needle.engines.pil_engine import Engine
-
 from selenium.webdriver.remote.webelement import WebElement
 import mock
 
@@ -156,6 +154,19 @@ class VisualTests(unittest.TestCase):
 
         # Assert output image
         self.assertImage(img, self._testMethodName, 'ios_resized')
+
+    def test_ios_no_resize(self):
+        # Create driver mock
+        toolium_driver.config.set('Browser', 'browser', 'iphone')
+        toolium_driver.driver = mock.MagicMock()
+        toolium_driver.driver.get_window_size.return_value = {'width': 750, 'height': 1334}
+
+        # Resize image
+        orig_img = Image.open(self.file_ios)
+        img = self.visual.ios_resize(orig_img)
+
+        # Assert that image object has not been modified
+        self.assertEqual(orig_img, img)
 
     def test_exclude_elements(self):
         # Exclude element
@@ -310,6 +321,35 @@ class VisualTests(unittest.TestCase):
         # Output image and new baseline image must be equals
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox-base',
                                      'screenshot_ios.png')
+        Engine().assertSameFiles(output_file, baseline_file, 0)
+
+    def test_assert_screenshot_ios_web_resize_and_exclude(self):
+        # Exclude element
+        form_element = get_mock_element(x=0, y=0, height=559, width=375)
+        exclude_elements = [get_mock_element(x=15, y=296.515625, height=32, width=345)]
+
+        # Create driver mock
+        toolium_driver.config.set('Browser', 'browser', 'iphone')
+        toolium_driver.config.set('AppiumCapabilities', 'browserName', 'safari')
+        toolium_driver.driver = mock.MagicMock()
+        file_ios_web = os.path.join(self.root_path, 'resources', 'ios_web.png')
+        with open(file_ios_web, "rb") as f:
+            image_data = f.read()
+        toolium_driver.driver.get_screenshot_as_png.return_value = image_data
+        toolium_driver.driver.get_window_size.return_value = {'width': 375, 'height': 667}
+
+        self.visual.assertScreenshot(form_element, filename='screenshot_ios_web', file_suffix='screenshot_suffix',
+                                     exclude_elements=exclude_elements)
+        toolium_driver.driver.get_screenshot_as_png.assert_called_with()
+
+        # Check cropped image
+        expected_image = os.path.join(self.root_path, 'resources', 'ios_web_exclude.png')
+        output_file = os.path.join(self.visual.output_directory, '01_screenshot_ios_web__screenshot_suffix.png')
+        Engine().assertSameFiles(output_file, expected_image, 0)
+
+        # Output image and new baseline image must be equals
+        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox-base',
+                                     'screenshot_ios_web.png')
         Engine().assertSameFiles(output_file, baseline_file, 0)
 
 

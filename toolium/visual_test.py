@@ -33,6 +33,7 @@ except NameError:
 from selenium.webdriver.remote.webelement import WebElement
 
 from toolium import toolium_driver
+import itertools
 
 try:
     from needle.engines.perceptualdiff_engine import Engine as diff_Engine
@@ -145,12 +146,38 @@ class VisualTest(object):
         """Resize image in iOS to fit window size
 
         :param img: image object
-        :returns: modfied image object
+        :returns: modified image object
         """
         if toolium_driver.is_ios_test():
-            window_size = toolium_driver.driver.get_window_size()
-            img = img.resize((window_size['width'], window_size['height']), Image.ANTIALIAS)
+            scale = img.size[0] / toolium_driver.driver.get_window_size()['width']
+            if scale != 1:
+                new_image_size = (int(img.size[0] / scale), int(img.size[1] / scale))
+                img = img.resize(new_image_size, Image.ANTIALIAS)
         return img
+
+    @staticmethod
+    def get_safari_navigation_bar_height():
+        """Get the height of Safari navigation bar
+
+        :returns: height of navigation bar
+        """
+        status_bar_height = 0
+        if toolium_driver.is_ios_test() and toolium_driver.is_web_test():
+            # ios 7.1, 8.3
+            status_bar_height = 64
+        return status_bar_height
+
+    @staticmethod
+    def get_element_box(element):
+        """Get element coordinates
+
+        :param element: WebElement object
+        :returns: tuple with element coordinates
+        """
+        offset = VisualTest.get_safari_navigation_bar_height()
+        return (int(element.location['x']), int(element.location['y'] + offset),
+                int(element.location['x'] + element.size['width']),
+                int(element.location['y'] + offset + element.size['height']))
 
     @staticmethod
     def crop_element(img, element):
@@ -158,14 +185,10 @@ class VisualTest(object):
 
         :param img: image object
         :param element: WebElement object
-        :returns: modfied image object
+        :returns: modified image object
         """
         if element:
-            location = element.location
-            size = element.size
-            elem_box = (int(location['x']), int(location['y']), int(location['x'] + size['width']),
-                        int(location['y'] + size['height']))
-            img = img.crop(elem_box)
+            img = img.crop(VisualTest.get_element_box(element))
         return img
 
     @staticmethod
@@ -180,15 +203,13 @@ class VisualTest(object):
             pixel_data = img.load()
 
             for element in elements:
-                location = element.location
-                size = element.size
-
-                for y in xrange(int(location['y']), int(location['y'] + size['height'])):
-                    for x in xrange(int(location['x']), int(location['x'] + size['width'])):
-                        try:
-                            pixel_data[x, y] = (0, 0, 0, 255)
-                        except IndexError:
-                            pass
+                element_box = VisualTest.get_element_box(element)
+                for x, y in itertools.product(xrange(element_box[0], element_box[2]),
+                                              xrange(element_box[1], element_box[3])):
+                    try:
+                        pixel_data[x, y] = (0, 0, 0, 255)
+                    except IndexError:
+                        pass
 
         return img
 
