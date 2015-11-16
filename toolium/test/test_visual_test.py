@@ -167,26 +167,26 @@ class VisualTests(unittest.TestCase):
         # Assert output image
         self.assertImage(img, self._testMethodName, 'register_cropped_element')
 
-    def test_ios_resize(self):
+    def test_mobile_resize(self):
         # Create driver mock
         toolium_driver.config.set('Browser', 'browser', 'iphone')
         toolium_driver.driver.get_window_size.return_value = {'width': 375, 'height': 667}
 
         # Resize image
         img = Image.open(self.file_ios)
-        img = self.visual.ios_resize(img)
+        img = self.visual.mobile_resize(img)
 
         # Assert output image
         self.assertImage(img, self._testMethodName, 'ios_resized')
 
-    def test_ios_no_resize(self):
+    def test_mobile_no_resize(self):
         # Create driver mock
         toolium_driver.config.set('Browser', 'browser', 'iphone')
         toolium_driver.driver.get_window_size.return_value = {'width': 750, 'height': 1334}
 
         # Resize image
         orig_img = Image.open(self.file_ios)
-        img = self.visual.ios_resize(orig_img)
+        img = self.visual.mobile_resize(orig_img)
 
         # Assert that image object has not been modified
         self.assertEqual(orig_img, img)
@@ -315,7 +315,7 @@ class VisualTests(unittest.TestCase):
         self.visual.assertScreenshot(element, filename='screenshot_elem', file_suffix='screenshot_suffix')
         toolium_driver.driver.get_screenshot_as_png.assert_called_with()
 
-    def test_assert_screenshot_ios_resize_and_exclude(self):
+    def test_assert_screenshot_mobile_resize_and_exclude(self):
         # Exclude element
         elements = [get_mock_element(x=0, y=0, height=24, width=375)]
 
@@ -340,7 +340,7 @@ class VisualTests(unittest.TestCase):
                                      'screenshot_ios.png')
         Engine().assertSameFiles(output_file, baseline_file, 0)
 
-    def test_assert_screenshot_ios_web_resize_and_exclude(self):
+    def test_assert_screenshot_mobile_web_resize_and_exclude(self):
         # Exclude element
         form_element = get_mock_element(x=0, y=0, height=559, width=375)
         exclude_elements = [get_mock_element(x=15, y=296.515625, height=32, width=345)]

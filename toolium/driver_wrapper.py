@@ -187,12 +187,21 @@ class DriverWrapper(object):
         return browser_name in ('android', 'iphone')
 
     def is_ios_test(self):
-        """Check if actual test must be executed in a iOS mobile
+        """Check if actual test must be executed in an iOS mobile
 
         :returns: true if test must be executed in an iOS mobile
         """
         browser_name = self.config.get('Browser', 'browser').split('-')[0]
         return browser_name == 'iphone'
+
+    def is_android_web_test(self):
+        """Check if actual test must be executed in a browser of an Android mobile
+
+        :returns: true if test must be executed in a browser of an Android mobile
+        """
+        browser_name = self.config.get('Browser', 'browser').split('-')[0]
+        appium_browser_name = self.config.get_optional('AppiumCapabilities', 'browserName')
+        return browser_name == 'android' and appium_browser_name not in (None, '')
 
     def is_web_test(self):
         """Check if actual test must be executed in a browser

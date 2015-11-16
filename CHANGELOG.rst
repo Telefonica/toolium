@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v0.11.3
+-------
+
+*In development*
+
+- Fix image size in visual testing for Android and iOS web tests
+
 v0.11.2
 -------
 

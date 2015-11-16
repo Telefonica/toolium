@@ -97,9 +97,10 @@ class VisualTest(object):
         report_name = '{} ({})'.format(file_suffix, filename)
 
         # Get screenshot and modify it
-        if toolium_driver.is_ios_test() or (exclude_elements and len(exclude_elements) > 0) or element:
+        if toolium_driver.is_ios_test() or toolium_driver.is_android_web_test() or (
+            exclude_elements and len(exclude_elements) > 0) or element:
             img = Image.open(BytesIO(toolium_driver.driver.get_screenshot_as_png()))
-            img = self.ios_resize(img)
+            img = self.mobile_resize(img)
             img = self.exclude_elements(img, exclude_elements)
             img = self.crop_element(img, element)
             img.save(output_file)
@@ -142,14 +143,18 @@ class VisualTest(object):
         return element
 
     @staticmethod
-    def ios_resize(img):
-        """Resize image in iOS to fit window size
+    def mobile_resize(img):
+        """Resize image in iOS (native and web) and Android (web) to fit window size
 
         :param img: image object
         :returns: modified image object
         """
-        if toolium_driver.is_ios_test():
-            scale = img.size[0] / toolium_driver.driver.get_window_size()['width']
+        if toolium_driver.is_ios_test() or toolium_driver.is_android_web_test():
+            if toolium_driver.is_ios_test():
+                window_width = toolium_driver.driver.get_window_size()['width']
+            else:
+                window_width = toolium_driver.driver.execute_script("return window.outerWidth")
+            scale = img.size[0] / window_width
             if scale != 1:
                 new_image_size = (int(img.size[0] / scale), int(img.size[1] / scale))
                 img = img.resize(new_image_size, Image.ANTIALIAS)
