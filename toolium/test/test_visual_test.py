@@ -52,7 +52,8 @@ class VisualTests(unittest.TestCase):
         if os.path.exists(visual_path):
             shutil.rmtree(visual_path)
 
-        # Remove previous conf properties
+        # Remove previous driver instance and conf properties
+        toolium_driver._instance = None
         toolium_driver.config_properties_filenames = None
 
         # Configure properties
@@ -63,6 +64,10 @@ class VisualTests(unittest.TestCase):
         # Create a new VisualTest instance
         self.visual = VisualTest()
         toolium_driver.visual_number = 1
+
+        # Configure logger mock
+        self.driver_patch = mock.patch('toolium.toolium_driver.driver', mock.MagicMock())
+        self.driver_patch.start()
 
     @classmethod
     def tearDownClass(cls):
@@ -79,8 +84,28 @@ class VisualTests(unittest.TestCase):
         if os.path.exists(visual_path):
             shutil.rmtree(visual_path)
 
-        # Remove conf properties
+        # Remove driver instance and conf properties
+        toolium_driver._instance = None
         toolium_driver.config_properties_filenames = None
+
+    def tearDown(self):
+        self.driver_patch.stop()
+
+    def test_no_needle(self):
+        # Configure globals mock
+        globals_patch = mock.patch('builtins.globals', mock.MagicMock(return_value=[]))
+        globals_patch.start()
+
+        with self.assertRaises(Exception) as cm:
+            VisualTest()
+        self.assertEqual(str(cm.exception), 'The visual tests are enabled, but needle is not installed')
+
+        globals_patch.stop()
+
+    def test_no_enabled(self):
+        toolium_driver.config.set('VisualTests', 'enabled', 'false')
+        self.visual.assertScreenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
+        toolium_driver.driver.save_screenshot.assert_not_called()
 
     def test_compare_files_equals(self):
         message = self.visual.compare_files(self._testMethodName, self.file_v1, self.file_v1, 0)
@@ -145,7 +170,6 @@ class VisualTests(unittest.TestCase):
     def test_ios_resize(self):
         # Create driver mock
         toolium_driver.config.set('Browser', 'browser', 'iphone')
-        toolium_driver.driver = mock.MagicMock()
         toolium_driver.driver.get_window_size.return_value = {'width': 375, 'height': 667}
 
         # Resize image
@@ -158,7 +182,6 @@ class VisualTests(unittest.TestCase):
     def test_ios_no_resize(self):
         # Create driver mock
         toolium_driver.config.set('Browser', 'browser', 'iphone')
-        toolium_driver.driver = mock.MagicMock()
         toolium_driver.driver.get_window_size.return_value = {'width': 750, 'height': 1334}
 
         # Resize image
@@ -213,7 +236,6 @@ class VisualTests(unittest.TestCase):
         page_element.element.assert_called_with()
 
     def test_get_element_locator(self):
-        toolium_driver.driver = mock.MagicMock()
         toolium_driver.driver.find_element.return_value = 'mock_element'
         element_locator = (By.ID, 'element_id')
 
@@ -226,7 +248,6 @@ class VisualTests(unittest.TestCase):
         def copy_file_side_effect(output_file):
             shutil.copyfile(self.file_v1, output_file)
 
-        toolium_driver.driver = mock.MagicMock()
         toolium_driver.driver.save_screenshot.side_effect = copy_file_side_effect
 
         self.visual.assertScreenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
@@ -243,7 +264,6 @@ class VisualTests(unittest.TestCase):
         element = get_mock_element(x=250, y=40, height=40, width=300)
 
         # Create driver mock
-        toolium_driver.driver = mock.MagicMock()
         with open(self.file_v1, "rb") as f:
             image_data = f.read()
         toolium_driver.driver.get_screenshot_as_png.return_value = image_data
@@ -266,7 +286,6 @@ class VisualTests(unittest.TestCase):
         def copy_file_side_effect(output_file):
             shutil.copyfile(self.file_v1, output_file)
 
-        toolium_driver.driver = mock.MagicMock()
         toolium_driver.driver.save_screenshot.side_effect = copy_file_side_effect
 
         # Add baseline image
@@ -289,7 +308,6 @@ class VisualTests(unittest.TestCase):
         element = get_mock_element(x=250, y=40, height=40, width=300)
 
         # Create driver mock
-        toolium_driver.driver = mock.MagicMock()
         with open(self.file_v1, "rb") as f:
             image_data = f.read()
         toolium_driver.driver.get_screenshot_as_png.return_value = image_data
@@ -303,7 +321,6 @@ class VisualTests(unittest.TestCase):
 
         # Create driver mock
         toolium_driver.config.set('Browser', 'browser', 'iphone')
-        toolium_driver.driver = mock.MagicMock()
         with open(self.file_ios, "rb") as f:
             image_data = f.read()
         toolium_driver.driver.get_screenshot_as_png.return_value = image_data
@@ -331,7 +348,6 @@ class VisualTests(unittest.TestCase):
         # Create driver mock
         toolium_driver.config.set('Browser', 'browser', 'iphone')
         toolium_driver.config.set('AppiumCapabilities', 'browserName', 'safari')
-        toolium_driver.driver = mock.MagicMock()
         file_ios_web = os.path.join(self.root_path, 'resources', 'ios_web.png')
         with open(file_ios_web, "rb") as f:
             image_data = f.read()

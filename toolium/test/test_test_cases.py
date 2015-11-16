@@ -18,7 +18,6 @@ limitations under the License.
 
 import unittest
 import os
-import logging
 
 import mock
 
@@ -52,26 +51,27 @@ def run_mock(test_name):
 
 
 class BasicTestCaseTests(unittest.TestCase):
-    def test_tear_down_pass(self):
+    def setUp(self):
         # Configure logger mock
-        logger = mock.MagicMock()
-        logging.getLogger = mock.MagicMock(return_value=logger)
+        self.logger = mock.MagicMock()
+        self.logger_patch = mock.patch('logging.getLogger', mock.MagicMock(return_value=self.logger))
+        self.logger_patch.start()
 
+    def tearDown(self):
+        self.logger_patch.stop()
+
+    def test_tear_down_pass(self):
         test = run_mock('mock_pass')
         self.assertTrue(test._test_passed)
 
         # Check logging message
         expected_response = "The test 'MockTestClass.mock_pass' has passed"
-        logger.info.assert_called_with(expected_response)
+        self.logger.info.assert_called_with(expected_response)
 
     def test_tear_down_fail(self):
-        # Configure logger mock
-        logger = mock.MagicMock()
-        logging.getLogger = mock.MagicMock(return_value=logger)
-
         test = run_mock('mock_fail')
         self.assertFalse(test._test_passed)
 
         # Check logging error message
         expected_response = "The test 'MockTestClass.mock_fail' has failed: test error"
-        logger.error.assert_called_with(expected_response)
+        self.logger.error.assert_called_with(expected_response)

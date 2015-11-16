@@ -26,6 +26,15 @@ from toolium import jira
 
 
 class JiraTests(unittest.TestCase):
+    def setUp(self):
+        # Configure logger mock
+        self.logger = mock.MagicMock()
+        self.logger_patch = mock.patch('toolium.jira.logger', mock.MagicMock())
+        self.logger_patch.start()
+
+    def tearDown(self):
+        self.logger_patch.stop()
+
     @requests_mock.Mocker()
     def test_change_jira_status(self, req_mock):
         # Test input
@@ -33,7 +42,6 @@ class JiraTests(unittest.TestCase):
         response = b"The Test Case Execution 'TOOLIUM-2' has been created\r\n"
 
         # Configure mock
-        jira.logger = mock.MagicMock()
         req_mock.get(execution_url, content=response)
 
         # Test method
@@ -52,9 +60,9 @@ class JiraTests(unittest.TestCase):
         jira.logger.debug.assert_called_with(expected_response)
 
     def test_change_jira_status_empty_url(self):
-        # Configure mock
-        jira.logger = mock.MagicMock()
-        jira.requests.get = mock.MagicMock(side_effect=ConnectionError('exception error'))
+        # Configure jira mock
+        jira_patch = mock.patch('toolium.jira.requests.get', mock.MagicMock(side_effect=ConnectionError('exception error')))
+        jira_patch.start()
 
         # Test method
         jira.change_jira_status('', 'TOOLIUM-1', 'Pass')
@@ -62,11 +70,12 @@ class JiraTests(unittest.TestCase):
         # Check logging error message
         expected_response = "Error updating Test Case 'TOOLIUM-1': execution_url is not configured"
         jira.logger.warn.assert_called_with(expected_response)
+        jira_patch.stop()
 
     def test_change_jira_status_exception(self):
-        # Configure mock
-        jira.logger = mock.MagicMock()
-        jira.requests.get = mock.MagicMock(side_effect=ConnectionError('exception error'))
+        # Configure jira mock
+        jira_patch = mock.patch('toolium.jira.requests.get', mock.MagicMock(side_effect=ConnectionError('exception error')))
+        jira_patch.start()
 
         # Test method
         jira.change_jira_status('http://server/execution_service', 'TOOLIUM-1', 'Pass')
@@ -75,6 +84,7 @@ class JiraTests(unittest.TestCase):
         expected_response = "Error updating Test Case 'TOOLIUM-1' using execution_url " \
                             "'http://server/execution_service': exception error"
         jira.logger.warn.assert_called_with(expected_response)
+        jira_patch.stop()
 
     def test_jira_annotation_pass(self):
         # Execute method with jira annotation
