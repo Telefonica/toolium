@@ -93,8 +93,14 @@ class VisualTests(unittest.TestCase):
 
     def test_no_needle(self):
         # Configure globals mock
-        globals_patch = mock.patch('builtins.globals', mock.MagicMock(return_value=[]))
-        globals_patch.start()
+        try:
+            # Python 3
+            globals_patch = mock.patch('builtins.globals', mock.MagicMock(return_value=[]))
+            globals_patch.start()
+        except ImportError:
+            # Python 2.7
+            globals_patch = mock.patch('__builtin__.globals', mock.MagicMock(return_value=[]))
+            globals_patch.start()
 
         with self.assertRaises(Exception) as cm:
             VisualTest()
