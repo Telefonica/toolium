@@ -35,12 +35,11 @@ from selenium.webdriver.remote.webelement import WebElement
 from toolium import toolium_driver
 import itertools
 
-try:
-    from needle.engines.perceptualdiff_engine import Engine as diff_Engine
-    from needle.engines.pil_engine import Engine as pil_Engine
-    from PIL import Image
-except ImportError:
-    pass
+from needle.engines.imagemagick_engine import Engine as MagickEngine
+from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
+from needle.engines.pil_engine import Engine as PilEngine
+
+from PIL import Image
 
 
 class VisualTest(object):
@@ -50,14 +49,21 @@ class VisualTest(object):
     def __init__(self):
         if not toolium_driver.config.getboolean_optional('VisualTests', 'enabled'):
             return
-        if 'diff_Engine' not in globals():
-            raise Exception('The visual tests are enabled, but needle is not installed')
 
         self.logger = logging.getLogger(__name__)
         self.output_directory = toolium_driver.visual_output_directory
         self.baseline_directory = toolium_driver.visual_baseline_directory
         engine_type = toolium_driver.config.get_optional('VisualTests', 'engine', 'pil')
-        self.engine = diff_Engine() if engine_type == 'perceptualdiff' else pil_Engine()
+        if engine_type == 'imagemagick':
+            self.engine = MagickEngine()
+        elif engine_type == 'perceptualdiff':
+            self.engine = PerceptualEngine()
+        elif engine_type == 'pil':
+            self.engine = PilEngine()
+        else:
+            self.logger.warn(
+                "Engine '{}' not found, using pil instead. Review your properties.cfg file.".format(engine_type))
+            self.engine = PilEngine()
         self.save_baseline = toolium_driver.config.getboolean_optional('VisualTests', 'save')
 
         # Create folders

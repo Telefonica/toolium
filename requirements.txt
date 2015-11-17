@@ -1,3 +1,4 @@
 requests==2.8.1             # api tests
 selenium==2.48.0            # web tests
 Appium-Python-Client==0.20  # mobile tests
+git+https://github.com/bfirsh/needle.git    # visual testing
