@@ -17,8 +17,10 @@ limitations under the License.
 """
 
 try:
+    # Python 3
     from urllib.parse import urlparse
 except ImportError:
+    # Python 2.7
     from urlparse import urlparse
 import logging
 import os

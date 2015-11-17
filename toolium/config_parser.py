@@ -17,12 +17,16 @@ limitations under the License.
 """
 
 try:
+    # Python 3
     import configparser
 except ImportError:
+    # Python 2.7
     import ConfigParser as configparser
 try:
+    # Python 2.7
     from StringIO import StringIO
 except ImportError:
+    # Python 3
     from io import StringIO
 import os
 import logging

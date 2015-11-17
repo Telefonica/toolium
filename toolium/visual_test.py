@@ -21,13 +21,13 @@ import os
 import shutil
 import re
 
+from io import BytesIO
+
 try:
-    from io import BytesIO
-except ImportError:
-    from BytesIO import BytesIO
-try:
+    # Python 2.7
     xrange
 except NameError:
+    # Python 3
     xrange = range
 
 from selenium.webdriver.remote.webelement import WebElement
@@ -98,7 +98,7 @@ class VisualTest(object):
 
         # Get screenshot and modify it
         if toolium_driver.is_ios_test() or toolium_driver.is_android_web_test() or (
-            exclude_elements and len(exclude_elements) > 0) or element:
+                    exclude_elements and len(exclude_elements) > 0) or element:
             img = Image.open(BytesIO(toolium_driver.driver.get_screenshot_as_png()))
             img = self.mobile_resize(img)
             img = self.exclude_elements(img, exclude_elements)
