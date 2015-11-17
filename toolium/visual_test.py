@@ -100,7 +100,7 @@ class VisualTest(object):
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
         unique_name = '{0:0=2d}_{1}.png'.format(toolium_driver.visual_number, filename_with_suffix)
         output_file = os.path.join(self.output_directory, unique_name)
-        report_name = '{} ({})'.format(file_suffix, filename)
+        report_name = '{}<br>({})'.format(file_suffix, filename)
 
         # Get screenshot and modify it
         if toolium_driver.is_ios_test() or toolium_driver.is_android_web_test() or (

@@ -7,11 +7,13 @@ iexplore, edge, safari, opera, phantomjs, iphone, android. ::
     [Browser]
     browser: firefox
 
-**Firefox**
+Firefox
+~~~~~~~
 
 - No extra configuration is needed
 
-**Chrome**
+Chrome
+~~~~~~
 
 - Download `chromedriver_*.zip <http://chromedriver.storage.googleapis.com/index.html>`_
 - Unzip file and save the executable in a local folder
@@ -20,7 +22,8 @@ iexplore, edge, safari, opera, phantomjs, iphone, android. ::
     [Browser]
     chromedriver_path: C:\Drivers\chromedriver.exe
 
-**Internet Explorer**
+Internet Explorer
+~~~~~~~~~~~~~~~~~
 
 - Download `IEDriverServer_Win32_*.zip <http://selenium-release.storage.googleapis.com/index.html>`_
 - It's recommended to use Win32 version, because x64 version is very slow
@@ -30,7 +33,8 @@ iexplore, edge, safari, opera, phantomjs, iphone, android. ::
     [Browser]
     explorerdriver_path: C:\Drivers\IEDriverServer.exe
 
-**Edge**
+Edge
+~~~~
 
 - Download `MicrosoftWebDriver.msi <https://www.microsoft.com/en-us/download/details.aspx?id=48212>`_
 - Install MicrosoftWebDriver.msi
@@ -39,12 +43,14 @@ iexplore, edge, safari, opera, phantomjs, iphone, android. ::
     [Browser]
     edgedriver_path: C:\Drivers\MicrosoftWebDriver.exe
 
-**Safari**
+Safari
+~~~~~~
 
 - Download `SafariDriver.safariextz <http://selenium-release.storage.googleapis.com/index.html>`_
 - Open file in Safari and install it
 
-**Opera**
+Opera
+~~~~~
 
 - Download `operadriver_*.zip <https://github.com/operasoftware/operachromiumdriver/releases>`_
 - Unzip file and save the executable in a local folder
@@ -53,7 +59,8 @@ iexplore, edge, safari, opera, phantomjs, iphone, android. ::
     [Browser]
     operadriver_path: C:\Drivers\operadriver.exe
 
-**PhantomJS**
+PhantomJS
+~~~~~~~~~
 
 - Download `phantomjs-*.zip <http://phantomjs.org/download.html>`_
 - Unzip file and save the executable in a local folder
