@@ -265,7 +265,7 @@ class VisualTests(unittest.TestCase):
         driver.save_screenshot.assert_called_with(output_file)
 
         # Output image and new baseline image must be equals
-        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox-base',
+        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_full.png')
         PilEngine().assertSameFiles(output_file, baseline_file, 0)
 
@@ -289,7 +289,7 @@ class VisualTests(unittest.TestCase):
         PilEngine().assertSameFiles(output_file, expected_image, 0)
 
         # Output image and new baseline image must be equals
-        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox-base',
+        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_elem.png')
         PilEngine().assertSameFiles(output_file, baseline_file, 0)
 
@@ -302,7 +302,7 @@ class VisualTests(unittest.TestCase):
         driver.save_screenshot.side_effect = copy_file_side_effect
 
         # Add baseline image
-        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox-base',
+        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_full.png')
         shutil.copyfile(self.file_v1, baseline_file)
 
@@ -315,7 +315,7 @@ class VisualTests(unittest.TestCase):
     def test_assert_screenshot_element_and_compare(self, driver):
         # Add baseline image
         expected_image = os.path.join(self.root_path, 'resources', 'register_cropped_element.png')
-        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox-base',
+        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_elem.png')
         shutil.copyfile(expected_image, baseline_file)
 
@@ -354,7 +354,7 @@ class VisualTests(unittest.TestCase):
         PilEngine().assertSameFiles(output_file, expected_image, 0)
 
         # Output image and new baseline image must be equals
-        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox-base',
+        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_ios.png')
         PilEngine().assertSameFiles(output_file, baseline_file, 0)
 
@@ -384,7 +384,7 @@ class VisualTests(unittest.TestCase):
         PilEngine().assertSameFiles(output_file, expected_image, 0)
 
         # Output image and new baseline image must be equals
-        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox-base',
+        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_ios_web.png')
         PilEngine().assertSameFiles(output_file, baseline_file, 0)
 
