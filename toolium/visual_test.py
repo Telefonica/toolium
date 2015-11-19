@@ -35,8 +35,8 @@ from selenium.webdriver.remote.webelement import WebElement
 from toolium import toolium_driver
 import itertools
 
-from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
+# from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.pil_engine import Engine as PilEngine
 
 from PIL import Image
@@ -54,10 +54,10 @@ class VisualTest(object):
         self.output_directory = toolium_driver.visual_output_directory
         self.baseline_directory = toolium_driver.visual_baseline_directory
         engine_type = toolium_driver.config.get_optional('VisualTests', 'engine', 'pil')
-        if engine_type == 'imagemagick':
-            self.engine = MagickEngine()
-        elif engine_type == 'perceptualdiff':
+        if engine_type == 'perceptualdiff':
             self.engine = PerceptualEngine()
+        # elif engine_type == 'imagemagick':
+        #    self.engine = MagickEngine()
         elif engine_type == 'pil':
             self.engine = PilEngine()
         else:

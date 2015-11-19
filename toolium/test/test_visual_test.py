@@ -21,8 +21,10 @@ import os
 import shutil
 
 from PIL import Image
-from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
+
+
+# from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.pil_engine import Engine as PilEngine
 from selenium.webdriver.remote.webelement import WebElement
 import mock
@@ -89,10 +91,10 @@ class VisualTests(unittest.TestCase):
         visual = VisualTest()
         self.assertIsInstance(visual.engine, PerceptualEngine)
 
-    def test_engine_magick(self):
-        toolium_driver.config.set('VisualTests', 'engine', 'imagemagick')
-        visual = VisualTest()
-        self.assertIsInstance(visual.engine, MagickEngine)
+    # def test_engine_magick(self):
+    #    toolium_driver.config.set('VisualTests', 'engine', 'imagemagick')
+    #    visual = VisualTest()
+    #    self.assertIsInstance(visual.engine, MagickEngine)
 
     def test_engine_empty(self):
         toolium_driver.config.set('VisualTests', 'engine', '')
