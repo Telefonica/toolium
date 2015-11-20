@@ -98,3 +98,13 @@ class TestGenericPageElement(unittest.TestCase):
         self.assertEqual(web_element, child_element)
         self.assertEqual(self.driver.find_element.mock_calls, [])
         self.assertEqual(mock_element.find_element.mock_calls, [mock.call(By.ID, 'email')])
+
+    @mock.patch('toolium.toolium_driver.driver')
+    def test_get_element_in_test(self, driver):
+        driver.find_element.return_value = mock_element
+
+        username = PageElement(By.NAME, 'username')
+        web_element = username.element()
+
+        self.assertEqual(web_element, mock_element)
+        self.assertEqual(driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])

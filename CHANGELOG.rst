@@ -10,6 +10,7 @@ v0.11.3
 - Baseline name property allows any configuration property value to configure the visual testing baseline folder, e.g.:
    | {AppiumCapabilities_deviceName}-{AppiumCapabilities_platformVersion}: this baseline_name could use baselines as iPhone_6-8.3, iPhone_6-9.1, iPhone_6s-9.1, ...
    | {Browser_browser}: this baseline_name could use baselines as firefox, iexplore, ... (default value)
+- Fix page elements initialization when they are defined outside of a page object
 
 v0.11.2
 -------

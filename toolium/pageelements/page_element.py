@@ -18,7 +18,9 @@ limitations under the License.
 
 from selenium.webdriver.remote.webelement import WebElement
 
+from toolium import toolium_driver
 from toolium.visual_test import VisualTest
+from toolium.utils import Utils
 
 
 class PageElement(object):
@@ -41,6 +43,8 @@ class PageElement(object):
         """
         self.locator = (by, value)
         self.parent = parent
+        self.driver = toolium_driver.driver
+        self.utils = Utils(self.driver)
 
     def set_driver(self, driver):
         """Set Selenium driver"""
