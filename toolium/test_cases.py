@@ -101,7 +101,7 @@ class BasicTestCase(unittest.TestCase):
         py2_exception = sys.exc_info()[1]
         try:
             # Python 3.4+
-            exception_info = self._outcome.errors[1][1]
+            exception_info = self._outcome.errors[-1][1] if len(self._outcome.errors) > 0 else None
             exception = exception_info[1] if exception_info else None
         except AttributeError:
             try:

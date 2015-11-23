@@ -1,6 +1,16 @@
 Toolium Changelog
 =================
 
+v0.11.3
+-------
+
+*In development*
+
+- Fix image size in visual testing for Android and iOS web tests
+- Baseline name property allows any configuration property value to configure the visual testing baseline folder, e.g.:
+   | {AppiumCapabilities_deviceName}-{AppiumCapabilities_platformVersion}: this baseline_name could use baselines as iPhone_6-8.3, iPhone_6-9.1, iPhone_6s-9.1, ...
+   | {Browser_browser}: this baseline_name could use baselines as firefox, iexplore, ... (default value)
+
 v0.11.2
 -------
 
@@ -90,7 +100,7 @@ v0.9.0
    New config property 'complete_report' in [VisualTests] section to include also correct visual assertions in report
 - Configure multiple baseline name for different browsers, languages and versions
    | New config property 'baseline_name' in [VisualTests] section to configure the name of the baseline folder
-   | Allow {browser}, {language} and {platformVersion} variables, i.e. baseline_name = {browser}-{language}
+   | Allow {browser}, {language} and {platformVersion} variables, e.g. baseline_name = {browser}-{language}
    | The default baseline_name is {browser}.
 - Add assertFullScreenshot method in SeleniumTestCase
 

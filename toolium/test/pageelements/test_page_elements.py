@@ -22,8 +22,9 @@ from selenium.webdriver.common.by import By
 import mock
 
 from toolium.pageobjects.page_object import PageObject
-from toolium.pageelements import input_text_page_element, select_page_element
+from toolium.pageelements import select_page_element
 from toolium.pageelements import *
+from toolium import toolium_driver
 
 child_element = 'child_element'
 mock_element = None
@@ -74,6 +75,9 @@ class TestPageElements(unittest.TestCase):
         mock_element = get_mock_element()
         self.driver = get_mock_driver()
 
+    def tearDown(self):
+        toolium_driver._instance = None
+
     def test_locator(self):
         page_object = LoginPageObject(self.driver)
 
@@ -96,12 +100,15 @@ class TestPageElements(unittest.TestCase):
         self.assertEqual(username_value, 'input text value')
 
     def test_set_inputtext(self):
-        input_text_page_element.toolium_driver.is_ios_test = mock.MagicMock(return_value=False)
+        # Configure driver ios mock
+        self.driver_ios_patch = mock.patch('toolium.toolium_driver.is_ios_test', mock.MagicMock(return_value=False))
+        self.driver_ios_patch.start()
 
         page_object = LoginPageObject(self.driver)
         page_object.username.text = 'new input value'
 
         self.assertEqual(mock_element.send_keys.mock_calls, [mock.call('new input value')])
+        self.driver_ios_patch.stop()
 
     def test_get_selected_option(self):
         select_page_element.SeleniumSelect = get_mock_select()

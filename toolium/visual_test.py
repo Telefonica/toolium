@@ -21,25 +21,25 @@ import os
 import shutil
 import re
 
+from io import BytesIO
+
 try:
-    from io import BytesIO
-except ImportError:
-    from BytesIO import BytesIO
-try:
+    # Python 2.7
     xrange
 except NameError:
+    # Python 3
     xrange = range
 
 from selenium.webdriver.remote.webelement import WebElement
 
 from toolium import toolium_driver
+import itertools
 
-try:
-    from needle.engines.perceptualdiff_engine import Engine as diff_Engine
-    from needle.engines.pil_engine import Engine as pil_Engine
-    from PIL import Image
-except ImportError:
-    pass
+from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
+# from needle.engines.imagemagick_engine import Engine as MagickEngine
+from needle.engines.pil_engine import Engine as PilEngine
+
+from PIL import Image
 
 
 class VisualTest(object):
@@ -49,14 +49,21 @@ class VisualTest(object):
     def __init__(self):
         if not toolium_driver.config.getboolean_optional('VisualTests', 'enabled'):
             return
-        if 'diff_Engine' not in globals():
-            raise Exception('The visual tests are enabled, but needle is not installed')
 
         self.logger = logging.getLogger(__name__)
         self.output_directory = toolium_driver.visual_output_directory
         self.baseline_directory = toolium_driver.visual_baseline_directory
         engine_type = toolium_driver.config.get_optional('VisualTests', 'engine', 'pil')
-        self.engine = diff_Engine() if engine_type == 'perceptualdiff' else pil_Engine()
+        if engine_type == 'perceptualdiff':
+            self.engine = PerceptualEngine()
+        # elif engine_type == 'imagemagick':
+        #    self.engine = MagickEngine()
+        elif engine_type == 'pil':
+            self.engine = PilEngine()
+        else:
+            self.logger.warn(
+                "Engine '{}' not found, using pil instead. Review your properties.cfg file.".format(engine_type))
+            self.engine = PilEngine()
         self.save_baseline = toolium_driver.config.getboolean_optional('VisualTests', 'save')
 
         # Create folders
@@ -93,12 +100,13 @@ class VisualTest(object):
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
         unique_name = '{0:0=2d}_{1}.png'.format(toolium_driver.visual_number, filename_with_suffix)
         output_file = os.path.join(self.output_directory, unique_name)
-        report_name = '{} ({})'.format(file_suffix, filename)
+        report_name = '{}<br>({})'.format(file_suffix, filename)
 
         # Get screenshot and modify it
-        if toolium_driver.is_ios_test() or (exclude_elements and len(exclude_elements) > 0) or element:
+        if toolium_driver.is_ios_test() or toolium_driver.is_android_web_test() or (
+                    exclude_elements and len(exclude_elements) > 0) or element:
             img = Image.open(BytesIO(toolium_driver.driver.get_screenshot_as_png()))
-            img = self.ios_resize(img)
+            img = self.mobile_resize(img)
             img = self.exclude_elements(img, exclude_elements)
             img = self.crop_element(img, element)
             img.save(output_file)
@@ -141,16 +149,46 @@ class VisualTest(object):
         return element
 
     @staticmethod
-    def ios_resize(img):
-        """Resize image in iOS to fit window size
+    def mobile_resize(img):
+        """Resize image in iOS (native and web) and Android (web) to fit window size
 
         :param img: image object
-        :returns: modfied image object
+        :returns: modified image object
         """
-        if toolium_driver.is_ios_test():
-            window_size = toolium_driver.driver.get_window_size()
-            img = img.resize((window_size['width'], window_size['height']), Image.ANTIALIAS)
+        if toolium_driver.is_ios_test() or toolium_driver.is_android_web_test():
+            if toolium_driver.is_ios_test():
+                window_width = toolium_driver.driver.get_window_size()['width']
+            else:
+                window_width = toolium_driver.driver.execute_script("return window.outerWidth")
+            scale = img.size[0] / window_width
+            if scale != 1:
+                new_image_size = (int(img.size[0] / scale), int(img.size[1] / scale))
+                img = img.resize(new_image_size, Image.ANTIALIAS)
         return img
+
+    @staticmethod
+    def get_safari_navigation_bar_height():
+        """Get the height of Safari navigation bar
+
+        :returns: height of navigation bar
+        """
+        status_bar_height = 0
+        if toolium_driver.is_ios_test() and toolium_driver.is_web_test():
+            # ios 7.1, 8.3
+            status_bar_height = 64
+        return status_bar_height
+
+    @staticmethod
+    def get_element_box(element):
+        """Get element coordinates
+
+        :param element: WebElement object
+        :returns: tuple with element coordinates
+        """
+        offset = VisualTest.get_safari_navigation_bar_height()
+        return (int(element.location['x']), int(element.location['y'] + offset),
+                int(element.location['x'] + element.size['width']),
+                int(element.location['y'] + offset + element.size['height']))
 
     @staticmethod
     def crop_element(img, element):
@@ -158,14 +196,10 @@ class VisualTest(object):
 
         :param img: image object
         :param element: WebElement object
-        :returns: modfied image object
+        :returns: modified image object
         """
         if element:
-            location = element.location
-            size = element.size
-            elem_box = (int(location['x']), int(location['y']), int(location['x'] + size['width']),
-                        int(location['y'] + size['height']))
-            img = img.crop(elem_box)
+            img = img.crop(VisualTest.get_element_box(element))
         return img
 
     @staticmethod
@@ -180,15 +214,13 @@ class VisualTest(object):
             pixel_data = img.load()
 
             for element in elements:
-                location = element.location
-                size = element.size
-
-                for y in xrange(int(location['y']), int(location['y'] + size['height'])):
-                    for x in xrange(int(location['x']), int(location['x'] + size['width'])):
-                        try:
-                            pixel_data[x, y] = (0, 0, 0, 255)
-                        except IndexError:
-                            pass
+                element_box = VisualTest.get_element_box(element)
+                for x, y in itertools.product(xrange(element_box[0], element_box[2]),
+                                              xrange(element_box[1], element_box[3])):
+                    try:
+                        pixel_data[x, y] = (0, 0, 0, 255)
+                    except IndexError:
+                        pass
 
         return img
 

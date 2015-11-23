@@ -72,7 +72,7 @@ Main Features
 
 - `Choosing driver through a configuration file </docs/browser_configuration.rst>`_
 - Page Object pattern
-- Visual testing solution
+- `Visual testing solution </docs/visual_testing.rst>`_
 - Make a screenshot in the happenning of an error
 
 Documentation

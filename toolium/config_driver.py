@@ -17,8 +17,10 @@ limitations under the License.
 """
 
 try:
+    # Python 3
     from configparser import NoSectionError
 except ImportError:
+    # Python 2.7
     from ConfigParser import NoSectionError
 import ast
 import logging

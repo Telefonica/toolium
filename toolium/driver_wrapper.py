@@ -31,6 +31,7 @@ class DriverWrapper(object):
     logger = None
     config = ExtendedConfigParser()
     browser_info = None
+    baseline_name = None
     # Configuration and output files
     config_directory = None
     output_directory = None
@@ -120,17 +121,20 @@ class DriverWrapper(object):
 
             # Unique visualtests directories
             self.visual_output_directory = os.path.join(self.output_directory, 'visualtests', date + '_' + browser_info)
-            baseline_name = self.config.get_optional('VisualTests', 'baseline_name')
-            if baseline_name:
-                language = self.config.get_optional('AppiumCapabilities', 'language', '')
-                platform_version = self.config.get_optional('AppiumCapabilities', 'platformVersion', '')
-                baseline_name = baseline_name.replace('{browser}', browser_info).replace('{language}', language)
-                baseline_name = baseline_name.replace('{platformVersion}', platform_version)
-            else:
-                baseline_name = browser_info
+            self.visual_number = 1
+
+        # Get baseline name
+        baseline_name = self.config.get_optional('VisualTests', 'baseline_name', '{Browser_browser}')
+        for section in self.config.sections():
+            for option in self.config.options(section):
+                option_value = self.config.get(section, option).replace('-', '_').replace(' ', '_')
+                baseline_name = baseline_name.replace('{{{0}_{1}}}'.format(section, option), option_value)
+
+        # Configure baseline directory if baseline name has changed
+        if self.baseline_name != baseline_name:
+            self.baseline_name = baseline_name
             self.visual_baseline_directory = os.path.join(self.output_directory, 'visualtests', 'baseline',
                                                           baseline_name)
-            self.visual_number = 1
 
     def configure(self, is_selenium_test=True, tc_config_directory=None, tc_output_directory=None,
                   tc_config_prop_filenames=None, tc_config_log_filename=None, tc_output_log_filename=None):
@@ -187,12 +191,21 @@ class DriverWrapper(object):
         return browser_name in ('android', 'iphone')
 
     def is_ios_test(self):
-        """Check if actual test must be executed in a iOS mobile
+        """Check if actual test must be executed in an iOS mobile
 
         :returns: true if test must be executed in an iOS mobile
         """
         browser_name = self.config.get('Browser', 'browser').split('-')[0]
         return browser_name == 'iphone'
+
+    def is_android_web_test(self):
+        """Check if actual test must be executed in a browser of an Android mobile
+
+        :returns: true if test must be executed in a browser of an Android mobile
+        """
+        browser_name = self.config.get('Browser', 'browser').split('-')[0]
+        appium_browser_name = self.config.get_optional('AppiumCapabilities', 'browserName')
+        return browser_name == 'android' and appium_browser_name not in (None, '')
 
     def is_web_test(self):
         """Check if actual test must be executed in a browser
