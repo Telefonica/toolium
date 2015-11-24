@@ -4,7 +4,7 @@ Toolium Changelog
 v0.11.3
 -------
 
-*In development*
+*Release date: 2015-11-24*
 
 - Fix image size in visual testing for Android and iOS web tests
 - Baseline name property allows any configuration property value to configure the visual testing baseline folder, e.g.:
