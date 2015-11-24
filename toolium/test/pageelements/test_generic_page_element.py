@@ -18,11 +18,11 @@ limitations under the License.
 
 import unittest
 
-from selenium.webdriver.common.by import By
 import mock
+from selenium.webdriver.common.by import By
 
-from toolium.pageobjects.page_object import PageObject
 from toolium.pageelements import PageElement
+from toolium.pageobjects.page_object import PageObject
 
 child_element = 'child_element'
 mock_element = None
@@ -33,13 +33,6 @@ def get_mock_element(WebElement):
     element = WebElement.return_value
     element.find_element.return_value = child_element
     return element
-
-
-@mock.patch('selenium.webdriver.remote.webdriver.WebDriver')
-def get_mock_driver(WebDriver):
-    driver = WebDriver.return_value
-    driver.find_element.return_value = mock_element
-    return driver
 
 
 class LoginPageObject(PageObject):
@@ -61,40 +54,45 @@ class TestGenericPageElement(unittest.TestCase):
         """Create a new mock element and a new driver before each test"""
         global mock_element
         mock_element = get_mock_element()
-        self.driver = get_mock_driver()
 
-    def test_locator(self):
-        page_object = LoginPageObject(self.driver)
+    @mock.patch('toolium.toolium_driver.driver')
+    def test_locator(self, driver):
+        page_object = LoginPageObject()
 
         self.assertEqual(page_object.username.locator, (By.NAME, 'username'))
         self.assertEqual(page_object.password.locator, (By.ID, 'password'))
 
-    def test_get_element(self):
-        page_object = LoginPageObject(self.driver)
-        web_element = page_object.username.element()
+    @mock.patch('toolium.toolium_driver.driver')
+    def test_get_element(self, driver):
+        LoginPageObject().username.element()
 
-        self.assertEqual(web_element, mock_element)
-        self.assertEqual(self.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
+        self.assertEqual(driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
 
-    def test_get_element_with_parent(self):
-        page_object = LoginPageObject(self.driver)
-        web_element = page_object.password.element()
+    @mock.patch('toolium.toolium_driver.driver')
+    def test_get_element_with_parent(self, driver):
+        driver.find_element.return_value = mock_element
+        web_element = LoginPageObject().password.element()
 
         self.assertEqual(web_element, child_element)
-        self.assertEqual(self.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
+        self.assertEqual(driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
         self.assertEqual(mock_element.find_element.mock_calls, [mock.call(By.ID, 'password')])
 
-    def test_get_element_init_page(self):
-        page_object = RegisterPageObject(self.driver)
-        web_element = page_object.language.element()
+    @mock.patch('toolium.toolium_driver.driver')
+    def test_get_element_init_page(self, driver):
+        RegisterPageObject().language.element()
 
-        self.assertEqual(web_element, mock_element)
-        self.assertEqual(self.driver.find_element.mock_calls, [mock.call(By.ID, 'language')])
+        self.assertEqual(driver.find_element.mock_calls, [mock.call(By.ID, 'language')])
 
-    def test_get_element_with_parent_webelement(self):
-        page_object = RegisterPageObject(self.driver)
-        web_element = page_object.email.element()
+    @mock.patch('toolium.toolium_driver.driver')
+    def test_get_element_with_parent_webelement(self, driver):
+        web_element = RegisterPageObject().email.element()
 
         self.assertEqual(web_element, child_element)
-        self.assertEqual(self.driver.find_element.mock_calls, [])
+        self.assertEqual(driver.find_element.mock_calls, [])
         self.assertEqual(mock_element.find_element.mock_calls, [mock.call(By.ID, 'email')])
+
+    @mock.patch('toolium.toolium_driver.driver')
+    def test_get_element_in_test(self, driver):
+        PageElement(By.NAME, 'username').element()
+
+        self.assertEqual(driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
