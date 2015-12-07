@@ -35,7 +35,7 @@ def setup_driver(scenario):
     if not hasattr(world, 'driver') or not world.driver:
         toolium_wrapper.configure()
         world.driver = toolium_wrapper.connect()
-        world.utils = Utils(world.driver)
+        world.utils = Utils(toolium_wrapper)
         world.remote_video_node = world.utils.get_remote_video_node()
 
     # Configure visual tests

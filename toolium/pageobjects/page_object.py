@@ -52,7 +52,7 @@ class PageObject(unittest.TestCase):
         self.driver_wrapper = driver_wrapper if driver_wrapper else toolium_wrapper
         self.set_driver(self.driver_wrapper.driver)
         self.set_config(self.driver_wrapper.config)
-        self.set_utils(Utils(self.driver))
+        self.set_utils(Utils(self.driver_wrapper))
 
     def set_driver(self, driver):
         """Set Selenium driver"""

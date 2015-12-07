@@ -35,6 +35,7 @@ import itertools
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
 # from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.pil_engine import Engine as PilEngine
+from toolium.utils import Utils
 from PIL import Image
 
 
@@ -152,26 +153,11 @@ class VisualTest(object):
         :returns: modified image object
         """
         if self.driver_wrapper.is_ios_test() or self.driver_wrapper.is_android_web_test():
-            if self.driver_wrapper.is_ios_test():
-                window_width = self.driver_wrapper.driver.get_window_size()['width']
-            else:
-                window_width = self.driver_wrapper.driver.execute_script("return window.outerWidth")
-            scale = img.size[0] / window_width
+            scale = img.size[0] / Utils(self.driver_wrapper).get_window_size()['width']
             if scale != 1:
                 new_image_size = (int(img.size[0] / scale), int(img.size[1] / scale))
                 img = img.resize(new_image_size, Image.ANTIALIAS)
         return img
-
-    def get_safari_navigation_bar_height(self):
-        """Get the height of Safari navigation bar
-
-        :returns: height of navigation bar
-        """
-        status_bar_height = 0
-        if self.driver_wrapper.is_ios_test() and self.driver_wrapper.is_web_test():
-            # ios 7.1, 8.3
-            status_bar_height = 64
-        return status_bar_height
 
     def get_element_box(self, element):
         """Get element coordinates
@@ -179,7 +165,7 @@ class VisualTest(object):
         :param element: WebElement object
         :returns: tuple with element coordinates
         """
-        offset = self.get_safari_navigation_bar_height()
+        offset = Utils(self.driver_wrapper).get_safari_navigation_bar_height()
         return (int(element.location['x']), int(element.location['y'] + offset),
                 int(element.location['x'] + element.size['width']),
                 int(element.location['y'] + offset + element.size['height']))
