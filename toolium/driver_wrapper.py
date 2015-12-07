@@ -27,6 +27,7 @@ from toolium.config_parser import ExtendedConfigParser
 class DriverWrapper(object):
     # Singleton instance
     _instance = None
+    is_additional = False
     driver = None
     logger = None
     config = ExtendedConfigParser()
@@ -53,6 +54,7 @@ class DriverWrapper(object):
             # Create new instance and create a copy of the config object
             instance = super(DriverWrapper, cls).__new__(cls)
             instance.config = cls._instance.config.deepcopy()
+            instance.is_additional = True
         elif not cls._instance:
             # Create new instance and save it in a class property
             instance = super(DriverWrapper, cls).__new__(cls)
@@ -188,6 +190,9 @@ class DriverWrapper(object):
         :returns: selenium driver
         """
         self.driver = ConfigDriver(self.config).create_driver()
+        if self.is_additional:
+            from toolium.test_cases import SeleniumTestCase
+            SeleniumTestCase.additional_drivers.append(self.driver)
         return self.driver
 
     def is_mobile_test(self):

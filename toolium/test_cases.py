@@ -127,6 +127,7 @@ class SeleniumTestCase(BasicTestCase):
     Attributes:
         driver: webdriver instance
         utils: test utils instance
+        additional_drivers: additional webdriver instances
         remote_video_node: hostname of the remote node if it has enabled a video recorder
 
     :type driver: selenium.webdriver.remote.webdriver.WebDriver
@@ -134,6 +135,7 @@ class SeleniumTestCase(BasicTestCase):
     """
     driver = None
     utils = None
+    additional_drivers = []
     remote_video_node = None
 
     @classmethod
@@ -155,6 +157,9 @@ class SeleniumTestCase(BasicTestCase):
         cls.driver.quit()
         cls.driver = None
         SeleniumTestCase.driver = None
+        for driver in cls.additional_drivers:
+            driver.quit()
+        cls.additional_drivers = []
 
         # Download saved video if video is enabled or if test fails
         if cls.remote_video_node and (toolium_driver.config.getboolean_optional('Server', 'video_enabled') or
@@ -189,6 +194,10 @@ class SeleniumTestCase(BasicTestCase):
         test_name = self.get_subclassmethod_name().replace('.', '_')
         if not self._test_passed:
             self.utils.capture_screenshot(test_name)
+            driver_index = 1
+            for driver in self.additional_drivers:
+                driver_index += 1
+                Utils(driver).capture_screenshot('{}_driver{}'.format(test_name, driver_index))
 
         # Stop driver
         if not self.reuse_driver:
