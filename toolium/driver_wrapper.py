@@ -16,9 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import datetime
 import logging.config
 import os
-import datetime
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
@@ -49,10 +49,18 @@ class DriverWrapper(object):
     visual_number = None
 
     def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            # Create new instance
-            cls._instance = super(DriverWrapper, cls).__new__(cls, *args, **kwargs)
-        return cls._instance
+        if 'additional_driver' in kwargs and kwargs['additional_driver']:
+            # Create new instance and create a copy of the config object
+            instance = super(DriverWrapper, cls).__new__(cls)
+            instance.config = cls._instance.config.deepcopy()
+        elif not cls._instance:
+            # Create new instance and save it in a class property
+            instance = super(DriverWrapper, cls).__new__(cls)
+            cls._instance = instance
+        else:
+            # Return the singleton instance
+            instance = cls._instance
+        return instance
 
     def get_configured_value(self, system_property_name, specific_value, default_value):
         """Get configured value from system properties, method parameters or default value

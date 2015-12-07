@@ -16,8 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest
 import logging
+import unittest
 
 from toolium import toolium_driver
 from toolium.pageelements.page_element import PageElement
@@ -31,11 +31,16 @@ class PageObject(unittest.TestCase):
     :type utils: toolium.utils.Utils
     """
 
-    def __init__(self, driver=None):
+    def __init__(self, driver_wrapper=None):
+        """Initialize page object properties and update their page elements
+
+        :param driver_wrapper: driver wrapper instance
+        """
         self.logger = logging.getLogger(__name__)
-        self.driver = driver if driver else toolium_driver.driver
+        self.driver_wrapper = driver_wrapper if driver_wrapper else toolium_driver
+        self.driver = self.driver_wrapper.driver
+        self.config = self.driver_wrapper.config
         self.utils = Utils(self.driver)
-        self.config = toolium_driver.config
         self.app_strings = AppiumTestCase.app_strings
         self.init_page_elements()
         self._update_page_elements()
@@ -47,6 +52,10 @@ class PageObject(unittest.TestCase):
     def set_utils(self, utils):
         """Set utils instance"""
         self.utils = utils
+
+    def set_config(self, config):
+        """Set configuration properties"""
+        self.config = config
 
     def init_page_elements(self):
         """Method to initialize page elements"""
@@ -61,5 +70,6 @@ class PageObject(unittest.TestCase):
             if isinstance(element, PageObject):
                 element.set_driver(self.driver)
                 element.set_utils(self.utils)
+                element.set_config(self.config)
                 # If element is page object, update its page elements
                 element._update_page_elements()
