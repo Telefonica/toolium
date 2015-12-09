@@ -18,9 +18,8 @@ limitations under the License.
 
 import logging
 import os
-import shutil
 import re
-
+import shutil
 from io import BytesIO
 
 try:
@@ -31,14 +30,11 @@ except NameError:
     xrange = range
 
 from selenium.webdriver.remote.webelement import WebElement
-
-from toolium import toolium_driver
+from toolium import toolium_wrapper
 import itertools
-
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
 # from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.pil_engine import Engine as PilEngine
-
 from PIL import Image
 
 
@@ -47,13 +43,13 @@ class VisualTest(object):
     report_name = 'VisualTests.html'
 
     def __init__(self):
-        if not toolium_driver.config.getboolean_optional('VisualTests', 'enabled'):
+        if not toolium_wrapper.config.getboolean_optional('VisualTests', 'enabled'):
             return
 
         self.logger = logging.getLogger(__name__)
-        self.output_directory = toolium_driver.visual_output_directory
-        self.baseline_directory = toolium_driver.visual_baseline_directory
-        engine_type = toolium_driver.config.get_optional('VisualTests', 'engine', 'pil')
+        self.output_directory = toolium_wrapper.visual_output_directory
+        self.baseline_directory = toolium_wrapper.visual_baseline_directory
+        engine_type = toolium_wrapper.config.get_optional('VisualTests', 'engine', 'pil')
         if engine_type == 'perceptualdiff':
             self.engine = PerceptualEngine()
         # elif engine_type == 'imagemagick':
@@ -64,7 +60,7 @@ class VisualTest(object):
             self.logger.warn(
                 "Engine '{}' not found, using pil instead. Review your properties.cfg file.".format(engine_type))
             self.engine = PilEngine()
-        self.save_baseline = toolium_driver.config.getboolean_optional('VisualTests', 'save')
+        self.save_baseline = toolium_wrapper.config.getboolean_optional('VisualTests', 'save')
 
         # Create folders
         if not os.path.exists(self.baseline_directory):
@@ -89,7 +85,7 @@ class VisualTest(object):
         :param exclude_elements: list of WebElements, a PageElement or element locators as a tuple (locator_type,
                                  locator_value) that must be excluded from the assertion.
         """
-        if not toolium_driver.config.getboolean_optional('VisualTests', 'enabled'):
+        if not toolium_wrapper.config.getboolean_optional('VisualTests', 'enabled'):
             return
 
         # Search elements
@@ -98,29 +94,29 @@ class VisualTest(object):
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
-        unique_name = '{0:0=2d}_{1}.png'.format(toolium_driver.visual_number, filename_with_suffix)
+        unique_name = '{0:0=2d}_{1}.png'.format(toolium_wrapper.visual_number, filename_with_suffix)
         output_file = os.path.join(self.output_directory, unique_name)
         report_name = '{}<br>({})'.format(file_suffix, filename)
 
         # Get screenshot and modify it
-        if toolium_driver.is_ios_test() or toolium_driver.is_android_web_test() or (
+        if toolium_wrapper.is_ios_test() or toolium_wrapper.is_android_web_test() or (
                     exclude_elements and len(exclude_elements) > 0) or element:
-            img = Image.open(BytesIO(toolium_driver.driver.get_screenshot_as_png()))
+            img = Image.open(BytesIO(toolium_wrapper.driver.get_screenshot_as_png()))
             img = self.mobile_resize(img)
             img = self.exclude_elements(img, exclude_elements)
             img = self.crop_element(img, element)
             img.save(output_file)
         else:
             # Faster method if the screenshot must not be modified
-            toolium_driver.driver.save_screenshot(output_file)
-        toolium_driver.visual_number += 1
+            toolium_wrapper.driver.save_screenshot(output_file)
+        toolium_wrapper.visual_number += 1
 
         # Determine whether we should save the baseline image
         if self.save_baseline or not os.path.exists(baseline_file):
             # Copy screenshot to baseline
             shutil.copyfile(output_file, baseline_file)
 
-            if toolium_driver.config.getboolean_optional('VisualTests', 'complete_report'):
+            if toolium_wrapper.config.getboolean_optional('VisualTests', 'complete_report'):
                 self._add_to_report('baseline', report_name, output_file, None, 'Added to baseline')
 
             self.logger.debug("Visual screenshot '{}' saved in visualtests/baseline folder".format(filename))
@@ -145,7 +141,7 @@ class VisualTest(object):
                 # PageElement
                 element = element_or_locator.element()
             except AttributeError:
-                element = toolium_driver.driver.find_element(*element_or_locator)
+                element = toolium_wrapper.driver.find_element(*element_or_locator)
         return element
 
     @staticmethod
@@ -155,11 +151,11 @@ class VisualTest(object):
         :param img: image object
         :returns: modified image object
         """
-        if toolium_driver.is_ios_test() or toolium_driver.is_android_web_test():
-            if toolium_driver.is_ios_test():
-                window_width = toolium_driver.driver.get_window_size()['width']
+        if toolium_wrapper.is_ios_test() or toolium_wrapper.is_android_web_test():
+            if toolium_wrapper.is_ios_test():
+                window_width = toolium_wrapper.driver.get_window_size()['width']
             else:
-                window_width = toolium_driver.driver.execute_script("return window.outerWidth")
+                window_width = toolium_wrapper.driver.execute_script("return window.outerWidth")
             scale = img.size[0] / window_width
             if scale != 1:
                 new_image_size = (int(img.size[0] / scale), int(img.size[1] / scale))
@@ -173,7 +169,7 @@ class VisualTest(object):
         :returns: height of navigation bar
         """
         status_bar_height = 0
-        if toolium_driver.is_ios_test() and toolium_driver.is_web_test():
+        if toolium_wrapper.is_ios_test() and toolium_wrapper.is_web_test():
             # ios 7.1, 8.3
             status_bar_height = 64
         return status_bar_height
@@ -235,12 +231,12 @@ class VisualTest(object):
         """
         try:
             self.engine.assertSameFiles(image_file, baseline_file, threshold)
-            if toolium_driver.config.getboolean_optional('VisualTests', 'complete_report'):
+            if toolium_wrapper.config.getboolean_optional('VisualTests', 'complete_report'):
                 self._add_to_report('equal', report_name, image_file, baseline_file)
             return None
         except AssertionError as exc:
             self._add_to_report('diff', report_name, image_file, baseline_file, str(exc))
-            if toolium_driver.config.getboolean_optional('VisualTests', 'fail'):
+            if toolium_wrapper.config.getboolean_optional('VisualTests', 'fail'):
                 raise exc
             else:
                 self.logger.warn('Visual error: {}'.format(str(exc)))

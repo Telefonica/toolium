@@ -19,7 +19,7 @@ limitations under the License.
 import logging
 import unittest
 
-from toolium import toolium_driver
+from toolium import toolium_wrapper
 from toolium.pageelements.page_element import PageElement
 from toolium.test_cases import AppiumTestCase
 from toolium.utils import Utils
@@ -37,7 +37,7 @@ class PageObject(unittest.TestCase):
         :param driver_wrapper: driver wrapper instance
         """
         self.logger = logging.getLogger(__name__)
-        self.driver_wrapper = driver_wrapper if driver_wrapper else toolium_driver
+        self.driver_wrapper = driver_wrapper if driver_wrapper else toolium_wrapper
         self.driver = self.driver_wrapper.driver
         self.config = self.driver_wrapper.config
         self.utils = Utils(self.driver)

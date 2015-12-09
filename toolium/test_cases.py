@@ -16,15 +16,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest
 import logging
 import sys
+import unittest
 
-from toolium import toolium_driver
-from toolium.utils import Utils
-from toolium.jira import change_all_jira_status
-from toolium.visual_test import VisualTest
+from toolium import toolium_wrapper
 from toolium.config_driver import get_error_message_from_exception
+from toolium.jira import change_all_jira_status
+from toolium.utils import Utils
+from toolium.visual_test import VisualTest
 
 
 class BasicTestCase(unittest.TestCase):
@@ -88,11 +88,11 @@ class BasicTestCase(unittest.TestCase):
     def setUp(self):
         # Configure logger and properties
         if not isinstance(self, SeleniumTestCase):
-            toolium_driver.configure(False, self._config_directory, self._output_directory,
-                                     self._config_properties_filenames, self._config_log_filename,
-                                     self._output_log_filename)
+            toolium_wrapper.configure(False, self._config_directory, self._output_directory,
+                                      self._config_properties_filenames, self._config_log_filename,
+                                      self._output_log_filename)
         # Get config and logger instances
-        self.config = toolium_driver.config
+        self.config = toolium_wrapper.config
         self.logger = logging.getLogger(__name__)
         self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
 
@@ -162,7 +162,7 @@ class SeleniumTestCase(BasicTestCase):
         cls.additional_drivers = []
 
         # Download saved video if video is enabled or if test fails
-        if cls.remote_video_node and (toolium_driver.config.getboolean_optional('Server', 'video_enabled') or
+        if cls.remote_video_node and (toolium_wrapper.config.getboolean_optional('Server', 'video_enabled') or
                                           not test_passed):
             video_name = video_name if test_passed else 'error_{}'.format(video_name)
             cls.utils.download_remote_video(cls.remote_video_node, session_id, video_name)
@@ -170,18 +170,18 @@ class SeleniumTestCase(BasicTestCase):
     def setUp(self):
         # Create driver
         if not SeleniumTestCase.driver:
-            toolium_driver.configure(True, self._config_directory, self._output_directory,
-                                     self._config_properties_filenames, self._config_log_filename,
-                                     self._output_log_filename)
-            SeleniumTestCase.driver = toolium_driver.connect()
+            toolium_wrapper.configure(True, self._config_directory, self._output_directory,
+                                      self._config_properties_filenames, self._config_log_filename,
+                                      self._output_log_filename)
+            SeleniumTestCase.driver = toolium_wrapper.connect()
             SeleniumTestCase.utils = Utils(SeleniumTestCase.driver)
             SeleniumTestCase.remote_video_node = SeleniumTestCase.utils.get_remote_video_node()
         # Get common configuration of reusing driver
-        self.reuse_driver = toolium_driver.config.getboolean_optional('Common', 'reuse_driver')
+        self.reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
         # Set implicitly wait
         self.utils.set_implicit_wait()
         # Maximize browser
-        if toolium_driver.is_maximizable():
+        if toolium_wrapper.is_maximizable():
             SeleniumTestCase.driver.maximize_window()
         # Call BasicTestCase setUp
         super(SeleniumTestCase, self).setUp()
@@ -248,7 +248,7 @@ class AppiumTestCase(SeleniumTestCase):
 
     def setUp(self):
         super(AppiumTestCase, self).setUp()
-        if AppiumTestCase.app_strings is None and not toolium_driver.is_web_test():
+        if AppiumTestCase.app_strings is None and not toolium_wrapper.is_web_test():
             AppiumTestCase.app_strings = self.driver.app_strings()
 
     def tearDown(self):

@@ -55,20 +55,20 @@ class TestGenericPageElement(unittest.TestCase):
         global mock_element
         mock_element = get_mock_element()
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_locator(self, driver):
         page_object = LoginPageObject()
 
         self.assertEqual(page_object.username.locator, (By.NAME, 'username'))
         self.assertEqual(page_object.password.locator, (By.ID, 'password'))
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_get_element(self, driver):
         LoginPageObject().username.element()
 
         self.assertEqual(driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_get_element_with_parent(self, driver):
         driver.find_element.return_value = mock_element
         web_element = LoginPageObject().password.element()
@@ -77,13 +77,13 @@ class TestGenericPageElement(unittest.TestCase):
         self.assertEqual(driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
         self.assertEqual(mock_element.find_element.mock_calls, [mock.call(By.ID, 'password')])
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_get_element_init_page(self, driver):
         RegisterPageObject().language.element()
 
         self.assertEqual(driver.find_element.mock_calls, [mock.call(By.ID, 'language')])
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_get_element_with_parent_webelement(self, driver):
         web_element = RegisterPageObject().email.element()
 
@@ -91,7 +91,7 @@ class TestGenericPageElement(unittest.TestCase):
         self.assertEqual(driver.find_element.mock_calls, [])
         self.assertEqual(mock_element.find_element.mock_calls, [mock.call(By.ID, 'email')])
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_get_element_in_test(self, driver):
         PageElement(By.NAME, 'username').element()
 
