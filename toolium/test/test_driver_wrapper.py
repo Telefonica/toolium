@@ -46,7 +46,7 @@ class DriverWrapperCommon(unittest.TestCase):
 class DriverWrapperPropertiesTests(DriverWrapperCommon):
     def setUp(self):
         os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
-        self.wrapper = DriverWrapper()
+        self.wrapper = DriverWrapper(main_driver=True)
         self.wrapper.config_directory = ''
         self.wrapper.output_directory = ''
         self.wrapper.configure_logger()
@@ -136,7 +136,7 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
 
 class DriverWrapperLoggerTests(DriverWrapperCommon):
     def setUp(self):
-        self.wrapper = DriverWrapper()
+        self.wrapper = DriverWrapper(main_driver=True)
         self.wrapper.config_directory = ''
         self.wrapper.output_directory = ''
 
@@ -229,7 +229,7 @@ class DriverWrapperTests(DriverWrapperCommon):
     def setUp(self):
         os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
         os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
-        self.wrapper = DriverWrapper()
+        self.wrapper = DriverWrapper(main_driver=True)
         self.wrapper.configure()
 
     def test_singleton(self):
@@ -238,7 +238,7 @@ class DriverWrapperTests(DriverWrapperCommon):
         self.wrapper.config.set('Browser', 'browser', new_browser)
 
         # Request a new wrapper
-        new_wrapper = DriverWrapper()
+        new_wrapper = DriverWrapper(main_driver=True)
 
         # Check that wrapper and new_wrapper are the same object
         self.assertEqual(new_browser, self.wrapper.config.get('Browser', 'browser'))

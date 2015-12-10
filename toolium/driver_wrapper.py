@@ -50,18 +50,19 @@ class DriverWrapper(object):
     visual_number = None
 
     def __new__(cls, *args, **kwargs):
-        if 'additional_driver' in kwargs and kwargs['additional_driver']:
-            # Create new instance and create a copy of the config object
+        if 'main_driver' in kwargs and kwargs['main_driver']:
+            if cls._instance:
+                # Return the singleton instance
+                instance = cls._instance
+            else:
+                # Create new instance and save it in a class property
+                instance = super(DriverWrapper, cls).__new__(cls)
+                cls._instance = instance
+        else:
+            # Create new instance with a copy of the config object
             instance = super(DriverWrapper, cls).__new__(cls)
             instance.config = cls._instance.config.deepcopy()
             instance.is_additional = True
-        elif not cls._instance:
-            # Create new instance and save it in a class property
-            instance = super(DriverWrapper, cls).__new__(cls)
-            cls._instance = instance
-        else:
-            # Return the singleton instance
-            instance = cls._instance
         return instance
 
     def get_configured_value(self, system_property_name, specific_value, default_value):

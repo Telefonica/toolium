@@ -19,7 +19,7 @@ limitations under the License.
 from toolium.driver_wrapper import DriverWrapper
 
 # Get wrapper instance
-toolium_wrapper = DriverWrapper()
+toolium_wrapper = DriverWrapper(main_driver=True)
 
 # Backwards compatibility
 toolium_driver = toolium_wrapper
