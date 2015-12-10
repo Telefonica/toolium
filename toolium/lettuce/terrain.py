@@ -47,11 +47,8 @@ def setup_driver(scenario):
 
     # Add implicitly wait
     implicitly_wait = toolium_wrapper.config.get_optional('Common', 'implicitly_wait')
-    if (implicitly_wait):
+    if implicitly_wait:
         world.driver.implicitly_wait(implicitly_wait)
-    # Maximize browser
-    if toolium_wrapper.is_maximizable():
-        world.driver.maximize_window()
 
 
 @after.each_scenario

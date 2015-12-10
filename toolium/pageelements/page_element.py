@@ -25,10 +25,14 @@ from toolium.visual_test import VisualTest
 
 class PageElement(object):
     """
+    :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
     :type driver: selenium.webdriver.remote.webdriver.WebDriver
+    :type config: toolium.config_parser.ExtendedConfigParser
     :type utils: toolium.utils.Utils
     """
+    driver_wrapper = None
     driver = None
+    config = None
     utils = None
 
     def __init__(self, by, value, parent=None):
@@ -43,12 +47,25 @@ class PageElement(object):
         """
         self.locator = (by, value)
         self.parent = parent
-        self.driver = toolium_wrapper.driver
-        self.utils = Utils(self.driver)
+        self.set_driver_wrapper()
+
+    def set_driver_wrapper(self, driver_wrapper=None):
+        """Initialize driver_wrapper, driver, config and utils
+
+        :param driver_wrapper: driver wrapper instance
+        """
+        self.driver_wrapper = driver_wrapper if driver_wrapper else toolium_wrapper
+        self.set_driver(self.driver_wrapper.driver)
+        self.set_config(self.driver_wrapper.config)
+        self.set_utils(Utils(self.driver))
 
     def set_driver(self, driver):
         """Set Selenium driver"""
         self.driver = driver
+
+    def set_config(self, config):
+        """Set configuration properties"""
+        self.config = config
 
     def set_utils(self, utils):
         """Set utils instance"""
@@ -56,6 +73,7 @@ class PageElement(object):
 
     def element(self):
         """Find WebElement using element locator
+
         :return: web element object
         :rtype: selenium.webdriver.remote.webelement.WebElement
         """
@@ -94,4 +112,5 @@ class PageElement(object):
         :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
                                  from the assertion.
         """
-        VisualTest().assertScreenshot(self.element(), filename, self.__class__.__name__, threshold, exclude_elements)
+        VisualTest(self.driver_wrapper).assertScreenshot(self.element(), filename, self.__class__.__name__, threshold,
+                                                         exclude_elements)

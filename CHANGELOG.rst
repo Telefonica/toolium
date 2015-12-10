@@ -10,7 +10,7 @@ v0.12.0
 
 .. code-block:: python
 
-    second_wrapper = DriverWrapper(additional_driver=True)
+    second_wrapper = DriverWrapper()
     second_wrapper.connect()
 
 - Fix page object issue with non-default driver. Now the page object init method has a driver_wrapper optional

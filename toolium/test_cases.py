@@ -180,9 +180,6 @@ class SeleniumTestCase(BasicTestCase):
         self.reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
         # Set implicitly wait
         self.utils.set_implicit_wait()
-        # Maximize browser
-        if toolium_wrapper.is_maximizable():
-            SeleniumTestCase.driver.maximize_window()
         # Call BasicTestCase setUp
         super(SeleniumTestCase, self).setUp()
 
@@ -203,7 +200,7 @@ class SeleniumTestCase(BasicTestCase):
         if not self.reuse_driver:
             SeleniumTestCase._finalize_driver(test_name, self._test_passed)
 
-    def assertScreenshot(self, element_or_selector, filename, threshold=0, exclude_elements=[]):
+    def assertScreenshot(self, element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
 
         :param element_or_selector: either a CSS/XPATH selector as a string or a WebElement object.
@@ -212,20 +209,23 @@ class SeleniumTestCase(BasicTestCase):
         :param threshold: the threshold for triggering a test failure
         :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
                                  from the assertion.
+        :param driver_wrapper: driver wrapper instance
         """
         file_suffix = self.get_method_name()
-        VisualTest().assertScreenshot(element_or_selector, filename, file_suffix, threshold, exclude_elements)
+        VisualTest(driver_wrapper).assertScreenshot(element_or_selector, filename, file_suffix, threshold,
+                                                    exclude_elements)
 
-    def assertFullScreenshot(self, filename, threshold=0, exclude_elements=[]):
+    def assertFullScreenshot(self, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         """Assert that a driver screenshot is the same as a screenshot on disk, within a given threshold.
 
         :param filename: the filename for the screenshot, which will be appended with ``.png``
         :param threshold: the threshold for triggering a test failure
         :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
                                  from the assertion.
+        :param driver_wrapper: driver wrapper instance
         """
         file_suffix = self.get_method_name()
-        VisualTest().assertScreenshot(None, filename, file_suffix, threshold, exclude_elements)
+        VisualTest(driver_wrapper).assertScreenshot(None, filename, file_suffix, threshold, exclude_elements)
 
 
 class AppiumTestCase(SeleniumTestCase):

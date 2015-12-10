@@ -185,15 +185,21 @@ class DriverWrapper(object):
         if is_selenium_test:
             self.configure_visual_directories()
 
-    def connect(self):
+    def connect(self, maximize=True):
         """Set up the selenium driver and connect to the server
 
+        :param maximize: True if the browser should be maximized
         :returns: selenium driver
         """
         self.driver = ConfigDriver(self.config).create_driver()
         if self.is_additional:
             from toolium.test_cases import SeleniumTestCase
             SeleniumTestCase.additional_drivers.append(self.driver)
+
+        if maximize and self.is_maximizable():
+            # Maximize browser
+            self.driver.maximize_window()
+
         return self.driver
 
     def is_mobile_test(self):

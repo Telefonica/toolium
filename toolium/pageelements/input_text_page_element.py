@@ -16,7 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from toolium import toolium_wrapper
 from toolium.pageelements.page_element import PageElement
 
 
@@ -27,7 +26,7 @@ class InputText(PageElement):
 
     @text.setter
     def text(self, value):
-        if toolium_wrapper.is_ios_test() and not toolium_wrapper.is_web_test():
+        if self.driver_wrapper.is_ios_test() and not self.driver_wrapper.is_web_test():
             self.element().set_value(value)
         else:
             self.element().send_keys(value)
