@@ -28,8 +28,8 @@ try:
 except ImportError:
     # Python 3
     from io import StringIO
-import os
 import logging
+import os
 
 
 class ExtendedConfigParser(configparser.ConfigParser):

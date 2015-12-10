@@ -47,6 +47,13 @@ Visual asserts could be used in different ways:
     form_page_element = PageElement(By.XPATH, '//form')
     self.assertScreenshot(form_page_element, screenshot_name)
 
+or
+
+.. code-block:: python
+
+    form_page_element = PageElement(By.XPATH, '//form')
+    form_page_element.assertScreenshot(screenshot_name)
+
 * Comparing a single element, represented by a *WebElement*
 
 .. code-block:: python

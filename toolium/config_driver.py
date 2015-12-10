@@ -25,8 +25,8 @@ except ImportError:
 import ast
 import logging
 
-from selenium import webdriver
 from appium import webdriver as appiumdriver
+from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 

@@ -9,7 +9,7 @@
 Main Features
 -------------
 
-- `Choosing driver through a configuration file <browser_configuration.html>`_
+- `Choosing driver through a configuration file <driver_configuration.html>`_
 - Page Object pattern
 - `Visual testing solution <visual_testing.html>`_
 - Make a screenshot in the happenning of an error
@@ -20,7 +20,7 @@ Library Reference
 .. toctree::
    :hidden:
 
-   browser_configuration.rst
+   driver_configuration.rst
    visual_testing.rst
    Changelog <changelog.rst>
 
