@@ -2,7 +2,7 @@ Mobile Configuration
 ====================
 
 To choose mobile operating system in which Appium will execute the tests, configure *browser* property in *[Browser]*
-section in properties.cfg file with one of these values: iphone or android.
+section in properties.cfg file with one of these values: ios or android.
 
 The following example shows how to choose Android::
 

@@ -194,6 +194,7 @@ class DriverWrapperLoggerTests(DriverWrapperCommon):
 mobile_tests = (
     ('android-4.1.2-on-android', True),
     ('android', True),
+    ('ios', True),
     ('iphone', True),
     ('firefox-4.1.2-on-android', False),
     ('firefox', False),
@@ -206,6 +207,9 @@ web_tests = (
     ('android', None, 'chrome', True),
     ('android', None, 'chromium', True),
     ('android', None, 'browser', True),
+    ('ios', '/tmp/Demo.zip', None, False),
+    ('ios', '/tmp/Demo.zip', '', False),
+    ('ios', None, 'safari', True),
     ('iphone', '/tmp/Demo.zip', None, False),
     ('iphone', '/tmp/Demo.zip', '', False),
     ('iphone', None, 'safari', True),
@@ -220,6 +224,7 @@ maximizable_browsers = (
     ('opera', True),
     ('edge', False),
     ('android', False),
+    ('ios', False),
     ('iphone', False),
 )
 

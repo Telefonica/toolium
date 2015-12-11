@@ -168,7 +168,7 @@ class VisualTests(unittest.TestCase):
     def test_mobile_resize(self, driver):
         # Configure driver mock
         driver.get_window_size.return_value = {'width': 375, 'height': 667}
-        toolium_wrapper.config.set('Browser', 'browser', 'iphone')
+        toolium_wrapper.config.set('Browser', 'browser', 'ios')
 
         # Resize image
         img = Image.open(self.file_ios)
@@ -181,7 +181,7 @@ class VisualTests(unittest.TestCase):
     def test_mobile_no_resize(self, driver):
         # Configure driver mock
         driver.get_window_size.return_value = {'width': 750, 'height': 1334}
-        toolium_wrapper.config.set('Browser', 'browser', 'iphone')
+        toolium_wrapper.config.set('Browser', 'browser', 'ios')
 
         # Resize image
         orig_img = Image.open(self.file_ios)
@@ -339,7 +339,7 @@ class VisualTests(unittest.TestCase):
             image_data = f.read()
         driver.get_screenshot_as_png.return_value = image_data
         driver.get_window_size.return_value = {'width': 375, 'height': 667}
-        toolium_wrapper.config.set('Browser', 'browser', 'iphone')
+        toolium_wrapper.config.set('Browser', 'browser', 'ios')
 
         # Assert screenshot
         self.visual.assertScreenshot(None, filename='screenshot_ios', file_suffix='screenshot_suffix',
@@ -368,7 +368,7 @@ class VisualTests(unittest.TestCase):
             image_data = f.read()
         driver.get_screenshot_as_png.return_value = image_data
         driver.get_window_size.return_value = {'width': 375, 'height': 667}
-        toolium_wrapper.config.set('Browser', 'browser', 'iphone')
+        toolium_wrapper.config.set('Browser', 'browser', 'ios')
         toolium_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
 
         # Assert screenshot
