@@ -279,7 +279,7 @@ class Utils(object):
         center = self.get_center(element)
         if not self.driver_wrapper.is_mobile_test():
             raise Exception('Swipe method is not implemented in Selenium')
-        elif self.driver_wrapper.is_web_test():
+        elif self.driver_wrapper.is_web_test() or self.driver_wrapper.driver.current_context != 'NATIVE_APP':
             current_context = self.driver_wrapper.driver.current_context
             center = self.get_native_coords(center)
             self.driver_wrapper.driver.swipe(center['x'], center['y'], center['x'] + x, center['y'] + y, duration)
