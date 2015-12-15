@@ -21,6 +21,8 @@ import unittest
 
 import mock
 from ddt import ddt, data, unpack
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 
 from toolium import toolium_wrapper
 from toolium.utils import Utils
@@ -206,6 +208,34 @@ class UtilsTests(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             self.utils.swipe(element, 50, 100)
         self.assertEqual(str(cm.exception), 'Swipe method is not implemented in Selenium')
+
+    def test_get_element_none(self):
+        element = self.utils.get_element(None)
+        self.assertIsNone(element)
+
+    def test_get_element_webelement(self):
+        web_element = WebElement(None, 1)
+        element = self.utils.get_element(web_element)
+        self.assertEqual(web_element, element)
+
+    def test_get_element_pageelement(self):
+        page_element = mock.MagicMock()
+        page_element.element.return_value = 'mock_element'
+
+        element = self.utils.get_element(page_element)
+        self.assertEqual('mock_element', element)
+        page_element.element.assert_called_with()
+
+    @mock.patch('toolium.toolium_wrapper.driver')
+    def test_get_element_locator(self, driver):
+        # Configure driver mock
+        driver.find_element.return_value = 'mock_element'
+        element_locator = (By.ID, 'element_id')
+
+        # Get element and assert response
+        element = self.utils.get_element(element_locator)
+        self.assertEqual('mock_element', element)
+        driver.find_element.assert_called_with(*element_locator)
 
 
 @mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)

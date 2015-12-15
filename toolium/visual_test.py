@@ -29,7 +29,6 @@ except NameError:
     # Python 3
     xrange = range
 
-from selenium.webdriver.remote.webelement import WebElement
 from toolium import toolium_wrapper
 import itertools
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
@@ -49,6 +48,7 @@ class VisualTest(object):
         if not self.driver_wrapper.config.getboolean_optional('VisualTests', 'enabled'):
             return
 
+        self.utils = Utils(self.driver_wrapper)
         self.logger = logging.getLogger(__name__)
         self.output_directory = toolium_wrapper.visual_output_directory
         self.baseline_directory = toolium_wrapper.visual_baseline_directory
@@ -92,8 +92,8 @@ class VisualTest(object):
             return
 
         # Search elements
-        element = self.get_element(element_or_locator)
-        exclude_elements = [self.get_element(exclude_element) for exclude_element in exclude_elements]
+        element = self.utils.get_element(element_or_locator)
+        exclude_elements = [self.utils.get_element(exclude_element) for exclude_element in exclude_elements]
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
@@ -127,25 +127,6 @@ class VisualTest(object):
             # Compare the screenshots
             self.compare_files(report_name, output_file, baseline_file, threshold)
 
-    def get_element(self, element_or_locator):
-        """Search element by its locator
-
-        :param element_or_locator: either a WebElement, a PageElement or an element locator as a tuple (locator_type,
-                                   locator_value).
-        :returns: WebElement object
-        """
-        if element_or_locator is None:
-            element = None
-        elif isinstance(element_or_locator, WebElement):
-            element = element_or_locator
-        else:
-            try:
-                # PageElement
-                element = element_or_locator.element()
-            except AttributeError:
-                element = self.driver_wrapper.driver.find_element(*element_or_locator)
-        return element
-
     def mobile_resize(self, img):
         """Resize image in iOS (native and web) and Android (web) to fit window size
 
@@ -165,7 +146,7 @@ class VisualTest(object):
         :param element: WebElement object
         :returns: tuple with element coordinates
         """
-        offset = Utils(self.driver_wrapper).get_safari_navigation_bar_height()
+        offset = self.utils.get_safari_navigation_bar_height()
         return (int(element.location['x']), int(element.location['y'] + offset),
                 int(element.location['x'] + element.size['width']),
                 int(element.location['y'] + offset + element.size['height']))

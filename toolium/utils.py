@@ -27,6 +27,7 @@ import os
 import time
 
 import requests
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -268,15 +269,16 @@ class Utils(object):
         self.logger.debug('Converted web coords {} into native coords {}'.format(coords, native_coords))
         return native_coords
 
-    def swipe(self, element, x, y, duration=None):
+    def swipe(self, element_or_locator, x, y, duration=None):
         """Swipe over an element
 
-        :param element: webdriver element
+        :param element_or_locator: either a WebElement, a PageElement or an element locator as a tuple (locator_type,
+                                   locator_value).
         :param x: horizontal movement
         :param y: vertical movement
         :param duration: time to take the swipe, in ms.
         """
-        center = self.get_center(element)
+        center = self.get_center(self.get_element(element_or_locator))
         if not self.driver_wrapper.is_mobile_test():
             raise Exception('Swipe method is not implemented in Selenium')
         elif self.driver_wrapper.is_web_test() or self.driver_wrapper.driver.current_context != 'NATIVE_APP':
@@ -286,6 +288,25 @@ class Utils(object):
             self.driver_wrapper.driver.switch_to.context(current_context)
         else:
             self.driver_wrapper.driver.swipe(center['x'], center['y'], center['x'] + x, center['y'] + y, duration)
+
+    def get_element(self, element_or_locator):
+        """Return the web element from a page element or its locator
+
+        :param element_or_locator: either a WebElement, a PageElement or an element locator as a tuple (locator_type,
+                                   locator_value).
+        :returns: WebElement object
+        """
+        if element_or_locator is None:
+            element = None
+        elif isinstance(element_or_locator, WebElement):
+            element = element_or_locator
+        else:
+            try:
+                # PageElement
+                element = element_or_locator.element()
+            except AttributeError:
+                element = self.driver_wrapper.driver.find_element(*element_or_locator)
+        return element
 
 
 class classproperty(property):
