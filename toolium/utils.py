@@ -16,6 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+# Python 2.7
+from __future__ import division
+
 try:
     # Python 3
     from urllib.parse import urlparse
@@ -25,12 +28,10 @@ except ImportError:
 import logging
 import os
 import time
-
 import requests
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
 from toolium import toolium_wrapper
 
 
