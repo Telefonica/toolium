@@ -25,17 +25,31 @@ from toolium.utils import Utils
 from toolium.visual_test import VisualTest
 
 
+def before_all(context):
+    """Initialization method that will be executed before the test execution
+
+    :param context: behave context
+    """
+    # Configure logger
+    context.logger = logging.getLogger()
+
+    # Create driver if it must be reused
+    toolium_wrapper.configure()
+    context.reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
+    if context.reuse_driver:
+        context.driver = toolium_wrapper.connect()
+        context.utils = Utils(toolium_wrapper)
+        context.remote_video_node = context.utils.get_remote_video_node()
+
+
 def before_scenario(context, scenario):
     """Scenario initialization
 
     :param context: behave context
     :param scenario: running scenario
     """
-    # Configure logger
-    context.logger = logging.getLogger()
-
-    # Create driver
-    if not hasattr(context, 'driver') or not context.driver:
+    # Create driver if it must not be reused
+    if not context.reuse_driver:
         toolium_wrapper.configure()
         context.driver = toolium_wrapper.connect()
         context.utils = Utils(toolium_wrapper)
@@ -81,9 +95,8 @@ def after_scenario(context, scenario):
         test_comment = None
         context.logger.info("The scenario '{0}' has passed".format(scenario.name))
 
-    # Close browser and stop driver
-    reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
-    if not reuse_driver:
+    # Close browser and stop driver if it must not be reused
+    if not context.reuse_driver:
         finalize_driver(context, scenario.name.replace(' ', '_'), not flag_failed)
 
     # Save test status to be updated later
@@ -97,7 +110,8 @@ def after_all(context):
 
     :param context: behave context
     """
-    if hasattr(context, 'driver') and context.driver:
+    # Close browser and stop driver if it has been reused
+    if context.reuse_driver:
         finalize_driver(context, 'multiple_tests')
     # Update tests status in Jira
     change_all_jira_status()
@@ -106,6 +120,7 @@ def after_all(context):
 def finalize_driver(context, video_name, test_passed=True):
     """Close browser, stop driver and download test video
 
+    :param context: behave context
     :param video_name: video name
     :param test_passed: test execution status
     """
@@ -114,7 +129,6 @@ def finalize_driver(context, video_name, test_passed=True):
 
     # Close browser and stop driver
     context.driver.quit()
-    context.driver = None
 
     # Download saved video if video is enabled or if test fails
     if context.remote_video_node and (toolium_wrapper.config.getboolean_optional('Server', 'video_enabled')
