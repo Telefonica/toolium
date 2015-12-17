@@ -21,6 +21,7 @@ import logging.config
 import os
 
 from toolium.config_driver import ConfigDriver
+from toolium.config_files import ConfigFiles
 from toolium.config_parser import ExtendedConfigParser
 
 
@@ -147,16 +148,11 @@ class DriverWrapper(object):
             self.visual_baseline_directory = os.path.join(self.output_directory, 'visualtests', 'baseline',
                                                           baseline_name)
 
-    def configure(self, is_selenium_test=True, tc_config_directory=None, tc_output_directory=None,
-                  tc_config_prop_filenames=None, tc_config_log_filename=None, tc_output_log_filename=None):
+    def configure(self, is_selenium_test=True, tc_config_files=ConfigFiles()):
         """Configure initial selenium instance using logging and properties files for Selenium or Appium tests
 
         :param is_selenium_test: true if test is a selenium or appium test case
-        :param tc_config_directory: test case specific config directory
-        :param tc_output_directory: test case specific output directory
-        :param tc_config_prop_filenames: test case specific properties filenames
-        :param tc_config_log_filename: test case specific logging config filename
-        :param tc_output_log_filename: test case specific output logger filename
+        :param tc_config_files: test case specific config files
         """
         # Add warning message when old system properties are configured
         deprecated = (('Files_properties', 'Config_directory and Config_prop_filenames'),
@@ -168,18 +164,18 @@ class DriverWrapper(object):
                 print('[WARN] {} system property is deprecated, use {} instead'.format(prop[0], prop[1]))
 
         # Get config and output directories
-        self.config_directory = self.get_configured_value('Config_directory', tc_config_directory,
+        self.config_directory = self.get_configured_value('Config_directory', tc_config_files.config_directory,
                                                           os.path.join(os.getcwd(), 'conf'))
-        self.output_directory = self.get_configured_value('Output_directory', tc_output_directory,
+        self.output_directory = self.get_configured_value('Output_directory', tc_config_files.output_directory,
                                                           os.path.join(os.getcwd(), 'output'))
         if not os.path.exists(self.output_directory):
             os.makedirs(self.output_directory)
 
         # Configure logger
-        self.configure_logger(tc_config_log_filename, tc_output_log_filename)
+        self.configure_logger(tc_config_files.config_log_filename, tc_config_files.output_log_filename)
 
         # Initialize the config object
-        self.configure_properties(tc_config_prop_filenames)
+        self.configure_properties(tc_config_files.config_properties_filenames)
 
         # Configure visual directories
         if is_selenium_test:

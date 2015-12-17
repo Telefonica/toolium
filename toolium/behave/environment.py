@@ -20,20 +20,10 @@ import logging
 import re
 
 from toolium import toolium_wrapper
+from toolium.config_files import ConfigFiles
 from toolium.jira import add_jira_status, change_all_jira_status
 from toolium.utils import Utils
 from toolium.visual_test import VisualTest
-
-
-def _initialize_undefined_config_properties(context):
-    """Initialize config properties that have no value
-
-    :param context: behave context
-    """
-    for config_property in ['config_directory', 'output_directory', 'config_properties_filenames',
-                            'config_log_filename', 'output_log_filename']:
-        if not hasattr(context, config_property):
-            setattr(context, config_property, None)
 
 
 def before_all(context):
@@ -45,10 +35,9 @@ def before_all(context):
     context.logger = logging.getLogger()
 
     # Configure wrapper
-    _initialize_undefined_config_properties(context)
-    toolium_wrapper.configure(True, context.config_directory, context.output_directory,
-                              context.config_properties_filenames, context.config_log_filename,
-                              context.output_log_filename)
+    if not hasattr(context, 'config_files'):
+        context.config_files = ConfigFiles()
+    toolium_wrapper.configure(True, context.config_files)
 
     # Create driver if it must be reused
     context.reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
@@ -67,10 +56,7 @@ def before_scenario(context, scenario):
     # Create driver if it must not be reused
     if not context.reuse_driver:
         # Configure wrapper
-        _initialize_undefined_config_properties(context)
-        toolium_wrapper.configure(True, context.config_directory, context.output_directory,
-                                  context.config_properties_filenames, context.config_log_filename,
-                                  context.output_log_filename)
+        toolium_wrapper.configure(True, context.config_files)
 
         # Create driver
         context.driver = toolium_wrapper.connect()

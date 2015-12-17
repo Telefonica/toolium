@@ -27,7 +27,7 @@ from toolium.test_cases import BasicTestCase
 class MockTestClass(BasicTestCase):
     def setUp(self):
         root_path = os.path.dirname(os.path.realpath(__file__))
-        self.set_config_directory(os.path.join(root_path, 'conf'))
+        self.config_files.set_config_directory(os.path.join(root_path, 'conf'))
         super(MockTestClass, self).setUp()
 
     def mock_pass(self):

@@ -22,11 +22,13 @@ import unittest
 
 from PIL import Image
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
+
 # from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.pil_engine import Engine as PilEngine
 import mock
 from toolium.visual_test import VisualTest
 from toolium import toolium_wrapper
+from toolium.config_files import ConfigFiles
 
 
 class VisualTests(unittest.TestCase):
@@ -50,9 +52,11 @@ class VisualTests(unittest.TestCase):
         toolium_wrapper.config_properties_filenames = None
 
         # Configure properties
-        toolium_wrapper.configure(tc_config_directory=os.path.join(self.root_path, 'conf'),
-                                  tc_config_prop_filenames='properties.cfg',
-                                  tc_output_directory=os.path.join(self.root_path, 'output'))
+        config_files = ConfigFiles()
+        config_files.set_config_directory(os.path.join(self.root_path, 'conf'))
+        config_files.set_config_properties_filenames('properties.cfg')
+        config_files.set_output_directory(os.path.join(self.root_path, 'output'))
+        toolium_wrapper.configure(tc_config_files=config_files)
         toolium_wrapper.config.set('VisualTests', 'enabled', 'true')
 
         # Create a new VisualTest instance

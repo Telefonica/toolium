@@ -22,6 +22,7 @@ import unittest
 
 from toolium import toolium_wrapper
 from toolium.config_driver import get_error_message_from_exception
+from toolium.config_files import ConfigFiles
 from toolium.jira import change_all_jira_status
 from toolium.utils import Utils
 from toolium.visual_test import VisualTest
@@ -29,46 +30,7 @@ from toolium.visual_test import VisualTest
 
 class BasicTestCase(unittest.TestCase):
     """A class whose instances are api test cases."""
-    _config_directory = None
-    _output_directory = None
-    _config_properties_filenames = None
-    _config_log_filename = None
-    _output_log_filename = None
-
-    def set_config_directory(self, config_directory):
-        """Set directory where configuration files are saved
-
-        :param config_directory: configuration directory path
-        """
-        self._config_directory = config_directory
-
-    def set_output_directory(self, output_directory):
-        """Set output directory where log file and screenshots will be saved
-
-        :param output_directory: output directory path
-        """
-        self._output_directory = output_directory
-
-    def set_config_properties_filenames(self, *filenames):
-        """Set properties files used to configure test cases
-
-        :param filenames: list of properties filenames
-        """
-        self._config_properties_filenames = ';'.join(filenames)
-
-    def set_config_log_filename(self, filename):
-        """Set logging configuration file
-
-        :param filename: logging configuration filename
-        """
-        self._config_log_filename = filename
-
-    def set_output_log_filename(self, filename):
-        """Set logging output file
-
-        :param filename: logging configuration filename
-        """
-        self._output_log_filename = filename
+    config_files = ConfigFiles()
 
     @classmethod
     def get_subclass_name(cls):
@@ -88,9 +50,7 @@ class BasicTestCase(unittest.TestCase):
     def setUp(self):
         # Configure logger and properties
         if not isinstance(self, SeleniumTestCase):
-            toolium_wrapper.configure(False, self._config_directory, self._output_directory,
-                                      self._config_properties_filenames, self._config_log_filename,
-                                      self._output_log_filename)
+            toolium_wrapper.configure(False, self.config_files)
         # Get config and logger instances
         self.config = toolium_wrapper.config
         self.logger = logging.getLogger(__name__)
@@ -170,9 +130,7 @@ class SeleniumTestCase(BasicTestCase):
     def setUp(self):
         # Create driver
         if not SeleniumTestCase.driver:
-            toolium_wrapper.configure(True, self._config_directory, self._output_directory,
-                                      self._config_properties_filenames, self._config_log_filename,
-                                      self._output_log_filename)
+            toolium_wrapper.configure(True, self.config_files)
             SeleniumTestCase.driver = toolium_wrapper.connect()
             SeleniumTestCase.utils = Utils(toolium_wrapper)
             SeleniumTestCase.remote_video_node = SeleniumTestCase.utils.get_remote_video_node()

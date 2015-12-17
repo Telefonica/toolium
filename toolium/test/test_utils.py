@@ -25,6 +25,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
 from toolium import toolium_wrapper
+from toolium.config_files import ConfigFiles
 from toolium.utils import Utils
 
 navigation_bar_tests = (
@@ -45,9 +46,11 @@ class UtilsTests(unittest.TestCase):
 
         # Configure properties
         self.root_path = os.path.dirname(os.path.realpath(__file__))
-        toolium_wrapper.configure(tc_config_directory=os.path.join(self.root_path, 'conf'),
-                                  tc_config_prop_filenames='properties.cfg',
-                                  tc_output_directory=os.path.join(self.root_path, 'output'))
+        config_files = ConfigFiles()
+        config_files.set_config_directory(os.path.join(self.root_path, 'conf'))
+        config_files.set_config_properties_filenames('properties.cfg')
+        config_files.set_output_directory(os.path.join(self.root_path, 'output'))
+        toolium_wrapper.configure(tc_config_files=config_files)
 
         # Create a new Utils instance
         self.utils = Utils()

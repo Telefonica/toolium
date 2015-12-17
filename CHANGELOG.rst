@@ -16,6 +16,7 @@ v0.12.0
 - Fix page object issue with non-default driver. Now page object and utils init methods have both a driver_wrapper
   optional parameter instead of driver parameter.
 - Fix swipe over an element in Android and iOS web tests
+- Move set_config_* and set_output_* test case methods to ConfigFiles class
 - Add Behave environment file to initialize Toolium wrapper from behave tests
 
 v0.11.3
