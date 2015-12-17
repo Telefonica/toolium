@@ -31,6 +31,7 @@ from toolium.visual_test import VisualTest
 def setup_driver(scenario):
     # Configure logger
     world.logger = logging.getLogger()
+
     # Create driver
     if not hasattr(world, 'driver') or not world.driver:
         toolium_wrapper.configure()
@@ -39,16 +40,24 @@ def setup_driver(scenario):
         world.remote_video_node = world.utils.get_remote_video_node()
 
     # Configure visual tests
-    def assertScreenshot(element_or_selector, filename, threshold=0, exclude_element=None):
+    def assertScreenshot(element_or_selector, filename, threshold=0, exclude_element=None, driver_wrapper=None):
         file_suffix = scenario.name.replace(' ', '_')
-        VisualTest().assertScreenshot(element_or_selector, filename, file_suffix, threshold, exclude_element)
+        VisualTest(driver_wrapper).assertScreenshot(element_or_selector, filename, file_suffix, threshold,
+                                                    exclude_element)
+
+    def assertFullScreenshot(filename, threshold=0, exclude_elements=[], driver_wrapper=None):
+        file_suffix = scenario.name.replace(' ', '_')
+        VisualTest(driver_wrapper).assertScreenshot(None, filename, file_suffix, threshold, exclude_elements)
 
     world.assertScreenshot = assertScreenshot
+    world.assertFullScreenshot = assertFullScreenshot
 
     # Add implicitly wait
     implicitly_wait = toolium_wrapper.config.get_optional('Common', 'implicitly_wait')
     if implicitly_wait:
         world.driver.implicitly_wait(implicitly_wait)
+
+    world.logger.info("Running new scenario: {0}".format(scenario.name))
 
 
 @after.each_scenario
@@ -57,11 +66,13 @@ def teardown_driver(scenario):
     if scenario.failed:
         # TODO: never enters here in scenarios with datasets
         test_status = 'Fail'
-        test_comment = "The scenario '{}' has failed: {}".format(scenario.name, None)
+        test_comment = "The scenario '{0}' has failed".format(scenario.name)
         world.utils.capture_screenshot(scenario.name.replace(' ', '_'))
+        world.logger.error(test_comment)
     else:
         test_status = 'Pass'
         test_comment = None
+        world.logger.info("The scenario '{0}' has passed".format(scenario.name))
 
     # Close browser and stop driver
     reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
@@ -70,7 +81,8 @@ def teardown_driver(scenario):
 
     # Save test status to be updated later
     test_key = get_jira_key_from_scenario(scenario)
-    add_jira_status(test_key, test_status, test_comment)
+    if test_key:
+        add_jira_status(test_key, test_status, test_comment)
 
 
 @after.all
