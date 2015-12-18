@@ -23,8 +23,8 @@ import unittest
 from toolium import toolium_wrapper
 from toolium.config_driver import get_error_message_from_exception
 from toolium.config_files import ConfigFiles
+from toolium.driver_wrapper import DriverWrappersPool
 from toolium.jira import change_all_jira_status
-from toolium.utils import Utils
 from toolium.visual_test import VisualTest
 
 
@@ -87,16 +87,12 @@ class SeleniumTestCase(BasicTestCase):
     Attributes:
         driver: webdriver instance
         utils: test utils instance
-        additional_drivers: additional webdriver instances
-        remote_video_node: hostname of the remote node if it has enabled a video recorder
 
     :type driver: selenium.webdriver.remote.webdriver.WebDriver
     :type utils: toolium.utils.Utils
     """
     driver = None
     utils = None
-    additional_drivers = []
-    remote_video_node = None
 
     @classmethod
     def tearDownClass(cls):
@@ -105,35 +101,21 @@ class SeleniumTestCase(BasicTestCase):
 
         # Stop driver
         if SeleniumTestCase.driver:
-            class_name = cls.get_subclass_name()
-            cls._finalize_driver(class_name)
+            cls._finalize_driver(cls.get_subclass_name())
 
     @classmethod
     def _finalize_driver(cls, video_name, test_passed=True):
-        # Get session id to request the saved video
-        session_id = cls.driver.session_id
-
-        # Close browser and stop driver
-        cls.driver.quit()
+        DriverWrappersPool.close_drivers()
         cls.driver = None
         SeleniumTestCase.driver = None
-        for driver in cls.additional_drivers:
-            driver.quit()
-        cls.additional_drivers = []
-
-        # Download saved video if video is enabled or if test fails
-        if cls.remote_video_node and (toolium_wrapper.config.getboolean_optional('Server', 'video_enabled') or
-                                          not test_passed):
-            video_name = video_name if test_passed else 'error_{}'.format(video_name)
-            cls.utils.download_remote_video(cls.remote_video_node, session_id, video_name)
+        DriverWrappersPool.download_videos(video_name, test_passed)
 
     def setUp(self):
         # Create driver
         if not SeleniumTestCase.driver:
             toolium_wrapper.configure(True, self.config_files)
             SeleniumTestCase.driver = toolium_wrapper.connect()
-            SeleniumTestCase.utils = Utils(toolium_wrapper)
-            SeleniumTestCase.remote_video_node = SeleniumTestCase.utils.get_remote_video_node()
+            SeleniumTestCase.utils = toolium_wrapper.utils
         # Get common configuration of reusing driver
         self.reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
         # Set implicitly wait
@@ -144,19 +126,15 @@ class SeleniumTestCase(BasicTestCase):
     def tearDown(self):
         # Call BasicTestCase tearDown
         super(SeleniumTestCase, self).tearDown()
+        test_name = self.get_subclassmethod_name().replace('.', '_')
 
         # Capture screenshot on error
-        test_name = self.get_subclassmethod_name().replace('.', '_')
         if not self._test_passed:
-            self.utils.capture_screenshot(test_name)
-            driver_index = 1
-            for driver in self.additional_drivers:
-                driver_index += 1
-                Utils().capture_screenshot('{}_driver{}'.format(test_name, driver_index), driver=driver)
+            DriverWrappersPool.capture_screenshots(test_name)
 
         # Stop driver
         if not self.reuse_driver:
-            SeleniumTestCase._finalize_driver(test_name, self._test_passed)
+            self._finalize_driver(test_name, self._test_passed)
 
     def assertScreenshot(self, element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.

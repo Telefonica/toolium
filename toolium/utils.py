@@ -51,18 +51,16 @@ class Utils(object):
         if implicitly_wait:
             self.driver_wrapper.driver.implicitly_wait(implicitly_wait)
 
-    def capture_screenshot(self, name, driver=None):
+    def capture_screenshot(self, name):
         """Capture screenshot and save it in screenshots folder
 
         :param name: screenshot name suffix
-        :param driver: driver instance
         """
         filename = '{0:0=2d}_{1}.png'.format(toolium_wrapper.screenshots_number, name)
         filepath = os.path.join(toolium_wrapper.screenshots_directory, filename)
         if not os.path.exists(toolium_wrapper.screenshots_directory):
             os.makedirs(toolium_wrapper.screenshots_directory)
-        capture_driver = driver if driver else self.driver_wrapper.driver
-        if capture_driver.get_screenshot_as_file(filepath):
+        if self.driver_wrapper.driver.get_screenshot_as_file(filepath):
             self.logger.info("Screenshot saved in " + filepath)
             toolium_wrapper.screenshots_number += 1
 

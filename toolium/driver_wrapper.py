@@ -28,8 +28,10 @@ from toolium.config_parser import ExtendedConfigParser
 class DriverWrapper(object):
     # Singleton instance
     _instance = None
-    is_additional = False
     driver = None
+    utils = None
+    session_id = None
+    remote_video_node = None
     logger = None
     config = ExtendedConfigParser()
     browser_info = None
@@ -59,11 +61,12 @@ class DriverWrapper(object):
                 # Create new instance and save it in a class property
                 instance = super(DriverWrapper, cls).__new__(cls)
                 cls._instance = instance
+                DriverWrappersPool.add_wrapper(instance)
         else:
             # Create new instance with a copy of the config object
             instance = super(DriverWrapper, cls).__new__(cls)
             instance.config = cls._instance.config.deepcopy()
-            instance.is_additional = True
+            DriverWrappersPool.add_wrapper(instance)
         return instance
 
     def get_configured_value(self, system_property_name, specific_value, default_value):
@@ -187,13 +190,16 @@ class DriverWrapper(object):
         :param maximize: True if the browser should be maximized
         :returns: selenium driver
         """
+        from toolium.utils import Utils
         self.driver = ConfigDriver(self.config).create_driver()
-        if self.is_additional:
-            from toolium.test_cases import SeleniumTestCase
-            SeleniumTestCase.additional_drivers.append(self.driver)
+        self.utils = Utils(self)
 
+        # Save session id and remote node to download video after the test execution
+        self.session_id = self.driver.session_id
+        self.remote_video_node = self.utils.get_remote_video_node()
+
+        # Maximize browser
         if maximize and self.is_maximizable():
-            # Maximize browser
             self.driver.maximize_window()
 
         return self.driver
@@ -238,3 +244,52 @@ class DriverWrapper(object):
         """
         browser_name = self.config.get('Browser', 'browser').split('-')[0]
         return not self.is_mobile_test() and browser_name != 'edge'
+
+
+class DriverWrappersPool(object):
+    driver_wrappers = []
+
+    @classmethod
+    def add_wrapper(cls, driver_wrapper):
+        """Add a driver wrapper to the wrappers pool
+
+        :param driver_wrapper: driver_wrapper instance
+        """
+        cls.driver_wrappers.append(driver_wrapper)
+
+    @classmethod
+    def capture_screenshots(cls, name):
+        """Capture a screenshot in each driver
+
+        :param name: screenshot name suffix
+        """
+        screenshot_name = '{}_driver{}' if len(cls.driver_wrappers) > 1 else '{}'
+        driver_index = 1
+        for driver_wrapper in cls.driver_wrappers:
+            if driver_wrapper.utils:
+                driver_wrapper.utils.capture_screenshot(screenshot_name.format(name, driver_index))
+            driver_index += 1
+
+    @classmethod
+    def download_videos(cls, name, test_passed=True):
+        """Download saved videos if video is enabled or if test fails
+
+        :param name: destination file name
+        :param test_passed: True if the test has passed
+        """
+        video_name = '{}_driver{}' if len(cls.driver_wrappers) > 1 else '{}'
+        driver_index = 1
+        for driver_wrapper in cls.driver_wrappers:
+            if ((driver_wrapper.config.getboolean_optional('Server', 'video_enabled')
+                 or not test_passed) and driver_wrapper.remote_video_node):
+                video_name = video_name if test_passed else 'error_{}'.format(video_name)
+                driver_wrapper.utils.download_remote_video(driver_wrapper.remote_video_node, driver_wrapper.session_id,
+                                                           video_name.format(name, driver_index))
+
+    @classmethod
+    def close_drivers(cls):
+        """Close browser and stop all drivers"""
+        for driver_wrapper in cls.driver_wrappers:
+            if driver_wrapper.driver:
+                driver_wrapper.driver.quit()
+        cls.driver_wrappers = []

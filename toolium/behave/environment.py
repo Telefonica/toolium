@@ -21,6 +21,7 @@ import re
 
 from toolium import toolium_wrapper
 from toolium.config_files import ConfigFiles
+from toolium.driver_wrapper import DriverWrappersPool
 from toolium.jira import add_jira_status, change_all_jira_status
 from toolium.utils import Utils
 from toolium.visual_test import VisualTest
@@ -60,8 +61,7 @@ def before_scenario(context, scenario):
 
         # Create driver
         context.driver = toolium_wrapper.connect()
-        context.utils = Utils(toolium_wrapper)
-        context.remote_video_node = context.utils.get_remote_video_node()
+        context.utils = toolium_wrapper.utils
 
     # Configure visual tests
     def assertScreenshot(element_or_selector, filename, threshold=0, exclude_element=None, driver_wrapper=None):
@@ -93,10 +93,13 @@ def after_scenario(context, scenario):
     # Check test result
     flag_failed = scenario.status != 'passed'
 
+    # Get scenario name without spaces and behave data separator
+    scenario_file_name = scenario.name.replace(' -- @', '_').replace(' ', '_')
+
     if flag_failed:
         test_status = 'Fail'
         test_comment = "The scenario '{0}' has failed".format(scenario.name)
-        context.utils.capture_screenshot(scenario.name.replace(' -- @', '_').replace(' ', '_'))
+        DriverWrappersPool.capture_screenshots(scenario_file_name)
         context.logger.error(test_comment)
     else:
         test_status = 'Pass'
@@ -105,7 +108,8 @@ def after_scenario(context, scenario):
 
     # Close browser and stop driver if it must not be reused
     if not context.reuse_driver:
-        finalize_driver(context, scenario.name.replace(' ', '_'), not flag_failed)
+        DriverWrappersPool.close_drivers()
+        DriverWrappersPool.download_videos(scenario_file_name, not flag_failed)
 
     # Save test status to be updated later
     test_key = get_jira_key_from_scenario(scenario)
@@ -120,29 +124,10 @@ def after_all(context):
     """
     # Close browser and stop driver if it has been reused
     if context.reuse_driver:
-        finalize_driver(context, 'multiple_tests')
+        DriverWrappersPool.close_drivers()
+        DriverWrappersPool.download_videos('multiple_tests')
     # Update tests status in Jira
     change_all_jira_status()
-
-
-def finalize_driver(context, video_name, test_passed=True):
-    """Close browser, stop driver and download test video
-
-    :param context: behave context
-    :param video_name: video name
-    :param test_passed: test execution status
-    """
-    # Get session id to request the saved video
-    session_id = context.driver.session_id
-
-    # Close browser and stop driver
-    context.driver.quit()
-
-    # Download saved video if video is enabled or if test fails
-    if context.remote_video_node and (toolium_wrapper.config.getboolean_optional('Server', 'video_enabled')
-                                      or not test_passed):
-        video_name = video_name if test_passed else 'error_{}'.format(video_name)
-        context.utils.download_remote_video(context.remote_video_node, session_id, video_name)
 
 
 def get_jira_key_from_scenario(scenario):
