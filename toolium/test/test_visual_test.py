@@ -27,8 +27,9 @@ from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
 from needle.engines.pil_engine import Engine as PilEngine
 import mock
 from toolium.visual_test import VisualTest
-from toolium import toolium_wrapper
 from toolium.config_files import ConfigFiles
+from toolium.driver_wrapper import DriverWrappersPool
+from toolium.driver_wrapper import DriverWrapper
 
 
 class VisualTests(unittest.TestCase):
@@ -47,21 +48,24 @@ class VisualTests(unittest.TestCase):
         if os.path.exists(visual_path):
             shutil.rmtree(visual_path)
 
-        # Remove previous driver instance and conf properties
-        toolium_wrapper._instance = None
-        toolium_wrapper.config_properties_filenames = None
+        # Reset wrappers pool values
+        DriverWrappersPool._empty_pool()
+        DriverWrapper.config_properties_filenames = None
+
+        # Create a new wrapper
+        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
+        self.driver_wrapper.driver = mock.MagicMock()
 
         # Configure properties
         config_files = ConfigFiles()
         config_files.set_config_directory(os.path.join(self.root_path, 'conf'))
         config_files.set_config_properties_filenames('properties.cfg')
         config_files.set_output_directory(os.path.join(self.root_path, 'output'))
-        toolium_wrapper.configure(tc_config_files=config_files)
-        toolium_wrapper.config.set('VisualTests', 'enabled', 'true')
+        self.driver_wrapper.configure(tc_config_files=config_files)
+        self.driver_wrapper.config.set('VisualTests', 'enabled', 'true')
 
         # Create a new VisualTest instance
-        self.visual = VisualTest()
-        toolium_wrapper.visual_number = 1
+        self.visual = VisualTest(self.driver_wrapper)
 
     @classmethod
     def tearDownClass(cls):
@@ -70,39 +74,46 @@ class VisualTests(unittest.TestCase):
         if os.path.exists(visual_path):
             shutil.rmtree(visual_path)
 
-        # Remove driver instance and conf properties
-        toolium_wrapper._instance = None
-        toolium_wrapper.config_properties_filenames = None
+        # Reset wrappers pool values
+        DriverWrappersPool._empty_pool()
+        DriverWrapper.config_properties_filenames = None
 
-    @mock.patch('toolium.toolium_wrapper.driver')
-    def test_no_enabled(self, driver):
-        toolium_wrapper.config.set('VisualTests', 'enabled', 'false')
-        VisualTest().assertScreenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
-        driver.save_screenshot.assert_not_called()
+    def test_no_enabled(self):
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.config.set('VisualTests', 'enabled', 'false')
+        self.visual = VisualTest(self.driver_wrapper)
+
+        self.visual.assertScreenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
+        self.driver_wrapper.driver.save_screenshot.assert_not_called()
 
     def test_engine_pil(self):
-        visual = VisualTest()
-        self.assertIsInstance(visual.engine, PilEngine)
+        self.assertIsInstance(self.visual.engine, PilEngine)
 
     def test_engine_perceptual(self):
-        toolium_wrapper.config.set('VisualTests', 'engine', 'perceptualdiff')
-        visual = VisualTest()
-        self.assertIsInstance(visual.engine, PerceptualEngine)
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.config.set('VisualTests', 'engine', 'perceptualdiff')
+        self.visual = VisualTest(self.driver_wrapper)
+
+        self.assertIsInstance(self.visual.engine, PerceptualEngine)
 
     # def test_engine_magick(self):
-    #    toolium_wrapper.config.set('VisualTests', 'engine', 'imagemagick')
+    #    self.driver_wrapper.config.set('VisualTests', 'engine', 'imagemagick')
     #    visual = VisualTest()
     #    self.assertIsInstance(visual.engine, MagickEngine)
 
     def test_engine_empty(self):
-        toolium_wrapper.config.set('VisualTests', 'engine', '')
-        visual = VisualTest()
-        self.assertIsInstance(visual.engine, PilEngine)
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.config.set('VisualTests', 'engine', '')
+        self.visual = VisualTest(self.driver_wrapper)
+
+        self.assertIsInstance(self.visual.engine, PilEngine)
 
     def test_engine_unknown(self):
-        toolium_wrapper.config.set('VisualTests', 'engine', 'unknown')
-        visual = VisualTest()
-        self.assertIsInstance(visual.engine, PilEngine)
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.config.set('VisualTests', 'engine', 'unknown')
+        self.visual = VisualTest(self.driver_wrapper)
+
+        self.assertIsInstance(self.visual.engine, PilEngine)
 
     def test_compare_files_equals(self):
         message = self.visual.compare_files(self._testMethodName, self.file_v1, self.file_v1, 0)
@@ -113,7 +124,9 @@ class VisualTests(unittest.TestCase):
         self.assertIn('by a distance of 522.65', message)
 
     def test_compare_files_diff_fail(self):
-        toolium_wrapper.config.set('VisualTests', 'fail', 'true')
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.config.set('VisualTests', 'fail', 'true')
+        self.visual = VisualTest(self.driver_wrapper)
 
         with self.assertRaises(AssertionError):
             self.visual.compare_files(self._testMethodName, self.file_v1, self.file_v2, 0)
@@ -124,7 +137,9 @@ class VisualTests(unittest.TestCase):
         self.assertEqual('', message)
 
     def test_compare_files_size_fail(self):
-        toolium_wrapper.config.set('VisualTests', 'fail', 'true')
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.config.set('VisualTests', 'fail', 'true')
+        self.visual = VisualTest(self.driver_wrapper)
 
         with self.assertRaises(AssertionError):
             self.visual.compare_files(self._testMethodName, self.file_v1, self.file_small, 0)
@@ -166,11 +181,11 @@ class VisualTests(unittest.TestCase):
         # Assert output image
         self.assertImage(img, self._testMethodName, 'register_cropped_element')
 
-    @mock.patch('toolium.toolium_wrapper.driver')
-    def test_mobile_resize(self, driver):
-        # Configure driver mock
-        driver.get_window_size.return_value = {'width': 375, 'height': 667}
-        toolium_wrapper.config.set('Browser', 'browser', 'ios')
+    def test_mobile_resize(self):
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.driver.get_window_size.return_value = {'width': 375, 'height': 667}
+        self.driver_wrapper.config.set('Browser', 'browser', 'ios')
+        self.visual = VisualTest(self.driver_wrapper)
 
         # Resize image
         img = Image.open(self.file_ios)
@@ -179,11 +194,11 @@ class VisualTests(unittest.TestCase):
         # Assert output image
         self.assertImage(img, self._testMethodName, 'ios_resized')
 
-    @mock.patch('toolium.toolium_wrapper.driver')
-    def test_mobile_no_resize(self, driver):
-        # Configure driver mock
-        driver.get_window_size.return_value = {'width': 750, 'height': 1334}
-        toolium_wrapper.config.set('Browser', 'browser', 'ios')
+    def test_mobile_no_resize(self):
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.driver.get_window_size.return_value = {'width': 750, 'height': 1334}
+        self.driver_wrapper.config.set('Browser', 'browser', 'ios')
+        self.visual = VisualTest(self.driver_wrapper)
 
         # Resize image
         orig_img = Image.open(self.file_ios)
@@ -223,37 +238,35 @@ class VisualTests(unittest.TestCase):
         # Assert output image
         self.assertImage(img, self._testMethodName, 'register')
 
-    @mock.patch('toolium.toolium_wrapper.driver')
-    def test_assert_screenshot_full_and_save_baseline(self, driver):
+    def test_assert_screenshot_full_and_save_baseline(self):
         # Configure driver mock
         def copy_file_side_effect(output_file):
             shutil.copyfile(self.file_v1, output_file)
 
-        driver.save_screenshot.side_effect = copy_file_side_effect
+        self.driver_wrapper.driver.save_screenshot.side_effect = copy_file_side_effect
 
         # Assert screenshot
         self.visual.assertScreenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-        driver.save_screenshot.assert_called_with(output_file)
+        self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
 
         # Output image and new baseline image must be equals
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_full.png')
         PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
-    @mock.patch('toolium.toolium_wrapper.driver')
-    def test_assert_screenshot_element_and_save_baseline(self, driver):
+    def test_assert_screenshot_element_and_save_baseline(self):
         # Create element mock
         element = get_mock_element(x=250, y=40, height=40, width=300)
 
         # Configure driver mock
         with open(self.file_v1, "rb") as f:
             image_data = f.read()
-        driver.get_screenshot_as_png.return_value = image_data
+        self.driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
 
         # Assert screenshot
         self.visual.assertScreenshot(element, filename='screenshot_elem', file_suffix='screenshot_suffix')
-        driver.get_screenshot_as_png.assert_called_with()
+        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
 
         # Check cropped image
         expected_image = os.path.join(self.root_path, 'resources', 'register_cropped_element.png')
@@ -265,13 +278,12 @@ class VisualTests(unittest.TestCase):
                                      'screenshot_elem.png')
         PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
-    @mock.patch('toolium.toolium_wrapper.driver')
-    def test_assert_screenshot_full_and_compare(self, driver):
+    def test_assert_screenshot_full_and_compare(self):
         # Configure driver mock
         def copy_file_side_effect(output_file):
             shutil.copyfile(self.file_v1, output_file)
 
-        driver.save_screenshot.side_effect = copy_file_side_effect
+        self.driver_wrapper.driver.save_screenshot.side_effect = copy_file_side_effect
 
         # Add baseline image
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
@@ -281,10 +293,9 @@ class VisualTests(unittest.TestCase):
         # Assert screenshot
         self.visual.assertScreenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-        driver.save_screenshot.assert_called_with(output_file)
+        self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
 
-    @mock.patch('toolium.toolium_wrapper.driver')
-    def test_assert_screenshot_element_and_compare(self, driver):
+    def test_assert_screenshot_element_and_compare(self):
         # Add baseline image
         expected_image = os.path.join(self.root_path, 'resources', 'register_cropped_element.png')
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
@@ -297,28 +308,30 @@ class VisualTests(unittest.TestCase):
         # Configure driver mock
         with open(self.file_v1, "rb") as f:
             image_data = f.read()
-        driver.get_screenshot_as_png.return_value = image_data
+        self.driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
 
         # Assert screenshot
         self.visual.assertScreenshot(element, filename='screenshot_elem', file_suffix='screenshot_suffix')
-        driver.get_screenshot_as_png.assert_called_with()
+        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
 
-    @mock.patch('toolium.toolium_wrapper.driver')
-    def test_assert_screenshot_mobile_resize_and_exclude(self, driver):
+    def test_assert_screenshot_mobile_resize_and_exclude(self):
         # Create elements mock
         elements = [get_mock_element(x=0, y=0, height=24, width=375)]
 
         # Configure driver mock
         with open(self.file_ios, "rb") as f:
             image_data = f.read()
-        driver.get_screenshot_as_png.return_value = image_data
-        driver.get_window_size.return_value = {'width': 375, 'height': 667}
-        toolium_wrapper.config.set('Browser', 'browser', 'ios')
+        self.driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
+        self.driver_wrapper.driver.get_window_size.return_value = {'width': 375, 'height': 667}
+
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.config.set('Browser', 'browser', 'ios')
+        self.visual = VisualTest(self.driver_wrapper)
 
         # Assert screenshot
         self.visual.assertScreenshot(None, filename='screenshot_ios', file_suffix='screenshot_suffix',
                                      exclude_elements=elements)
-        driver.get_screenshot_as_png.assert_called_with()
+        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
 
         # Check cropped image
         expected_image = os.path.join(self.root_path, 'resources', 'ios_excluded.png')
@@ -330,8 +343,7 @@ class VisualTests(unittest.TestCase):
                                      'screenshot_ios.png')
         PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
-    @mock.patch('toolium.toolium_wrapper.driver')
-    def test_assert_screenshot_mobile_web_resize_and_exclude(self, driver):
+    def test_assert_screenshot_mobile_web_resize_and_exclude(self):
         # Create elements mock
         form_element = get_mock_element(x=0, y=0, height=559, width=375)
         exclude_elements = [get_mock_element(x=15, y=296.515625, height=32, width=345)]
@@ -340,15 +352,18 @@ class VisualTests(unittest.TestCase):
         file_ios_web = os.path.join(self.root_path, 'resources', 'ios_web.png')
         with open(file_ios_web, "rb") as f:
             image_data = f.read()
-        driver.get_screenshot_as_png.return_value = image_data
-        driver.get_window_size.return_value = {'width': 375, 'height': 667}
-        toolium_wrapper.config.set('Browser', 'browser', 'ios')
-        toolium_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
+        self.driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
+        self.driver_wrapper.driver.get_window_size.return_value = {'width': 375, 'height': 667}
+
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.config.set('Browser', 'browser', 'ios')
+        self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
+        self.visual = VisualTest(self.driver_wrapper)
 
         # Assert screenshot
         self.visual.assertScreenshot(form_element, filename='screenshot_ios_web', file_suffix='screenshot_suffix',
                                      exclude_elements=exclude_elements)
-        driver.get_screenshot_as_png.assert_called_with()
+        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
 
         # Check cropped image
         expected_image = os.path.join(self.root_path, 'resources', 'ios_web_exclude.png')

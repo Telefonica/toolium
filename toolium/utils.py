@@ -32,7 +32,7 @@ import requests
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from toolium import toolium_wrapper
+from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
 class Utils(object):
@@ -41,7 +41,7 @@ class Utils(object):
 
         :param driver_wrapper: driver wrapper instance
         """
-        self.driver_wrapper = driver_wrapper if driver_wrapper else toolium_wrapper
+        self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
         # Configure logger
         self.logger = logging.getLogger(__name__)
 
@@ -56,13 +56,13 @@ class Utils(object):
 
         :param name: screenshot name suffix
         """
-        filename = '{0:0=2d}_{1}.png'.format(toolium_wrapper.screenshots_number, name)
-        filepath = os.path.join(toolium_wrapper.screenshots_directory, filename)
-        if not os.path.exists(toolium_wrapper.screenshots_directory):
-            os.makedirs(toolium_wrapper.screenshots_directory)
+        filename = '{0:0=2d}_{1}.png'.format(DriverWrappersPool.screenshots_number, name)
+        filepath = os.path.join(DriverWrappersPool.screenshots_directory, filename)
+        if not os.path.exists(DriverWrappersPool.screenshots_directory):
+            os.makedirs(DriverWrappersPool.screenshots_directory)
         if self.driver_wrapper.driver.get_screenshot_as_file(filepath):
             self.logger.info("Screenshot saved in " + filepath)
-            toolium_wrapper.screenshots_number += 1
+            DriverWrappersPool.screenshots_number += 1
 
     def print_all_selenium_logs(self):
         """Print all selenium logs"""
@@ -195,14 +195,14 @@ class Utils(object):
         :param video_url: video url
         :param video_name: video name
         """
-        filename = '{0:0=2d}_{1}.mp4'.format(toolium_wrapper.videos_number, video_name)
-        filepath = os.path.join(toolium_wrapper.videos_directory, filename)
-        if not os.path.exists(toolium_wrapper.videos_directory):
-            os.makedirs(toolium_wrapper.videos_directory)
+        filename = '{0:0=2d}_{1}.mp4'.format(DriverWrappersPool.videos_number, video_name)
+        filepath = os.path.join(DriverWrappersPool.videos_directory, filename)
+        if not os.path.exists(DriverWrappersPool.videos_directory):
+            os.makedirs(DriverWrappersPool.videos_directory)
         response = requests.get(video_url)
         open(filepath, 'wb').write(response.content)
         self.logger.info("Video saved in '{}'".format(filepath))
-        toolium_wrapper.videos_number += 1
+        DriverWrappersPool.videos_number += 1
 
     def _is_remote_video_enabled(self, remote_node):
         """Check if the remote node has the video recorder enabled

@@ -19,11 +19,9 @@ limitations under the License.
 import logging
 import re
 
-from toolium import toolium_wrapper
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.jira import add_jira_status, change_all_jira_status
-from toolium.utils import Utils
 from toolium.visual_test import VisualTest
 
 
@@ -35,17 +33,19 @@ def before_all(context):
     # Configure logger
     context.logger = logging.getLogger()
 
+    # Get default driver wrapper
+    wrapper = DriverWrappersPool.get_default_wrapper()
+
     # Configure wrapper
     if not hasattr(context, 'config_files'):
         context.config_files = ConfigFiles()
-    toolium_wrapper.configure(True, context.config_files)
+    wrapper.configure(True, context.config_files)
 
     # Create driver if it must be reused
-    context.reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
+    context.reuse_driver = wrapper.config.getboolean_optional('Common', 'reuse_driver')
     if context.reuse_driver:
-        context.driver = toolium_wrapper.connect()
-        context.utils = Utils(toolium_wrapper)
-        context.remote_video_node = context.utils.get_remote_video_node()
+        context.driver = wrapper.connect()
+        context.utils = wrapper.utils
 
 
 def before_scenario(context, scenario):
@@ -54,14 +54,17 @@ def before_scenario(context, scenario):
     :param context: behave context
     :param scenario: running scenario
     """
+    # Get default driver wrapper
+    wrapper = DriverWrappersPool.get_default_wrapper()
+
     # Create driver if it must not be reused
     if not context.reuse_driver:
         # Configure wrapper
-        toolium_wrapper.configure(True, context.config_files)
+        wrapper.configure(True, context.config_files)
 
         # Create driver
-        context.driver = toolium_wrapper.connect()
-        context.utils = toolium_wrapper.utils
+        context.driver = wrapper.connect()
+        context.utils = wrapper.utils
 
     # Configure visual tests
     def assertScreenshot(element_or_selector, filename, threshold=0, exclude_element=None, driver_wrapper=None):
@@ -77,7 +80,7 @@ def before_scenario(context, scenario):
     context.assertFullScreenshot = assertFullScreenshot
 
     # Add implicitly wait
-    implicitly_wait = toolium_wrapper.config.get_optional('Common', 'implicitly_wait')
+    implicitly_wait = wrapper.config.get_optional('Common', 'implicitly_wait')
     if implicitly_wait:
         context.driver.implicitly_wait(implicitly_wait)
 
@@ -107,9 +110,7 @@ def after_scenario(context, scenario):
         context.logger.info("The scenario '{0}' has passed".format(scenario.name))
 
     # Close browser and stop driver if it must not be reused
-    if not context.reuse_driver:
-        DriverWrappersPool.close_drivers()
-        DriverWrappersPool.download_videos(scenario_file_name, not flag_failed)
+    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, not flag_failed, context.reuse_driver)
 
     # Save test status to be updated later
     test_key = get_jira_key_from_scenario(scenario)
@@ -124,8 +125,7 @@ def after_all(context):
     """
     # Close browser and stop driver if it has been reused
     if context.reuse_driver:
-        DriverWrappersPool.close_drivers()
-        DriverWrappersPool.download_videos('multiple_tests')
+        DriverWrappersPool.close_drivers_and_download_videos('multiple_tests')
     # Update tests status in Jira
     change_all_jira_status()
 

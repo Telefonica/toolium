@@ -32,12 +32,11 @@ except NameError:
     # Python 3
     xrange = range
 
-from toolium import toolium_wrapper
+from toolium.driver_wrappers_pool import DriverWrappersPool
 import itertools
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
 # from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.pil_engine import Engine as PilEngine
-from toolium.utils import Utils
 from PIL import Image
 
 
@@ -47,14 +46,14 @@ class VisualTest(object):
     driver_wrapper = None
 
     def __init__(self, driver_wrapper=None):
-        self.driver_wrapper = driver_wrapper if driver_wrapper else toolium_wrapper
+        self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
         if not self.driver_wrapper.config.getboolean_optional('VisualTests', 'enabled'):
             return
 
-        self.utils = Utils(self.driver_wrapper)
+        self.utils = self.driver_wrapper.utils
         self.logger = logging.getLogger(__name__)
-        self.output_directory = toolium_wrapper.visual_output_directory
-        self.baseline_directory = toolium_wrapper.visual_baseline_directory
+        self.output_directory = DriverWrappersPool.visual_output_directory
+        self.baseline_directory = self.driver_wrapper.visual_baseline_directory
         engine_type = self.driver_wrapper.config.get_optional('VisualTests', 'engine', 'pil')
         if engine_type == 'perceptualdiff':
             self.engine = PerceptualEngine()
@@ -64,7 +63,7 @@ class VisualTest(object):
             self.engine = PilEngine()
         else:
             self.logger.warn(
-                "Engine '{}' not found, using pil instead. Review your properties.cfg file.".format(engine_type))
+                    "Engine '{}' not found, using pil instead. Review your properties.cfg file.".format(engine_type))
             self.engine = PilEngine()
         self.save_baseline = self.driver_wrapper.config.getboolean_optional('VisualTests', 'save')
 
@@ -100,7 +99,7 @@ class VisualTest(object):
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
-        unique_name = '{0:0=2d}_{1}.png'.format(toolium_wrapper.visual_number, filename_with_suffix)
+        unique_name = '{0:0=2d}_{1}.png'.format(DriverWrappersPool.visual_number, filename_with_suffix)
         output_file = os.path.join(self.output_directory, unique_name)
         report_name = '{}<br>({})'.format(file_suffix, filename)
 
@@ -115,7 +114,7 @@ class VisualTest(object):
         else:
             # Faster method if the screenshot must not be modified
             self.driver_wrapper.driver.save_screenshot(output_file)
-        toolium_wrapper.visual_number += 1
+        DriverWrappersPool.visual_number += 1
 
         # Determine whether we should save the baseline image
         if self.save_baseline or not os.path.exists(baseline_file):
@@ -137,7 +136,7 @@ class VisualTest(object):
         :returns: modified image object
         """
         if self.driver_wrapper.is_ios_test() or self.driver_wrapper.is_android_web_test():
-            scale = img.size[0] / Utils(self.driver_wrapper).get_window_size()['width']
+            scale = img.size[0] / self.utils.get_window_size()['width']
             if scale != 1:
                 new_image_size = (int(img.size[0] / scale), int(img.size[1] / scale))
                 img = img.resize(new_image_size, Image.ANTIALIAS)

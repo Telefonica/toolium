@@ -19,7 +19,7 @@ limitations under the License.
 import logging
 import unittest
 
-from toolium import toolium_wrapper
+from toolium.driver_wrapper import DriverWrappersPool
 from toolium.pageelements.page_element import PageElement
 from toolium.test_cases import AppiumTestCase
 from toolium.utils import Utils
@@ -49,10 +49,10 @@ class PageObject(unittest.TestCase):
 
         :param driver_wrapper: driver wrapper instance
         """
-        self.driver_wrapper = driver_wrapper if driver_wrapper else toolium_wrapper
+        self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
         self.set_driver(self.driver_wrapper.driver)
         self.set_config(self.driver_wrapper.config)
-        self.set_utils(Utils(self.driver_wrapper))
+        self.set_utils(self.driver_wrapper.utils)
 
     def set_driver(self, driver):
         """Set Selenium driver"""

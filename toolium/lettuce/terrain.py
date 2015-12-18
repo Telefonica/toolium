@@ -21,7 +21,6 @@ import re
 
 from lettuce import before, after, world  # @UnresolvedImport
 
-from toolium import toolium_wrapper
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.jira import add_jira_status, change_all_jira_status
 from toolium.visual_test import VisualTest
@@ -32,11 +31,18 @@ def setup_driver(scenario):
     # Configure logger
     world.logger = logging.getLogger()
 
+    # Get default driver wrapper
+    wrapper = DriverWrappersPool.get_default_wrapper()
+
     # Create driver
-    if not hasattr(world, 'driver') or not world.driver:
-        toolium_wrapper.configure()
-        world.driver = toolium_wrapper.connect()
-        world.utils = toolium_wrapper.utils
+    reuse_driver = wrapper.config.getboolean_optional('Common', 'reuse_driver')
+    if not reuse_driver:
+        # Configure wrapper
+        wrapper.configure()
+
+        # Create driver
+        world.driver = wrapper.connect()
+        world.utils = wrapper.utils
 
     # Configure visual tests
     def assertScreenshot(element_or_selector, filename, threshold=0, exclude_element=None, driver_wrapper=None):
@@ -52,7 +58,7 @@ def setup_driver(scenario):
     world.assertFullScreenshot = assertFullScreenshot
 
     # Add implicitly wait
-    implicitly_wait = toolium_wrapper.config.get_optional('Common', 'implicitly_wait')
+    implicitly_wait = wrapper.config.get_optional('Common', 'implicitly_wait')
     if implicitly_wait:
         world.driver.implicitly_wait(implicitly_wait)
 
@@ -61,6 +67,9 @@ def setup_driver(scenario):
 
 @after.each_scenario
 def teardown_driver(scenario):
+    # Get default driver wrapper
+    wrapper = DriverWrappersPool.get_default_wrapper()
+
     # Get scenario name without spaces
     scenario_file_name = scenario.name.replace(' ', '_')
 
@@ -76,11 +85,9 @@ def teardown_driver(scenario):
         test_comment = None
         world.logger.info("The scenario '{0}' has passed".format(scenario.name))
 
-    # Close browser and stop driver
-    reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
-    if not reuse_driver:
-        DriverWrappersPool.close_drivers()
-        DriverWrappersPool.download_videos(scenario_file_name, not scenario.failed)
+    # Close browser and stop driver if it must not be reused
+    reuse_driver = wrapper.config.getboolean_optional('Common', 'reuse_driver')
+    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, not scenario.failed, reuse_driver)
 
     # Save test status to be updated later
     test_key = get_jira_key_from_scenario(scenario)
@@ -91,8 +98,7 @@ def teardown_driver(scenario):
 @after.all
 def teardown_driver_all(total):
     if hasattr(world, 'driver') and world.driver:
-        DriverWrappersPool.close_drivers()
-        DriverWrappersPool.download_videos('multiple_tests')
+        DriverWrappersPool.close_drivers_and_download_videos('multiple_tests')
     # Update tests status in Jira
     change_all_jira_status()
 

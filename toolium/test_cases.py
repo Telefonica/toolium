@@ -20,10 +20,9 @@ import logging
 import sys
 import unittest
 
-from toolium import toolium_wrapper
 from toolium.config_driver import get_error_message_from_exception
 from toolium.config_files import ConfigFiles
-from toolium.driver_wrapper import DriverWrappersPool
+from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.jira import change_all_jira_status
 from toolium.visual_test import VisualTest
 
@@ -31,6 +30,7 @@ from toolium.visual_test import VisualTest
 class BasicTestCase(unittest.TestCase):
     """A class whose instances are api test cases."""
     config_files = ConfigFiles()
+    driver_wrapper = None
 
     @classmethod
     def get_subclass_name(cls):
@@ -50,9 +50,10 @@ class BasicTestCase(unittest.TestCase):
     def setUp(self):
         # Configure logger and properties
         if not isinstance(self, SeleniumTestCase):
-            toolium_wrapper.configure(False, self.config_files)
+            self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
+            self.driver_wrapper.configure(False, self.config_files)
         # Get config and logger instances
-        self.config = toolium_wrapper.config
+        self.config = self.driver_wrapper.config
         self.logger = logging.getLogger(__name__)
         self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
 
@@ -101,23 +102,21 @@ class SeleniumTestCase(BasicTestCase):
 
         # Stop driver
         if SeleniumTestCase.driver:
-            cls._finalize_driver(cls.get_subclass_name())
-
-    @classmethod
-    def _finalize_driver(cls, video_name, test_passed=True):
-        DriverWrappersPool.close_drivers()
-        cls.driver = None
-        SeleniumTestCase.driver = None
-        DriverWrappersPool.download_videos(video_name, test_passed)
+            DriverWrappersPool.close_drivers_and_download_videos(cls.get_subclass_name())
+            SeleniumTestCase.driver = None
 
     def setUp(self):
-        # Create driver
+        # Get default driver wrapper
+        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
         if not SeleniumTestCase.driver:
-            toolium_wrapper.configure(True, self.config_files)
-            SeleniumTestCase.driver = toolium_wrapper.connect()
-            SeleniumTestCase.utils = toolium_wrapper.utils
+            # Create driver
+            self.driver_wrapper.configure(True, self.config_files)
+            self.driver_wrapper.connect()
+        SeleniumTestCase.driver = self.driver_wrapper.driver
+        self.utils = self.driver_wrapper.utils
+
         # Get common configuration of reusing driver
-        self.reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
+        self.reuse_driver = self.driver_wrapper.config.getboolean_optional('Common', 'reuse_driver')
         # Set implicitly wait
         self.utils.set_implicit_wait()
         # Call BasicTestCase setUp
@@ -132,9 +131,10 @@ class SeleniumTestCase(BasicTestCase):
         if not self._test_passed:
             DriverWrappersPool.capture_screenshots(test_name)
 
-        # Stop driver
+        # Close browser and stop driver if it must not be reused
+        DriverWrappersPool.close_drivers_and_download_videos(test_name, self._test_passed, self.reuse_driver)
         if not self.reuse_driver:
-            self._finalize_driver(test_name, self._test_passed)
+            SeleniumTestCase.driver = None
 
     def assertScreenshot(self, element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
@@ -184,7 +184,7 @@ class AppiumTestCase(SeleniumTestCase):
 
     def setUp(self):
         super(AppiumTestCase, self).setUp()
-        if AppiumTestCase.app_strings is None and not toolium_wrapper.is_web_test():
+        if AppiumTestCase.app_strings is None and not self.driver_wrapper.is_web_test():
             AppiumTestCase.app_strings = self.driver.app_strings()
 
     def tearDown(self):

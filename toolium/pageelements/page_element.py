@@ -18,7 +18,7 @@ limitations under the License.
 
 from selenium.webdriver.remote.webelement import WebElement
 
-from toolium import toolium_wrapper
+from toolium.driver_wrapper import DriverWrappersPool
 from toolium.utils import Utils
 from toolium.visual_test import VisualTest
 
@@ -54,10 +54,10 @@ class PageElement(object):
 
         :param driver_wrapper: driver wrapper instance
         """
-        self.driver_wrapper = driver_wrapper if driver_wrapper else toolium_wrapper
+        self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
         self.set_driver(self.driver_wrapper.driver)
         self.set_config(self.driver_wrapper.config)
-        self.set_utils(Utils(self.driver_wrapper))
+        self.set_utils(self.driver_wrapper.utils)
 
     def set_driver(self, driver):
         """Set Selenium driver"""
