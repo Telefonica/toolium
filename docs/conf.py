@@ -29,8 +29,8 @@ limitations under the License.
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
+import sys
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -208,7 +208,6 @@ html_theme = 'default'
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'tooliumdoc'
 
-
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
@@ -290,3 +289,13 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
+
+
+def remove_module_docstring(app, what, name, obj, options, lines):
+    """Remove all module docstrings to exclude license header"""
+    if what == "module":
+        del lines[:]
+
+
+def setup(app):
+    app.connect("autodoc-process-docstring", remove_module_docstring)

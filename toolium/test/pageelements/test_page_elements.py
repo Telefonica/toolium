@@ -66,7 +66,7 @@ class TestPageElements(unittest.TestCase):
         global mock_element
         mock_element = get_mock_element()
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_locator(self, driver):
         page_object = LoginPageObject()
 
@@ -76,7 +76,7 @@ class TestPageElements(unittest.TestCase):
         self.assertEqual(page_object.language.locator, (By.ID, 'language'))
         self.assertEqual(page_object.login.locator, (By.ID, 'login'))
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_get_text(self, driver):
         driver.find_element.return_value = mock_element
 
@@ -84,7 +84,7 @@ class TestPageElements(unittest.TestCase):
 
         self.assertEqual(title_value, 'text value')
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_get_inputtext(self, driver):
         driver.find_element.return_value = mock_element
 
@@ -92,11 +92,11 @@ class TestPageElements(unittest.TestCase):
 
         self.assertEqual(username_value, 'input text value')
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_set_inputtext(self, driver):
         # Configure driver ios mock
         driver.find_element.return_value = mock_element
-        driver_ios_patch = mock.patch('toolium.toolium_driver.is_ios_test', mock.MagicMock(return_value=False))
+        driver_ios_patch = mock.patch('toolium.toolium_wrapper.is_ios_test', mock.MagicMock(return_value=False))
         driver_ios_patch.start()
 
         LoginPageObject().username.text = 'new input value'
@@ -104,7 +104,7 @@ class TestPageElements(unittest.TestCase):
         self.assertEqual(mock_element.send_keys.mock_calls, [mock.call('new input value')])
         driver_ios_patch.stop()
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_get_selected_option(self, driver):
         select_page_element.SeleniumSelect = get_mock_select()
 
@@ -112,7 +112,7 @@ class TestPageElements(unittest.TestCase):
 
         self.assertEqual(option, 'option value')
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_select_option(self, driver):
         select_page_element.SeleniumSelect = get_mock_select()
 
@@ -122,7 +122,7 @@ class TestPageElements(unittest.TestCase):
         self.assertEqual(select_page_element.SeleniumSelect().mock_calls,
                          [mock.call.select_by_visible_text('new option value')])
 
-    @mock.patch('toolium.toolium_driver.driver')
+    @mock.patch('toolium.toolium_wrapper.driver')
     def test_click_button(self, driver):
         driver.find_element.return_value = mock_element
         LoginPageObject().login.click()

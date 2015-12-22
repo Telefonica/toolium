@@ -1,6 +1,21 @@
 Toolium Changelog
 =================
 
+v0.12.0
+-------
+
+*In development*
+
+- Allow to create a second driver using DriverWrapper constructor:
+
+.. code-block:: python
+
+    second_wrapper = DriverWrapper()
+    second_wrapper.connect()
+
+- Fix page object issue with non-default driver. Now the page object init method has a driver_wrapper optional
+  parameter instead of driver parameter.
+
 v0.11.3
 -------
 

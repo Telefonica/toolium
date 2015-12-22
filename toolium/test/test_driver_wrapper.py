@@ -46,7 +46,7 @@ class DriverWrapperCommon(unittest.TestCase):
 class DriverWrapperPropertiesTests(DriverWrapperCommon):
     def setUp(self):
         os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
-        self.wrapper = DriverWrapper()
+        self.wrapper = DriverWrapper(main_driver=True)
         self.wrapper.config_directory = ''
         self.wrapper.output_directory = ''
         self.wrapper.configure_logger()
@@ -136,7 +136,7 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
 
 class DriverWrapperLoggerTests(DriverWrapperCommon):
     def setUp(self):
-        self.wrapper = DriverWrapper()
+        self.wrapper = DriverWrapper(main_driver=True)
         self.wrapper.config_directory = ''
         self.wrapper.output_directory = ''
 
@@ -194,6 +194,7 @@ class DriverWrapperLoggerTests(DriverWrapperCommon):
 mobile_tests = (
     ('android-4.1.2-on-android', True),
     ('android', True),
+    ('ios', True),
     ('iphone', True),
     ('firefox-4.1.2-on-android', False),
     ('firefox', False),
@@ -206,6 +207,9 @@ web_tests = (
     ('android', None, 'chrome', True),
     ('android', None, 'chromium', True),
     ('android', None, 'browser', True),
+    ('ios', '/tmp/Demo.zip', None, False),
+    ('ios', '/tmp/Demo.zip', '', False),
+    ('ios', None, 'safari', True),
     ('iphone', '/tmp/Demo.zip', None, False),
     ('iphone', '/tmp/Demo.zip', '', False),
     ('iphone', None, 'safari', True),
@@ -220,6 +224,7 @@ maximizable_browsers = (
     ('opera', True),
     ('edge', False),
     ('android', False),
+    ('ios', False),
     ('iphone', False),
 )
 
@@ -229,50 +234,64 @@ class DriverWrapperTests(DriverWrapperCommon):
     def setUp(self):
         os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
         os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
-        self.wrapper = DriverWrapper()
-        self.wrapper.configure()
+        self.driver_wrapper = DriverWrapper(main_driver=True)
+        self.driver_wrapper.configure()
 
     def test_singleton(self):
-        # Modify first wrapper
-        new_browser = 'opera'
-        self.wrapper.config.set('Browser', 'browser', new_browser)
+        # Request a new main wrapper
+        new_wrapper = DriverWrapper(main_driver=True)
 
-        # Request a new wrapper
+        # Modify new wrapper
+        new_browser = 'opera'
+        new_wrapper.config.set('Browser', 'browser', new_browser)
+
+        # Check that both wrappers are the same object
+        self.assertEqual(new_browser, self.driver_wrapper.config.get('Browser', 'browser'))
+        self.assertEqual(new_browser, new_wrapper.config.get('Browser', 'browser'))
+        self.assertEqual(self.driver_wrapper, new_wrapper)
+
+    def test_multiple(self):
+        # Request a new additional wrapper
         new_wrapper = DriverWrapper()
 
-        # Check that wrapper and new_wrapper are the same object
-        self.assertEqual(new_browser, self.wrapper.config.get('Browser', 'browser'))
+        # Modify new wrapper
+        first_browser = 'firefox'
+        new_browser = 'opera'
+        new_wrapper.config.set('Browser', 'browser', new_browser)
+
+        # Check that wrapper and new_wrapper are different
+        self.assertEqual(first_browser, self.driver_wrapper.config.get('Browser', 'browser'))
         self.assertEqual(new_browser, new_wrapper.config.get('Browser', 'browser'))
-        self.assertEqual(self.wrapper, new_wrapper)
+        self.assertNotEqual(self.driver_wrapper, new_wrapper)
 
     def test_configure_no_changes(self):
         # Check previous values
-        self.assertEqual(1, self.wrapper.screenshots_number)
+        self.assertEqual(1, self.driver_wrapper.screenshots_number)
 
         # Modify wrapper
-        self.wrapper.screenshots_number += 1
+        self.driver_wrapper.screenshots_number += 1
 
         # Trying to configure again
-        self.wrapper.configure()
+        self.driver_wrapper.configure()
 
         # Configuration has not been initialized
-        self.assertEqual(2, self.wrapper.screenshots_number)
+        self.assertEqual(2, self.driver_wrapper.screenshots_number)
 
     def test_configure_change_configuration_file(self):
         # Check previous values
-        self.assertEqual('firefox', self.wrapper.config.get('Browser', 'browser'))
-        self.assertEqual(1, self.wrapper.screenshots_number)
+        self.assertEqual('firefox', self.driver_wrapper.config.get('Browser', 'browser'))
+        self.assertEqual(1, self.driver_wrapper.screenshots_number)
 
         # Modify wrapper
-        self.wrapper.screenshots_number += 1
+        self.driver_wrapper.screenshots_number += 1
 
         # Change browser and try to configure again
         os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'android-properties.cfg')
-        self.wrapper.configure()
+        self.driver_wrapper.configure()
 
         # Check that configuration has been initialized
-        self.assertEqual('android', self.wrapper.config.get('Browser', 'browser'))
-        self.assertEqual(1, self.wrapper.screenshots_number)
+        self.assertEqual('android', self.driver_wrapper.config.get('Browser', 'browser'))
+        self.assertEqual(1, self.driver_wrapper.screenshots_number)
 
     @mock.patch('toolium.driver_wrapper.ConfigDriver')
     def test_connect(self, ConfigDriver):
@@ -282,33 +301,33 @@ class DriverWrapperTests(DriverWrapperCommon):
         instance.create_driver.return_value = expected_driver
 
         # Check the returned driver
-        self.wrapper.configure()
-        self.assertEqual(expected_driver, self.wrapper.connect())
+        self.driver_wrapper.configure()
+        self.assertEqual(expected_driver, self.driver_wrapper.connect(maximize=False))
 
         # Check that the wrapper has been configured
-        self.assertEqual(1, self.wrapper.screenshots_number)
-        self.assertEqual('firefox', self.wrapper.config.get('Browser', 'browser'))
+        self.assertEqual(1, self.driver_wrapper.screenshots_number)
+        self.assertEqual('firefox', self.driver_wrapper.config.get('Browser', 'browser'))
         logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
         self.assertEqual('DEBUG', logging.getLevelName(logger.level))
 
     @data(*mobile_tests)
     @unpack
     def test_is_mobile_test(self, browser, is_mobile):
-        self.wrapper.config.set('Browser', 'browser', browser)
-        self.assertEqual(is_mobile, self.wrapper.is_mobile_test())
+        self.driver_wrapper.config.set('Browser', 'browser', browser)
+        self.assertEqual(is_mobile, self.driver_wrapper.is_mobile_test())
 
     @data(*web_tests)
     @unpack
     def test_is_web_test(self, browser, appium_app, appium_browser_name, is_web):
-        self.wrapper.config.set('Browser', 'browser', browser)
+        self.driver_wrapper.config.set('Browser', 'browser', browser)
         if appium_app is not None:
-            self.wrapper.config.set('AppiumCapabilities', 'app', appium_app)
+            self.driver_wrapper.config.set('AppiumCapabilities', 'app', appium_app)
         if appium_browser_name is not None:
-            self.wrapper.config.set('AppiumCapabilities', 'browserName', appium_browser_name)
-        self.assertEqual(is_web, self.wrapper.is_web_test())
+            self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', appium_browser_name)
+        self.assertEqual(is_web, self.driver_wrapper.is_web_test())
 
     @data(*maximizable_browsers)
     @unpack
     def test_is_maximizable(self, browser, is_maximizable):
-        self.wrapper.config.set('Browser', 'browser', browser)
-        self.assertEqual(is_maximizable, self.wrapper.is_maximizable())
+        self.driver_wrapper.config.set('Browser', 'browser', browser)
+        self.assertEqual(is_maximizable, self.driver_wrapper.is_maximizable())

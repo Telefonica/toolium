@@ -16,9 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import datetime
 import logging.config
 import os
-import datetime
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
@@ -27,6 +27,7 @@ from toolium.config_parser import ExtendedConfigParser
 class DriverWrapper(object):
     # Singleton instance
     _instance = None
+    is_additional = False
     driver = None
     logger = None
     config = ExtendedConfigParser()
@@ -49,10 +50,20 @@ class DriverWrapper(object):
     visual_number = None
 
     def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            # Create new instance
-            cls._instance = super(DriverWrapper, cls).__new__(cls, *args, **kwargs)
-        return cls._instance
+        if 'main_driver' in kwargs and kwargs['main_driver']:
+            if cls._instance:
+                # Return the singleton instance
+                instance = cls._instance
+            else:
+                # Create new instance and save it in a class property
+                instance = super(DriverWrapper, cls).__new__(cls)
+                cls._instance = instance
+        else:
+            # Create new instance with a copy of the config object
+            instance = super(DriverWrapper, cls).__new__(cls)
+            instance.config = cls._instance.config.deepcopy()
+            instance.is_additional = True
+        return instance
 
     def get_configured_value(self, system_property_name, specific_value, default_value):
         """Get configured value from system properties, method parameters or default value
@@ -174,12 +185,21 @@ class DriverWrapper(object):
         if is_selenium_test:
             self.configure_visual_directories()
 
-    def connect(self):
+    def connect(self, maximize=True):
         """Set up the selenium driver and connect to the server
 
+        :param maximize: True if the browser should be maximized
         :returns: selenium driver
         """
         self.driver = ConfigDriver(self.config).create_driver()
+        if self.is_additional:
+            from toolium.test_cases import SeleniumTestCase
+            SeleniumTestCase.additional_drivers.append(self.driver)
+
+        if maximize and self.is_maximizable():
+            # Maximize browser
+            self.driver.maximize_window()
+
         return self.driver
 
     def is_mobile_test(self):
@@ -188,7 +208,7 @@ class DriverWrapper(object):
         :returns: true if test must be executed in a mobile
         """
         browser_name = self.config.get('Browser', 'browser').split('-')[0]
-        return browser_name in ('android', 'iphone')
+        return browser_name in ('android', 'ios', 'iphone')
 
     def is_ios_test(self):
         """Check if actual test must be executed in an iOS mobile
@@ -196,7 +216,7 @@ class DriverWrapper(object):
         :returns: true if test must be executed in an iOS mobile
         """
         browser_name = self.config.get('Browser', 'browser').split('-')[0]
-        return browser_name == 'iphone'
+        return browser_name in ('ios', 'iphone')
 
     def is_android_web_test(self):
         """Check if actual test must be executed in a browser of an Android mobile

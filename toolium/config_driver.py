@@ -25,8 +25,8 @@ except ImportError:
 import ast
 import logging
 
-from selenium import webdriver
 from appium import webdriver as appiumdriver
+from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
@@ -89,6 +89,7 @@ class ConfigDriver(object):
                              'edge': DesiredCapabilities.EDGE,
                              'phantomjs': DesiredCapabilities.PHANTOMJS,
                              'android': DesiredCapabilities.ANDROID,
+                             'ios': DesiredCapabilities.IPHONE,
                              'iphone': DesiredCapabilities.IPHONE}
         browser = self.config.get('Browser', 'browser')
         browser_name = browser.split('-')[0]
@@ -131,7 +132,7 @@ class ConfigDriver(object):
         except NoSectionError:
             pass
 
-        if browser_name == 'android' or browser_name == 'iphone':
+        if browser_name in ('android', 'ios', 'iphone'):
             # Add Appium server capabilities
             for cap, cap_value in dict(self.config.items('AppiumCapabilities')).items():
                 self.logger.debug("Added Appium server capability: {0} = {1}".format(cap, cap_value))
@@ -158,6 +159,7 @@ class ConfigDriver(object):
                           'edge': self._setup_edge,
                           'phantomjs': self._setup_phantomjs,
                           'android': self._setup_appium,
+                          'ios': self._setup_appium,
                           'iphone': self._setup_appium}
         setup_driver_method = browser_config.get(browser_name)
         if not setup_driver_method:
