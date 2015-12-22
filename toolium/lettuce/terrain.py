@@ -17,105 +17,57 @@ limitations under the License.
 """
 
 import logging
-import re
 
-from lettuce import before, after, world  # @UnresolvedImport
+from lettuce import before, after, world
 
+from toolium.behave.environment import bdd_common_after_scenario, bdd_common_before_scenario
 from toolium.driver_wrapper import DriverWrappersPool
-from toolium.jira import add_jira_status, change_all_jira_status
-from toolium.visual_test import VisualTest
+from toolium.jira import change_all_jira_status
 
 
 @before.each_scenario
 def setup_driver(scenario):
+    """Scenario initialization
+
+    :param scenario: running scenario
+    """
+
     # Configure logger
     world.logger = logging.getLogger()
 
     # Get default driver wrapper
-    wrapper = DriverWrappersPool.get_default_wrapper()
+    driver_wrapper = DriverWrappersPool.get_default_wrapper()
 
     # Create driver
-    reuse_driver = wrapper.config.getboolean_optional('Common', 'reuse_driver')
-    if not reuse_driver:
+    world.reuse_driver = driver_wrapper.config.getboolean_optional('Common', 'reuse_driver')
+    if not world.reuse_driver:
         # Configure wrapper
-        wrapper.configure()
+        driver_wrapper.configure()
 
         # Create driver
-        world.driver = wrapper.connect()
-        world.utils = wrapper.utils
+        world.driver = driver_wrapper.connect()
+        world.utils = driver_wrapper.utils
 
-    # Configure visual tests
-    def assertScreenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
-        file_suffix = scenario.name.replace(' ', '_')
-        VisualTest(driver_wrapper).assertScreenshot(element_or_selector, filename, file_suffix, threshold,
-                                                    exclude_elements)
-
-    def assertFullScreenshot(filename, threshold=0, exclude_elements=[], driver_wrapper=None):
-        file_suffix = scenario.name.replace(' ', '_')
-        VisualTest(driver_wrapper).assertScreenshot(None, filename, file_suffix, threshold, exclude_elements)
-
-    world.assertScreenshot = assertScreenshot
-    world.assertFullScreenshot = assertFullScreenshot
-
-    # Add implicitly wait
-    implicitly_wait = wrapper.config.get_optional('Common', 'implicitly_wait')
-    if implicitly_wait:
-        world.driver.implicitly_wait(implicitly_wait)
-
-    # Get application strings
-    if wrapper.is_mobile_test() and not wrapper.is_web_test() and not hasattr(world, 'app_strings'):
-        world.app_strings = wrapper.driver.app_strings()
-
-    world.logger.info("Running new scenario: {0}".format(scenario.name))
+    # Common initialization
+    bdd_common_before_scenario(world, scenario, driver_wrapper)
 
 
 @after.each_scenario
 def teardown_driver(scenario):
-    # Get default driver wrapper
-    wrapper = DriverWrappersPool.get_default_wrapper()
+    """Clean method that will be executed after each scenario
 
-    # Get scenario name without spaces
-    scenario_file_name = scenario.name.replace(' ', '_')
-
-    # Check test result
-    if scenario.failed:
-        # TODO: never enters here in scenarios with datasets
-        test_status = 'Fail'
-        test_comment = "The scenario '{0}' has failed".format(scenario.name)
-        DriverWrappersPool.capture_screenshots(scenario_file_name)
-        world.logger.error(test_comment)
-    else:
-        test_status = 'Pass'
-        test_comment = None
-        world.logger.info("The scenario '{0}' has passed".format(scenario.name))
-
-    # Close browser and stop driver if it must not be reused
-    reuse_driver = wrapper.config.getboolean_optional('Common', 'reuse_driver')
-    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, not scenario.failed, reuse_driver)
-
-    # Save test status to be updated later
-    test_key = get_jira_key_from_scenario(scenario)
-    if test_key:
-        add_jira_status(test_key, test_status, test_comment)
+    :param scenario: running scenario
+    """
+    bdd_common_after_scenario(world, scenario, not scenario.failed)
 
 
 @after.all
 def teardown_driver_all(total):
+    """Clean method that will be executed after all features are finished
+
+    :param total: results of executed features
+    """
     if hasattr(world, 'driver') and world.driver:
         DriverWrappersPool.close_drivers_and_download_videos('multiple_tests')
     # Update tests status in Jira
     change_all_jira_status()
-
-
-def get_jira_key_from_scenario(scenario):
-    """Extract Jira Test Case key from scenario tags
-
-    :param scenario: lettuce scenario
-    :returns: Jira test case key
-    """
-    jira_regex = re.compile('jira\(\'(.*?)\'\)')
-    for tag in scenario.tags:
-        match = jira_regex.search(tag)
-        if match:
-            return match.group(1)
-    return None

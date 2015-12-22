@@ -56,19 +56,30 @@ def before_scenario(context, scenario):
     :param scenario: running scenario
     """
     # Get default driver wrapper
-    wrapper = DriverWrappersPool.get_default_wrapper()
+    driver_wrapper = DriverWrappersPool.get_default_wrapper()
 
     # Create driver if it must not be reused
     if not context.reuse_driver:
         # Configure wrapper
-        wrapper.configure(True, context.config_files)
-        context.config = wrapper.config
+        driver_wrapper.configure(True, context.config_files)
+        context.config = driver_wrapper.config
 
         # Create driver
-        context.driver = wrapper.connect()
-        context.utils = wrapper.utils
+        context.driver = driver_wrapper.connect()
+        context.utils = driver_wrapper.utils
 
-    # Configure visual tests
+    # Common initialization
+    bdd_common_before_scenario(context, scenario, driver_wrapper)
+
+
+def bdd_common_before_scenario(context_or_world, scenario, driver_wrapper):
+    """Common scenario initialization in behave or lettuce
+
+    :param context_or_world: behave context or lettuce world
+    :param scenario: running scenario
+    :param driver_wrapper: driver wrapper instance
+    """
+
     def assertScreenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         file_suffix = scenario.name.replace(' ', '_')
         VisualTest(driver_wrapper).assertScreenshot(element_or_selector, filename, file_suffix, threshold,
@@ -78,19 +89,20 @@ def before_scenario(context, scenario):
         file_suffix = scenario.name.replace(' ', '_')
         VisualTest(driver_wrapper).assertScreenshot(None, filename, file_suffix, threshold, exclude_elements)
 
-    context.assertScreenshot = assertScreenshot
-    context.assertFullScreenshot = assertFullScreenshot
+    context_or_world.assertScreenshot = assertScreenshot
+    context_or_world.assertFullScreenshot = assertFullScreenshot
 
     # Add implicitly wait
-    implicitly_wait = wrapper.config.get_optional('Common', 'implicitly_wait')
+    implicitly_wait = driver_wrapper.config.get_optional('Common', 'implicitly_wait')
     if implicitly_wait:
-        context.driver.implicitly_wait(implicitly_wait)
+        context_or_world.driver.implicitly_wait(implicitly_wait)
 
     # Get application strings
-    if wrapper.is_mobile_test() and not wrapper.is_web_test() and not hasattr(context, 'app_strings'):
-        context.app_strings = wrapper.driver.app_strings()
+    if driver_wrapper.is_mobile_test() and not driver_wrapper.is_web_test() and not hasattr(context_or_world,
+                                                                                            'app_strings'):
+        context_or_world.app_strings = driver_wrapper.driver.app_strings()
 
-    context.logger.info("Running new scenario: {0}".format(scenario.name))
+    context_or_world.logger.info("Running new scenario: {0}".format(scenario.name))
 
 
 def after_scenario(context, scenario):
@@ -99,24 +111,31 @@ def after_scenario(context, scenario):
     :param context: behave context
     :param scenario: running scenario
     """
-    # Check test result
-    flag_failed = scenario.status != 'passed'
+    bdd_common_after_scenario(context, scenario, scenario.status == 'passed')
 
+
+def bdd_common_after_scenario(context_or_world, scenario, passed):
+    """Clean method that will be executed after each scenario in behave or lettuce
+
+    :param context_or_world: behave context or lettuce world
+    :param scenario: running scenario
+    :param passed: True if the scenario has passed
+    """
     # Get scenario name without spaces and behave data separator
     scenario_file_name = scenario.name.replace(' -- @', '_').replace(' ', '_')
 
-    if flag_failed:
+    if passed:
+        test_status = 'Pass'
+        test_comment = None
+        context_or_world.logger.info("The scenario '{0}' has passed".format(scenario.name))
+    else:
         test_status = 'Fail'
         test_comment = "The scenario '{0}' has failed".format(scenario.name)
         DriverWrappersPool.capture_screenshots(scenario_file_name)
-        context.logger.error(test_comment)
-    else:
-        test_status = 'Pass'
-        test_comment = None
-        context.logger.info("The scenario '{0}' has passed".format(scenario.name))
+        context_or_world.logger.error(test_comment)
 
     # Close browser and stop driver if it must not be reused
-    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, not flag_failed, context.reuse_driver)
+    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, passed, context_or_world.reuse_driver)
 
     # Save test status to be updated later
     test_key = get_jira_key_from_scenario(scenario)
