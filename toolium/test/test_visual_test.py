@@ -24,9 +24,7 @@ from PIL import Image
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
 # from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.pil_engine import Engine as PilEngine
-from selenium.webdriver.remote.webelement import WebElement
 import mock
-from selenium.webdriver.common.by import By
 from toolium.visual_test import VisualTest
 from toolium import toolium_wrapper
 
@@ -151,7 +149,7 @@ class VisualTests(unittest.TestCase):
 
         # Output image and expected image must be equals
         expected_image = os.path.join(self.root_path, 'resources', expected_image_filename + '.png')
-        PilEngine().assertSameFiles(result_file, expected_image, 0)
+        PilEngine().assertSameFiles(result_file, expected_image, 0.1)
 
     def test_crop_element(self):
         # Create element mock
@@ -221,34 +219,6 @@ class VisualTests(unittest.TestCase):
         # Assert output image
         self.assertImage(img, self._testMethodName, 'register')
 
-    def test_get_element_none(self):
-        element = self.visual.get_element(None)
-        self.assertIsNone(element)
-
-    def test_get_element_webelement(self):
-        web_element = WebElement(None, 1)
-        element = self.visual.get_element(web_element)
-        self.assertEqual(web_element, element)
-
-    def test_get_element_pageelement(self):
-        page_element = mock.MagicMock()
-        page_element.element.return_value = 'mock_element'
-
-        element = self.visual.get_element(page_element)
-        self.assertEqual('mock_element', element)
-        page_element.element.assert_called_with()
-
-    @mock.patch('toolium.toolium_wrapper.driver')
-    def test_get_element_locator(self, driver):
-        # Configure driver mock
-        driver.find_element.return_value = 'mock_element'
-        element_locator = (By.ID, 'element_id')
-
-        # Get element and assert response
-        element = self.visual.get_element(element_locator)
-        self.assertEqual('mock_element', element)
-        driver.find_element.assert_called_with(*element_locator)
-
     @mock.patch('toolium.toolium_wrapper.driver')
     def test_assert_screenshot_full_and_save_baseline(self, driver):
         # Configure driver mock
@@ -265,7 +235,7 @@ class VisualTests(unittest.TestCase):
         # Output image and new baseline image must be equals
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_full.png')
-        PilEngine().assertSameFiles(output_file, baseline_file, 0)
+        PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
     @mock.patch('toolium.toolium_wrapper.driver')
     def test_assert_screenshot_element_and_save_baseline(self, driver):
@@ -284,12 +254,12 @@ class VisualTests(unittest.TestCase):
         # Check cropped image
         expected_image = os.path.join(self.root_path, 'resources', 'register_cropped_element.png')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_elem__screenshot_suffix.png')
-        PilEngine().assertSameFiles(output_file, expected_image, 0)
+        PilEngine().assertSameFiles(output_file, expected_image, 0.1)
 
         # Output image and new baseline image must be equals
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_elem.png')
-        PilEngine().assertSameFiles(output_file, baseline_file, 0)
+        PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
     @mock.patch('toolium.toolium_wrapper.driver')
     def test_assert_screenshot_full_and_compare(self, driver):
@@ -349,12 +319,12 @@ class VisualTests(unittest.TestCase):
         # Check cropped image
         expected_image = os.path.join(self.root_path, 'resources', 'ios_excluded.png')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_ios__screenshot_suffix.png')
-        PilEngine().assertSameFiles(output_file, expected_image, 0)
+        PilEngine().assertSameFiles(output_file, expected_image, 0.1)
 
         # Output image and new baseline image must be equals
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_ios.png')
-        PilEngine().assertSameFiles(output_file, baseline_file, 0)
+        PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
     @mock.patch('toolium.toolium_wrapper.driver')
     def test_assert_screenshot_mobile_web_resize_and_exclude(self, driver):
@@ -379,12 +349,12 @@ class VisualTests(unittest.TestCase):
         # Check cropped image
         expected_image = os.path.join(self.root_path, 'resources', 'ios_web_exclude.png')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_ios_web__screenshot_suffix.png')
-        PilEngine().assertSameFiles(output_file, expected_image, 0)
+        PilEngine().assertSameFiles(output_file, expected_image, 0.1)
 
         # Output image and new baseline image must be equals
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_ios_web.png')
-        PilEngine().assertSameFiles(output_file, baseline_file, 0)
+        PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
 
 @mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)

@@ -13,8 +13,9 @@ v0.12.0
     second_wrapper = DriverWrapper()
     second_wrapper.connect()
 
-- Fix page object issue with non-default driver. Now the page object init method has a driver_wrapper optional
-  parameter instead of driver parameter.
+- Fix page object issue with non-default driver. Now page object and utils init methods have both a driver_wrapper
+  optional parameter instead of driver parameter.
+- Fix swipe over an element in Android and iOS web tests
 
 v0.11.3
 -------

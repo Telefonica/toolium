@@ -174,7 +174,7 @@ class SeleniumTestCase(BasicTestCase):
                                       self._config_properties_filenames, self._config_log_filename,
                                       self._output_log_filename)
             SeleniumTestCase.driver = toolium_wrapper.connect()
-            SeleniumTestCase.utils = Utils(SeleniumTestCase.driver)
+            SeleniumTestCase.utils = Utils(toolium_wrapper)
             SeleniumTestCase.remote_video_node = SeleniumTestCase.utils.get_remote_video_node()
         # Get common configuration of reusing driver
         self.reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
@@ -194,7 +194,7 @@ class SeleniumTestCase(BasicTestCase):
             driver_index = 1
             for driver in self.additional_drivers:
                 driver_index += 1
-                Utils(driver).capture_screenshot('{}_driver{}'.format(test_name, driver_index))
+                Utils().capture_screenshot('{}_driver{}'.format(test_name, driver_index), driver=driver)
 
         # Stop driver
         if not self.reuse_driver:

@@ -16,6 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+# Python 2.7
+from __future__ import division
+
 try:
     # Python 3
     from urllib.parse import urlparse
@@ -25,41 +28,41 @@ except ImportError:
 import logging
 import os
 import time
-
 import requests
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
 from toolium import toolium_wrapper
 
 
 class Utils(object):
-    def __init__(self, driver):
+    def __init__(self, driver_wrapper=None):
         """Initialize Utils instance
 
-        :param driver: webdriver instance
-        :type driver: selenium.webdriver.remote.webdriver.WebDriver
+        :param driver_wrapper: driver wrapper instance
         """
-        self.driver = driver
+        self.driver_wrapper = driver_wrapper if driver_wrapper else toolium_wrapper
         # Configure logger
         self.logger = logging.getLogger(__name__)
 
     def set_implicit_wait(self):
         """Read timeout from configuration properties and set the implicit wait"""
-        implicitly_wait = toolium_wrapper.config.get_optional('Common', 'implicitly_wait')
+        implicitly_wait = self.driver_wrapper.config.get_optional('Common', 'implicitly_wait')
         if implicitly_wait:
-            self.driver.implicitly_wait(implicitly_wait)
+            self.driver_wrapper.driver.implicitly_wait(implicitly_wait)
 
-    def capture_screenshot(self, name):
+    def capture_screenshot(self, name, driver=None):
         """Capture screenshot and save it in screenshots folder
 
         :param name: screenshot name suffix
+        :param driver: driver instance
         """
         filename = '{0:0=2d}_{1}.png'.format(toolium_wrapper.screenshots_number, name)
         filepath = os.path.join(toolium_wrapper.screenshots_directory, filename)
         if not os.path.exists(toolium_wrapper.screenshots_directory):
             os.makedirs(toolium_wrapper.screenshots_directory)
-        if self.driver.get_screenshot_as_file(filepath):
+        capture_driver = driver if driver else self.driver_wrapper.driver
+        if capture_driver.get_screenshot_as_file(filepath):
             self.logger.info("Screenshot saved in " + filepath)
             toolium_wrapper.screenshots_number += 1
 
@@ -72,7 +75,7 @@ class Utils(object):
 
         :param log_type: browser, client, driver, performance, sever or logcat
         """
-        for entry in self.driver.get_log(log_type):
+        for entry in self.driver_wrapper.driver.get_log(log_type):
             message = entry['message'].rstrip().encode('utf-8')
             self.logger.debug('{0} - {1}: {2}'.format(log_type.capitalize(), entry['level'], message))
 
@@ -84,7 +87,7 @@ class Utils(object):
         :returns: the element if it is visible or False
         :rtype: selenium.webdriver.remote.webelement.WebElement
         """
-        return WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(locator))
+        return WebDriverWait(self.driver_wrapper.driver, timeout).until(EC.visibility_of_element_located(locator))
 
     def wait_until_element_not_visible(self, locator, timeout=10):
         """Search element by locator and wait until it is not visible
@@ -95,9 +98,9 @@ class Utils(object):
         :rtype: selenium.webdriver.remote.webelement.WebElement
         """
         # Remove implicit wait
-        self.driver.implicitly_wait(0)
+        self.driver_wrapper.driver.implicitly_wait(0)
         # Wait for invisibility
-        element = WebDriverWait(self.driver, timeout).until(EC.invisibility_of_element_located(locator))
+        element = WebDriverWait(self.driver_wrapper.driver, timeout).until(EC.invisibility_of_element_located(locator))
         # Restore implicit wait from properties
         self.set_implicit_wait()
         return element
@@ -109,11 +112,11 @@ class Utils(object):
         """
         logging.getLogger("requests").setLevel(logging.WARNING)
         remote_node = None
-        if toolium_wrapper.config.getboolean_optional('Server', 'enabled'):
+        if self.driver_wrapper.config.getboolean_optional('Server', 'enabled'):
             # Request session info from grid hub
-            host = toolium_wrapper.config.get('Server', 'host')
-            port = toolium_wrapper.config.get('Server', 'port')
-            session_id = self.driver.session_id
+            host = self.driver_wrapper.config.get('Server', 'host')
+            port = self.driver_wrapper.config.get('Server', 'port')
+            session_id = self.driver_wrapper.driver.session_id
             url = 'http://{}:{}/grid/api/testsession?session={}'.format(host, port, session_id)
             try:
                 response = requests.get(url).json()
@@ -227,16 +230,84 @@ class Utils(object):
         return {'x': element.location['x'] + (element.size['width'] / 2),
                 'y': element.location['y'] + (element.size['height'] / 2)}
 
-    def swipe(self, element, x, y, duration=None):
+    def get_safari_navigation_bar_height(self):
+        """Get the height of Safari navigation bar
+
+        :returns: height of navigation bar
+        """
+        status_bar_height = 0
+        if self.driver_wrapper.is_ios_test() and self.driver_wrapper.is_web_test():
+            # ios 7.1, 8.3
+            status_bar_height = 64
+        return status_bar_height
+
+    def get_window_size(self):
+        """Generic method to get window size using a javascript workaround for Android web tests
+
+        :returns: dict with window size
+        """
+        if self.driver_wrapper.is_android_web_test() and self.driver_wrapper.driver.current_context != 'NATIVE_APP':
+            window_width = self.driver_wrapper.driver.execute_script("return window.innerWidth")
+            window_height = self.driver_wrapper.driver.execute_script("return window.innerHeight")
+            window_size = {'width': window_width, 'height': window_height}
+        else:
+            window_size = self.driver_wrapper.driver.get_window_size()
+        return window_size
+
+    def get_native_coords(self, coords):
+        """Convert web coords into native coords. Assumes that the initial context is WEBVIEW and switches to
+         NATIVE_APP context.
+
+        :param coords: dict with web coords, e.g. {'x': 10, 'y': 10}
+        :returns: dict with native coords
+        """
+        web_window_size = self.get_window_size()
+        self.driver_wrapper.driver.switch_to.context('NATIVE_APP')
+        native_window_size = self.get_window_size()
+        scale = native_window_size['width'] / web_window_size['width']
+        offset = self.get_safari_navigation_bar_height()
+        native_coords = {'x': coords['x'] * scale, 'y': coords['y'] * scale + offset}
+        self.logger.debug('Converted web coords {} into native coords {}'.format(coords, native_coords))
+        return native_coords
+
+    def swipe(self, element_or_locator, x, y, duration=None):
         """Swipe over an element
 
-        :param element: webdriver element
+        :param element_or_locator: either a WebElement, a PageElement or an element locator as a tuple (locator_type,
+                                   locator_value).
         :param x: horizontal movement
         :param y: vertical movement
         :param duration: time to take the swipe, in ms.
         """
-        center = self.get_center(element)
-        self.driver.swipe(center['x'], center['y'], center['x'] + x, center['y'] + y, duration)
+        center = self.get_center(self.get_element(element_or_locator))
+        if not self.driver_wrapper.is_mobile_test():
+            raise Exception('Swipe method is not implemented in Selenium')
+        elif self.driver_wrapper.is_web_test() or self.driver_wrapper.driver.current_context != 'NATIVE_APP':
+            current_context = self.driver_wrapper.driver.current_context
+            center = self.get_native_coords(center)
+            self.driver_wrapper.driver.swipe(center['x'], center['y'], center['x'] + x, center['y'] + y, duration)
+            self.driver_wrapper.driver.switch_to.context(current_context)
+        else:
+            self.driver_wrapper.driver.swipe(center['x'], center['y'], center['x'] + x, center['y'] + y, duration)
+
+    def get_element(self, element_or_locator):
+        """Return the web element from a page element or its locator
+
+        :param element_or_locator: either a WebElement, a PageElement or an element locator as a tuple (locator_type,
+                                   locator_value).
+        :returns: WebElement object
+        """
+        if element_or_locator is None:
+            element = None
+        elif isinstance(element_or_locator, WebElement):
+            element = element_or_locator
+        else:
+            try:
+                # PageElement
+                element = element_or_locator.element()
+            except AttributeError:
+                element = self.driver_wrapper.driver.find_element(*element_or_locator)
+        return element
 
 
 class classproperty(property):

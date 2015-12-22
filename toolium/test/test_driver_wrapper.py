@@ -16,12 +16,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest
 import logging
 import os
+import unittest
 
-from ddt import ddt, data, unpack
 import mock
+from ddt import ddt, data, unpack
 
 from toolium.driver_wrapper import DriverWrapper
 
@@ -92,11 +92,15 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
 
     def test_configure_properties_file_not_configured(self):
         # Exception raised because in this case default config file doesn't exist
-        self.assertRaisesRegexp(Exception, 'Properties config file not found', self.wrapper.configure_properties)
+        with self.assertRaises(Exception) as cm:
+            self.wrapper.configure_properties()
+        self.assertIn('Properties config file not found', str(cm.exception))
 
     def test_configure_properties_file_not_found(self):
         os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'notfound-properties.cfg')
-        self.assertRaisesRegexp(Exception, 'Properties config file not found', self.wrapper.configure_properties)
+        with self.assertRaises(Exception) as cm:
+            self.wrapper.configure_properties()
+        self.assertIn('Properties config file not found', str(cm.exception))
 
     def test_configure_properties_no_changes(self):
         # Configure properties
