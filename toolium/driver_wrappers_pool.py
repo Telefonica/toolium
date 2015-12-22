@@ -44,6 +44,7 @@ class DriverWrappersPool(object):
         """Returns the default (first) driver wrapper
 
         :returns: default driver wrapper
+        :rtype: toolium.driver_wrapper.DriverWrapper
         """
         if len(cls.driver_wrappers) == 0:
             # Create a new driver wrapper if the pool is empty

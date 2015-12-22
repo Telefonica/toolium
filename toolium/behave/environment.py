@@ -40,6 +40,7 @@ def before_all(context):
     if not hasattr(context, 'config_files'):
         context.config_files = ConfigFiles()
     wrapper.configure(True, context.config_files)
+    context.config = wrapper.config
 
     # Create driver if it must be reused
     context.reuse_driver = wrapper.config.getboolean_optional('Common', 'reuse_driver')
@@ -61,16 +62,17 @@ def before_scenario(context, scenario):
     if not context.reuse_driver:
         # Configure wrapper
         wrapper.configure(True, context.config_files)
+        context.config = wrapper.config
 
         # Create driver
         context.driver = wrapper.connect()
         context.utils = wrapper.utils
 
     # Configure visual tests
-    def assertScreenshot(element_or_selector, filename, threshold=0, exclude_element=None, driver_wrapper=None):
+    def assertScreenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         file_suffix = scenario.name.replace(' ', '_')
         VisualTest(driver_wrapper).assertScreenshot(element_or_selector, filename, file_suffix, threshold,
-                                                    exclude_element)
+                                                    exclude_elements)
 
     def assertFullScreenshot(filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         file_suffix = scenario.name.replace(' ', '_')
@@ -83,6 +85,10 @@ def before_scenario(context, scenario):
     implicitly_wait = wrapper.config.get_optional('Common', 'implicitly_wait')
     if implicitly_wait:
         context.driver.implicitly_wait(implicitly_wait)
+
+    # Get application strings
+    if wrapper.is_mobile_test() and not wrapper.is_web_test() and not hasattr(context, 'app_strings'):
+        context.app_strings = wrapper.driver.app_strings()
 
     context.logger.info("Running new scenario: {0}".format(scenario.name))
 

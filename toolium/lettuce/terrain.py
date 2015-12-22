@@ -45,10 +45,10 @@ def setup_driver(scenario):
         world.utils = wrapper.utils
 
     # Configure visual tests
-    def assertScreenshot(element_or_selector, filename, threshold=0, exclude_element=None, driver_wrapper=None):
+    def assertScreenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         file_suffix = scenario.name.replace(' ', '_')
         VisualTest(driver_wrapper).assertScreenshot(element_or_selector, filename, file_suffix, threshold,
-                                                    exclude_element)
+                                                    exclude_elements)
 
     def assertFullScreenshot(filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         file_suffix = scenario.name.replace(' ', '_')
@@ -61,6 +61,10 @@ def setup_driver(scenario):
     implicitly_wait = wrapper.config.get_optional('Common', 'implicitly_wait')
     if implicitly_wait:
         world.driver.implicitly_wait(implicitly_wait)
+
+    # Get application strings
+    if wrapper.is_mobile_test() and not wrapper.is_web_test() and not hasattr(world, 'app_strings'):
+        world.app_strings = wrapper.driver.app_strings()
 
     world.logger.info("Running new scenario: {0}".format(scenario.name))
 
