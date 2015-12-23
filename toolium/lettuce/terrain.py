@@ -17,99 +17,57 @@ limitations under the License.
 """
 
 import logging
-import re
 
-from lettuce import before, after, world  # @UnresolvedImport
+from lettuce import before, after, world
 
-from toolium import toolium_wrapper
-from toolium.jira import add_jira_status, change_all_jira_status
-from toolium.utils import Utils
-from toolium.visual_test import VisualTest
+from toolium.behave.environment import bdd_common_after_scenario, bdd_common_before_scenario
+from toolium.driver_wrapper import DriverWrappersPool
+from toolium.jira import change_all_jira_status
 
 
 @before.each_scenario
 def setup_driver(scenario):
+    """Scenario initialization
+
+    :param scenario: running scenario
+    """
+
     # Configure logger
     world.logger = logging.getLogger()
+
+    # Get default driver wrapper
+    driver_wrapper = DriverWrappersPool.get_default_wrapper()
+
     # Create driver
-    if not hasattr(world, 'driver') or not world.driver:
-        toolium_wrapper.configure()
-        world.driver = toolium_wrapper.connect()
-        world.utils = Utils(toolium_wrapper)
-        world.remote_video_node = world.utils.get_remote_video_node()
+    world.reuse_driver = driver_wrapper.config.getboolean_optional('Common', 'reuse_driver')
+    if not world.reuse_driver:
+        # Configure wrapper
+        driver_wrapper.configure()
 
-    # Configure visual tests
-    def assertScreenshot(element_or_selector, filename, threshold=0, exclude_element=None):
-        file_suffix = scenario.name.replace(' ', '_')
-        VisualTest().assertScreenshot(element_or_selector, filename, file_suffix, threshold, exclude_element)
+        # Create driver
+        world.driver = driver_wrapper.connect()
+        world.utils = driver_wrapper.utils
 
-    world.assertScreenshot = assertScreenshot
-
-    # Add implicitly wait
-    implicitly_wait = toolium_wrapper.config.get_optional('Common', 'implicitly_wait')
-    if implicitly_wait:
-        world.driver.implicitly_wait(implicitly_wait)
+    # Common initialization
+    bdd_common_before_scenario(world, scenario, driver_wrapper)
 
 
 @after.each_scenario
 def teardown_driver(scenario):
-    # Check test result
-    if scenario.failed:
-        # TODO: never enters here in scenarios with datasets
-        test_status = 'Fail'
-        test_comment = "The scenario '{}' has failed: {}".format(scenario.name, None)
-        world.utils.capture_screenshot(scenario.name.replace(' ', '_'))
-    else:
-        test_status = 'Pass'
-        test_comment = None
+    """Clean method that will be executed after each scenario
 
-    # Close browser and stop driver
-    reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
-    if not reuse_driver:
-        finalize_driver(scenario.name.replace(' ', '_'), not scenario.failed)
-
-    # Save test status to be updated later
-    test_key = get_jira_key_from_scenario(scenario)
-    add_jira_status(test_key, test_status, test_comment)
+    :param scenario: running scenario
+    """
+    bdd_common_after_scenario(world, scenario, not scenario.failed)
 
 
 @after.all
 def teardown_driver_all(total):
+    """Clean method that will be executed after all features are finished
+
+    :param total: results of executed features
+    """
     if hasattr(world, 'driver') and world.driver:
-        finalize_driver('multiple_tests')
+        DriverWrappersPool.close_drivers_and_download_videos('multiple_tests')
     # Update tests status in Jira
     change_all_jira_status()
-
-
-def finalize_driver(video_name, test_passed=True):
-    """Close browser, stop driver and download test video
-
-    :param video_name: video name
-    :param test_passed: test execution status
-    """
-    # Get session id to request the saved video
-    session_id = world.driver.session_id
-
-    # Close browser and stop driver
-    world.driver.quit()
-    world.driver = None
-
-    # Download saved video if video is enabled or if test fails
-    if world.remote_video_node and (toolium_wrapper.config.getboolean_optional('Server', 'video_enabled') or
-                                        not test_passed):
-        video_name = video_name if test_passed else 'error_{}'.format(video_name)
-        world.utils.download_remote_video(world.remote_video_node, session_id, video_name)
-
-
-def get_jira_key_from_scenario(scenario):
-    """Extract Jira Test Case key from scenario tags
-
-    :param scenario: lettuce scenario
-    :returns: Jira test case key
-    """
-    jira_regex = re.compile('jira\(\'(.*?)\'\)')
-    for tag in scenario.tags:
-        match = jira_regex.search(tag)
-        if match:
-            return match.group(1)
-    return None

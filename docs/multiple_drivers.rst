@@ -38,3 +38,12 @@ To use the second driver in page objects and their elements, pass the driver wra
 .. code-block:: python
 
     login_page = LoginPageObject(second_wrapper)
+
+and, instead of define page elements as page object attributes, create them inside *init_page_elements* method:
+
+.. code-block:: python
+
+    class LoginPageObject(PageObject):
+        def init_page_elements(self):
+            self.username = InputText(By.ID, 'username')
+            self.password = InputText(By.ID, 'password')

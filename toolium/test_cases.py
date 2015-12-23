@@ -20,55 +20,17 @@ import logging
 import sys
 import unittest
 
-from toolium import toolium_wrapper
 from toolium.config_driver import get_error_message_from_exception
+from toolium.config_files import ConfigFiles
+from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.jira import change_all_jira_status
-from toolium.utils import Utils
 from toolium.visual_test import VisualTest
 
 
 class BasicTestCase(unittest.TestCase):
     """A class whose instances are api test cases."""
-    _config_directory = None
-    _output_directory = None
-    _config_properties_filenames = None
-    _config_log_filename = None
-    _output_log_filename = None
-
-    def set_config_directory(self, config_directory):
-        """Set directory where configuration files are saved
-
-        :param config_directory: configuration directory path
-        """
-        self._config_directory = config_directory
-
-    def set_output_directory(self, output_directory):
-        """Set output directory where log file and screenshots will be saved
-
-        :param output_directory: output directory path
-        """
-        self._output_directory = output_directory
-
-    def set_config_properties_filenames(self, *filenames):
-        """Set properties files used to configure test cases
-
-        :param filenames: list of properties filenames
-        """
-        self._config_properties_filenames = ';'.join(filenames)
-
-    def set_config_log_filename(self, filename):
-        """Set logging configuration file
-
-        :param filename: logging configuration filename
-        """
-        self._config_log_filename = filename
-
-    def set_output_log_filename(self, filename):
-        """Set logging output file
-
-        :param filename: logging configuration filename
-        """
-        self._output_log_filename = filename
+    config_files = ConfigFiles()
+    driver_wrapper = None
 
     @classmethod
     def get_subclass_name(cls):
@@ -88,11 +50,10 @@ class BasicTestCase(unittest.TestCase):
     def setUp(self):
         # Configure logger and properties
         if not isinstance(self, SeleniumTestCase):
-            toolium_wrapper.configure(False, self._config_directory, self._output_directory,
-                                      self._config_properties_filenames, self._config_log_filename,
-                                      self._output_log_filename)
+            self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
+            self.driver_wrapper.configure(False, self.config_files)
         # Get config and logger instances
-        self.config = toolium_wrapper.config
+        self.config = self.driver_wrapper.config
         self.logger = logging.getLogger(__name__)
         self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
 
@@ -127,16 +88,12 @@ class SeleniumTestCase(BasicTestCase):
     Attributes:
         driver: webdriver instance
         utils: test utils instance
-        additional_drivers: additional webdriver instances
-        remote_video_node: hostname of the remote node if it has enabled a video recorder
 
     :type driver: selenium.webdriver.remote.webdriver.WebDriver
     :type utils: toolium.utils.Utils
     """
     driver = None
     utils = None
-    additional_drivers = []
-    remote_video_node = None
 
     @classmethod
     def tearDownClass(cls):
@@ -145,39 +102,21 @@ class SeleniumTestCase(BasicTestCase):
 
         # Stop driver
         if SeleniumTestCase.driver:
-            class_name = cls.get_subclass_name()
-            cls._finalize_driver(class_name)
-
-    @classmethod
-    def _finalize_driver(cls, video_name, test_passed=True):
-        # Get session id to request the saved video
-        session_id = cls.driver.session_id
-
-        # Close browser and stop driver
-        cls.driver.quit()
-        cls.driver = None
-        SeleniumTestCase.driver = None
-        for driver in cls.additional_drivers:
-            driver.quit()
-        cls.additional_drivers = []
-
-        # Download saved video if video is enabled or if test fails
-        if cls.remote_video_node and (toolium_wrapper.config.getboolean_optional('Server', 'video_enabled') or
-                                          not test_passed):
-            video_name = video_name if test_passed else 'error_{}'.format(video_name)
-            cls.utils.download_remote_video(cls.remote_video_node, session_id, video_name)
+            DriverWrappersPool.close_drivers_and_download_videos(cls.get_subclass_name())
+            SeleniumTestCase.driver = None
 
     def setUp(self):
-        # Create driver
+        # Get default driver wrapper
+        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
         if not SeleniumTestCase.driver:
-            toolium_wrapper.configure(True, self._config_directory, self._output_directory,
-                                      self._config_properties_filenames, self._config_log_filename,
-                                      self._output_log_filename)
-            SeleniumTestCase.driver = toolium_wrapper.connect()
-            SeleniumTestCase.utils = Utils(toolium_wrapper)
-            SeleniumTestCase.remote_video_node = SeleniumTestCase.utils.get_remote_video_node()
+            # Create driver
+            self.driver_wrapper.configure(True, self.config_files)
+            self.driver_wrapper.connect()
+        SeleniumTestCase.driver = self.driver_wrapper.driver
+        self.utils = self.driver_wrapper.utils
+
         # Get common configuration of reusing driver
-        self.reuse_driver = toolium_wrapper.config.getboolean_optional('Common', 'reuse_driver')
+        self.reuse_driver = self.driver_wrapper.config.getboolean_optional('Common', 'reuse_driver')
         # Set implicitly wait
         self.utils.set_implicit_wait()
         # Call BasicTestCase setUp
@@ -186,19 +125,16 @@ class SeleniumTestCase(BasicTestCase):
     def tearDown(self):
         # Call BasicTestCase tearDown
         super(SeleniumTestCase, self).tearDown()
+        test_name = self.get_subclassmethod_name().replace('.', '_')
 
         # Capture screenshot on error
-        test_name = self.get_subclassmethod_name().replace('.', '_')
         if not self._test_passed:
-            self.utils.capture_screenshot(test_name)
-            driver_index = 1
-            for driver in self.additional_drivers:
-                driver_index += 1
-                Utils().capture_screenshot('{}_driver{}'.format(test_name, driver_index), driver=driver)
+            DriverWrappersPool.capture_screenshots(test_name)
 
-        # Stop driver
+        # Close browser and stop driver if it must not be reused
+        DriverWrappersPool.close_drivers_and_download_videos(test_name, self._test_passed, self.reuse_driver)
         if not self.reuse_driver:
-            SeleniumTestCase._finalize_driver(test_name, self._test_passed)
+            SeleniumTestCase.driver = None
 
     def assertScreenshot(self, element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
@@ -248,7 +184,7 @@ class AppiumTestCase(SeleniumTestCase):
 
     def setUp(self):
         super(AppiumTestCase, self).setUp()
-        if AppiumTestCase.app_strings is None and not toolium_wrapper.is_web_test():
+        if AppiumTestCase.app_strings is None and not self.driver_wrapper.is_web_test():
             AppiumTestCase.app_strings = self.driver.app_strings()
 
     def tearDown(self):

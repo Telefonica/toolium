@@ -20,8 +20,8 @@ import logging
 
 import requests
 
-from toolium import toolium_wrapper
 from toolium.config_driver import get_error_message_from_exception
+from toolium.driver_wrappers_pool import DriverWrappersPool
 
 """Configuration"""
 logger = logging.getLogger(__name__)
@@ -84,7 +84,7 @@ def change_jira_status_with_config(test_key, test_status, test_comment):
     :param test_status: test case status
     :param test_comment: test case comments
     """
-    config = toolium_wrapper.config
+    config = DriverWrappersPool.get_default_wrapper().config
     if config.getboolean_optional('Jira', 'enabled'):
         execution_url = config.get_optional('Jira', 'execution_url')
         summary_prefix = config.get_optional('Jira', 'summary_prefix')
