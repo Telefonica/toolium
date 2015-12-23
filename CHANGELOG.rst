@@ -4,7 +4,7 @@ Toolium Changelog
 v0.12.0
 -------
 
-*In development*
+*Release date: 2015-12-23*
 
 - Allow to create a second driver using DriverWrapper constructor:
 
@@ -17,7 +17,7 @@ v0.12.0
   optional parameter instead of driver parameter.
 - Fix swipe over an element in Android and iOS web tests
 - Move set_config_* and set_output_* test case methods to ConfigFiles class
-- Add Behave environment file to initialize Toolium wrapper from behave tests
+- Add behave environment file to initialize Toolium wrapper from behave tests
 
 v0.11.3
 -------
