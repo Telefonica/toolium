@@ -34,19 +34,19 @@ def before_all(context):
     context.logger = logging.getLogger()
 
     # Get default driver wrapper
-    wrapper = DriverWrappersPool.get_default_wrapper()
+    driver_wrapper = DriverWrappersPool.get_default_wrapper()
 
     # Configure wrapper
     if not hasattr(context, 'config_files'):
         context.config_files = ConfigFiles()
-    wrapper.configure(True, context.config_files)
-    context.config = wrapper.config
+    driver_wrapper.configure(True, context.config_files)
+    context.config = driver_wrapper.config
 
     # Create driver if it must be reused
-    context.reuse_driver = wrapper.config.getboolean_optional('Common', 'reuse_driver')
+    context.reuse_driver = driver_wrapper.config.getboolean_optional('Common', 'reuse_driver')
     if context.reuse_driver:
-        context.driver = wrapper.connect()
-        context.utils = wrapper.utils
+        context.driver = driver_wrapper.connect()
+        context.utils = driver_wrapper.utils
 
 
 def before_scenario(context, scenario):
@@ -91,16 +91,12 @@ def bdd_common_before_scenario(context_or_world, scenario, driver_wrapper):
 
     context_or_world.assertScreenshot = assertScreenshot
     context_or_world.assertFullScreenshot = assertFullScreenshot
+    context_or_world.app_strings = driver_wrapper.app_strings
 
     # Add implicitly wait
     implicitly_wait = driver_wrapper.config.get_optional('Common', 'implicitly_wait')
     if implicitly_wait:
         context_or_world.driver.implicitly_wait(implicitly_wait)
-
-    # Get application strings
-    if driver_wrapper.is_mobile_test() and not driver_wrapper.is_web_test() and not hasattr(context_or_world,
-                                                                                            'app_strings'):
-        context_or_world.app_strings = driver_wrapper.driver.app_strings()
 
     context_or_world.logger.info("Running new scenario: {0}".format(scenario.name))
 

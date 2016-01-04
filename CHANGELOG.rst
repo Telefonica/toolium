@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v0.12.1
+-------
+
+*In development*
+
+- Fix app_strings initialization in Behave Appium tests
+
 v0.12.0
 -------
 

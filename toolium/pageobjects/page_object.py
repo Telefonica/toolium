@@ -40,7 +40,7 @@ class PageObject(unittest.TestCase):
         """
         self.logger = logging.getLogger(__name__)
         self.set_driver_wrapper(driver_wrapper)
-        self.app_strings = AppiumTestCase.app_strings
+        self.app_strings = self.driver_wrapper.app_strings
         self.init_page_elements()
         self._update_page_elements()
 
