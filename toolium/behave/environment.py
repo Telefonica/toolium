@@ -40,7 +40,7 @@ def before_all(context):
     if not hasattr(context, 'config_files'):
         context.config_files = ConfigFiles()
     context.driver_wrapper.configure(True, context.config_files)
-    context.config = context.driver_wrapper.config
+    context.toolium_config = context.driver_wrapper.config
 
     # Create driver if it must be reused
     context.reuse_driver = context.driver_wrapper.config.getboolean_optional('Common', 'reuse_driver')
@@ -62,7 +62,7 @@ def before_scenario(context, scenario):
     if not context.reuse_driver:
         # Configure wrapper
         context.driver_wrapper.configure(True, context.config_files)
-        context.config = context.driver_wrapper.config
+        context.toolium_config = context.driver_wrapper.config
 
         # Create driver
         context.driver = context.driver_wrapper.connect()

@@ -7,6 +7,8 @@ v0.12.1
 *In development*
 
 - Fix app_strings initialization in Behave Appium tests
+- In Behave tests, Toolium config is saved in context.toolium_config instead of using context.config to avoid
+  overriding Behave config
 
 v0.12.0
 -------
