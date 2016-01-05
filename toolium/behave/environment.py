@@ -34,19 +34,19 @@ def before_all(context):
     context.logger = logging.getLogger()
 
     # Get default driver wrapper
-    driver_wrapper = DriverWrappersPool.get_default_wrapper()
+    context.driver_wrapper = DriverWrappersPool.get_default_wrapper()
 
     # Configure wrapper
     if not hasattr(context, 'config_files'):
         context.config_files = ConfigFiles()
-    driver_wrapper.configure(True, context.config_files)
-    context.config = driver_wrapper.config
+    context.driver_wrapper.configure(True, context.config_files)
+    context.config = context.driver_wrapper.config
 
     # Create driver if it must be reused
-    context.reuse_driver = driver_wrapper.config.getboolean_optional('Common', 'reuse_driver')
+    context.reuse_driver = context.driver_wrapper.config.getboolean_optional('Common', 'reuse_driver')
     if context.reuse_driver:
-        context.driver = driver_wrapper.connect()
-        context.utils = driver_wrapper.utils
+        context.driver = context.driver_wrapper.connect()
+        context.utils = context.driver_wrapper.utils
 
 
 def before_scenario(context, scenario):
@@ -56,20 +56,20 @@ def before_scenario(context, scenario):
     :param scenario: running scenario
     """
     # Get default driver wrapper
-    driver_wrapper = DriverWrappersPool.get_default_wrapper()
+    context.driver_wrapper = DriverWrappersPool.get_default_wrapper()
 
     # Create driver if it must not be reused
     if not context.reuse_driver:
         # Configure wrapper
-        driver_wrapper.configure(True, context.config_files)
-        context.config = driver_wrapper.config
+        context.driver_wrapper.configure(True, context.config_files)
+        context.config = context.driver_wrapper.config
 
         # Create driver
-        context.driver = driver_wrapper.connect()
-        context.utils = driver_wrapper.utils
+        context.driver = context.driver_wrapper.connect()
+        context.utils = context.driver_wrapper.utils
 
     # Common initialization
-    bdd_common_before_scenario(context, scenario, driver_wrapper)
+    bdd_common_before_scenario(context, scenario, context.driver_wrapper)
 
 
 def bdd_common_before_scenario(context_or_world, scenario, driver_wrapper):
