@@ -4,7 +4,7 @@ Toolium Changelog
 v0.12.1
 -------
 
-*In development*
+*Release date: 2016-01-07*
 
 - Fix app_strings initialization in Behave Appium tests
 - In Behave tests, Toolium config is saved in context.toolium_config instead of using context.config to avoid
