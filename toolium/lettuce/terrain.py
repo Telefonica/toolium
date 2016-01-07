@@ -36,20 +36,20 @@ def setup_driver(scenario):
     world.logger = logging.getLogger()
 
     # Get default driver wrapper
-    driver_wrapper = DriverWrappersPool.get_default_wrapper()
+    world.driver_wrapper = DriverWrappersPool.get_default_wrapper()
 
     # Create driver
-    world.reuse_driver = driver_wrapper.config.getboolean_optional('Common', 'reuse_driver')
+    world.reuse_driver = world.driver_wrapper.config.getboolean_optional('Common', 'reuse_driver')
     if not world.reuse_driver:
         # Configure wrapper
-        driver_wrapper.configure()
+        world.driver_wrapper.configure()
 
         # Create driver
-        world.driver = driver_wrapper.connect()
-        world.utils = driver_wrapper.utils
+        world.driver = world.driver_wrapper.connect()
+        world.utils = world.driver_wrapper.utils
 
     # Common initialization
-    bdd_common_before_scenario(world, scenario, driver_wrapper)
+    bdd_common_before_scenario(world, scenario, world.driver_wrapper)
 
 
 @after.each_scenario

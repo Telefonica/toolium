@@ -31,6 +31,7 @@ class DriverWrapper(object):
     utils = None
     session_id = None
     remote_video_node = None
+    app_strings = None
     logger = None
     config = ExtendedConfigParser()
 
@@ -140,6 +141,10 @@ class DriverWrapper(object):
         # Save session id and remote node to download video after the test execution
         self.session_id = self.driver.session_id
         self.remote_video_node = self.utils.get_remote_video_node()
+
+        # Save app_strings in mobile tests
+        if self.is_mobile_test() and not self.is_web_test():
+            self.app_strings = self.driver.app_strings()
 
         # Maximize browser
         if maximize and self.is_maximizable():
