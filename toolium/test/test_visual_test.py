@@ -26,6 +26,8 @@ from six import assertRegex
 from PIL import Image
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
 
+from nose.tools import assert_is_none, assert_equal, assert_in, assert_is_instance, assert_raises
+
 # from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.pil_engine import Engine as PilEngine
 import mock
@@ -90,61 +92,61 @@ class VisualTests(unittest.TestCase):
         self.driver_wrapper.driver.save_screenshot.assert_not_called()
 
     def test_engine_pil(self):
-        self.assertIsInstance(self.visual.engine, PilEngine)
+        assert_is_instance(self.visual.engine, PilEngine)
 
     def test_engine_perceptual(self):
         # Update conf and create a new VisualTest instance
         self.driver_wrapper.config.set('VisualTests', 'engine', 'perceptualdiff')
         self.visual = VisualTest(self.driver_wrapper)
 
-        self.assertIsInstance(self.visual.engine, PerceptualEngine)
+        assert_is_instance(self.visual.engine, PerceptualEngine)
 
     # def test_engine_magick(self):
     #    self.driver_wrapper.config.set('VisualTests', 'engine', 'imagemagick')
     #    visual = VisualTest()
-    #    self.assertIsInstance(visual.engine, MagickEngine)
+    #    assert_is_instance(visual.engine, MagickEngine)
 
     def test_engine_empty(self):
         # Update conf and create a new VisualTest instance
         self.driver_wrapper.config.set('VisualTests', 'engine', '')
         self.visual = VisualTest(self.driver_wrapper)
 
-        self.assertIsInstance(self.visual.engine, PilEngine)
+        assert_is_instance(self.visual.engine, PilEngine)
 
     def test_engine_unknown(self):
         # Update conf and create a new VisualTest instance
         self.driver_wrapper.config.set('VisualTests', 'engine', 'unknown')
         self.visual = VisualTest(self.driver_wrapper)
 
-        self.assertIsInstance(self.visual.engine, PilEngine)
+        assert_is_instance(self.visual.engine, PilEngine)
 
     def test_compare_files_equals(self):
         message = self.visual.compare_files(self._testMethodName, self.file_v1, self.file_v1, 0)
-        self.assertIsNone(message)
+        assert_is_none(message)
 
     def test_compare_files_diff(self):
         message = self.visual.compare_files(self._testMethodName, self.file_v1, self.file_v2, 0)
-        self.assertIn('by a distance of 522.65', message)
+        assert_in('by a distance of 522.65', message)
 
     def test_compare_files_diff_fail(self):
         # Update conf and create a new VisualTest instance
         self.driver_wrapper.config.set('VisualTests', 'fail', 'true')
         self.visual = VisualTest(self.driver_wrapper)
 
-        with self.assertRaises(AssertionError):
+        with assert_raises(AssertionError):
             self.visual.compare_files(self._testMethodName, self.file_v1, self.file_v2, 0)
 
     def test_compare_files_size(self):
         message = self.visual.compare_files(self._testMethodName, self.file_v1, self.file_small, 0)
         # PIL returns an empty error
-        self.assertEqual('', message)
+        assert_equal('', message)
 
     def test_compare_files_size_fail(self):
         # Update conf and create a new VisualTest instance
         self.driver_wrapper.config.set('VisualTests', 'fail', 'true')
         self.visual = VisualTest(self.driver_wrapper)
 
-        with self.assertRaises(AssertionError):
+        with assert_raises(AssertionError):
             self.visual.compare_files(self._testMethodName, self.file_v1, self.file_small, 0)
 
     def test_get_html_row(self):
@@ -202,7 +204,7 @@ class VisualTests(unittest.TestCase):
         img = self.visual.mobile_resize(orig_img)
 
         # Assert that image object has not been modified
-        self.assertEqual(orig_img, img)
+        assert_equal(orig_img, img)
 
     def test_exclude_elements(self):
         # Create elements mock

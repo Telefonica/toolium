@@ -16,10 +16,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest
 import os
+import unittest
 
 from ddt import ddt, data, unpack
+from nose.tools import assert_equal
 
 from toolium.config_parser import ExtendedConfigParser
 
@@ -54,17 +55,17 @@ class ExtendedConfigParserTests(unittest.TestCase):
     @unpack
     def test_get_optional(self, section, option, default, response):
         if default:
-            self.assertEqual(response, self.config.get_optional(section, option, default))
+            assert_equal(response, self.config.get_optional(section, option, default))
         else:
-            self.assertEqual(response, self.config.get_optional(section, option))
+            assert_equal(response, self.config.get_optional(section, option))
 
     @data(*optional_boolean_values)
     @unpack
     def test_getboolean_optional(self, section, option, default, response):
         if default:
-            self.assertEqual(response, self.config.getboolean_optional(section, option, default))
+            assert_equal(response, self.config.getboolean_optional(section, option, default))
         else:
-            self.assertEqual(response, self.config.getboolean_optional(section, option))
+            assert_equal(response, self.config.getboolean_optional(section, option))
 
     def test_deepcopy(self):
         section = 'AppiumCapabilities'
@@ -73,15 +74,15 @@ class ExtendedConfigParserTests(unittest.TestCase):
         new_value = 'Selendroid'
 
         # Check previous value
-        self.assertEqual(orig_value, self.config.get(section, option))
+        assert_equal(orig_value, self.config.get(section, option))
 
         # Copy config object and modify a property
         new_config = self.config.deepcopy()
         new_config.set(section, option, new_value)
 
         # Check that the value has no changed in original config
-        self.assertEqual(orig_value, self.config.get(section, option))
-        self.assertEqual(new_value, new_config.get(section, option))
+        assert_equal(orig_value, self.config.get(section, option))
+        assert_equal(new_value, new_config.get(section, option))
 
     def test_update_from_system_properties(self):
         section = 'AppiumCapabilities'
@@ -90,11 +91,11 @@ class ExtendedConfigParserTests(unittest.TestCase):
         new_value = 'iOS'
 
         # Check previous value
-        self.assertEqual(orig_value, self.config.get(section, option))
+        assert_equal(orig_value, self.config.get(section, option))
 
         # Change system property and update config
         os.environ[section + '_' + option] = new_value
         self.config.update_from_system_properties()
 
         # Check the new config value
-        self.assertEqual(new_value, self.config.get(section, option))
+        assert_equal(new_value, self.config.get(section, option))

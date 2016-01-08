@@ -19,9 +19,11 @@ limitations under the License.
 import os
 import unittest
 
+from nose.tools import assert_equal, assert_not_equal
+
+from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.config_files import ConfigFiles
 
 
 class DriverWrappersPoolTests(unittest.TestCase):
@@ -48,16 +50,16 @@ class DriverWrappersPoolTests(unittest.TestCase):
         new_wrapper.config.set('Browser', 'browser', new_browser)
 
         # Check that both wrappers are the same object
-        self.assertEqual(new_browser, self.driver_wrapper.config.get('Browser', 'browser'))
-        self.assertEqual(new_browser, new_wrapper.config.get('Browser', 'browser'))
-        self.assertEqual(self.driver_wrapper, new_wrapper)
-        self.assertEqual(DriverWrappersPool.driver_wrappers[0], self.driver_wrapper)
+        assert_equal(new_browser, self.driver_wrapper.config.get('Browser', 'browser'))
+        assert_equal(new_browser, new_wrapper.config.get('Browser', 'browser'))
+        assert_equal(self.driver_wrapper, new_wrapper)
+        assert_equal(DriverWrappersPool.driver_wrappers[0], self.driver_wrapper)
 
     def test_multiple(self):
         # Request a new additional wrapper
         new_wrapper = DriverWrapper()
 
         # Check that wrapper and new_wrapper are different
-        self.assertNotEqual(self.driver_wrapper, new_wrapper)
-        self.assertEqual(DriverWrappersPool.driver_wrappers[0], self.driver_wrapper)
-        self.assertEqual(DriverWrappersPool.driver_wrappers[1], new_wrapper)
+        assert_not_equal(self.driver_wrapper, new_wrapper)
+        assert_equal(DriverWrappersPool.driver_wrappers[0], self.driver_wrapper)
+        assert_equal(DriverWrappersPool.driver_wrappers[1], new_wrapper)

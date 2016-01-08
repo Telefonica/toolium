@@ -19,6 +19,7 @@ limitations under the License.
 import unittest
 
 import mock
+from nose.tools import assert_equal
 from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper
@@ -68,35 +69,35 @@ class TestGenericPageElement(unittest.TestCase):
     def test_locator(self):
         page_object = LoginPageObject()
 
-        self.assertEqual(page_object.username.locator, (By.NAME, 'username'))
-        self.assertEqual(page_object.password.locator, (By.ID, 'password'))
+        assert_equal(page_object.username.locator, (By.NAME, 'username'))
+        assert_equal(page_object.password.locator, (By.ID, 'password'))
 
     def test_get_element(self):
         LoginPageObject().username.element()
 
-        self.assertEqual(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
 
     def test_get_element_with_parent(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
         web_element = LoginPageObject().password.element()
 
-        self.assertEqual(web_element, child_element)
-        self.assertEqual(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
-        self.assertEqual(mock_element.find_element.mock_calls, [mock.call(By.ID, 'password')])
+        assert_equal(web_element, child_element)
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
+        assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'password')])
 
     def test_get_element_init_page(self):
         RegisterPageObject().language.element()
 
-        self.assertEqual(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.ID, 'language')])
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.ID, 'language')])
 
     def test_get_element_with_parent_webelement(self):
         web_element = RegisterPageObject().email.element()
 
-        self.assertEqual(web_element, child_element)
-        self.assertEqual(self.driver_wrapper.driver.find_element.mock_calls, [])
-        self.assertEqual(mock_element.find_element.mock_calls, [mock.call(By.ID, 'email')])
+        assert_equal(web_element, child_element)
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [])
+        assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'email')])
 
     def test_get_element_in_test(self):
         PageElement(By.NAME, 'username').element()
 
-        self.assertEqual(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])

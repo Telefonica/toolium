@@ -19,6 +19,7 @@ limitations under the License.
 import unittest
 
 import mock
+from nose.tools import assert_equal
 from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper
@@ -79,25 +80,25 @@ class TestPageElements(unittest.TestCase):
     def test_locator(self):
         page_object = LoginPageObject()
 
-        self.assertEqual(page_object.title.locator, (By.ID, 'title'))
-        self.assertEqual(page_object.username.locator, (By.ID, 'username'))
-        self.assertEqual(page_object.password.locator, (By.ID, 'password'))
-        self.assertEqual(page_object.language.locator, (By.ID, 'language'))
-        self.assertEqual(page_object.login.locator, (By.ID, 'login'))
+        assert_equal(page_object.title.locator, (By.ID, 'title'))
+        assert_equal(page_object.username.locator, (By.ID, 'username'))
+        assert_equal(page_object.password.locator, (By.ID, 'password'))
+        assert_equal(page_object.language.locator, (By.ID, 'language'))
+        assert_equal(page_object.login.locator, (By.ID, 'login'))
 
     def test_get_text(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
 
         title_value = LoginPageObject().title.text
 
-        self.assertEqual(title_value, 'text value')
+        assert_equal(title_value, 'text value')
 
     def test_get_inputtext(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
 
         username_value = LoginPageObject().username.text
 
-        self.assertEqual(username_value, 'input text value')
+        assert_equal(username_value, 'input text value')
 
     def test_set_inputtext(self):
         # Configure driver mock
@@ -106,26 +107,26 @@ class TestPageElements(unittest.TestCase):
 
         LoginPageObject().username.text = 'new input value'
 
-        self.assertEqual(mock_element.send_keys.mock_calls, [mock.call('new input value')])
+        assert_equal(mock_element.send_keys.mock_calls, [mock.call('new input value')])
 
     def test_get_selected_option(self):
         select_page_element.SeleniumSelect = get_mock_select()
 
         option = LoginPageObject().language.option
 
-        self.assertEqual(option, 'option value')
+        assert_equal(option, 'option value')
 
     def test_select_option(self):
         select_page_element.SeleniumSelect = get_mock_select()
 
         LoginPageObject().language.option = 'new option value'
 
-        self.assertEqual(len(select_page_element.SeleniumSelect.mock_calls), 1)
-        self.assertEqual(select_page_element.SeleniumSelect().mock_calls,
-                         [mock.call.select_by_visible_text('new option value')])
+        assert_equal(len(select_page_element.SeleniumSelect.mock_calls), 1)
+        assert_equal(select_page_element.SeleniumSelect().mock_calls,
+                     [mock.call.select_by_visible_text('new option value')])
 
     def test_click_button(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
         LoginPageObject().login.click()
 
-        self.assertEqual(mock_element.click.mock_calls, [mock.call()])
+        assert_equal(mock_element.click.mock_calls, [mock.call()])
