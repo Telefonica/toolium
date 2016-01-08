@@ -16,14 +16,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-try:
-    # Python 3
-    from configparser import NoSectionError
-except ImportError:
-    # Python 2.7
-    from ConfigParser import NoSectionError
 import ast
 import logging
+
+# Python 2 and 3 compatibility
+from six.moves.configparser import NoSectionError
 
 from appium import webdriver as appiumdriver
 from selenium import webdriver

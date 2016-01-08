@@ -1,6 +1,11 @@
 Toolium Changelog
 =================
 
+v1.0.0
+------
+
+*In development*
+
 v0.12.1
 -------
 

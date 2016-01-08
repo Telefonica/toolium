@@ -19,18 +19,14 @@ limitations under the License.
 # Python 2.7
 from __future__ import division
 
+# Python 2 and 3 compatibility
+from six.moves import xrange
+
 import logging
 import os
 import re
 import shutil
 from io import BytesIO
-
-try:
-    # Python 2.7
-    xrange
-except NameError:
-    # Python 3
-    xrange = range
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 import itertools

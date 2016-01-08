@@ -20,6 +20,9 @@ import os
 import shutil
 import unittest
 
+# Python 2 and 3 compatibility
+from six import assertRegex
+
 from PIL import Image
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
 
@@ -147,13 +150,7 @@ class VisualTests(unittest.TestCase):
     def test_get_html_row(self):
         expected_row = '<tr class=diff><td>test_get_html_row</td><td><img style="width: 100%" onclick="window.open\(this.src\)" src="file://.*register_v2.png"/></td></td><td><img style="width: 100%" onclick="window.open\(this.src\)" src="file://.*register.png"/></td></td><td></td></tr>'
         row = self.visual._get_html_row('diff', self._testMethodName, self.file_v1, self.file_v2)
-        try:
-            # Python 3
-            assertRegex = self.assertRegex
-        except AttributeError:
-            # Python 2.7
-            assertRegex = self.assertRegexpMatches
-        assertRegex(row, expected_row)
+        assertRegex(self, row, expected_row)
 
     def assertImage(self, img, img_name, expected_image_filename):
         """Save img in an image file and compare with the expected image

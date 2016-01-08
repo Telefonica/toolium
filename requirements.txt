@@ -3,3 +3,4 @@ selenium==2.48.0            # web tests
 Appium-Python-Client==0.20  # mobile tests
 needle==0.3                 # visual testing
 Pillow==3.0.0               # workaround to fix 3.1.0 installation issue
+six==1.10.0
