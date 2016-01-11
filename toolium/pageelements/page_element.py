@@ -19,7 +19,6 @@ limitations under the License.
 from selenium.webdriver.remote.webelement import WebElement
 
 from toolium.driver_wrapper import DriverWrappersPool
-from toolium.utils import Utils
 from toolium.visual_test import VisualTest
 
 
@@ -104,7 +103,7 @@ class PageElement(object):
         """
         return self.utils.wait_until_element_not_visible(self.locator, timeout)
 
-    def assertScreenshot(self, filename, threshold=0, exclude_elements=[]):
+    def assert_screenshot(self, filename, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of the element is the same as a screenshot on disk, within a given threshold.
 
         :param filename: the filename for the screenshot, which will be appended with ``.png``
@@ -112,5 +111,5 @@ class PageElement(object):
         :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
                                  from the assertion.
         """
-        VisualTest(self.driver_wrapper).assertScreenshot(self.element(), filename, self.__class__.__name__, threshold,
-                                                         exclude_elements)
+        VisualTest(self.driver_wrapper).assert_screenshot(self.element(), filename, self.__class__.__name__, threshold,
+                                                          exclude_elements)

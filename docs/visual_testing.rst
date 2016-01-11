@@ -38,35 +38,35 @@ Visual asserts could be used in different ways:
 
 .. code-block:: python
 
-    self.assertFullScreenshot(screenshot_name)
+    self.assert_full_screenshot(screenshot_name)
 
 * Comparing a single element, represented by a `PageElement <http://toolium.readthedocs.org/en/latest/toolium.pageelements.html#module-toolium.pageelements.page_element>`_
 
 .. code-block:: python
 
     form_page_element = PageElement(By.XPATH, '//form')
-    self.assertScreenshot(form_page_element, screenshot_name)
+    self.assert_screenshot(form_page_element, screenshot_name)
 
 or
 
 .. code-block:: python
 
     form_page_element = PageElement(By.XPATH, '//form')
-    form_page_element.assertScreenshot(screenshot_name)
+    form_page_element.assert_screenshot(screenshot_name)
 
 * Comparing a single element, represented by a *WebElement*
 
 .. code-block:: python
 
     form_element = self.driver.find_element_by_xpath('//form')
-    self.assertScreenshot(form_element, screenshot_name)
+    self.assert_screenshot(form_element, screenshot_name)
 
 * Comparing a single element, represented by its locator
 
 .. code-block:: python
 
     form_element_locator = (By.XPATH, '//form')
-    self.assertScreenshot(form_element_locator, screenshot_name)
+    self.assert_screenshot(form_element_locator, screenshot_name)
 
 * Moreover, elements can be excluded from full or element comparisons. The elements to be excluded can also be identified by a *PageElement*, a *WebElement* or a locator.
 
@@ -74,13 +74,13 @@ or
 
     page_element_1 = PageElement(By.ID, 'first_id')
     page_element_2 = PageElement(By.ID, 'second_id')
-    self.assertFullScreenshot(screenshot_name, exclude_elements=[page_element_1, page_element_2])
+    self.assert_full_screenshot(screenshot_name, exclude_elements=[page_element_1, page_element_2])
 
 * Both comparing methods have an optional parameter called *threshold* that marks the percentage of pixels that are allowed to be different
 
 .. code-block:: python
 
-    self.assertFullScreenshot(screenshot_name, threshold=0.1)
+    self.assert_full_screenshot(screenshot_name, threshold=0.1)
 
 How to configure it?
 --------------------

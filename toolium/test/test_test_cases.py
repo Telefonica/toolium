@@ -16,10 +16,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest
 import os
+import unittest
 
 import mock
+from nose.tools import assert_true, assert_false
 
 from toolium.test_cases import BasicTestCase
 
@@ -62,7 +63,7 @@ class BasicTestCaseTests(unittest.TestCase):
 
     def test_tear_down_pass(self):
         test = run_mock('mock_pass')
-        self.assertTrue(test._test_passed)
+        assert_true(test._test_passed)
 
         # Check logging message
         expected_response = "The test 'MockTestClass.mock_pass' has passed"
@@ -70,7 +71,7 @@ class BasicTestCaseTests(unittest.TestCase):
 
     def test_tear_down_fail(self):
         test = run_mock('mock_fail')
-        self.assertFalse(test._test_passed)
+        assert_false(test._test_passed)
 
         # Check logging error message
         expected_response = "The test 'MockTestClass.mock_fail' has failed: test error"

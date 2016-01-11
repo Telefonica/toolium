@@ -19,18 +19,14 @@ limitations under the License.
 # Python 2.7
 from __future__ import division
 
+# Python 2 and 3 compatibility
+from six.moves import xrange
+
 import logging
 import os
 import re
 import shutil
 from io import BytesIO
-
-try:
-    # Python 2.7
-    xrange
-except NameError:
-    # Python 3
-    xrange = range
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 import itertools
@@ -79,7 +75,7 @@ class VisualTest(object):
         if not os.path.exists(dst_template_path):
             shutil.copyfile(orig_template_path, dst_template_path)
 
-    def assertScreenshot(self, element_or_locator, filename, file_suffix=None, threshold=0, exclude_elements=[]):
+    def assert_screenshot(self, element_or_locator, filename, file_suffix=None, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold
 
         :param element_or_locator: either a WebElement, a PageElement or an element locator as a tuple (locator_type,

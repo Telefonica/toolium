@@ -1,6 +1,14 @@
 Toolium Changelog
 =================
 
+v1.0.0
+------
+
+*In development*
+
+- Refactor to rename assertScreenshot to assert_screenshot and assertFullScreenshot to assert_full_screenshot
+- Add a config property *appium_app_strings* in [Common] section to request app strings before each Appium test
+
 v0.12.1
 -------
 

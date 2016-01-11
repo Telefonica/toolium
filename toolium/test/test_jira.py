@@ -20,6 +20,7 @@ import unittest
 
 import mock
 import requests_mock
+from nose.tools import assert_equal, assert_in, assert_raises
 from requests.exceptions import ConnectionError
 
 from toolium import jira
@@ -45,7 +46,7 @@ class JiraTests(unittest.TestCase):
         for partial_url in [execution_url, 'jiraStatus=Pass', 'jiraTestCaseId=TOOLIUM-1', 'summaryPrefix=prefix',
                             'labels=label1+label2', 'comments=comment', 'version=Release+1.0', 'build=453',
                             'onlyIfStatusChanges=true']:
-            self.assertIn(partial_url, req_mock.request_history[0].url)
+            assert_in(partial_url, req_mock.request_history[0].url)
 
         # Check that binary response has been decoded
         expected_response = "Response content: The Test Case Execution 'TOOLIUM-2' has been created"
@@ -85,29 +86,29 @@ class JiraTests(unittest.TestCase):
 
         # Check jira status
         expected_status = {'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None)}
-        self.assertEqual(expected_status, jira.jira_tests_status)
+        assert_equal(expected_status, jira.jira_tests_status)
 
     def test_jira_annotation_fail(self):
         # Execute method with jira annotation
         jira.jira_tests_status.clear()
-        self.assertRaises(AssertionError, MockTestClass().mock_test_fail)
+        assert_raises(AssertionError, MockTestClass().mock_test_fail)
 
         # Check jira status
         expected_status = {'TOOLIUM-3': ('TOOLIUM-3', 'Fail', "The test 'test name' has failed: test error")}
-        self.assertEqual(expected_status, jira.jira_tests_status)
+        assert_equal(expected_status, jira.jira_tests_status)
 
     def test_jira_annotation_multiple(self):
         # Execute methods with jira annotation
         jira.jira_tests_status.clear()
         MockTestClass().mock_test_pass()
-        self.assertRaises(AssertionError, MockTestClass().mock_test_fail)
+        assert_raises(AssertionError, MockTestClass().mock_test_fail)
         MockTestClass().mock_test_pass()
 
         # Check jira status
         expected_status = {'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None),
                            'TOOLIUM-3': ('TOOLIUM-3', 'Fail', "The test 'test name' has failed: test error"),
                            'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None)}
-        self.assertEqual(expected_status, jira.jira_tests_status)
+        assert_equal(expected_status, jira.jira_tests_status)
 
 
 class MockTestClass():

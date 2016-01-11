@@ -19,19 +19,18 @@ limitations under the License.
 # Python 2.7
 from __future__ import division
 
-try:
-    # Python 3
-    from urllib.parse import urlparse
-except ImportError:
-    # Python 2.7
-    from urlparse import urlparse
+# Python 2 and 3 compatibility
+from six.moves.urllib.parse import urlparse
+
 import logging
 import os
 import time
+
 import requests
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
