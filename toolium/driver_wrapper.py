@@ -143,7 +143,8 @@ class DriverWrapper(object):
         self.remote_video_node = self.utils.get_remote_video_node()
 
         # Save app_strings in mobile tests
-        if self.is_mobile_test() and not self.is_web_test():
+        if self.is_mobile_test() and not self.is_web_test() and self.config.getboolean_optional('Common',
+                                                                                                'appium_app_strings'):
             self.app_strings = self.driver.app_strings()
 
         # Maximize browser
