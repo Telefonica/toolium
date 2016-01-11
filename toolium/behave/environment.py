@@ -21,7 +21,7 @@ import re
 
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
-from toolium.jira import add_jira_status, change_all_jira_status
+from toolium.jira import add_jira_status, change_all_jira_status, save_jira_conf
 from toolium.visual_test import VisualTest
 
 
@@ -93,6 +93,9 @@ def bdd_common_before_scenario(context_or_world, scenario, driver_wrapper):
     context_or_world.assert_full_screenshot = assert_full_screenshot
     context_or_world.app_strings = driver_wrapper.app_strings
 
+    # Save Jira conf
+    save_jira_conf()
+
     # Add implicitly wait
     implicitly_wait = driver_wrapper.config.get_optional('Common', 'implicitly_wait')
     if implicitly_wait:
@@ -134,9 +137,7 @@ def bdd_common_after_scenario(context_or_world, scenario, passed):
     DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, passed, context_or_world.reuse_driver)
 
     # Save test status to be updated later
-    test_key = get_jira_key_from_scenario(scenario)
-    if test_key:
-        add_jira_status(test_key, test_status, test_comment)
+    add_jira_status(get_jira_key_from_scenario(scenario), test_status, test_comment)
 
 
 def after_all(context):
