@@ -6,6 +6,8 @@ v1.0.0
 
 *In development*
 
+- Refactor to rename assertScreenshot to assert_screenshot and assertFullScreenshot to assert_full_screenshot
+
 v0.12.1
 -------
 

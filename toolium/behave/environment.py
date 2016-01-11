@@ -80,17 +80,17 @@ def bdd_common_before_scenario(context_or_world, scenario, driver_wrapper):
     :param driver_wrapper: driver wrapper instance
     """
 
-    def assertScreenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
+    def assert_screenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         file_suffix = scenario.name.replace(' ', '_')
-        VisualTest(driver_wrapper).assertScreenshot(element_or_selector, filename, file_suffix, threshold,
-                                                    exclude_elements)
+        VisualTest(driver_wrapper).assert_screenshot(element_or_selector, filename, file_suffix, threshold,
+                                                     exclude_elements)
 
-    def assertFullScreenshot(filename, threshold=0, exclude_elements=[], driver_wrapper=None):
+    def assert_full_screenshot(filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         file_suffix = scenario.name.replace(' ', '_')
-        VisualTest(driver_wrapper).assertScreenshot(None, filename, file_suffix, threshold, exclude_elements)
+        VisualTest(driver_wrapper).assert_screenshot(None, filename, file_suffix, threshold, exclude_elements)
 
-    context_or_world.assertScreenshot = assertScreenshot
-    context_or_world.assertFullScreenshot = assertFullScreenshot
+    context_or_world.assert_screenshot = assert_screenshot
+    context_or_world.assert_full_screenshot = assert_full_screenshot
     context_or_world.app_strings = driver_wrapper.app_strings
 
     # Add implicitly wait
