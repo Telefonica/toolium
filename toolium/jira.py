@@ -24,8 +24,11 @@ import requests
 from toolium.config_driver import get_error_message_from_exception
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
-# Dict to save tuples with jira keys, their test status and comments
+# Dict to save tuples with jira keys, their test status, comments and attachments
 jira_tests_status = {}
+
+# List to save temporary test attachments
+attachments = []
 
 # Jira configuration
 enabled = None
@@ -67,7 +70,7 @@ def jira(test_key):
 
 def save_jira_conf():
     """Read Jira configuration from properties file and save it"""
-    global enabled, execution_url, summary_prefix, labels, comments, fix_version, build, only_if_changes
+    global enabled, execution_url, summary_prefix, labels, comments, fix_version, build, only_if_changes, attachments
     config = DriverWrappersPool.get_default_wrapper().config
     enabled = config.getboolean_optional('Jira', 'enabled')
     execution_url = config.get_optional('Jira', 'execution_url')
@@ -77,6 +80,16 @@ def save_jira_conf():
     fix_version = config.get_optional('Jira', 'fixversion')
     build = config.get_optional('Jira', 'build')
     only_if_changes = config.getboolean_optional('Jira', 'onlyifchanges')
+    del attachments[:]
+
+
+def add_attachment(attachment):
+    """ Add a file path to attachments list
+
+    :param attachment: attachment file path
+    """
+    if attachment:
+        attachments.append(attachment)
 
 
 def add_jira_status(test_key, test_status, test_comment):
@@ -90,11 +103,11 @@ def add_jira_status(test_key, test_status, test_comment):
         if test_status == 'Fail':
             if test_key in jira_tests_status and jira_tests_status[test_key][2]:
                 test_comment = '{}\n{}'.format(jira_tests_status[test_key][2], test_comment)
-            jira_tests_status[test_key] = (test_key, 'Fail', test_comment)
+            jira_tests_status[test_key] = (test_key, 'Fail', test_comment, attachments)
         elif test_status == 'Pass':
             # Don't overwrite previous fails
             if test_key not in jira_tests_status:
-                jira_tests_status[test_key] = (test_key, 'Pass', test_comment)
+                jira_tests_status[test_key] = (test_key, 'Pass', test_comment, attachments)
 
 
 def change_all_jira_status():
@@ -104,12 +117,13 @@ def change_all_jira_status():
     jira_tests_status.clear()
 
 
-def change_jira_status(test_key, test_status, test_comment):
+def change_jira_status(test_key, test_status, test_comment, test_attachments):
     """Update test status in Jira
 
     :param test_key: test case key in Jira
     :param test_status: test case status
     :param test_comment: test case comments
+    :param test_attachments: test case attachments
     """
     if not execution_url:
         logger.warn("Test Case '{}' can not be updated: execution_url is not configured".format(test_key))
@@ -124,7 +138,13 @@ def change_jira_status(test_key, test_status, test_comment):
     if only_if_changes:
         payload['onlyIfStatusChanges'] = 'true'
     try:
-        response = requests.get(execution_url, params=payload)
+        if test_attachments and len(test_attachments) > 0:
+            files = dict()
+            for index in range(len(test_attachments)):
+                files['attachments{}'.format(index)] = open(test_attachments[index], 'rb')
+        else:
+            files = None
+        response = requests.post(execution_url, data=payload, files=files)
     except Exception as e:
         logger.warn("Error updating Test Case '{}': {}".format(test_key, e))
         return

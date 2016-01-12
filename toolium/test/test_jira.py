@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
 import unittest
 
 import mock
@@ -39,6 +40,7 @@ class JiraTests(unittest.TestCase):
         jira.build = None
         jira.only_if_changes = None
         jira.jira_tests_status.clear()
+        jira.attachments = []
 
     @mock.patch('toolium.jira.logger')
     @requests_mock.Mocker()
@@ -57,16 +59,60 @@ class JiraTests(unittest.TestCase):
         jira.only_if_changes = True
 
         # Configure mock
-        req_mock.get(jira.execution_url, content=response)
+        req_mock.post(jira.execution_url, content=response)
 
         # Test method
-        jira.change_jira_status('TOOLIUM-1', 'Pass', None)
+        jira.change_jira_status('TOOLIUM-1', 'Pass', None, [])
 
         # Check requested url
-        for partial_url in [jira.execution_url, 'jiraStatus=Pass', 'jiraTestCaseId=TOOLIUM-1', 'summaryPrefix=prefix',
+        assert_equal(jira.execution_url, req_mock.request_history[0].url)
+        for partial_url in ['jiraStatus=Pass', 'jiraTestCaseId=TOOLIUM-1', 'summaryPrefix=prefix',
                             'labels=label1+label2', 'comments=comment', 'version=Release+1.0', 'build=453',
                             'onlyIfStatusChanges=true']:
-            assert_in(partial_url, req_mock.request_history[0].url)
+            assert_in(partial_url, req_mock.request_history[0].text)
+
+        # Check that binary response has been decoded
+        expected_response = "The Test Case Execution 'TOOLIUM-2' has been created"
+        jira_logger.debug.assert_called_with(expected_response)
+
+    @mock.patch('toolium.jira.logger')
+    @requests_mock.Mocker()
+    def test_change_jira_status_attachments(self, jira_logger, req_mock):
+        # Test response
+        response = b"The Test Case Execution 'TOOLIUM-2' has been created\r\n"
+
+        # Configure jira module
+        jira.enabled = True
+        jira.execution_url = 'http://server/execution_service'
+        jira.summary_prefix = 'prefix'
+        jira.labels = 'label1 label2'
+        jira.comments = 'comment'
+        jira.fix_version = 'Release 1.0'
+        jira.build = '453'
+        jira.only_if_changes = True
+        resources_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
+        attachments = [os.path.join(resources_path, 'ios.png'), os.path.join(resources_path, 'ios_web.png')]
+
+        # Configure mock
+        req_mock.post(jira.execution_url, content=response)
+
+        # Test method
+        jira.change_jira_status('TOOLIUM-1', 'Pass', None, attachments)
+
+        # Check requested url
+        body_bytes = req_mock.last_request.body
+        try:
+            # Python 3
+            body = "".join(map(chr, body_bytes))
+        except TypeError:
+            # Python 2.7
+            body = body_bytes
+        for partial_url in ['"jiraStatus"\r\n\r\nPass', '"jiraTestCaseId"\r\n\r\nTOOLIUM-1',
+                            '"summaryPrefix"\r\n\r\nprefix', '"labels"\r\n\r\nlabel1 label2',
+                            '"comments"\r\n\r\ncomment', '"version"\r\n\r\nRelease 1.0', '"build"\r\n\r\n453',
+                            '"onlyIfStatusChanges"\r\n\r\ntrue', '"attachments0"; filename="ios.png"',
+                            '"attachments1"; filename="ios_web.png"']:
+            assert_in(partial_url, body)
 
         # Check that binary response has been decoded
         expected_response = "The Test Case Execution 'TOOLIUM-2' has been created"
@@ -82,24 +128,24 @@ class JiraTests(unittest.TestCase):
         jira.enabled = True
 
         # Test method
-        jira.change_jira_status('TOOLIUM-1', 'Pass', None)
+        jira.change_jira_status('TOOLIUM-1', 'Pass', None, [])
 
         # Check logging error message
         expected_response = "Test Case 'TOOLIUM-1' can not be updated: execution_url is not configured"
         jira_logger.warn.assert_called_with(expected_response)
 
     @mock.patch('toolium.jira.logger')
-    @mock.patch('toolium.jira.requests.get')
-    def test_change_jira_status_exception(self, jira_get, jira_logger):
+    @mock.patch('toolium.jira.requests.post')
+    def test_change_jira_status_exception(self, jira_post, jira_logger):
         # Configure jira mock
-        jira_get.side_effect = ConnectionError('exception error')
+        jira_post.side_effect = ConnectionError('exception error')
 
         # Configure jira module
         jira.enabled = True
         jira.execution_url = 'http://server/execution_service'
 
         # Test method
-        jira.change_jira_status('TOOLIUM-1', 'Pass', None)
+        jira.change_jira_status('TOOLIUM-1', 'Pass', None, [])
 
         # Check logging error message
         expected_response = "Error updating Test Case 'TOOLIUM-1': exception error"
@@ -118,7 +164,7 @@ class JiraTests(unittest.TestCase):
         MockTestClass().mock_test_pass()
 
         # Check jira status
-        expected_status = {'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None)}
+        expected_status = {'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None, [])}
         assert_equal(expected_status, jira.jira_tests_status)
 
     def test_jira_annotation_fail(self):
@@ -134,7 +180,7 @@ class JiraTests(unittest.TestCase):
         assert_raises(AssertionError, MockTestClass().mock_test_fail)
 
         # Check jira status
-        expected_status = {'TOOLIUM-3': ('TOOLIUM-3', 'Fail', "The test 'test name' has failed: test error")}
+        expected_status = {'TOOLIUM-3': ('TOOLIUM-3', 'Fail', "The test 'test name' has failed: test error", [])}
         assert_equal(expected_status, jira.jira_tests_status)
 
     def test_jira_annotation_multiple(self):
@@ -152,9 +198,9 @@ class JiraTests(unittest.TestCase):
         MockTestClass().mock_test_pass()
 
         # Check jira status
-        expected_status = {'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None),
-                           'TOOLIUM-3': ('TOOLIUM-3', 'Fail', "The test 'test name' has failed: test error"),
-                           'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None)}
+        expected_status = {'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None, []),
+                           'TOOLIUM-3': ('TOOLIUM-3', 'Fail', "The test 'test name' has failed: test error", []),
+                           'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None, [])}
         assert_equal(expected_status, jira.jira_tests_status)
 
     def test_jira_disabled(self):

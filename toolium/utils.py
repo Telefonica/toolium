@@ -54,6 +54,7 @@ class Utils(object):
         """Capture screenshot and save it in screenshots folder
 
         :param name: screenshot name suffix
+        :returns: screenshot path
         """
         filename = '{0:0=2d}_{1}.png'.format(DriverWrappersPool.screenshots_number, name)
         filepath = os.path.join(DriverWrappersPool.screenshots_directory, filename)
@@ -62,6 +63,8 @@ class Utils(object):
         if self.driver_wrapper.driver.get_screenshot_as_file(filepath):
             self.logger.info("Screenshot saved in " + filepath)
             DriverWrappersPool.screenshots_number += 1
+            return filepath
+        return None
 
     def print_all_selenium_logs(self):
         """Print all selenium logs"""
