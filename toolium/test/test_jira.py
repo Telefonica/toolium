@@ -69,7 +69,7 @@ class JiraTests(unittest.TestCase):
             assert_in(partial_url, req_mock.request_history[0].url)
 
         # Check that binary response has been decoded
-        expected_response = "Response content: The Test Case Execution 'TOOLIUM-2' has been created"
+        expected_response = "The Test Case Execution 'TOOLIUM-2' has been created"
         jira_logger.debug.assert_called_with(expected_response)
 
     @mock.patch('toolium.jira.logger')
@@ -85,7 +85,7 @@ class JiraTests(unittest.TestCase):
         jira.change_jira_status('TOOLIUM-1', 'Pass', None)
 
         # Check logging error message
-        expected_response = "Error updating Test Case 'TOOLIUM-1': execution_url is not configured"
+        expected_response = "Test Case 'TOOLIUM-1' can not be updated: execution_url is not configured"
         jira_logger.warn.assert_called_with(expected_response)
 
     @mock.patch('toolium.jira.logger')
@@ -102,8 +102,7 @@ class JiraTests(unittest.TestCase):
         jira.change_jira_status('TOOLIUM-1', 'Pass', None)
 
         # Check logging error message
-        expected_response = "Error updating Test Case 'TOOLIUM-1' using execution_url " \
-                            "'http://server/execution_service': exception error"
+        expected_response = "Error updating Test Case 'TOOLIUM-1': exception error"
         jira_logger.warn.assert_called_with(expected_response)
 
     def test_jira_annotation_pass(self):

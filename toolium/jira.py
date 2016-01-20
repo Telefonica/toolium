@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import logging
+import re
 
 import requests
 
@@ -110,6 +111,10 @@ def change_jira_status(test_key, test_status, test_comment):
     :param test_status: test case status
     :param test_comment: test case comments
     """
+    if not execution_url:
+        logger.warn("Test Case '{}' can not be updated: execution_url is not configured".format(test_key))
+        return
+
     logger.info("Updating Test Case '{0}' in Jira with status {1}".format(test_key, test_status))
     composed_comments = comments
     if test_comment:
@@ -121,14 +126,31 @@ def change_jira_status(test_key, test_status, test_comment):
     try:
         response = requests.get(execution_url, params=payload)
     except Exception as e:
-        if execution_url:
-            logger.warn("Error updating Test Case '{}' using execution_url '{}': {}".format(test_key, execution_url, e))
-        else:
-            logger.warn("Error updating Test Case '{}': execution_url is not configured".format(test_key))
+        logger.warn("Error updating Test Case '{}': {}".format(test_key, e))
         return
 
-    logger.debug("Request url: {}".format(response.url))
     if response.status_code >= 400:
-        logger.warn("Error updating Test Case '{}': [{}] {}".format(test_key, response.status_code, response.content))
+        logger.warn("Error updating Test Case '{}': [{}] {}".format(test_key, response.status_code,
+                                                                    get_error_message(response.content)))
     else:
-        logger.debug("Response content: {}".format(response.content.decode().splitlines()[0]))
+        logger.debug("{}".format(response.content.decode().splitlines()[0]))
+
+
+def get_error_message(response_content):
+    """Extract error message from the HTTP response
+
+    :param response_content: HTTP response from test case execution API
+    :returns: error message
+    """
+    apache_regex = re.compile('.*<u>(.*)</u></p><p>.*')
+    match = apache_regex.search(response_content)
+    if match:
+        error_message = match.group(1)
+    else:
+        local_regex = re.compile('.*<title>(.*)</title>.*')
+        match = local_regex.search(response_content)
+        if match:
+            error_message = match.group(1)
+        else:
+            error_message = response_content
+    return error_message
