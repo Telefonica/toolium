@@ -80,7 +80,7 @@ def save_jira_conf():
     fix_version = config.get_optional('Jira', 'fixversion')
     build = config.get_optional('Jira', 'build')
     only_if_changes = config.getboolean_optional('Jira', 'onlyifchanges')
-    del attachments[:]
+    attachments = []
 
 
 def add_attachment(attachment):
@@ -99,15 +99,19 @@ def add_jira_status(test_key, test_status, test_comment):
     :param test_status: test case status
     :param test_comment: test case comments
     """
+    global attachments
     if test_key and enabled:
-        if test_status == 'Fail':
-            if test_key in jira_tests_status and jira_tests_status[test_key][2]:
-                test_comment = '{}\n{}'.format(jira_tests_status[test_key][2], test_comment)
-            jira_tests_status[test_key] = (test_key, 'Fail', test_comment, attachments)
-        elif test_status == 'Pass':
-            # Don't overwrite previous fails
-            if test_key not in jira_tests_status:
-                jira_tests_status[test_key] = (test_key, 'Pass', test_comment, attachments)
+        if test_key in jira_tests_status:
+            # Merge data with previous test status
+            previous_status = jira_tests_status[test_key]
+            test_status = 'Pass' if previous_status[1] == 'Pass' and test_status == 'Pass' else 'Fail'
+            if previous_status[2] and test_comment:
+                test_comment = '{}\n{}'.format(previous_status[2], test_comment)
+            elif previous_status[2] and not test_comment:
+                test_comment = previous_status[2]
+            attachments += previous_status[3]
+        # Add or update test status
+        jira_tests_status[test_key] = (test_key, test_status, test_comment, attachments)
 
 
 def change_all_jira_status():
