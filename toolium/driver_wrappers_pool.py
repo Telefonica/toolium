@@ -70,7 +70,8 @@ class DriverWrappersPool(object):
         driver_index = 1
         for driver_wrapper in cls.driver_wrappers:
             if driver_wrapper.utils:
-                driver_wrapper.utils.capture_screenshot(screenshot_name.format(name, driver_index))
+                from toolium.jira import add_attachment
+                add_attachment(driver_wrapper.utils.capture_screenshot(screenshot_name.format(name, driver_index)))
             driver_index += 1
 
     @classmethod
