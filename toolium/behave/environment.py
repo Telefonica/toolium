@@ -153,12 +153,15 @@ def after_all(context):
 
 
 def get_jira_key_from_scenario(scenario):
-    """Extract Jira Test Case key from scenario tags
+    """Extract Jira Test Case key from scenario tags.
+    Two tag formats are allowed:
+    @jira('PROJECT-32')
+    @jira=PROJECT-32
 
     :param scenario: behave scenario
     :returns: Jira test case key
     """
-    jira_regex = re.compile('jira\(\'(.*?)\'\)')
+    jira_regex = re.compile('jira[=\(\']*([A-Z]+\-[0-9]+)[\'\)]*$')
     for tag in scenario.tags:
         match = jira_regex.search(tag)
         if match:
