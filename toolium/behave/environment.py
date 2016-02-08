@@ -110,20 +110,22 @@ def after_scenario(context, scenario):
     :param context: behave context
     :param scenario: running scenario
     """
-    bdd_common_after_scenario(context, scenario, scenario.status == 'passed')
+    bdd_common_after_scenario(context, scenario, scenario.status)
 
 
-def bdd_common_after_scenario(context_or_world, scenario, passed):
+def bdd_common_after_scenario(context_or_world, scenario, status):
     """Clean method that will be executed after each scenario in behave or lettuce
 
     :param context_or_world: behave context or lettuce world
     :param scenario: running scenario
-    :param passed: True if the scenario has passed
+    :param status: scenario status (passed, failed or skipped)
     """
     # Get scenario name without spaces and behave data separator
     scenario_file_name = scenario.name.replace(' -- @', '_').replace(' ', '_')
 
-    if passed:
+    if status == 'skipped':
+        return
+    elif status == 'passed':
         test_status = 'Pass'
         test_comment = None
         context_or_world.logger.info("The scenario '{0}' has passed".format(scenario.name))
@@ -134,7 +136,8 @@ def bdd_common_after_scenario(context_or_world, scenario, passed):
         context_or_world.logger.error(test_comment)
 
     # Close browser and stop driver if it must not be reused
-    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, passed, context_or_world.reuse_driver)
+    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, status == 'passed',
+                                                         context_or_world.reuse_driver)
 
     # Save test status to be updated later
     add_jira_status(get_jira_key_from_scenario(scenario), test_status, test_comment)

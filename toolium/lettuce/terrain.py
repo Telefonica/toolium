@@ -58,7 +58,8 @@ def teardown_driver(scenario):
 
     :param scenario: running scenario
     """
-    bdd_common_after_scenario(world, scenario, not scenario.failed)
+    status = 'failed' if scenario.failed else 'passed'
+    bdd_common_after_scenario(world, scenario, status)
 
 
 @after.all
