@@ -18,6 +18,7 @@ v1.0.0
 - Save WebElement in PageElement to avoid searching the same element multiple times
 - Refactor to rename get_element to get_web_element in Utils class and element to web_element in PageElement class
 - Allow to run API tests with behave: browser property must be empty
+- Baseline name property can contain *{platformVersion}* to add actual platform version to the baseline name
 
 v0.12.1
 -------

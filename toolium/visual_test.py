@@ -53,6 +53,15 @@ class VisualTest(object):
         self.utils = self.driver_wrapper.utils
         self.logger = logging.getLogger(__name__)
         self.output_directory = DriverWrappersPool.visual_output_directory
+
+        # Update baseline with real platformVersion value
+        if '{platformVersion}' in self.driver_wrapper.baseline_name:
+            platformVersion = self.driver_wrapper.driver.desired_capabilities['platformVersion']
+            baseline_name = self.driver_wrapper.baseline_name.replace('{platformVersion}', platformVersion)
+            self.driver_wrapper.baseline_name = baseline_name
+            self.driver_wrapper.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory,
+                                                                         'visualtests', 'baseline', baseline_name)
+
         self.baseline_directory = self.driver_wrapper.visual_baseline_directory
         engine_type = self.driver_wrapper.config.get_optional('VisualTests', 'engine', 'pil')
         if engine_type == 'perceptualdiff':
