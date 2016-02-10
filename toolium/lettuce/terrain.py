@@ -16,43 +16,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import logging
+from lettuce import world
 
-from lettuce import before, after, world
-
-from toolium.behave.environment import bdd_common_after_scenario, bdd_common_before_scenario
-from toolium.driver_wrapper import DriverWrappersPool
-from toolium.jira import change_all_jira_status
+from toolium.behave.environment import bdd_common_before_scenario, bdd_common_after_scenario, bdd_common_after_all
 
 
-@before.each_scenario
 def setup_driver(scenario):
     """Scenario initialization
 
     :param scenario: running scenario
     """
-
-    # Configure logger
-    world.logger = logging.getLogger()
-
-    # Get default driver wrapper
-    world.driver_wrapper = DriverWrappersPool.get_default_wrapper()
-
-    # Create driver
-    world.reuse_driver = world.driver_wrapper.config.getboolean_optional('Common', 'reuse_driver')
-    if not world.reuse_driver:
-        # Configure wrapper
-        world.driver_wrapper.configure()
-
-        # Create driver
-        world.driver = world.driver_wrapper.connect()
-        world.utils = world.driver_wrapper.utils
-
-    # Common initialization
-    bdd_common_before_scenario(world, scenario, world.driver_wrapper)
+    bdd_common_before_scenario(world, scenario)
 
 
-@after.each_scenario
 def teardown_driver(scenario):
     """Clean method that will be executed after each scenario
 
@@ -62,13 +38,9 @@ def teardown_driver(scenario):
     bdd_common_after_scenario(world, scenario, status)
 
 
-@after.all
 def teardown_driver_all(total):
     """Clean method that will be executed after all features are finished
 
     :param total: results of executed features
     """
-    if hasattr(world, 'driver') and world.driver:
-        DriverWrappersPool.close_drivers_and_download_videos('multiple_tests')
-    # Update tests status in Jira
-    change_all_jira_status()
+    bdd_common_after_all()

@@ -40,6 +40,14 @@ class DriverWrappersPool(object):
     visual_number = None
 
     @classmethod
+    def is_empty(cls):
+        """Check if the wrappers pool is empty or the main driver is not connected
+
+        :returns: true id the wrappers pool is empty
+        """
+        return len(cls.driver_wrappers) == 0 or cls.driver_wrappers[0].driver is None
+
+    @classmethod
     def get_default_wrapper(cls):
         """Returns the default (first) driver wrapper
 
