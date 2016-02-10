@@ -9,6 +9,11 @@ v1.0.0
 - Refactor to rename assertScreenshot to assert_screenshot and assertFullScreenshot to assert_full_screenshot
 - Add a config property *appium_app_strings* in [Common] section to request app strings before each Appium test
 - Upload the error screenshot to Jira if the test fails
+- Allow to modify Toolium properties from behave userdata configuration, e.g.:
+
+.. code:: console
+
+    $ behave -D Browser_browser=chrome
 
 v0.12.1
 -------

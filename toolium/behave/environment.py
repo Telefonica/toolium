@@ -78,6 +78,11 @@ def create_and_configure_wrapper(context_or_world):
     if not hasattr(context_or_world, 'config_files'):
         context_or_world.config_files = ConfigFiles()
     context_or_world.driver_wrapper.configure(True, context_or_world.config_files)
+
+    # Override properties with behave userdata properties
+    context_or_world.driver_wrapper.config.update_from_behave_properties(context_or_world)
+
+    # Copy config and app_strings objects
     context_or_world.toolium_config = context_or_world.driver_wrapper.config
     context_or_world.app_strings = context_or_world.driver_wrapper.app_strings
 
