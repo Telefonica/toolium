@@ -30,23 +30,7 @@ def before_all(context):
 
     :param context: behave context
     """
-    # Configure logger
-    context.logger = logging.getLogger()
-
-    # Get default driver wrapper
-    context.driver_wrapper = DriverWrappersPool.get_default_wrapper()
-
-    # Configure wrapper
-    if not hasattr(context, 'config_files'):
-        context.config_files = ConfigFiles()
-    context.driver_wrapper.configure(True, context.config_files)
-    context.toolium_config = context.driver_wrapper.config
-
-    # Create driver if it must be reused
-    context.reuse_driver = context.driver_wrapper.config.getboolean_optional('Common', 'reuse_driver')
-    if context.reuse_driver:
-        context.driver = context.driver_wrapper.connect()
-        context.utils = context.driver_wrapper.utils
+    pass
 
 
 def before_scenario(context, scenario):
@@ -55,29 +39,65 @@ def before_scenario(context, scenario):
     :param context: behave context
     :param scenario: running scenario
     """
-    # Get default driver wrapper
-    context.driver_wrapper = DriverWrappersPool.get_default_wrapper()
-
-    # Create driver if it must not be reused
-    if not context.reuse_driver:
-        # Configure wrapper
-        context.driver_wrapper.configure(True, context.config_files)
-        context.toolium_config = context.driver_wrapper.config
-
-        # Create driver
-        context.driver = context.driver_wrapper.connect()
-        context.utils = context.driver_wrapper.utils
-
-    # Common initialization
-    bdd_common_before_scenario(context, scenario, context.driver_wrapper)
+    bdd_common_before_scenario(context, scenario)
 
 
-def bdd_common_before_scenario(context_or_world, scenario, driver_wrapper):
+def bdd_common_before_scenario(context_or_world, scenario):
     """Common scenario initialization in behave or lettuce
 
     :param context_or_world: behave context or lettuce world
     :param scenario: running scenario
-    :param driver_wrapper: driver wrapper instance
+    """
+    if DriverWrappersPool.is_empty():
+        create_and_configure_wrapper(context_or_world)
+
+    # Add assert screenshot methods with scenario configuration
+    add_assert_screenshot_methods(context_or_world, scenario)
+
+    # Configure Jira properties
+    save_jira_conf()
+
+    # Add implicitly wait
+    implicitly_wait = context_or_world.toolium_config.get_optional('Common', 'implicitly_wait')
+    if implicitly_wait:
+        context_or_world.driver.implicitly_wait(implicitly_wait)
+
+    context_or_world.logger.info("Running new scenario: {0}".format(scenario.name))
+
+
+def create_and_configure_wrapper(context_or_world):
+    """Create and configure driver wrapper in behave or lettuce tests
+
+    :param context_or_world: behave context or lettuce world
+    """
+    # Create default driver wrapper
+    context_or_world.driver_wrapper = DriverWrappersPool.get_default_wrapper()
+    context_or_world.utils = context_or_world.driver_wrapper.utils
+
+    # Configure wrapper
+    if not hasattr(context_or_world, 'config_files'):
+        context_or_world.config_files = ConfigFiles()
+    context_or_world.driver_wrapper.configure(True, context_or_world.config_files)
+
+    # Override properties with behave userdata properties
+    context_or_world.driver_wrapper.config.update_from_behave_properties(context_or_world)
+
+    # Copy config and app_strings objects
+    context_or_world.toolium_config = context_or_world.driver_wrapper.config
+    context_or_world.app_strings = context_or_world.driver_wrapper.app_strings
+
+    # Configure logger
+    context_or_world.logger = logging.getLogger()
+
+    # Create driver
+    context_or_world.driver = context_or_world.driver_wrapper.connect()
+
+
+def add_assert_screenshot_methods(context_or_world, scenario):
+    """Add assert screenshot methods to behave or lettuce object
+
+    :param context_or_world: behave context or lettuce world
+    :param scenario: running scenario
     """
 
     def assert_screenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
@@ -91,17 +111,6 @@ def bdd_common_before_scenario(context_or_world, scenario, driver_wrapper):
 
     context_or_world.assert_screenshot = assert_screenshot
     context_or_world.assert_full_screenshot = assert_full_screenshot
-    context_or_world.app_strings = driver_wrapper.app_strings
-
-    # Save Jira conf
-    save_jira_conf()
-
-    # Add implicitly wait
-    implicitly_wait = driver_wrapper.config.get_optional('Common', 'implicitly_wait')
-    if implicitly_wait:
-        context_or_world.driver.implicitly_wait(implicitly_wait)
-
-    context_or_world.logger.info("Running new scenario: {0}".format(scenario.name))
 
 
 def after_scenario(context, scenario):
@@ -110,20 +119,22 @@ def after_scenario(context, scenario):
     :param context: behave context
     :param scenario: running scenario
     """
-    bdd_common_after_scenario(context, scenario, scenario.status == 'passed')
+    bdd_common_after_scenario(context, scenario, scenario.status)
 
 
-def bdd_common_after_scenario(context_or_world, scenario, passed):
+def bdd_common_after_scenario(context_or_world, scenario, status):
     """Clean method that will be executed after each scenario in behave or lettuce
 
     :param context_or_world: behave context or lettuce world
     :param scenario: running scenario
-    :param passed: True if the scenario has passed
+    :param status: scenario status (passed, failed or skipped)
     """
     # Get scenario name without spaces and behave data separator
     scenario_file_name = scenario.name.replace(' -- @', '_').replace(' ', '_')
 
-    if passed:
+    if status == 'skipped':
+        return
+    elif status == 'passed':
         test_status = 'Pass'
         test_comment = None
         context_or_world.logger.info("The scenario '{0}' has passed".format(scenario.name))
@@ -134,10 +145,28 @@ def bdd_common_after_scenario(context_or_world, scenario, passed):
         context_or_world.logger.error(test_comment)
 
     # Close browser and stop driver if it must not be reused
-    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, passed, context_or_world.reuse_driver)
+    reuse_driver = context_or_world.toolium_config.getboolean_optional('Common', 'reuse_driver')
+    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, status == 'passed', reuse_driver)
 
     # Save test status to be updated later
     add_jira_status(get_jira_key_from_scenario(scenario), test_status, test_comment)
+
+
+def get_jira_key_from_scenario(scenario):
+    """Extract Jira Test Case key from scenario tags.
+    Two tag formats are allowed:
+    @jira('PROJECT-32')
+    @jira=PROJECT-32
+
+    :param scenario: behave scenario
+    :returns: Jira test case key
+    """
+    jira_regex = re.compile('jira[=\(\']*([A-Z]+\-[0-9]+)[\'\)]*$')
+    for tag in scenario.tags:
+        match = jira_regex.search(tag)
+        if match:
+            return match.group(1)
+    return None
 
 
 def after_all(context):
@@ -145,22 +174,14 @@ def after_all(context):
 
     :param context: behave context
     """
+    bdd_common_after_all()
+
+
+def bdd_common_after_all():
+    """Common after all method in behave or lettuce"""
     # Close browser and stop driver if it has been reused
-    if context.reuse_driver:
+    if not DriverWrappersPool.is_empty():
         DriverWrappersPool.close_drivers_and_download_videos('multiple_tests')
+
     # Update tests status in Jira
     change_all_jira_status()
-
-
-def get_jira_key_from_scenario(scenario):
-    """Extract Jira Test Case key from scenario tags
-
-    :param scenario: behave scenario
-    :returns: Jira test case key
-    """
-    jira_regex = re.compile('jira\(\'(.*?)\'\)')
-    for tag in scenario.tags:
-        match = jira_regex.search(tag)
-        if match:
-            return match.group(1)
-    return None

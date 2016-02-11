@@ -76,19 +76,46 @@ class ExtendedConfigParser(configparser.ConfigParser):
 
     def update_from_system_properties(self):
         """Get defined system properties and update config properties"""
-        [self._update_from_system_property(section, option)
+        [self._update_property_from_dict(section, option, os.environ)
          for section in self.sections() for option in self.options(section)]
 
-    def _update_from_system_property(self, section, option):
-        """ Update a config property value with system property value
+    def update_from_behave_properties(self, behave_context):
+        """Get behave userdata properties and update config properties
+
+        :param behave_context: behave context
+        """
+        try:
+            behave_properties = behave_context.config.userdata
+            [self._update_property_from_dict(section, option, behave_properties)
+             for section in self.sections() for option in self.options(section)]
+        except AttributeError:
+            pass
+
+    def _update_property_from_dict(self, section, option, new_properties):
+        """ Update a config property value with a new property value
+        Property name must be equal to 'Section_option' of config property
+
+        :param section: config section
+        :param option: config option
+        :param new_properties: dict with new properties values
+        """
+        try:
+            property_name = "{0}_{1}".format(section, option)
+            self.set(section, option, new_properties[property_name])
+        except KeyError:
+            pass
+
+    def _update_from_behave_property(self, section, option, userdata):
+        """ Update a config property value with behave userdata property value
         System property name must be equal to 'Section_option' of config property
 
         :param section: config section
         :param option: config option
+        :param userdata: behave userdata properties object
         """
         try:
             property_name = "{0}_{1}".format(section, option)
-            self.set(section, option, os.environ[property_name])
+            self.set(section, option, userdata[property_name])
         except KeyError:
             pass
 

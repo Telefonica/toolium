@@ -56,17 +56,19 @@ class DriverWrapper(object):
         :param tc_config_log_filename: test case specific logging config file
         :param tc_output_log_filename: test case specific output logger file
         """
-        # Get config and output logger files
+        # Get config logger filename
         config_log_filename = DriverWrappersPool.get_configured_value('Config_log_filename', tc_config_log_filename,
                                                                       'logging.conf')
         config_log_filename = os.path.join(DriverWrappersPool.config_directory, config_log_filename)
-        output_log_filename = DriverWrappersPool.get_configured_value('Output_log_filename', tc_output_log_filename,
-                                                                      'toolium.log')
-        output_log_filename = os.path.join(DriverWrappersPool.output_directory, output_log_filename)
-        output_log_filename = output_log_filename.replace('\\', '\\\\')
 
-        # Configure logger if logging filename has changed
+        # Configure logger only if logging filename has changed
         if self.config_log_filename != config_log_filename:
+            # Get output logger filename
+            output_log_filename = DriverWrappersPool.get_configured_value('Output_log_filename', tc_output_log_filename,
+                                                                          'toolium.log')
+            output_log_filename = os.path.join(DriverWrappersPool.output_directory, output_log_filename)
+            output_log_filename = output_log_filename.replace('\\', '\\\\')
+
             try:
                 logging.config.fileConfig(config_log_filename, {'logfilename': output_log_filename}, False)
             except Exception as exc:
@@ -85,7 +87,7 @@ class DriverWrapper(object):
                           prop_filenames.split(';')]
         prop_filenames = ';'.join(prop_filenames)
 
-        # Configure config if properties filename has changed
+        # Configure config only if properties filename has changed
         if self.config_properties_filenames != prop_filenames:
             # Initialize the config object
             self.config = ExtendedConfigParser.get_config_from_file(prop_filenames)
