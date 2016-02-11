@@ -30,7 +30,7 @@ def before_all(context):
 
     :param context: behave context
     """
-    pass
+    context.logger = logging.getLogger()
 
 
 def before_scenario(context, scenario):
