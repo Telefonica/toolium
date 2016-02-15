@@ -38,6 +38,7 @@ class DriverWrapper(object):
     # Configuration and output files
     config_properties_filenames = None
     config_log_filename = None
+    output_log_filename = None
     visual_baseline_directory = None
     baseline_name = None
 
@@ -74,6 +75,7 @@ class DriverWrapper(object):
             except Exception as exc:
                 print("[WARN] Error reading logging config file '{}': {}".format(config_log_filename, exc))
             self.config_log_filename = config_log_filename
+            self.output_log_filename = output_log_filename
             self.logger = logging.getLogger(__name__)
 
     def configure_properties(self, tc_config_prop_filenames=None):

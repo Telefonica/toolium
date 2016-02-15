@@ -131,6 +131,9 @@ class SeleniumTestCase(BasicTestCase):
         if not self._test_passed:
             DriverWrappersPool.capture_screenshots(test_name)
 
+        # Write Webdriver logs to files
+        self.utils.save_all_webdriver_logs(self.get_subclassmethod_name())
+
         # Close browser and stop driver if it must not be reused
         DriverWrappersPool.close_drivers_and_download_videos(test_name, self._test_passed, self.reuse_driver)
         if not self.reuse_driver:

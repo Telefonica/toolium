@@ -32,6 +32,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
+from datetime import datetime
 
 
 class Utils(object):
@@ -66,18 +67,40 @@ class Utils(object):
             return filepath
         return None
 
-    def print_all_selenium_logs(self):
-        """Print all selenium logs"""
-        map(self.print_selenium_logs, {'browser', 'client', 'driver', 'performance', 'server', 'logcat'})
+    def save_all_webdriver_logs(self, test_name):
+        """Get all webdriver logs and write them to log files
 
-    def print_selenium_logs(self, log_type):
-        """Print selenium logs of the specified type
-
-        :param log_type: browser, client, driver, performance, sever or logcat
+        :param test_name: test that has generated these logs
         """
-        for entry in self.driver_wrapper.driver.get_log(log_type):
-            message = entry['message'].rstrip().encode('utf-8')
-            self.logger.debug('{0} - {1}: {2}'.format(log_type.capitalize(), entry['level'], message))
+        try:
+            log_types = self.driver_wrapper.driver.log_types
+        except Exception:
+            return
+
+        self.logger.debug('Reading logs from {} and writing them to log files'.format(log_types))
+        for log_type in log_types:
+            self.save_webdriver_logs(log_type, test_name)
+
+    def save_webdriver_logs(self, log_type, test_name):
+        """Get webdriver logs of the specified type and write them to a log file
+
+        :param log_type: browser, client, driver, performance, server, syslog, crashlog or logcat
+        :param test_name: test that has generated these logs
+        """
+        try:
+            logs = self.driver_wrapper.driver.get_log(log_type)
+        except Exception:
+            self.logger.warn('Error reading {} logs'.format(log_type))
+            return
+
+        if len(logs) > 0:
+            log_file_ext = os.path.splitext(self.driver_wrapper.output_log_filename)
+            log_file_name = '{}_{}{}'.format(log_file_ext[0], log_type, log_file_ext[1])
+            with open(log_file_name, 'a+', encoding='utf-8') as log_file:
+                browser = self.driver_wrapper.config.get('Browser', 'browser')
+                log_file.write("\n{} '{}' test logs with browser = {}\n\n".format(datetime.now(), test_name, browser))
+                for entry in logs:
+                    log_file.write('{}\t{}\n'.format(entry['level'], entry['message'].rstrip()))
 
     def wait_until_element_visible(self, locator, timeout=10):
         """Search element by locator and wait until it is visible
