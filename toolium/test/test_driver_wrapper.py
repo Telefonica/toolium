@@ -196,32 +196,35 @@ class DriverWrapperLoggerTests(DriverWrapperCommon):
         assert_equal('WARNING', logging.getLevelName(logger.level))
 
 
+# (browser, is_mobile, is_android, is_ios)
 mobile_tests = (
-    ('android-4.1.2-on-android', True),
-    ('android', True),
-    ('ios', True),
-    ('iphone', True),
-    ('firefox-4.1.2-on-android', False),
-    ('firefox', False),
+    ('android-4.1.2-on-android', True, True, False),
+    ('android', True, True, False),
+    ('ios', True, False, True),
+    ('iphone', True, False, True),
+    ('firefox-4.1.2-on-android', False, False, False),
+    ('firefox', False, False, False),
 )
 
+# (browser, appium_app, appium_browser_name, is_web, is_android_web, is_ios_web)
 web_tests = (
-    ('android-4.1.2-on-android', 'C:/Demo.apk', None, False),
-    ('android', 'C:/Demo.apk', None, False),
-    ('android', 'C:/Demo.apk', '', False),
-    ('android', None, 'chrome', True),
-    ('android', None, 'chromium', True),
-    ('android', None, 'browser', True),
-    ('ios', '/tmp/Demo.zip', None, False),
-    ('ios', '/tmp/Demo.zip', '', False),
-    ('ios', None, 'safari', True),
-    ('iphone', '/tmp/Demo.zip', None, False),
-    ('iphone', '/tmp/Demo.zip', '', False),
-    ('iphone', None, 'safari', True),
-    ('firefox-4.1.2-on-android', None, None, True),
-    ('firefox', None, None, True),
+    ('android-4.1.2-on-android', 'C:/Demo.apk', None, False, False, False),
+    ('android', 'C:/Demo.apk', None, False, False, False),
+    ('android', 'C:/Demo.apk', '', False, False, False),
+    ('android', None, 'chrome', True, True, False),
+    ('android', None, 'chromium', True, True, False),
+    ('android', None, 'browser', True, True, False),
+    ('ios', '/tmp/Demo.zip', None, False, False, False),
+    ('ios', '/tmp/Demo.zip', '', False, False, False),
+    ('ios', None, 'safari', True, False, True),
+    ('iphone', '/tmp/Demo.zip', None, False, False, False),
+    ('iphone', '/tmp/Demo.zip', '', False, False, False),
+    ('iphone', None, 'safari', True, False, True),
+    ('firefox-4.1.2-on-android', None, None, True, False, False),
+    ('firefox', None, None, True, False, False),
 )
 
+# (browser, is_maximizable)
 maximizable_browsers = (
     ('firefox-4.1.2-on-android', True),
     ('firefox', True),
@@ -302,19 +305,23 @@ class DriverWrapperTests(DriverWrapperCommon):
 
     @data(*mobile_tests)
     @unpack
-    def test_is_mobile_test(self, browser, is_mobile):
+    def test_is_mobile_test(self, browser, is_mobile, is_android, is_ios):
         self.driver_wrapper.config.set('Browser', 'browser', browser)
         assert_equal(is_mobile, self.driver_wrapper.is_mobile_test())
+        assert_equal(is_android, self.driver_wrapper.is_android_test())
+        assert_equal(is_ios, self.driver_wrapper.is_ios_test())
 
     @data(*web_tests)
     @unpack
-    def test_is_web_test(self, browser, appium_app, appium_browser_name, is_web):
+    def test_is_web_test(self, browser, appium_app, appium_browser_name, is_web, is_android_web, is_ios_web):
         self.driver_wrapper.config.set('Browser', 'browser', browser)
         if appium_app is not None:
             self.driver_wrapper.config.set('AppiumCapabilities', 'app', appium_app)
         if appium_browser_name is not None:
             self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', appium_browser_name)
         assert_equal(is_web, self.driver_wrapper.is_web_test())
+        assert_equal(is_android_web, self.driver_wrapper.is_android_web_test())
+        assert_equal(is_ios_web, self.driver_wrapper.is_ios_web_test())
 
     @data(*maximizable_browsers)
     @unpack

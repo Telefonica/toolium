@@ -102,6 +102,14 @@ class Utils(object):
                 for entry in logs:
                     log_file.write('{}\t{}\n'.format(entry['level'], entry['message'].rstrip()))
 
+    def discard_logcat_logs(self):
+        """Discard previous logcat logs"""
+        if self.driver_wrapper.is_android_test():
+            try:
+                self.driver_wrapper.driver.get_log('logcat')
+            except Exception:
+                pass
+
     def wait_until_element_visible(self, locator, timeout=10):
         """Search element by locator and wait until it is visible
 

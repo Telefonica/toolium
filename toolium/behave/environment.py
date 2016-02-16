@@ -92,6 +92,9 @@ def create_and_configure_wrapper(context_or_world):
     # Create driver
     context_or_world.driver = context_or_world.driver_wrapper.connect()
 
+    # Discard previous logcat logs
+    context_or_world.utils.discard_logcat_logs()
+
 
 def add_assert_screenshot_methods(context_or_world, scenario):
     """Add assert screenshot methods to behave or lettuce object
