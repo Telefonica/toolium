@@ -38,6 +38,7 @@ class DriverWrapper(object):
     # Configuration and output files
     config_properties_filenames = None
     config_log_filename = None
+    output_log_filename = None
     visual_baseline_directory = None
     baseline_name = None
 
@@ -74,6 +75,7 @@ class DriverWrapper(object):
             except Exception as exc:
                 print("[WARN] Error reading logging config file '{}': {}".format(config_log_filename, exc))
             self.config_log_filename = config_log_filename
+            self.output_log_filename = output_log_filename
             self.logger = logging.getLogger(__name__)
 
     def configure_properties(self, tc_config_prop_filenames=None):
@@ -155,13 +157,13 @@ class DriverWrapper(object):
 
         return self.driver
 
-    def is_mobile_test(self):
-        """Check if actual test must be executed in a mobile
+    def is_android_test(self):
+        """Check if actual test must be executed in an Android mobile
 
-        :returns: true if test must be executed in a mobile
+        :returns: true if test must be executed in an Android mobile
         """
         browser_name = self.config.get('Browser', 'browser').split('-')[0]
-        return browser_name in ('android', 'ios', 'iphone')
+        return browser_name == 'android'
 
     def is_ios_test(self):
         """Check if actual test must be executed in an iOS mobile
@@ -171,22 +173,34 @@ class DriverWrapper(object):
         browser_name = self.config.get('Browser', 'browser').split('-')[0]
         return browser_name in ('ios', 'iphone')
 
-    def is_android_web_test(self):
-        """Check if actual test must be executed in a browser of an Android mobile
+    def is_mobile_test(self):
+        """Check if actual test must be executed in a mobile
 
-        :returns: true if test must be executed in a browser of an Android mobile
+        :returns: true if test must be executed in a mobile
         """
-        browser_name = self.config.get('Browser', 'browser').split('-')[0]
-        appium_browser_name = self.config.get_optional('AppiumCapabilities', 'browserName')
-        return browser_name == 'android' and appium_browser_name not in (None, '')
+        return self.is_android_test() or self.is_ios_test()
 
     def is_web_test(self):
         """Check if actual test must be executed in a browser
 
         :returns: true if test must be executed in a browser
         """
-        browser_name = self.config.get_optional('AppiumCapabilities', 'browserName')
-        return not self.is_mobile_test() or browser_name not in (None, '')
+        appium_browser_name = self.config.get_optional('AppiumCapabilities', 'browserName')
+        return not self.is_mobile_test() or appium_browser_name not in (None, '')
+
+    def is_android_web_test(self):
+        """Check if actual test must be executed in a browser of an Android mobile
+
+        :returns: true if test must be executed in a browser of an Android mobile
+        """
+        return self.is_android_test() and self.is_web_test()
+
+    def is_ios_web_test(self):
+        """Check if actual test must be executed in a browser of an iOS mobile
+
+        :returns: true if test must be executed in a browser of an iOS mobile
+        """
+        return self.is_ios_test() and self.is_web_test()
 
     def is_maximizable(self):
         """Check if the browser is maximizable

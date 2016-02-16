@@ -112,6 +112,10 @@ class SeleniumTestCase(BasicTestCase):
             # Create driver
             self.driver_wrapper.configure(True, self.config_files)
             self.driver_wrapper.connect()
+
+            # Discard previous logcat logs
+            self.driver_wrapper.utils.discard_logcat_logs()
+
         SeleniumTestCase.driver = self.driver_wrapper.driver
         self.utils = self.driver_wrapper.utils
 
@@ -131,6 +135,9 @@ class SeleniumTestCase(BasicTestCase):
         if not self._test_passed:
             DriverWrappersPool.capture_screenshots(test_name)
 
+        # Write Webdriver logs to files
+        self.utils.save_all_webdriver_logs(self.get_subclassmethod_name())
+
         # Close browser and stop driver if it must not be reused
         DriverWrappersPool.close_drivers_and_download_videos(test_name, self._test_passed, self.reuse_driver)
         if not self.reuse_driver:
@@ -149,7 +156,7 @@ class SeleniumTestCase(BasicTestCase):
         """
         file_suffix = self.get_method_name()
         VisualTest(driver_wrapper).assert_screenshot(element_or_selector, filename, file_suffix, threshold,
-                                                    exclude_elements)
+                                                     exclude_elements)
 
     def assert_full_screenshot(self, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         """Assert that a driver screenshot is the same as a screenshot on disk, within a given threshold.

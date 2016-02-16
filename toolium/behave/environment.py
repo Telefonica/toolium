@@ -30,7 +30,7 @@ def before_all(context):
 
     :param context: behave context
     """
-    pass
+    context.logger = logging.getLogger()
 
 
 def before_scenario(context, scenario):
@@ -92,6 +92,9 @@ def create_and_configure_wrapper(context_or_world):
     # Create driver
     context_or_world.driver = context_or_world.driver_wrapper.connect()
 
+    # Discard previous logcat logs
+    context_or_world.utils.discard_logcat_logs()
+
 
 def add_assert_screenshot_methods(context_or_world, scenario):
     """Add assert screenshot methods to behave or lettuce object
@@ -143,6 +146,9 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
         test_comment = "The scenario '{0}' has failed".format(scenario.name)
         DriverWrappersPool.capture_screenshots(scenario_file_name)
         context_or_world.logger.error(test_comment)
+
+    # Write Webdriver logs to files
+    context_or_world.utils.save_all_webdriver_logs(scenario.name)
 
     # Close browser and stop driver if it must not be reused
     reuse_driver = context_or_world.toolium_config.getboolean_optional('Common', 'reuse_driver')
