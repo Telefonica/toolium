@@ -75,6 +75,7 @@ class PageObject(unittest.TestCase):
         for element in list(self.__dict__.values()) + list(self.__class__.__dict__.values()):
             if isinstance(element, PageElement):
                 element.set_driver_wrapper(self.driver_wrapper)
+                element._element = None
             if isinstance(element, PageObject):
                 element.set_driver_wrapper(self.driver_wrapper)
                 # If element is page object, update its page elements

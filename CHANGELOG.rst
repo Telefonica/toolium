@@ -15,6 +15,8 @@ v1.0.0
 
     $ behave -D Browser_browser=chrome
 
+- Save WebElement in PageElement to avoid searching the same element multiple times
+
 v0.12.1
 -------
 

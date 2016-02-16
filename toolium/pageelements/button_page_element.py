@@ -21,4 +21,4 @@ from toolium.pageelements.page_element import PageElement
 
 class Button(PageElement):
     def click(self):
-        self.element().click()
+        self.element.click()

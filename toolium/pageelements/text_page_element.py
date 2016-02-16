@@ -22,4 +22,4 @@ from toolium.pageelements.page_element import PageElement
 class Text(PageElement):
     @property
     def text(self):
-        return self.element().text
+        return self.element.text

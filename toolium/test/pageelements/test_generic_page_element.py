@@ -19,6 +19,7 @@ limitations under the License.
 import unittest
 
 import mock
+import six
 from nose.tools import assert_equal
 from selenium.webdriver.common.by import By
 
@@ -73,31 +74,43 @@ class TestGenericPageElement(unittest.TestCase):
         assert_equal(page_object.password.locator, (By.ID, 'password'))
 
     def test_get_element(self):
-        LoginPageObject().username.element()
+        LoginPageObject().username.element
 
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
 
     def test_get_element_with_parent(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
-        web_element = LoginPageObject().password.element()
+        web_element = LoginPageObject().password.element
 
         assert_equal(web_element, child_element)
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
         assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'password')])
 
     def test_get_element_init_page(self):
-        RegisterPageObject().language.element()
+        RegisterPageObject().language.element
 
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.ID, 'language')])
 
     def test_get_element_with_parent_webelement(self):
-        web_element = RegisterPageObject().email.element()
+        web_element = RegisterPageObject().email.element
 
         assert_equal(web_element, child_element)
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [])
         assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'email')])
 
     def test_get_element_in_test(self):
-        PageElement(By.NAME, 'username').element()
+        PageElement(By.NAME, 'username').element
 
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
+
+    def test_get_element_two_times(self):
+        login_page = LoginPageObject()
+        login_page.username.element
+        login_page.username.element
+
+        # find_element is not called the second time
+        if six.PY2:
+            second_call = mock.call().__nonzero__()
+        else:
+            second_call = mock.call().__bool__()
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username'), second_call])

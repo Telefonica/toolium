@@ -335,7 +335,7 @@ class Utils(object):
         else:
             try:
                 # PageElement
-                element = element_or_locator.element()
+                element = element_or_locator.element
             except AttributeError:
                 element = self.driver_wrapper.driver.find_element(*element_or_locator)
         return element

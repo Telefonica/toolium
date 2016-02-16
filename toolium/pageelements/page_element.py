@@ -33,6 +33,7 @@ class PageElement(object):
     driver = None
     config = None
     utils = None
+    _element = None
 
     def __init__(self, by, value, parent=None):
         """Initialize the PageElement object with the given locator components.
@@ -70,21 +71,25 @@ class PageElement(object):
         """Set utils instance"""
         self.utils = utils
 
+    @property
     def element(self):
         """Find WebElement using element locator
 
         :return: web element object
         :rtype: selenium.webdriver.remote.webelement.WebElement
         """
-        if self.parent and isinstance(self.parent, WebElement):
-            return self.parent.find_element(*self.locator)
-        if self.parent and isinstance(self.parent, PageElement):
-            return self.parent.element().find_element(*self.locator)
-        return self.driver.find_element(*self.locator)
+        if not self._element:
+            if self.parent and isinstance(self.parent, WebElement):
+                self._element = self.parent.find_element(*self.locator)
+            elif self.parent and isinstance(self.parent, PageElement):
+                self._element = self.parent.element.find_element(*self.locator)
+            else:
+                self._element = self.driver.find_element(*self.locator)
+        return self._element
 
     def scroll_element_into_view(self):
         """Scroll element into view"""
-        y = self.element().location['y']
+        y = self.element.location['y']
         self.driver.execute_script('window.scrollTo(0, {0})'.format(y))
 
     def wait_until_visible(self, timeout=10):
@@ -93,7 +98,8 @@ class PageElement(object):
         :param timeout: max time to wait
         :returns: web element if it is visible or False
         """
-        return self.utils.wait_until_element_visible(self.locator, timeout)
+        self._element = self.utils.wait_until_element_visible(self.locator, timeout)
+        return self._element
 
     def wait_until_not_visible(self, timeout=10):
         """Search element and wait until it is not visible
@@ -101,7 +107,8 @@ class PageElement(object):
         :param timeout: max time to wait
         :returns: web element if it is not visible or False
         """
-        return self.utils.wait_until_element_not_visible(self.locator, timeout)
+        self._element = self.utils.wait_until_element_not_visible(self.locator, timeout)
+        return self._element
 
     def assert_screenshot(self, filename, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of the element is the same as a screenshot on disk, within a given threshold.
@@ -111,5 +118,5 @@ class PageElement(object):
         :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
                                  from the assertion.
         """
-        VisualTest(self.driver_wrapper).assert_screenshot(self.element(), filename, self.__class__.__name__, threshold,
+        VisualTest(self.driver_wrapper).assert_screenshot(self.element, filename, self.__class__.__name__, threshold,
                                                           exclude_elements)

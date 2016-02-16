@@ -221,11 +221,10 @@ class UtilsTests(unittest.TestCase):
 
     def test_get_element_pageelement(self):
         page_element = mock.MagicMock()
-        page_element.element.return_value = 'mock_element'
+        page_element.element = 'mock_element'
 
         element = self.utils.get_element(page_element)
         assert_equal('mock_element', element)
-        page_element.element.assert_called_with()
 
     def test_get_element_locator(self):
         # Configure driver mock

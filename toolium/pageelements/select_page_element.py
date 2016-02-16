@@ -32,4 +32,4 @@ class Select(PageElement):
 
     @property
     def select_object(self):
-        return SeleniumSelect(self.element())
+        return SeleniumSelect(self.element)
