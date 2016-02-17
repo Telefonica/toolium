@@ -27,6 +27,15 @@ from toolium.utils import Utils
 
 
 class DriverWrapper(object):
+    """Driver wrapper
+
+    Attributes:
+        driver: webdriver instance
+        utils: test utils instance
+
+    :type driver: selenium.webdriver.remote.webdriver.WebDriver
+    :type utils: toolium.utils.Utils
+    """
     driver = None
     utils = None
     session_id = None
@@ -207,5 +216,4 @@ class DriverWrapper(object):
 
         :returns: true if the browser is maximizable
         """
-        browser_name = self.config.get('Browser', 'browser').split('-')[0]
-        return not self.is_mobile_test() and browser_name != 'edge'
+        return not self.is_mobile_test()

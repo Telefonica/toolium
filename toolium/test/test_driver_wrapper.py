@@ -230,7 +230,7 @@ maximizable_browsers = (
     ('firefox', True),
     ('opera-12.12-on-xp', True),
     ('opera', True),
-    ('edge', False),
+    ('edge', True),
     ('android', False),
     ('ios', False),
     ('iphone', False),

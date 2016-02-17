@@ -21,6 +21,13 @@ import os
 
 
 class DriverWrappersPool(object):
+    """Driver wrappers pool
+
+    Attributes:
+        driver_wrappers: driver wrappers list
+
+    :type driver_wrappers: list of toolium.driver_wrapper.DriverWrapper
+    """
     driver_wrappers = []
 
     # Configuration and output folders
