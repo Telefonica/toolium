@@ -88,27 +88,31 @@ class PageElement(object):
         return self._element
 
     def scroll_element_into_view(self):
-        """Scroll element into view"""
+        """Scroll element into view
+
+        :returns: page element instance
+        """
         y = self.element.location['y']
         self.driver.execute_script('window.scrollTo(0, {0})'.format(y))
+        return self
 
     def wait_until_visible(self, timeout=10):
         """Search element and wait until it is visible
 
         :param timeout: max time to wait
-        :returns: web element if it is visible or False
+        :returns: page element instance
         """
         self._element = self.utils.wait_until_element_visible(self.locator, timeout)
-        return self._element
+        return self
 
     def wait_until_not_visible(self, timeout=10):
         """Search element and wait until it is not visible
 
         :param timeout: max time to wait
-        :returns: web element if it is not visible or False
+        :returns: page element instance
         """
         self._element = self.utils.wait_until_element_not_visible(self.locator, timeout)
-        return self._element
+        return self
 
     def assert_screenshot(self, filename, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of the element is the same as a screenshot on disk, within a given threshold.

@@ -21,4 +21,9 @@ from toolium.pageelements.page_element import PageElement
 
 class Button(PageElement):
     def click(self):
+        """Click the element
+
+        :returns: page element instance
+        """
         self.element.click()
+        return self
