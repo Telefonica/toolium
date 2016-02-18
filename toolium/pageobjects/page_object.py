@@ -21,8 +21,6 @@ import unittest
 
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.pageelements.page_element import PageElement
-from toolium.test_cases import AppiumTestCase
-from toolium.utils import Utils
 
 
 class PageObject(unittest.TestCase):
@@ -81,7 +79,7 @@ class PageObject(unittest.TestCase):
         for element in list(self.__dict__.values()) + list(self.__class__.__dict__.values()):
             if isinstance(element, PageElement):
                 element.set_driver_wrapper(self.driver_wrapper)
-                element._element = None
+                element._web_element = None
             if isinstance(element, PageObject):
                 element.set_driver_wrapper(self.driver_wrapper)
                 # If element is page object, update its page elements

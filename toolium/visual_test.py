@@ -59,7 +59,7 @@ class VisualTest(object):
             self.engine = PilEngine()
         else:
             self.logger.warn(
-                    "Engine '{}' not found, using pil instead. Review your properties.cfg file.".format(engine_type))
+                "Engine '{}' not found, using pil instead. Review your properties.cfg file.".format(engine_type))
             self.engine = PilEngine()
         self.save_baseline = self.driver_wrapper.config.getboolean_optional('VisualTests', 'save')
 
@@ -75,11 +75,11 @@ class VisualTest(object):
         if not os.path.exists(dst_template_path):
             shutil.copyfile(orig_template_path, dst_template_path)
 
-    def assert_screenshot(self, element_or_locator, filename, file_suffix=None, threshold=0, exclude_elements=[]):
+    def assert_screenshot(self, element, filename, file_suffix=None, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold
 
-        :param element_or_locator: either a WebElement, a PageElement or an element locator as a tuple (locator_type,
-                                   locator_value). If None, a full screenshot is taken.
+        :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value).
+                        If None, a full screenshot is taken.
         :param filename: the filename for the screenshot, which will be appended with ``.png``
         :param file_suffix: a string to be appended to the output filename
         :param threshold: the threshold for triggering a test failure
@@ -90,8 +90,8 @@ class VisualTest(object):
             return
 
         # Search elements
-        element = self.utils.get_element(element_or_locator)
-        exclude_elements = [self.utils.get_element(exclude_element) for exclude_element in exclude_elements]
+        web_element = self.utils.get_web_element(element)
+        exclude_web_elements = [self.utils.get_web_element(exclude_element) for exclude_element in exclude_elements]
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
@@ -101,11 +101,11 @@ class VisualTest(object):
 
         # Get screenshot and modify it
         if self.driver_wrapper.is_ios_test() or self.driver_wrapper.is_android_web_test() or (
-                    exclude_elements and len(exclude_elements) > 0) or element:
+                    exclude_web_elements and len(exclude_web_elements) > 0) or web_element:
             img = Image.open(BytesIO(self.driver_wrapper.driver.get_screenshot_as_png()))
             img = self.mobile_resize(img)
-            img = self.exclude_elements(img, exclude_elements)
-            img = self.crop_element(img, element)
+            img = self.exclude_elements(img, exclude_web_elements)
+            img = self.crop_element(img, web_element)
             img.save(output_file)
         else:
             # Faster method if the screenshot must not be modified
@@ -138,40 +138,40 @@ class VisualTest(object):
                 img = img.resize(new_image_size, Image.ANTIALIAS)
         return img
 
-    def get_element_box(self, element):
+    def get_element_box(self, web_element):
         """Get element coordinates
 
-        :param element: WebElement object
+        :param web_element: WebElement object
         :returns: tuple with element coordinates
         """
         offset = self.utils.get_safari_navigation_bar_height()
-        return (int(element.location['x']), int(element.location['y'] + offset),
-                int(element.location['x'] + element.size['width']),
-                int(element.location['y'] + offset + element.size['height']))
+        return (int(web_element.location['x']), int(web_element.location['y'] + offset),
+                int(web_element.location['x'] + web_element.size['width']),
+                int(web_element.location['y'] + offset + web_element.size['height']))
 
-    def crop_element(self, img, element):
+    def crop_element(self, img, web_element):
         """Crop image to fit element
 
         :param img: image object
-        :param element: WebElement object
+        :param web_element: WebElement object
         :returns: modified image object
         """
-        if element:
-            img = img.crop(self.get_element_box(element))
+        if web_element:
+            img = img.crop(self.get_element_box(web_element))
         return img
 
-    def exclude_elements(self, img, elements):
+    def exclude_elements(self, img, web_elements):
         """Modify image hiding elements with a black rectangle
 
         :param img: image object
-        :param elements: WebElement objects to be excluded
+        :param web_elements: WebElement objects to be excluded
         """
-        if elements and len(elements) > 0:
+        if web_elements and len(web_elements) > 0:
             img = img.convert("RGBA")
             pixel_data = img.load()
 
-            for element in elements:
-                element_box = self.get_element_box(element)
+            for web_element in web_elements:
+                element_box = self.get_element_box(web_element)
                 for x, y in itertools.product(xrange(element_box[0], element_box[2]),
                                               xrange(element_box[1], element_box[3])):
                     try:

@@ -28,6 +28,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
+from toolium.pageelements.page_element import PageElement
 from toolium.utils import Utils
 
 navigation_bar_tests = (
@@ -210,36 +211,40 @@ class UtilsTests(unittest.TestCase):
             self.utils.swipe(element, 50, 100)
         assert_equal(str(cm.exception), 'Swipe method is not implemented in Selenium')
 
-    def test_get_element_none(self):
-        element = self.utils.get_element(None)
-        assert_is_none(element)
+    def test_get_web_element_from_web_element(self):
+        element = WebElement(None, 1)
+        web_element = self.utils.get_web_element(element)
+        assert_equal(element, web_element)
 
-    def test_get_element_webelement(self):
-        web_element = WebElement(None, 1)
-        element = self.utils.get_element(web_element)
-        assert_equal(web_element, element)
+    def test_get_web_element_from_page_element(self):
+        element = PageElement(By.ID, 'element_id')
+        element._web_element = 'mock_element'
 
-    def test_get_element_pageelement(self):
-        page_element = mock.MagicMock()
-        page_element.element = 'mock_element'
+        web_element = self.utils.get_web_element(element)
+        assert_equal('mock_element', web_element)
 
-        element = self.utils.get_element(page_element)
-        assert_equal('mock_element', element)
-
-    def test_get_element_locator(self):
+    def test_get_web_element_from_locator(self):
         # Configure driver mock
         self.driver_wrapper.driver.find_element.return_value = 'mock_element'
         element_locator = (By.ID, 'element_id')
 
         # Get element and assert response
-        element = self.utils.get_element(element_locator)
-        assert_equal('mock_element', element)
+        web_element = self.utils.get_web_element(element_locator)
+        assert_equal('mock_element', web_element)
         self.driver_wrapper.driver.find_element.assert_called_with(*element_locator)
+
+    def test_get_web_element_from_none(self):
+        web_element = self.utils.get_web_element(None)
+        assert_is_none(web_element)
+
+    def test_get_web_element_from_unknown(self):
+        web_element = self.utils.get_web_element(dict())
+        assert_is_none(web_element)
 
 
 @mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
 def get_mock_element(WebElement, x, y, height, width):
-    element = WebElement.return_value
-    element.location = {'x': x, 'y': y}
-    element.size = {'height': height, 'width': width}
-    return element
+    web_element = WebElement.return_value
+    web_element.location = {'x': x, 'y': y}
+    web_element.size = {'height': height, 'width': width}
+    return web_element

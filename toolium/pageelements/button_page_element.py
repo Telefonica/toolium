@@ -25,5 +25,5 @@ class Button(PageElement):
 
         :returns: page element instance
         """
-        self.element.click()
+        self.web_element.click()
         return self

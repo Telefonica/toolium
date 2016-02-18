@@ -34,9 +34,9 @@ mock_element = None
 
 @mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
 def get_mock_element(WebElement):
-    element = WebElement.return_value
-    element.find_element.return_value = child_element
-    return element
+    web_element = WebElement.return_value
+    web_element.find_element.return_value = child_element
+    return web_element
 
 
 class LoginPageObject(PageObject):
@@ -75,18 +75,18 @@ class TestGenericPageElement(unittest.TestCase):
         assert_equal(page_object.password.locator, (By.ID, 'password'))
 
     def test_get_element(self):
-        LoginPageObject().username.element
+        LoginPageObject().username.web_element
 
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
 
     def test_get_element_init_page(self):
-        RegisterPageObject().language.element
+        RegisterPageObject().language.web_element
 
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.ID, 'language')])
 
     def test_get_element_with_parent(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
-        web_element = LoginPageObject().password.element
+        web_element = LoginPageObject().password.web_element
 
         assert_equal(web_element, child_element)
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
@@ -94,28 +94,28 @@ class TestGenericPageElement(unittest.TestCase):
 
     def test_get_element_with_parent_locator(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
-        web_element = RegisterPageObject().address.element
+        web_element = RegisterPageObject().address.web_element
 
         assert_equal(web_element, child_element)
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.ID, 'parent')])
         assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'address')])
 
-    def test_get_element_with_parent_webelement(self):
-        web_element = RegisterPageObject().email.element
+    def test_get_element_with_parent_web_element(self):
+        web_element = RegisterPageObject().email.web_element
 
         assert_equal(web_element, child_element)
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [])
         assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'email')])
 
     def test_get_element_in_test(self):
-        PageElement(By.NAME, 'username').element
+        PageElement(By.NAME, 'username').web_element
 
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
 
     def test_get_element_two_times(self):
         login_page = LoginPageObject()
-        login_page.username.element
-        login_page.username.element
+        login_page.username.web_element
+        login_page.username.web_element
 
         # find_element is not called the second time
         if six.PY2:

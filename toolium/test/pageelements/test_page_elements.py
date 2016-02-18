@@ -34,11 +34,11 @@ mock_element = None
 
 @mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
 def get_mock_element(WebElement):
-    element = WebElement.return_value
-    element.find_element.return_value = child_element
-    element.text = 'text value'
-    element.get_attribute.return_value = 'input text value'
-    return element
+    web_element = WebElement.return_value
+    web_element.find_element.return_value = child_element
+    web_element.text = 'text value'
+    web_element.get_attribute.return_value = 'input text value'
+    return web_element
 
 
 def get_mock_select():
@@ -93,14 +93,14 @@ class TestPageElements(unittest.TestCase):
 
         assert_equal(title_value, 'text value')
 
-    def test_get_inputtext(self):
+    def test_get_input_text(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
 
         username_value = LoginPageObject().username.text
 
         assert_equal(username_value, 'input text value')
 
-    def test_set_inputtext(self):
+    def test_set_input_text(self):
         # Configure driver mock
         self.driver_wrapper.driver.find_element.return_value = mock_element
         self.driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)

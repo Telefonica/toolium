@@ -171,11 +171,11 @@ class VisualTests(unittest.TestCase):
 
     def test_crop_element(self):
         # Create element mock
-        element = get_mock_element(x=250, y=40, height=40, width=300)
+        web_element = get_mock_element(x=250, y=40, height=40, width=300)
 
         # Resize image
         img = Image.open(self.file_v1)
-        img = self.visual.crop_element(img, element)
+        img = self.visual.crop_element(img, web_element)
 
         # Assert output image
         self.assert_image(img, self._testMethodName, 'register_cropped_element')
@@ -208,23 +208,23 @@ class VisualTests(unittest.TestCase):
 
     def test_exclude_elements(self):
         # Create elements mock
-        elements = [get_mock_element(x=250, y=40, height=40, width=300),
-                    get_mock_element(x=250, y=90, height=20, width=100)]
+        web_elements = [get_mock_element(x=250, y=40, height=40, width=300),
+                        get_mock_element(x=250, y=90, height=20, width=100)]
         img = Image.open(self.file_v1)
 
         # Exclude elements
-        img = self.visual.exclude_elements(img, elements)
+        img = self.visual.exclude_elements(img, web_elements)
 
         # Assert output image
         self.assert_image(img, self._testMethodName, 'register_exclude')
 
     def test_exclude_element_outofimage(self):
         # Create elements mock
-        elements = [get_mock_element(x=250, y=40, height=40, width=1500)]
+        web_elements = [get_mock_element(x=250, y=40, height=40, width=1500)]
         img = Image.open(self.file_v1)
 
         # Exclude elements
-        img = self.visual.exclude_elements(img, elements)
+        img = self.visual.exclude_elements(img, web_elements)
 
         # Assert output image
         self.assert_image(img, self._testMethodName, 'register_exclude_outofimage')
@@ -256,7 +256,7 @@ class VisualTests(unittest.TestCase):
 
     def test_assert_screenshot_element_and_save_baseline(self):
         # Create element mock
-        element = get_mock_element(x=250, y=40, height=40, width=300)
+        web_element = get_mock_element(x=250, y=40, height=40, width=300)
 
         # Configure driver mock
         with open(self.file_v1, "rb") as f:
@@ -264,7 +264,7 @@ class VisualTests(unittest.TestCase):
         self.driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
 
         # Assert screenshot
-        self.visual.assert_screenshot(element, filename='screenshot_elem', file_suffix='screenshot_suffix')
+        self.visual.assert_screenshot(web_element, filename='screenshot_elem', file_suffix='screenshot_suffix')
         self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
 
         # Check cropped image
@@ -302,7 +302,7 @@ class VisualTests(unittest.TestCase):
         shutil.copyfile(expected_image, baseline_file)
 
         # Create element mock
-        element = get_mock_element(x=250, y=40, height=40, width=300)
+        web_element = get_mock_element(x=250, y=40, height=40, width=300)
 
         # Configure driver mock
         with open(self.file_v1, "rb") as f:
@@ -310,12 +310,12 @@ class VisualTests(unittest.TestCase):
         self.driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
 
         # Assert screenshot
-        self.visual.assert_screenshot(element, filename='screenshot_elem', file_suffix='screenshot_suffix')
+        self.visual.assert_screenshot(web_element, filename='screenshot_elem', file_suffix='screenshot_suffix')
         self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
 
     def test_assert_screenshot_mobile_resize_and_exclude(self):
         # Create elements mock
-        elements = [get_mock_element(x=0, y=0, height=24, width=375)]
+        exclude_elements = [get_mock_element(x=0, y=0, height=24, width=375)]
 
         # Configure driver mock
         with open(self.file_ios, "rb") as f:
@@ -329,7 +329,7 @@ class VisualTests(unittest.TestCase):
 
         # Assert screenshot
         self.visual.assert_screenshot(None, filename='screenshot_ios', file_suffix='screenshot_suffix',
-                                      exclude_elements=elements)
+                                      exclude_elements=exclude_elements)
         self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
 
         # Check cropped image
@@ -377,7 +377,7 @@ class VisualTests(unittest.TestCase):
 
 @mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
 def get_mock_element(WebElement, x, y, height, width):
-    element = WebElement.return_value
-    element.location = {'x': x, 'y': y}
-    element.size = {'height': height, 'width': width}
-    return element
+    web_element = WebElement.return_value
+    web_element.location = {'x': x, 'y': y}
+    web_element.size = {'height': height, 'width': width}
+    return web_element

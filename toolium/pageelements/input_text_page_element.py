@@ -22,11 +22,11 @@ from toolium.pageelements.page_element import PageElement
 class InputText(PageElement):
     @property
     def text(self):
-        return self.element.get_attribute("value")
+        return self.web_element.get_attribute("value")
 
     @text.setter
     def text(self, value):
         if self.driver_wrapper.is_ios_test() and not self.driver_wrapper.is_web_test():
-            self.element.set_value(value)
+            self.web_element.set_value(value)
         else:
-            self.element.send_keys(value)
+            self.web_element.send_keys(value)

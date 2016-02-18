@@ -32,6 +32,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
+from toolium.pageelements.page_element import PageElement
 from datetime import datetime
 
 
@@ -250,15 +251,15 @@ class Utils(object):
             record_videos = 'false'
         return True if record_videos == 'true' else False
 
-    @staticmethod
-    def get_center(element):
+    def get_center(self, element):
         """Get center coordinates of an element
 
-        :param element: webdriver element
+        :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value)
         :returns: dict with center coordinates
         """
-        return {'x': element.location['x'] + (element.size['width'] / 2),
-                'y': element.location['y'] + (element.size['height'] / 2)}
+        web_element = self.get_web_element(element)
+        return {'x': web_element.location['x'] + (web_element.size['width'] / 2),
+                'y': web_element.location['y'] + (web_element.size['height'] / 2)}
 
     def get_safari_navigation_bar_height(self):
         """Get the height of Safari navigation bar
@@ -300,19 +301,19 @@ class Utils(object):
         self.logger.debug('Converted web coords {} into native coords {}'.format(coords, native_coords))
         return native_coords
 
-    def swipe(self, element_or_locator, x, y, duration=None):
+    def swipe(self, element, x, y, duration=None):
         """Swipe over an element
 
-        :param element_or_locator: either a WebElement, a PageElement or an element locator as a tuple (locator_type,
-                                   locator_value).
+        :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value)
         :param x: horizontal movement
         :param y: vertical movement
-        :param duration: time to take the swipe, in ms.
+        :param duration: time to take the swipe, in ms
         """
-        center = self.get_center(self.get_element(element_or_locator))
         if not self.driver_wrapper.is_mobile_test():
             raise Exception('Swipe method is not implemented in Selenium')
-        elif self.driver_wrapper.is_web_test() or self.driver_wrapper.driver.current_context != 'NATIVE_APP':
+
+        center = self.get_center(element)
+        if self.driver_wrapper.is_web_test() or self.driver_wrapper.driver.current_context != 'NATIVE_APP':
             current_context = self.driver_wrapper.driver.current_context
             center = self.get_native_coords(center)
             self.driver_wrapper.driver.swipe(center['x'], center['y'], center['x'] + x, center['y'] + y, duration)
@@ -320,24 +321,21 @@ class Utils(object):
         else:
             self.driver_wrapper.driver.swipe(center['x'], center['y'], center['x'] + x, center['y'] + y, duration)
 
-    def get_element(self, element_or_locator):
+    def get_web_element(self, element):
         """Return the web element from a page element or its locator
 
-        :param element_or_locator: either a WebElement, a PageElement or an element locator as a tuple (locator_type,
-                                   locator_value).
+        :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value)
         :returns: WebElement object
         """
-        if element_or_locator is None:
-            element = None
-        elif isinstance(element_or_locator, WebElement):
-            element = element_or_locator
+        if isinstance(element, WebElement):
+            web_element = element
+        elif isinstance(element, PageElement):
+            web_element = element.web_element
+        elif isinstance(element, tuple):
+            web_element = self.driver_wrapper.driver.find_element(*element)
         else:
-            try:
-                # PageElement
-                element = element_or_locator.element
-            except AttributeError:
-                element = self.driver_wrapper.driver.find_element(*element_or_locator)
-        return element
+            web_element = None
+        return web_element
 
 
 class classproperty(property):
