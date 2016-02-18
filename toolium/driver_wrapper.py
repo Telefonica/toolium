@@ -27,22 +27,42 @@ from toolium.utils import Utils
 
 
 class DriverWrapper(object):
-    """Driver wrapper
+    """Wrapper with the webdriver and the configuration needed to execute tests
 
     Attributes:
         driver: webdriver instance
+        config: driver configuration
         utils: test utils instance
+        app_strings: mobile application strings
+        session_id: remote webdriver session id
+        remote_video_node: remote webdriver video node
+        logger: logger instance
+        config_properties_filenames: configuration filenames separated by commas
+        config_log_filename: configuration log file
+        output_log_filename: output log file
+        visual_baseline_directory: folder with the baseline images
+        baseline_name: baseline name
 
-    :type driver: selenium.webdriver.remote.webdriver.WebDriver
+    :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
+    :type config: toolium.config_parser.ExtendedConfigParser
     :type utils: toolium.utils.Utils
+    :type app_strings: dict
+    :type session_id: str
+    :type remote_video_node: str
+    :type logger: logging.Logger
+    :type config_properties_filenames: str
+    :type config_log_filename: str
+    :type output_log_filename: str
+    :type visual_baseline_directory: str
+    :type baseline_name: str
     """
     driver = None
+    config = ExtendedConfigParser()
     utils = None
+    app_strings = None
     session_id = None
     remote_video_node = None
-    app_strings = None
     logger = None
-    config = ExtendedConfigParser()
 
     # Configuration and output files
     config_properties_filenames = None
@@ -51,8 +71,8 @@ class DriverWrapper(object):
     visual_baseline_directory = None
     baseline_name = None
 
-    def __init__(self, main_driver=False):
-        if not main_driver:
+    def __init__(self):
+        if not DriverWrappersPool.is_empty():
             # Copy config object from default driver
             self.config = DriverWrappersPool.get_default_wrapper().config.deepcopy()
 

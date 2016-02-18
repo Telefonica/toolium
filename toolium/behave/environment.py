@@ -186,8 +186,7 @@ def after_all(context):
 def bdd_common_after_all():
     """Common after all method in behave or lettuce"""
     # Close browser and stop driver if it has been reused
-    if not DriverWrappersPool.is_empty():
-        DriverWrappersPool.close_drivers_and_download_videos('multiple_tests')
+    DriverWrappersPool.close_drivers_and_download_videos('multiple_tests')
 
     # Update tests status in Jira
     change_all_jira_status()

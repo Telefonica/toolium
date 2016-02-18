@@ -23,16 +23,29 @@ from toolium.visual_test import VisualTest
 
 
 class PageElement(object):
-    """
+    """Class to represent a web or a mobile page element
+
+    Attributes:
+        driver_wrapper: driver wrapper instance
+        driver: webdriver instance
+        config: driver configuration
+        utils: test utils instance
+        locator: tuple with locator type and locator value
+        parent: element from which to find actual element
+
     :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
-    :type driver: selenium.webdriver.remote.webdriver.WebDriver
+    :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
     :type config: toolium.config_parser.ExtendedConfigParser
     :type utils: toolium.utils.Utils
+    :type locator: (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
+    :type parent: selenium.webdriver.remote.webelement.WebElement or toolium.pageelements.PageElement
     """
     driver_wrapper = None
     driver = None
     config = None
     utils = None
+    locator = None
+    parent = None
     _element = None
 
     def __init__(self, by, value, parent=None):
@@ -55,21 +68,10 @@ class PageElement(object):
         :param driver_wrapper: driver wrapper instance
         """
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
-        self.set_driver(self.driver_wrapper.driver)
-        self.set_config(self.driver_wrapper.config)
-        self.set_utils(self.driver_wrapper.utils)
-
-    def set_driver(self, driver):
-        """Set Selenium driver"""
-        self.driver = driver
-
-    def set_config(self, config):
-        """Set configuration properties"""
-        self.config = config
-
-    def set_utils(self, utils):
-        """Set utils instance"""
-        self.utils = utils
+        # Add some driver_wrapper attributes to page element instance
+        self.driver = self.driver_wrapper.driver
+        self.config = self.driver_wrapper.config
+        self.utils = self.driver_wrapper.utils
 
     @property
     def element(self):

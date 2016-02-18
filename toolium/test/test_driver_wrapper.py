@@ -242,7 +242,7 @@ class DriverWrapperTests(DriverWrapperCommon):
     def setUp(self):
         os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
         os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
-        self.driver_wrapper = DriverWrapper(main_driver=True)
+        self.driver_wrapper = DriverWrapper()
         self.driver_wrapper.configure()
 
     def test_multiple(self):

@@ -100,10 +100,9 @@ class SeleniumTestCase(BasicTestCase):
         # Call BasicTestCase tearDownClass
         super(SeleniumTestCase, cls).tearDownClass()
 
-        # Stop driver
-        if SeleniumTestCase.driver:
-            DriverWrappersPool.close_drivers_and_download_videos(cls.get_subclass_name())
-            SeleniumTestCase.driver = None
+        # Close browser and stop driver if it has been reused
+        DriverWrappersPool.close_drivers_and_download_videos(cls.get_subclass_name())
+        SeleniumTestCase.driver = None
 
     def setUp(self):
         # Get default driver wrapper

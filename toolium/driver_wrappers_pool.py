@@ -25,8 +25,24 @@ class DriverWrappersPool(object):
 
     Attributes:
         driver_wrappers: driver wrappers list
+        config_directory: folder with configuration files
+        output_directory: folder to save output files
+        screenshots_directory: folder to save screenshots
+        screenshots_number: number of screenshots taken until now
+        videos_directory: folder to save videos
+        videos_number: number of videos recorded until now
+        visual_output_directory: folder to save visual report and images
+        visual_number: number of visual images taken until now
 
     :type driver_wrappers: list of toolium.driver_wrapper.DriverWrapper
+    :type config_directory: str
+    :type output_directory: str
+    :type screenshots_directory: str
+    :type screenshots_number: str
+    :type videos_directory: str
+    :type videos_number: int
+    :type visual_output_directory: str
+    :type visual_number: int
     """
     driver_wrappers = []
 
@@ -48,11 +64,11 @@ class DriverWrappersPool(object):
 
     @classmethod
     def is_empty(cls):
-        """Check if the wrappers pool is empty or the main driver is not connected
+        """Check if the wrappers pool is empty
 
-        :returns: true id the wrappers pool is empty
+        :returns: true if the wrappers pool is empty
         """
-        return len(cls.driver_wrappers) == 0 or cls.driver_wrappers[0].driver is None
+        return len(cls.driver_wrappers) == 0
 
     @classmethod
     def get_default_wrapper(cls):
@@ -61,10 +77,10 @@ class DriverWrappersPool(object):
         :returns: default driver wrapper
         :rtype: toolium.driver_wrapper.DriverWrapper
         """
-        if len(cls.driver_wrappers) == 0:
+        if cls.is_empty():
             # Create a new driver wrapper if the pool is empty
             from toolium.driver_wrapper import DriverWrapper
-            DriverWrapper(main_driver=True)
+            DriverWrapper()
         return cls.driver_wrappers[0]
 
     @classmethod

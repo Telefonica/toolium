@@ -26,12 +26,26 @@ from toolium.utils import Utils
 
 
 class PageObject(unittest.TestCase):
-    """
+    """Class to represent a web page or a mobile application screen
+
+    Attributes:
+        driver_wrapper: driver wrapper instance
+        driver: webdriver instance
+        config: driver configuration
+        utils: test utils instance
+        app_strings: mobile application strings
+
     :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
-    :type driver: selenium.webdriver.remote.webdriver.WebDriver
+    :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
     :type config: toolium.config_parser.ExtendedConfigParser
     :type utils: toolium.utils.Utils
+    :type app_strings: str
     """
+    driver_wrapper = None
+    driver = None
+    config = None
+    utils = None
+    app_strings = None
 
     def __init__(self, driver_wrapper=None):
         """Initialize page object properties and update their page elements
@@ -40,7 +54,6 @@ class PageObject(unittest.TestCase):
         """
         self.logger = logging.getLogger(__name__)
         self.set_driver_wrapper(driver_wrapper)
-        self.app_strings = self.driver_wrapper.app_strings
         self.init_page_elements()
         self._update_page_elements()
 
@@ -50,24 +63,17 @@ class PageObject(unittest.TestCase):
         :param driver_wrapper: driver wrapper instance
         """
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
-        self.set_driver(self.driver_wrapper.driver)
-        self.set_config(self.driver_wrapper.config)
-        self.set_utils(self.driver_wrapper.utils)
-
-    def set_driver(self, driver):
-        """Set Selenium driver"""
-        self.driver = driver
-
-    def set_utils(self, utils):
-        """Set utils instance"""
-        self.utils = utils
-
-    def set_config(self, config):
-        """Set configuration properties"""
-        self.config = config
+        # Add some driver_wrapper attributes to page object instance
+        self.driver = self.driver_wrapper.driver
+        self.config = self.driver_wrapper.config
+        self.utils = self.driver_wrapper.utils
+        self.app_strings = self.driver_wrapper.app_strings
 
     def init_page_elements(self):
-        """Method to initialize page elements"""
+        """Method to initialize page elements
+
+        This method can be overridden to define page elements and will be called in page object __init__
+        """
         pass
 
     def _update_page_elements(self):
