@@ -51,6 +51,7 @@ class RegisterPageObject(PageObject):
     def init_page_elements(self):
         self.language = PageElement(By.ID, 'language')
         self.email = PageElement(By.ID, 'email', mock_element)
+        self.address = PageElement(By.ID, 'address', (By.ID, 'parent'))
 
 
 class TestGenericPageElement(unittest.TestCase):
@@ -78,6 +79,11 @@ class TestGenericPageElement(unittest.TestCase):
 
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
 
+    def test_get_element_init_page(self):
+        RegisterPageObject().language.element
+
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.ID, 'language')])
+
     def test_get_element_with_parent(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
         web_element = LoginPageObject().password.element
@@ -86,10 +92,13 @@ class TestGenericPageElement(unittest.TestCase):
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
         assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'password')])
 
-    def test_get_element_init_page(self):
-        RegisterPageObject().language.element
+    def test_get_element_with_parent_locator(self):
+        self.driver_wrapper.driver.find_element.return_value = mock_element
+        web_element = RegisterPageObject().address.element
 
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.ID, 'language')])
+        assert_equal(web_element, child_element)
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.ID, 'parent')])
+        assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'address')])
 
     def test_get_element_with_parent_webelement(self):
         web_element = RegisterPageObject().email.element

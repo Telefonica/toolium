@@ -16,8 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from selenium.webdriver.remote.webelement import WebElement
-
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.visual_test import VisualTest
 
@@ -38,7 +36,9 @@ class PageElement(object):
     :type config: toolium.config_parser.ExtendedConfigParser
     :type utils: toolium.utils.Utils
     :type locator: (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
-    :type parent: selenium.webdriver.remote.webelement.WebElement or toolium.pageelements.PageElement
+    :type parent: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+                  or toolium.pageelements.PageElement
+                  or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     """
     driver_wrapper = None
     driver = None
@@ -56,7 +56,7 @@ class PageElement(object):
 
         :param by: locator type
         :param value: locator value
-        :param parent: parent element (WebElement or PageElement)
+        :param parent: parent element (WebElement, PageElement or locator tuple)
         """
         self.locator = (by, value)
         self.parent = parent
@@ -77,14 +77,12 @@ class PageElement(object):
     def element(self):
         """Find WebElement using element locator
 
-        :return: web element object
-        :rtype: selenium.webdriver.remote.webelement.WebElement
+        :returns: web element object
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
         if not self._element:
-            if self.parent and isinstance(self.parent, WebElement):
-                self._element = self.parent.find_element(*self.locator)
-            elif self.parent and isinstance(self.parent, PageElement):
-                self._element = self.parent.element.find_element(*self.locator)
+            if self.parent:
+                self._element = self.utils.get_element(self.parent).find_element(*self.locator)
             else:
                 self._element = self.driver.find_element(*self.locator)
         return self._element
@@ -121,8 +119,8 @@ class PageElement(object):
 
         :param filename: the filename for the screenshot, which will be appended with ``.png``
         :param threshold: the threshold for triggering a test failure
-        :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
-                                 from the assertion.
+        :param exclude_elements: list of WebElements, PageElements or element locators as a tuple (locator_type,
+                                 locator_value) that must be excluded from the assertion
         """
         VisualTest(self.driver_wrapper).assert_screenshot(self.element, filename, self.__class__.__name__, threshold,
                                                           exclude_elements)

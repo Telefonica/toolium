@@ -90,7 +90,6 @@ class Utils(object):
         try:
             logs = self.driver_wrapper.driver.get_log(log_type)
         except Exception:
-            self.logger.warn('Error reading {} logs'.format(log_type))
             return
 
         if len(logs) > 0:

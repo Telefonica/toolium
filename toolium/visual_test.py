@@ -83,8 +83,8 @@ class VisualTest(object):
         :param filename: the filename for the screenshot, which will be appended with ``.png``
         :param file_suffix: a string to be appended to the output filename
         :param threshold: the threshold for triggering a test failure
-        :param exclude_elements: list of WebElements, a PageElement or element locators as a tuple (locator_type,
-                                 locator_value) that must be excluded from the assertion.
+        :param exclude_elements: list of WebElements, PageElements or element locators as a tuple (locator_type,
+                                 locator_value) that must be excluded from the assertion
         """
         if not self.driver_wrapper.config.getboolean_optional('VisualTests', 'enabled'):
             return
