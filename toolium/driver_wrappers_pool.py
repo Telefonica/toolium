@@ -102,7 +102,11 @@ class DriverWrappersPool(object):
         for driver_wrapper in cls.driver_wrappers:
             if driver_wrapper.driver:
                 from toolium.jira import add_attachment
-                add_attachment(driver_wrapper.utils.capture_screenshot(screenshot_name.format(name, driver_index)))
+                try:
+                    add_attachment(driver_wrapper.utils.capture_screenshot(screenshot_name.format(name, driver_index)))
+                except Exception:
+                    # Capture exceptions to avoid errors in teardown method due to session timeouts
+                    pass
             driver_index += 1
 
     @classmethod
@@ -134,8 +138,12 @@ class DriverWrappersPool(object):
 
         for driver_wrapper in driver_wrappers:
             if driver_wrapper.driver:
-                driver_wrapper.driver.quit()
-                cls.download_video(driver_wrapper, name, test_passed)
+                try:
+                    driver_wrapper.driver.quit()
+                    cls.download_video(driver_wrapper, name, test_passed)
+                except Exception:
+                    # Capture exceptions to avoid errors in teardown method due to session timeouts
+                    pass
 
         cls.driver_wrappers = cls.driver_wrappers[0:1] if maintain_default else []
 

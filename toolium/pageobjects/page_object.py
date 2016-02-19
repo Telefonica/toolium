@@ -17,13 +17,12 @@ limitations under the License.
 """
 
 import logging
-import unittest
 
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.pageelements.page_element import PageElement
 
 
-class PageObject(unittest.TestCase):
+class PageObject(object):
     """Class to represent a web page or a mobile application screen
 
     Attributes:
