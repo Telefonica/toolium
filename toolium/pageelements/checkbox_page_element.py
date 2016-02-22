@@ -16,14 +16,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from toolium.pageelements.page_element import PageElement
+from toolium.pageelements import Button
 
 
-class Text(PageElement):
+class Checkbox(Button):
     @property
     def text(self):
-        """Get the text of the element
+        return self.web_element.get_attribute("value")
 
-        :returns: the text of the element
+    def is_selected(self):
+        """Returns whether the element is selected
+
+        :returns: true whether the element is selected
         """
-        return self.web_element.text
+        return self.web_element.is_selected()
+
+    def check(self):
+        """Select the checkbox
+
+        :returns: page element instance
+        """
+        if not self.is_selected():
+            self.web_element.click()
+        return self
+
+    def uncheck(self):
+        """Uncheck the checkbox
+
+        :returns: page element instance
+        """
+        if self.is_selected():
+            self.web_element.click()
+        return self

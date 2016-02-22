@@ -20,6 +20,14 @@ from toolium.pageelements.page_element import PageElement
 
 
 class Button(PageElement):
+    @property
+    def text(self):
+        """Get the text of the element
+
+        :returns: the text of the element
+        """
+        return self.web_element.text
+
     def click(self):
         """Click the element
 

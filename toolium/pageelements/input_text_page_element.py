@@ -30,3 +30,11 @@ class InputText(PageElement):
             self.web_element.set_value(value)
         else:
             self.web_element.send_keys(value)
+
+    def clear(self):
+        """Clear the text
+
+        :returns: page element instance
+        """
+        self.web_element.clear()
+        return self

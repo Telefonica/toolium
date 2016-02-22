@@ -122,5 +122,14 @@ class PageElement(object):
         :param exclude_elements: list of WebElements, PageElements or element locators as a tuple (locator_type,
                                  locator_value) that must be excluded from the assertion
         """
-        VisualTest(self.driver_wrapper).assert_screenshot(self.web_element, filename, self.__class__.__name__, threshold,
+        VisualTest(self.driver_wrapper).assert_screenshot(self.web_element, filename, self.__class__.__name__,
+                                                          threshold,
                                                           exclude_elements)
+
+    def get_attribute(self, name):
+        """Get the given attribute or property of the element
+
+        :param name: name of the attribute/property to retrieve
+        :returns: attribute value
+        """
+        return self.web_element.get_attribute(name)
