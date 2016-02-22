@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from toolium.pageelements import Button
+from toolium.pageelements.button_page_element import Button
 
 
 class InputRadio(Button):

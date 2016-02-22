@@ -16,13 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from toolium.pageelements.button_page_element import Button
-from toolium.pageelements.checkbox_page_element import Checkbox
-from toolium.pageelements.input_radio_page_element import InputRadio
-from toolium.pageelements.input_text_page_element import InputText
-from toolium.pageelements.link_page_element import Link
-from toolium.pageelements.page_element import PageElement
-from toolium.pageelements.select_page_element import Select
-from toolium.pageelements.text_page_element import Text
+from toolium.pageelements.page_elements import *
 
-__all__ = ['PageElement', 'Text', 'InputText', 'Select', 'Button', 'Link', 'Checkbox', 'InputRadio']
+__all__ = ['PageElement', 'Text', 'InputText', 'Select', 'Button', 'Link', 'Checkbox', 'InputRadio',
+           'PageElements', 'Texts', 'InputTexts', 'Selects', 'Buttons', 'Links', 'Checkboxs', 'InputRadios']
