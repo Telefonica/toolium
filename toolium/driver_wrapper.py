@@ -155,6 +155,9 @@ class DriverWrapper(object):
         :param maximize: True if the browser should be maximized
         :returns: selenium driver
         """
+        if not self.config.get('Browser', 'browser'):
+            return None
+
         self.driver = ConfigDriver(self.config).create_driver()
 
         # Save session id and remote node to download video after the test execution

@@ -59,7 +59,7 @@ def bdd_common_before_scenario(context_or_world, scenario):
 
     # Add implicitly wait
     implicitly_wait = context_or_world.toolium_config.get_optional('Common', 'implicitly_wait')
-    if implicitly_wait:
+    if context_or_world.driver and implicitly_wait:
         context_or_world.driver.implicitly_wait(implicitly_wait)
 
     context_or_world.logger.info("Running new scenario: {0}".format(scenario.name))
