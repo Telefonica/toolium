@@ -20,6 +20,7 @@ import logging
 
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.pageelements.page_element import PageElement
+from toolium.pageelements.page_elements import PageElements
 
 
 class PageObject(object):
@@ -76,10 +77,8 @@ class PageObject(object):
     def _update_page_elements(self):
         """Copy driver and utils instances to all page elements of this page object"""
         for element in list(self.__dict__.values()) + list(self.__class__.__dict__.values()):
-            if isinstance(element, PageElement):
+            if isinstance(element, PageElement) or isinstance(element, PageElements) or isinstance(element, PageObject):
                 element.set_driver_wrapper(self.driver_wrapper)
-                element._web_element = None
+            # If element is a page object, update its page elements
             if isinstance(element, PageObject):
-                element.set_driver_wrapper(self.driver_wrapper)
-                # If element is page object, update its page elements
                 element._update_page_elements()
