@@ -30,7 +30,7 @@ def before_all(context):
 
     :param context: behave context
     """
-    context.logger = logging.getLogger()
+    create_and_configure_wrapper(context)
 
 
 def before_scenario(context, scenario):
@@ -48,8 +48,10 @@ def bdd_common_before_scenario(context_or_world, scenario):
     :param context_or_world: behave context or lettuce world
     :param scenario: running scenario
     """
-    if DriverWrappersPool.is_empty():
+    # Initialize driver wrapper
+    if not DriverWrappersPool.get_default_wrapper().driver:
         create_and_configure_wrapper(context_or_world)
+        connect_wrapper(context_or_world)
 
     # Add assert screenshot methods with scenario configuration
     add_assert_screenshot_methods(context_or_world, scenario)
@@ -82,15 +84,23 @@ def create_and_configure_wrapper(context_or_world):
     # Override properties with behave userdata properties
     context_or_world.driver_wrapper.config.update_from_behave_properties(context_or_world)
 
-    # Copy config and app_strings objects
+    # Copy config object
     context_or_world.toolium_config = context_or_world.driver_wrapper.config
-    context_or_world.app_strings = context_or_world.driver_wrapper.app_strings
 
     # Configure logger
     context_or_world.logger = logging.getLogger()
 
+
+def connect_wrapper(context_or_world):
+    """Connect driver in behave or lettuce tests
+
+    :param context_or_world: behave context or lettuce world
+    """
     # Create driver
     context_or_world.driver = context_or_world.driver_wrapper.connect()
+
+    # Copy app_strings object
+    context_or_world.app_strings = context_or_world.driver_wrapper.app_strings
 
     # Discard previous logcat logs
     context_or_world.utils.discard_logcat_logs()
