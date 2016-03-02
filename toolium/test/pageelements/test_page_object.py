@@ -19,7 +19,7 @@ limitations under the License.
 import unittest
 
 import mock
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_is_not_none, assert_is_none
 from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper
@@ -115,3 +115,34 @@ class TestPageObject(unittest.TestCase):
         assert_equal(second_page_object.username.driver_wrapper, second_driver_wrapper)
         assert_equal(second_page_object.password.driver_wrapper, second_driver_wrapper)
         assert_equal(second_page_object.menu.register.driver_wrapper, second_driver_wrapper)
+
+    def test_reset_web_elements(self):
+        login_page = RegisterPageObject()
+        # Serach page elements
+        login_page.username.web_element
+        login_page.password.web_element
+        login_page.language.web_element
+        login_page.email.web_element
+        login_page.address.web_element
+        login_page.menu.register.web_element
+        login_page.menu.logo.web_element
+
+        # Check that all page elements have a web element
+        assert_is_not_none(login_page.username._web_element)
+        assert_is_not_none(login_page.password._web_element)
+        assert_is_not_none(login_page.language._web_element)
+        assert_is_not_none(login_page.email._web_element)
+        assert_is_not_none(login_page.address._web_element)
+        assert_is_not_none(login_page.menu.register._web_element)
+        assert_is_not_none(login_page.menu.logo._web_element)
+
+        login_page.reset_web_elements()
+
+        # Check that all page elements are reset
+        assert_is_none(login_page.username._web_element)
+        assert_is_none(login_page.password._web_element)
+        assert_is_none(login_page.language._web_element)
+        assert_is_none(login_page.email._web_element)
+        assert_is_none(login_page.address._web_element)
+        assert_is_none(login_page.menu.register._web_element)
+        assert_is_none(login_page.menu.logo._web_element)

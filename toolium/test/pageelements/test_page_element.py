@@ -20,7 +20,7 @@ import unittest
 
 import mock
 import six
-from nose.tools import assert_equal, assert_not_equal
+from nose.tools import assert_equal, assert_not_equal, assert_is_not_none, assert_is_none
 from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper
@@ -139,3 +139,11 @@ class TestPageElement(unittest.TestCase):
         # Check that find_element is called two times
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls,
                      [mock.call(By.XPATH, '//input[0]'), mock.call(By.XPATH, '//input[0]')])
+
+    def test_reset_web_element(self):
+        login_page = RegisterPageObject()
+        login_page.username.web_element
+
+        assert_is_not_none(login_page.username._web_element)
+        login_page.username.reset_web_elements()
+        assert_is_none(login_page.username._web_element)

@@ -74,11 +74,26 @@ class PageObject(object):
         """
         pass
 
-    def _update_page_elements(self):
-        """Copy driver and utils instances to all page elements of this page object"""
+    def _get_page_elements(self):
+        """Return page elements and page objects of this page object
+
+        :returns: list of page elements and page objects
+        """
+        page_elements = []
         for element in list(self.__dict__.values()) + list(self.__class__.__dict__.values()):
             if isinstance(element, PageElement) or isinstance(element, PageElements) or isinstance(element, PageObject):
-                element.set_driver_wrapper(self.driver_wrapper)
-            # If element is a page object, update its page elements
+                page_elements.append(element)
+        return page_elements
+
+    def _update_page_elements(self):
+        """Copy driver and utils instances to all page elements of this page object"""
+        for element in self._get_page_elements():
+            element.set_driver_wrapper(self.driver_wrapper)
             if isinstance(element, PageObject):
+                # If element is a page object, update also its page elements
                 element._update_page_elements()
+
+    def reset_web_elements(self):
+        """Reset web element object in all page elements"""
+        for element in self._get_page_elements():
+            element.reset_web_elements()

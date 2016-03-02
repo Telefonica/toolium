@@ -19,7 +19,7 @@ limitations under the License.
 import unittest
 
 import mock
-from nose.tools import assert_equal, assert_is_instance, assert_is
+from nose.tools import assert_equal, assert_is_instance, assert_is, assert_is_not_none, assert_is_none
 from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper
@@ -106,3 +106,11 @@ class TestPageElements(unittest.TestCase):
         # Check that web_elements are the same elements as page_element._web_element
         assert_is(web_elements[0], page_elements[0]._web_element)
         assert_is(web_elements[1], page_elements[1]._web_element)
+
+    def test_reset_web_elements(self):
+        login_page = LoginPageObject()
+        login_page.inputs.web_elements
+
+        assert_is_not_none(login_page.inputs._web_elements)
+        login_page.inputs.reset_web_elements()
+        assert_is_none(login_page.inputs._web_elements)

@@ -72,7 +72,10 @@ class PageElement(object):
         self.driver = self.driver_wrapper.driver
         self.config = self.driver_wrapper.config
         self.utils = self.driver_wrapper.utils
-        # Reset web element
+        self.reset_web_elements()
+
+    def reset_web_elements(self):
+        """Reset web element object"""
         self._web_element = None
 
     @property

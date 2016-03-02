@@ -102,6 +102,10 @@ class PageElements(object):
                 self._web_elements = self.driver.find_elements(*self.locator)
         return self._web_elements
 
+    def reset_web_elements(self):
+        """Reset web element object"""
+        self._web_elements = None
+
     @property
     def page_elements(self):
         """Find multiple PageElement using element locator
