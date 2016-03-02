@@ -20,7 +20,7 @@ import unittest
 
 import mock
 import six
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_not_equal
 from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper
@@ -39,13 +39,8 @@ def get_mock_element(WebElement):
     return web_element
 
 
-class LoginPageObject(PageObject):
-    username = PageElement(By.NAME, 'username')
-    password = PageElement(By.ID, 'password', username)
-
-
 class RegisterPageObject(PageObject):
-    username = PageElement(By.NAME, 'username')
+    username = PageElement(By.XPATH, '//input[0]')
     password = PageElement(By.ID, 'password', username)
 
     def init_page_elements(self):
@@ -69,15 +64,15 @@ class TestPageElement(unittest.TestCase):
         self.driver_wrapper.driver = mock.MagicMock()
 
     def test_locator(self):
-        page_object = LoginPageObject()
+        page_object = RegisterPageObject()
 
-        assert_equal(page_object.username.locator, (By.NAME, 'username'))
+        assert_equal(page_object.username.locator, (By.XPATH, '//input[0]'))
         assert_equal(page_object.password.locator, (By.ID, 'password'))
 
     def test_get_web_element(self):
-        LoginPageObject().username.web_element
+        RegisterPageObject().username.web_element
 
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.XPATH, '//input[0]')])
 
     def test_get_web_element_init_page(self):
         RegisterPageObject().language.web_element
@@ -86,10 +81,10 @@ class TestPageElement(unittest.TestCase):
 
     def test_get_web_element_with_parent(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
-        web_element = LoginPageObject().password.web_element
+        web_element = RegisterPageObject().password.web_element
 
         assert_equal(web_element, child_element)
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.XPATH, '//input[0]')])
         assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'password')])
 
     def test_get_web_element_with_parent_locator(self):
@@ -108,18 +103,39 @@ class TestPageElement(unittest.TestCase):
         assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'email')])
 
     def test_get_web_element_in_test(self):
-        PageElement(By.NAME, 'username').web_element
+        PageElement(By.XPATH, '//input[0]').web_element
 
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username')])
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.XPATH, '//input[0]')])
 
     def test_get_web_element_two_times(self):
-        login_page = LoginPageObject()
+        login_page = RegisterPageObject()
         login_page.username.web_element
         login_page.username.web_element
 
-        # find_element is not called the second time
+        # Check that find_element is not called the second time
         if six.PY2:
             second_call = mock.call().__nonzero__()
         else:
             second_call = mock.call().__bool__()
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.NAME, 'username'), second_call])
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls,
+                     [mock.call(By.XPATH, '//input[0]'), second_call])
+
+    def test_get_web_element_two_elements(self):
+        login_page = RegisterPageObject()
+        login_page.username.web_element
+        login_page.language.web_element
+
+        # Check that find_element is called two times
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls,
+                     [mock.call(By.XPATH, '//input[0]'), mock.call(By.ID, 'language')])
+
+    def test_get_web_element_two_objects(self):
+        login_page = RegisterPageObject()
+        login_page.username.web_element
+
+        second_login_page = RegisterPageObject()
+        second_login_page.username.web_element
+
+        # Check that find_element is called two times
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls,
+                     [mock.call(By.XPATH, '//input[0]'), mock.call(By.XPATH, '//input[0]')])

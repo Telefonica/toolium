@@ -57,7 +57,7 @@ def get_mock_select():
 
 class LoginPageObject(PageObject):
     title = Text(By.ID, 'title')
-    username = InputText(By.ID, 'username')
+    username = InputText(By.XPATH, '//input[0]')
     password = InputText(By.ID, 'password')
     language = Select(By.ID, 'language')
     login = Button(By.ID, 'login')
@@ -81,7 +81,7 @@ class TestDerivedPageElement(unittest.TestCase):
         page_object = LoginPageObject()
 
         assert_equal(page_object.title.locator, (By.ID, 'title'))
-        assert_equal(page_object.username.locator, (By.ID, 'username'))
+        assert_equal(page_object.username.locator, (By.XPATH, '//input[0]'))
         assert_equal(page_object.password.locator, (By.ID, 'password'))
         assert_equal(page_object.language.locator, (By.ID, 'language'))
         assert_equal(page_object.login.locator, (By.ID, 'login'))
