@@ -22,17 +22,25 @@ from toolium.pageelements.page_element import PageElement
 class InputText(PageElement):
     @property
     def text(self):
+        """Get the element text value
+
+        :returns: element text value
+        """
         return self.web_element.get_attribute("value")
 
     @text.setter
     def text(self, value):
+        """Set value on the element
+
+        :param value: value to be set
+        """
         if self.driver_wrapper.is_ios_test() and not self.driver_wrapper.is_web_test():
             self.web_element.set_value(value)
         else:
             self.web_element.send_keys(value)
 
     def clear(self):
-        """Clear the text
+        """Clear the element value
 
         :returns: page element instance
         """

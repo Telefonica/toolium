@@ -1,6 +1,8 @@
 pageobjects
 ===========
 
+.. _page_object:
+
 page_object
 -----------
 

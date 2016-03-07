@@ -19,4 +19,4 @@ limitations under the License.
 from toolium.pageelements.page_elements import *
 
 __all__ = ['PageElement', 'Text', 'InputText', 'Select', 'Button', 'Link', 'Checkbox', 'InputRadio',
-           'PageElements', 'Texts', 'InputTexts', 'Selects', 'Buttons', 'Links', 'Checkboxs', 'InputRadios']
+           'PageElements', 'Texts', 'InputTexts', 'Selects', 'Buttons', 'Links', 'Checkboxes', 'InputRadios']

@@ -1,6 +1,8 @@
 lettuce
 =======
 
+.. _terrain:
+
 terrain
 -------
 

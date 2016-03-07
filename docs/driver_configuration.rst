@@ -1,3 +1,5 @@
+.. _driver_configuration:
+
 Driver Configuration
 ====================
 
@@ -10,10 +12,10 @@ The following example shows how to choose Firefox::
     [Browser]
     browser: firefox
 
-- `Browser Configuration <browser_configuration.html>`_
-- `Mobile Configuration <mobile_configuration.html>`_
-- `Remote Driver Configuration <remote_configuration.html>`_
-- `Multiple Simultaneous Drivers <multiple_drivers.html>`_
+- :ref:`Browser Configuration <browser_configuration>`
+- :ref:`Mobile Configuration <mobile_configuration>`
+- :ref:`Remote Driver Configuration <remote_configuration>`
+- :ref:`Multiple Simultaneous Drivers <multiple_drivers>`
 
 .. toctree::
    :hidden:

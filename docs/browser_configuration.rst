@@ -1,3 +1,5 @@
+.. _browser_configuration:
+
 Browser Configuration
 =====================
 

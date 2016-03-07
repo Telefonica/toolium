@@ -22,9 +22,9 @@ from toolium.pageelements.page_element import PageElement
 class Button(PageElement):
     @property
     def text(self):
-        """Get the text of the element
+        """Get the element text value
 
-        :returns: the text of the element
+        :returns: element text value
         """
         return self.web_element.text
 

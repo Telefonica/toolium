@@ -22,4 +22,8 @@ from toolium.pageelements.button_page_element import Button
 class Link(Button):
     @property
     def href(self):
+        """Get the href value of the link element
+
+        :returns: href value
+        """
         return self.web_element.get_attribute("href")

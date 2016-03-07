@@ -23,17 +23,6 @@ import os
 class DriverWrappersPool(object):
     """Driver wrappers pool
 
-    Attributes:
-        driver_wrappers: driver wrappers list
-        config_directory: folder with configuration files
-        output_directory: folder to save output files
-        screenshots_directory: folder to save screenshots
-        screenshots_number: number of screenshots taken until now
-        videos_directory: folder to save videos
-        videos_number: number of videos recorded until now
-        visual_output_directory: folder to save visual report and images
-        visual_number: number of visual images taken until now
-
     :type driver_wrappers: list of toolium.driver_wrapper.DriverWrapper
     :type config_directory: str
     :type output_directory: str
@@ -44,23 +33,23 @@ class DriverWrappersPool(object):
     :type visual_output_directory: str
     :type visual_number: int
     """
-    driver_wrappers = []
+    driver_wrappers = []  #: driver wrappers list
 
     # Configuration and output folders
-    config_directory = None
-    output_directory = None
+    config_directory = None  #: folder with configuration files
+    output_directory = None  #: folder to save output files
 
     # Screenshots configuration
-    screenshots_directory = None
-    screenshots_number = None
+    screenshots_directory = None  #: folder to save screenshots
+    screenshots_number = None  #: number of screenshots taken until now
 
     # Videos configuration
-    videos_directory = None
-    videos_number = None
+    videos_directory = None  #: folder to save videos
+    videos_number = None  #: number of visual images taken until now
 
     # Visual Testing configuration
-    visual_output_directory = None
-    visual_number = None
+    visual_output_directory = None  #: number of videos recorded until now
+    visual_number = None  #: folder to save visual report and images
 
     @classmethod
     def is_empty(cls):

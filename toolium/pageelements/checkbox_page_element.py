@@ -22,6 +22,10 @@ from toolium.pageelements.button_page_element import Button
 class Checkbox(Button):
     @property
     def text(self):
+        """Get the element text value
+
+        :returns: element text value
+        """
         return self.web_element.get_attribute("value")
 
     def is_selected(self):

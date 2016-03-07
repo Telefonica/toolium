@@ -29,20 +29,6 @@ from toolium.utils import Utils
 class DriverWrapper(object):
     """Wrapper with the webdriver and the configuration needed to execute tests
 
-    Attributes:
-        driver: webdriver instance
-        config: driver configuration
-        utils: test utils instance
-        app_strings: mobile application strings
-        session_id: remote webdriver session id
-        remote_video_node: remote webdriver video node
-        logger: logger instance
-        config_properties_filenames: configuration filenames separated by commas
-        config_log_filename: configuration log file
-        output_log_filename: output log file
-        visual_baseline_directory: folder with the baseline images
-        baseline_name: baseline name
-
     :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
     :type config: toolium.config_parser.ExtendedConfigParser
     :type utils: toolium.utils.Utils
@@ -56,20 +42,20 @@ class DriverWrapper(object):
     :type visual_baseline_directory: str
     :type baseline_name: str
     """
-    driver = None
-    config = ExtendedConfigParser()
-    utils = None
-    app_strings = None
-    session_id = None
-    remote_video_node = None
-    logger = None
+    driver = None  #: webdriver instance
+    config = ExtendedConfigParser()  #: driver configuration
+    utils = None  #: test utils instance
+    app_strings = None  #: mobile application strings
+    session_id = None  #: remote webdriver session id
+    remote_video_node = None  #: remote webdriver video node
+    logger = None  #: logger instance
 
     # Configuration and output files
-    config_properties_filenames = None
-    config_log_filename = None
-    output_log_filename = None
-    visual_baseline_directory = None
-    baseline_name = None
+    config_properties_filenames = None  #: configuration filenames separated by commas
+    config_log_filename = None  #: configuration log file
+    output_log_filename = None  #: output log file
+    visual_baseline_directory = None  #: folder with the baseline images
+    baseline_name = None  #: baseline name
 
     def __init__(self):
         if not DriverWrappersPool.is_empty():

@@ -30,15 +30,6 @@ from toolium.pageelements.text_page_element import Text
 class PageElements(object):
     """Class to represent multiple web or mobile page elements
 
-    Attributes:
-        driver_wrapper: driver wrapper instance
-        driver: webdriver instance
-        config: driver configuration
-        utils: test utils instance
-        locator: tuple with locator type and locator value
-        parent: element from which to find actual elements
-        page_element_class: class of page elements (PageElement, Button...)
-
     :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
     :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
     :type config: toolium.config_parser.ExtendedConfigParser
@@ -49,13 +40,13 @@ class PageElements(object):
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     :type page_element_class: class
     """
-    driver_wrapper = None
-    driver = None
-    config = None
-    utils = None
-    locator = None
-    parent = None
-    page_element_class = PageElement
+    driver_wrapper = None  #: driver wrapper instance
+    driver = None  #: webdriver instance
+    config = None  #: driver configuration
+    utils = None  #: test utils instance
+    locator = None  #: tuple with locator type and locator value
+    parent = None  #: element from which to find actual elements
+    page_element_class = PageElement  #: class of page elements (PageElement, Button...)
     _web_elements = None
     _page_elements = None
 
@@ -128,7 +119,7 @@ class Buttons(PageElements):
     page_element_class = Button
 
 
-class Checkboxs(PageElements):
+class Checkboxes(PageElements):
     page_element_class = Checkbox
 
 

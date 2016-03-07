@@ -23,14 +23,6 @@ from toolium.visual_test import VisualTest
 class PageElement(object):
     """Class to represent a web or a mobile page element
 
-    Attributes:
-        driver_wrapper: driver wrapper instance
-        driver: webdriver instance
-        config: driver configuration
-        utils: test utils instance
-        locator: tuple with locator type and locator value
-        parent: element from which to find actual element
-
     :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
     :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
     :type config: toolium.config_parser.ExtendedConfigParser
@@ -40,12 +32,12 @@ class PageElement(object):
                   or toolium.pageelements.PageElement
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     """
-    driver_wrapper = None
-    driver = None
-    config = None
-    utils = None
-    locator = None
-    parent = None
+    driver_wrapper = None  #: driver wrapper instance
+    driver = None  #: webdriver instance
+    config = None  #: driver configuration
+    utils = None  #: test utils instance
+    locator = None  #: tuple with locator type and locator value
+    parent = None  #: element from which to find actual element
     _web_element = None
 
     def __init__(self, by, value, parent=None):

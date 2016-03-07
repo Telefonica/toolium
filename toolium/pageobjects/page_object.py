@@ -26,24 +26,17 @@ from toolium.pageelements.page_elements import PageElements
 class PageObject(object):
     """Class to represent a web page or a mobile application screen
 
-    Attributes:
-        driver_wrapper: driver wrapper instance
-        driver: webdriver instance
-        config: driver configuration
-        utils: test utils instance
-        app_strings: mobile application strings
-
     :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
     :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
     :type config: toolium.config_parser.ExtendedConfigParser
     :type utils: toolium.utils.Utils
     :type app_strings: str
     """
-    driver_wrapper = None
-    driver = None
-    config = None
-    utils = None
-    app_strings = None
+    driver_wrapper = None  #: driver wrapper instance
+    driver = None  #: webdriver instance
+    config = None  #: driver configuration
+    utils = None  #: test utils instance
+    app_strings = None  #:mobile application strings
 
     def __init__(self, driver_wrapper=None):
         """Initialize page object properties and update their page elements
