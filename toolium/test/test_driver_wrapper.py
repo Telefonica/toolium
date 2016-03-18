@@ -47,7 +47,14 @@ class DriverWrapperCommon(unittest.TestCase):
 class DriverWrapperPropertiesTests(DriverWrapperCommon):
     def setUp(self):
         os.environ["Config_log_filename"] = 'logging.conf'
+
+        # Reset wrappers pool values
+        DriverWrappersPool._empty_pool()
+        DriverWrapper.config_properties_filenames = None
+
+        # Create a new wrapper
         self.wrapper = DriverWrappersPool.get_default_wrapper()
+
         config_files = ConfigFiles()
         config_files.set_config_directory(os.path.join(self.root_path, 'conf'))
         config_files.set_output_directory(os.path.join(self.root_path, 'output'))
