@@ -47,7 +47,14 @@ class DriverWrapperCommon(unittest.TestCase):
 class DriverWrapperPropertiesTests(DriverWrapperCommon):
     def setUp(self):
         os.environ["Config_log_filename"] = 'logging.conf'
+
+        # Reset wrappers pool values
+        DriverWrappersPool._empty_pool()
+        DriverWrapper.config_properties_filenames = None
+
+        # Create a new wrapper
         self.wrapper = DriverWrappersPool.get_default_wrapper()
+
         config_files = ConfigFiles()
         config_files.set_config_directory(os.path.join(self.root_path, 'conf'))
         config_files.set_output_directory(os.path.join(self.root_path, 'output'))
@@ -230,7 +237,7 @@ maximizable_browsers = (
     ('firefox', True),
     ('opera-12.12-on-xp', True),
     ('opera', True),
-    ('edge', False),
+    ('edge', True),
     ('android', False),
     ('ios', False),
     ('iphone', False),
@@ -242,7 +249,7 @@ class DriverWrapperTests(DriverWrapperCommon):
     def setUp(self):
         os.environ["Config_log_filename"] = os.path.join(self.root_path, 'conf', 'logging.conf')
         os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'properties.cfg')
-        self.driver_wrapper = DriverWrapper(main_driver=True)
+        self.driver_wrapper = DriverWrapper()
         self.driver_wrapper.configure()
 
     def test_multiple(self):

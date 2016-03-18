@@ -1,3 +1,5 @@
+.. _mobile_configuration:
+
 Mobile Configuration
 ====================
 

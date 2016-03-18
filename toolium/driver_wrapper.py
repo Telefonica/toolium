@@ -27,23 +27,38 @@ from toolium.utils import Utils
 
 
 class DriverWrapper(object):
-    driver = None
-    utils = None
-    session_id = None
-    remote_video_node = None
-    app_strings = None
-    logger = None
-    config = ExtendedConfigParser()
+    """Wrapper with the webdriver and the configuration needed to execute tests
+
+    :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
+    :type config: toolium.config_parser.ExtendedConfigParser
+    :type utils: toolium.utils.Utils
+    :type app_strings: dict
+    :type session_id: str
+    :type remote_video_node: str
+    :type logger: logging.Logger
+    :type config_properties_filenames: str
+    :type config_log_filename: str
+    :type output_log_filename: str
+    :type visual_baseline_directory: str
+    :type baseline_name: str
+    """
+    driver = None  #: webdriver instance
+    config = ExtendedConfigParser()  #: driver configuration
+    utils = None  #: test utils instance
+    app_strings = None  #: mobile application strings
+    session_id = None  #: remote webdriver session id
+    remote_video_node = None  #: remote webdriver video node
+    logger = None  #: logger instance
 
     # Configuration and output files
-    config_properties_filenames = None
-    config_log_filename = None
-    output_log_filename = None
-    visual_baseline_directory = None
-    baseline_name = None
+    config_properties_filenames = None  #: configuration filenames separated by commas
+    config_log_filename = None  #: configuration log file
+    output_log_filename = None  #: output log file
+    visual_baseline_directory = None  #: folder with the baseline images
+    baseline_name = None  #: baseline name
 
-    def __init__(self, main_driver=False):
-        if not main_driver:
+    def __init__(self):
+        if not DriverWrappersPool.is_empty():
             # Copy config object from default driver
             self.config = DriverWrappersPool.get_default_wrapper().config.deepcopy()
 
@@ -207,5 +222,4 @@ class DriverWrapper(object):
 
         :returns: true if the browser is maximizable
         """
-        browser_name = self.config.get('Browser', 'browser').split('-')[0]
-        return not self.is_mobile_test() and browser_name != 'edge'
+        return not self.is_mobile_test()

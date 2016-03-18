@@ -3,12 +3,15 @@ toolium packages
 
 .. toctree::
 
+    toolium.behave
     toolium.lettuce
     toolium.pageelements
     toolium.pageobjects
 
 toolium modules
 ===============
+
+.. _config_driver:
 
 config_driver
 -------------
@@ -18,6 +21,18 @@ config_driver
     :undoc-members:
     :show-inheritance:
 
+.. _config_files:
+
+config_files
+-------------
+
+.. automodule:: toolium.config_files
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. _config_parser:
+
 config_parser
 -------------
 
@@ -25,6 +40,8 @@ config_parser
     :members:
     :undoc-members:
     :show-inheritance:
+
+.. _driver_wrapper:
 
 driver_wrapper
 --------------
@@ -34,6 +51,18 @@ driver_wrapper
     :undoc-members:
     :show-inheritance:
 
+.. _driver_wrappers_pool:
+
+driver_wrappers_pool
+--------------------
+
+.. automodule:: toolium.driver_wrappers_pool
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. _jira:
+
 jira
 ----
 
@@ -41,6 +70,8 @@ jira
     :members:
     :undoc-members:
     :show-inheritance:
+
+.. _test_cases:
 
 test_cases
 ----------
@@ -50,6 +81,8 @@ test_cases
     :undoc-members:
     :show-inheritance:
 
+.. _utils:
+
 utils
 -----
 
@@ -57,6 +90,8 @@ utils
     :members:
     :undoc-members:
     :show-inheritance:
+
+.. _visual_test:
 
 visual_test
 -----------

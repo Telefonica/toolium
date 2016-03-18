@@ -24,12 +24,24 @@ from toolium.pageelements.page_element import PageElement
 class Select(PageElement):
     @property
     def option(self):
-        return self.select_object.first_selected_option.text
+        """Return text of the first selected option
+
+        :returns: first selected option text
+        """
+        return self.selenium_select.first_selected_option.text
 
     @option.setter
     def option(self, value):
-        self.select_object.select_by_visible_text(value)
+        """Select option by text
+
+        :param value: new option value
+        """
+        self.selenium_select.select_by_visible_text(value)
 
     @property
-    def select_object(self):
-        return SeleniumSelect(self.element())
+    def selenium_select(self):
+        """Return Selenium select object to call other select methods, like select_by_index, deselect_by_index...
+
+        :returns: Selenium select object
+        """
+        return SeleniumSelect(self.web_element)

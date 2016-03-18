@@ -1,10 +1,12 @@
+.. _multiple_drivers:
+
 Multiple Simultaneous Drivers
 =============================
 
 By default, Toolium creates a driver using the configuration in properties.cfg and all page objects and elements use
 this driver to execute their commands. The driver is accessible from tests in self.driver.
 
-Although it is also possible to create additional drivers with DriverWrapper class.
+Although it is also possible to create additional drivers with *DriverWrapper* class.
 
 For instance, to create a driver with the same configuration as the default driver (in this case two Firefox drivers)::
 

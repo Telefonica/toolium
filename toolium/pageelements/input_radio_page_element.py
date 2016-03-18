@@ -16,10 +16,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from toolium.pageelements.page_element import PageElement
+from toolium.pageelements.button_page_element import Button
 
 
-class InputText(PageElement):
+class InputRadio(Button):
     @property
     def text(self):
         """Get the element text value
@@ -28,21 +28,16 @@ class InputText(PageElement):
         """
         return self.web_element.get_attribute("value")
 
-    @text.setter
-    def text(self, value):
-        """Set value on the element
+    def is_selected(self):
+        """Returns whether the element is selected
 
-        :param value: value to be set
+        :returns: true whether the element is selected
         """
-        if self.driver_wrapper.is_ios_test() and not self.driver_wrapper.is_web_test():
-            self.web_element.set_value(value)
-        else:
-            self.web_element.send_keys(value)
+        return self.web_element.is_selected()
 
-    def clear(self):
-        """Clear the element value
+    def check(self):
+        """Select the radio button
 
         :returns: page element instance
         """
-        self.web_element.clear()
-        return self
+        return self.click()

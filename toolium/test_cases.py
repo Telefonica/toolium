@@ -100,10 +100,9 @@ class SeleniumTestCase(BasicTestCase):
         # Call BasicTestCase tearDownClass
         super(SeleniumTestCase, cls).tearDownClass()
 
-        # Stop driver
-        if SeleniumTestCase.driver:
-            DriverWrappersPool.close_drivers_and_download_videos(cls.get_subclass_name())
-            SeleniumTestCase.driver = None
+        # Close browser and stop driver if it has been reused
+        DriverWrappersPool.close_drivers_and_download_videos(cls.get_subclass_name())
+        SeleniumTestCase.driver = None
 
     def setUp(self):
         # Get default driver wrapper
@@ -143,11 +142,11 @@ class SeleniumTestCase(BasicTestCase):
         if not self.reuse_driver:
             SeleniumTestCase.driver = None
 
-    def assert_screenshot(self, element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
+    def assert_screenshot(self, element, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
 
-        :param element_or_selector: either a CSS/XPATH selector as a string or a WebElement object.
-                                    If None, a full screenshot is taken.
+        :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value).
+                        If None, a full screenshot is taken.
         :param filename: the filename for the screenshot, which will be appended with ``.png``
         :param threshold: the threshold for triggering a test failure
         :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
@@ -155,8 +154,7 @@ class SeleniumTestCase(BasicTestCase):
         :param driver_wrapper: driver wrapper instance
         """
         file_suffix = self.get_method_name()
-        VisualTest(driver_wrapper).assert_screenshot(element_or_selector, filename, file_suffix, threshold,
-                                                     exclude_elements)
+        VisualTest(driver_wrapper).assert_screenshot(element, filename, file_suffix, threshold, exclude_elements)
 
     def assert_full_screenshot(self, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
         """Assert that a driver screenshot is the same as a screenshot on disk, within a given threshold.

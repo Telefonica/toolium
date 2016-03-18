@@ -1,3 +1,5 @@
+.. _visual_testing:
+
 Visual Testing
 ==============
 

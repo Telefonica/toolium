@@ -16,14 +16,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from toolium.pageelements.page_element import PageElement
+from toolium.pageelements.button_page_element import Button
 
 
-class Text(PageElement):
+class Link(Button):
     @property
-    def text(self):
-        """Get the text of the element
+    def href(self):
+        """Get the href value of the link element
 
-        :returns: the text of the element
+        :returns: href value
         """
-        return self.web_element.text
+        return self.web_element.get_attribute("href")

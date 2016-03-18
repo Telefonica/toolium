@@ -16,23 +16,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from selenium.webdriver.remote.webelement import WebElement
-
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.visual_test import VisualTest
 
 
 class PageElement(object):
-    """
+    """Class to represent a web or a mobile page element
+
     :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
-    :type driver: selenium.webdriver.remote.webdriver.WebDriver
+    :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
     :type config: toolium.config_parser.ExtendedConfigParser
     :type utils: toolium.utils.Utils
+    :type locator: (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
+    :type parent: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+                  or toolium.pageelements.PageElement
+                  or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     """
-    driver_wrapper = None
-    driver = None
-    config = None
-    utils = None
+    driver_wrapper = None  #: driver wrapper instance
+    driver = None  #: webdriver instance
+    config = None  #: driver configuration
+    utils = None  #: test utils instance
+    locator = None  #: tuple with locator type and locator value
+    parent = None  #: element from which to find actual element
+    _web_element = None
 
     def __init__(self, by, value, parent=None):
         """Initialize the PageElement object with the given locator components.
@@ -42,7 +48,7 @@ class PageElement(object):
 
         :param by: locator type
         :param value: locator value
-        :param parent: parent element (WebElement or PageElement)
+        :param parent: parent element (WebElement, PageElement or locator tuple)
         """
         self.locator = (by, value)
         self.parent = parent
@@ -54,62 +60,73 @@ class PageElement(object):
         :param driver_wrapper: driver wrapper instance
         """
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
-        self.set_driver(self.driver_wrapper.driver)
-        self.set_config(self.driver_wrapper.config)
-        self.set_utils(self.driver_wrapper.utils)
+        # Add some driver_wrapper attributes to page element instance
+        self.driver = self.driver_wrapper.driver
+        self.config = self.driver_wrapper.config
+        self.utils = self.driver_wrapper.utils
+        self.reset_web_elements()
 
-    def set_driver(self, driver):
-        """Set Selenium driver"""
-        self.driver = driver
+    def reset_web_elements(self):
+        """Reset web element object"""
+        self._web_element = None
 
-    def set_config(self, config):
-        """Set configuration properties"""
-        self.config = config
-
-    def set_utils(self, utils):
-        """Set utils instance"""
-        self.utils = utils
-
-    def element(self):
+    @property
+    def web_element(self):
         """Find WebElement using element locator
 
-        :return: web element object
-        :rtype: selenium.webdriver.remote.webelement.WebElement
+        :returns: web element object
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
-        if self.parent and isinstance(self.parent, WebElement):
-            return self.parent.find_element(*self.locator)
-        if self.parent and isinstance(self.parent, PageElement):
-            return self.parent.element().find_element(*self.locator)
-        return self.driver.find_element(*self.locator)
+        if not self._web_element:
+            if self.parent:
+                self._web_element = self.utils.get_web_element(self.parent).find_element(*self.locator)
+            else:
+                self._web_element = self.driver.find_element(*self.locator)
+        return self._web_element
 
     def scroll_element_into_view(self):
-        """Scroll element into view"""
-        y = self.element().location['y']
+        """Scroll element into view
+
+        :returns: page element instance
+        """
+        y = self.web_element.location['y']
         self.driver.execute_script('window.scrollTo(0, {0})'.format(y))
+        return self
 
     def wait_until_visible(self, timeout=10):
         """Search element and wait until it is visible
 
         :param timeout: max time to wait
-        :returns: web element if it is visible or False
+        :returns: page element instance
         """
-        return self.utils.wait_until_element_visible(self.locator, timeout)
+        self._web_element = self.utils.wait_until_element_visible(self.locator, timeout)
+        return self
 
     def wait_until_not_visible(self, timeout=10):
         """Search element and wait until it is not visible
 
         :param timeout: max time to wait
-        :returns: web element if it is not visible or False
+        :returns: page element instance
         """
-        return self.utils.wait_until_element_not_visible(self.locator, timeout)
+        self._web_element = self.utils.wait_until_element_not_visible(self.locator, timeout)
+        return self
 
     def assert_screenshot(self, filename, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of the element is the same as a screenshot on disk, within a given threshold.
 
         :param filename: the filename for the screenshot, which will be appended with ``.png``
         :param threshold: the threshold for triggering a test failure
-        :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
-                                 from the assertion.
+        :param exclude_elements: list of WebElements, PageElements or element locators as a tuple (locator_type,
+                                 locator_value) that must be excluded from the assertion
         """
-        VisualTest(self.driver_wrapper).assert_screenshot(self.element(), filename, self.__class__.__name__, threshold,
+        VisualTest(self.driver_wrapper).assert_screenshot(self.web_element, filename, self.__class__.__name__,
+                                                          threshold,
                                                           exclude_elements)
+
+    def get_attribute(self, name):
+        """Get the given attribute or property of the element
+
+        :param name: name of the attribute/property to retrieve
+        :returns: attribute value
+        """
+        return self.web_element.get_attribute(name)

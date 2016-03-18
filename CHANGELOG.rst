@@ -15,6 +15,9 @@ v1.0.0
 
     $ behave -D Browser_browser=chrome
 
+- Save WebElement in PageElement to avoid searching the same element multiple times
+- Refactor to rename get_element to get_web_element in Utils class and element to web_element in PageElement class
+
 v0.12.1
 -------
 

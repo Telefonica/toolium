@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 u"""
-Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
+Copyright 2016 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,48 +19,29 @@ limitations under the License.
 import unittest
 
 import mock
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_is_instance, assert_is, assert_is_not_none, assert_is_none
 from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.pageelements import *
-from toolium.pageelements import select_page_element
 from toolium.pageobjects.page_object import PageObject
 
-child_element = 'child_element'
+
+child_elements = ['child_element_1', 'child_element_2']
 mock_element = None
 
 
 @mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
 def get_mock_element(WebElement):
-    element = WebElement.return_value
-    element.find_element.return_value = child_element
-    element.text = 'text value'
-    element.get_attribute.return_value = 'input text value'
-    return element
-
-
-def get_mock_select():
-    # Mock text property
-    mock_prop_text = mock.PropertyMock(return_value='option value')
-    mock_text = mock.MagicMock()
-    type(mock_text).text = mock_prop_text
-    # Mock first_selected_option property
-    mock_prop_option = mock.PropertyMock(return_value=mock_text)
-    mock_option = mock.MagicMock()
-    type(mock_option).first_selected_option = mock_prop_option
-    # Mock select
-    mock_select = mock.MagicMock(return_value=mock_option)
-    return mock_select
+    web_element = WebElement.return_value
+    web_element.find_elements.return_value = child_elements
+    return web_element
 
 
 class LoginPageObject(PageObject):
-    title = Text(By.ID, 'title')
-    username = InputText(By.ID, 'username')
-    password = InputText(By.ID, 'password')
-    language = Select(By.ID, 'language')
-    login = Button(By.ID, 'login')
+    inputs = PageElements(By.XPATH, '//input')
+    inputs_parent = PageElements(By.XPATH, '//input', (By.ID, 'parent'))
 
 
 class TestPageElements(unittest.TestCase):
@@ -77,56 +58,59 @@ class TestPageElements(unittest.TestCase):
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
         self.driver_wrapper.driver = mock.MagicMock()
 
-    def test_locator(self):
-        page_object = LoginPageObject()
+    def test_get_web_elements(self):
+        LoginPageObject().inputs.web_elements
 
-        assert_equal(page_object.title.locator, (By.ID, 'title'))
-        assert_equal(page_object.username.locator, (By.ID, 'username'))
-        assert_equal(page_object.password.locator, (By.ID, 'password'))
-        assert_equal(page_object.language.locator, (By.ID, 'language'))
-        assert_equal(page_object.login.locator, (By.ID, 'login'))
+        assert_equal(self.driver_wrapper.driver.find_elements.mock_calls, [mock.call(By.XPATH, '//input')])
 
-    def test_get_text(self):
+    def test_get_web_elements_with_parent_locator(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
+        web_elements = LoginPageObject().inputs_parent.web_elements
 
-        title_value = LoginPageObject().title.text
+        assert_equal(web_elements, child_elements)
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.ID, 'parent')])
+        assert_equal(mock_element.find_elements.mock_calls, [mock.call(By.XPATH, '//input')])
 
-        assert_equal(title_value, 'text value')
+    def test_get_page_elements(self):
+        self.driver_wrapper.driver.find_elements.return_value = child_elements
+        page_elements = LoginPageObject().inputs.page_elements
 
-    def test_get_inputtext(self):
-        self.driver_wrapper.driver.find_element.return_value = mock_element
+        # Check that find_elements has been called just one time
+        assert_equal(self.driver_wrapper.driver.find_elements.mock_calls, [mock.call(By.XPATH, '//input')])
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [])
 
-        username_value = LoginPageObject().username.text
+        # Check that the response is a list of 2 PageElement with the expected web element
+        assert_equal(len(page_elements), 2)
+        assert_is_instance(page_elements[0], PageElement)
+        assert_equal(page_elements[0]._web_element, child_elements[0])
+        assert_is_instance(page_elements[1], PageElement)
+        assert_equal(page_elements[1]._web_element, child_elements[1])
 
-        assert_equal(username_value, 'input text value')
+    def test_get_page_elements_and_web_elements(self):
+        self.driver_wrapper.driver.find_elements.return_value = child_elements
+        inputs = LoginPageObject().inputs
+        page_elements = inputs.page_elements
+        web_elements = inputs.web_elements
 
-    def test_set_inputtext(self):
-        # Configure driver mock
-        self.driver_wrapper.driver.find_element.return_value = mock_element
-        self.driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
+        # Check that find_elements has been called just one time
+        assert_equal(self.driver_wrapper.driver.find_elements.mock_calls, [mock.call(By.XPATH, '//input')])
+        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [])
 
-        LoginPageObject().username.text = 'new input value'
+        # Check that the response is a list of 2 PageElement with the expected web element
+        assert_equal(len(page_elements), 2)
+        assert_is_instance(page_elements[0], PageElement)
+        assert_equal(page_elements[0]._web_element, child_elements[0])
+        assert_is_instance(page_elements[1], PageElement)
+        assert_equal(page_elements[1]._web_element, child_elements[1])
 
-        assert_equal(mock_element.send_keys.mock_calls, [mock.call('new input value')])
+        # Check that web_elements are the same elements as page_element._web_element
+        assert_is(web_elements[0], page_elements[0]._web_element)
+        assert_is(web_elements[1], page_elements[1]._web_element)
 
-    def test_get_selected_option(self):
-        select_page_element.SeleniumSelect = get_mock_select()
+    def test_reset_web_elements(self):
+        login_page = LoginPageObject()
+        login_page.inputs.web_elements
 
-        option = LoginPageObject().language.option
-
-        assert_equal(option, 'option value')
-
-    def test_select_option(self):
-        select_page_element.SeleniumSelect = get_mock_select()
-
-        LoginPageObject().language.option = 'new option value'
-
-        assert_equal(len(select_page_element.SeleniumSelect.mock_calls), 1)
-        assert_equal(select_page_element.SeleniumSelect().mock_calls,
-                     [mock.call.select_by_visible_text('new option value')])
-
-    def test_click_button(self):
-        self.driver_wrapper.driver.find_element.return_value = mock_element
-        LoginPageObject().login.click()
-
-        assert_equal(mock_element.click.mock_calls, [mock.call()])
+        assert_is_not_none(login_page.inputs._web_elements)
+        login_page.inputs.reset_web_elements()
+        assert_is_none(login_page.inputs._web_elements)

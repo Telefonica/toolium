@@ -9,9 +9,9 @@
 Main Features
 -------------
 
-- `Choosing driver through a configuration file <driver_configuration.html>`_
-- Page Object pattern
-- `Visual testing solution <visual_testing.html>`_
+- :ref:`Choosing driver through a configuration file <driver_configuration>`
+- :ref:`Page Object pattern <page_objects>`
+- :ref:`Visual testing solution <visual_testing>`
 - Make a screenshot in the happenning of an error
 
 Library Reference
@@ -21,6 +21,7 @@ Library Reference
    :hidden:
 
    driver_configuration.rst
+   page_objects.rst
    visual_testing.rst
    Changelog <changelog.rst>
 

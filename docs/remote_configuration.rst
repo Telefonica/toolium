@@ -1,3 +1,5 @@
+.. _remote_configuration:
+
 Remote Configuration
 ====================
 
