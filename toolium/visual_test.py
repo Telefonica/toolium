@@ -27,9 +27,11 @@ import os
 import re
 import shutil
 from io import BytesIO
+from os import path
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 import itertools
+
 try:
     from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
     # from needle.engines.imagemagick_engine import Engine as MagickEngine
@@ -37,6 +39,7 @@ try:
     from PIL import Image
 except ImportError:
     pass
+
 
 class VisualTest(object):
     template_name = 'VisualTestsTemplate.html'
@@ -225,7 +228,9 @@ class VisualTest(object):
         :param baseline_file: baseline image file path
         :param message: error message
         """
-        row = VisualTest._get_html_row(result, report_name, image_file, baseline_file, message)
+        relative_image_file = path.relpath(image_file, self.output_directory) if image_file else None
+        relative_baseline_file = path.relpath(baseline_file, self.output_directory) if baseline_file else None
+        row = VisualTest._get_html_row(result, report_name, relative_image_file, relative_baseline_file, message)
         with open(os.path.join(self.output_directory, self.report_name), "r+") as f:
             report = f.read()
             index = report.find('</tbody>')
@@ -244,7 +249,7 @@ class VisualTest(object):
         :param message: error message
         :returns: str with the html row
         """
-        img = '<img style="width: 100%" onclick="window.open(this.src)" src="file://{}"/></td>'
+        img = '<img style="width: 100%" onclick="window.open(this.src)" src="{}"/></td>'
         row = '<tr class=' + result + '>'
         row += '<td>' + report_name + '</td>'
 
