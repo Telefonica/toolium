@@ -26,6 +26,16 @@ from appium import webdriver as appiumdriver
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
+number_appium_capabilities = ['newCommandTimeout', 'deviceReadyTimeout', 'androidDeviceReadyTimeout', 'adbPort',
+                              'avdLaunchTimeout', 'avdReadyTimeout', 'autoWebviewTimeout', 'interKeyDelay',
+                              'screenshotWaitTimeout', 'webviewConnectRetries']
+boolean_appium_capabilities = ['autoLaunch', 'autoWebview', 'noReset', 'fullReset', 'useKeystore', 'dontStopAppOnReset',
+                               'unicodeKeyboard', 'resetKeyboard', 'noSign', 'autoLaunch', 'enablePerformanceLogging',
+                               'ignoreUnimportantViews', 'disableAndroidWatchers', 'acceptSslCerts',
+                               'locationServicesEnabled', 'locationServicesAuthorized', 'autoAcceptAlerts',
+                               'autoDismissAlerts', 'nativeInstrumentsLib', 'nativeWebTap', 'safariAllowPopups',
+                               'safariIgnoreFraudWarning', 'safariOpenLinksInBackground', 'keepKeyChains', 'showIOSLog']
+
 
 def get_error_message_from_exception(exception):
     """Extract first line of exception message
@@ -133,7 +143,12 @@ class ConfigDriver(object):
             # Add Appium server capabilities
             for cap, cap_value in dict(self.config.items('AppiumCapabilities')).items():
                 self.logger.debug("Added Appium server capability: {0} = {1}".format(cap, cap_value))
-                capabilities[cap] = cap_value
+                if cap in number_appium_capabilities:
+                    capabilities[cap] = int(cap_value)
+                elif cap in boolean_appium_capabilities:
+                    capabilities[cap] = cap_value == 'true'
+                else:
+                    capabilities[cap] = cap_value
 
             # Create remote appium driver
             return appiumdriver.Remote(command_executor=server_url, desired_capabilities=capabilities)

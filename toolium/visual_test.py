@@ -30,11 +30,13 @@ from io import BytesIO
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 import itertools
-from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
-# from needle.engines.imagemagick_engine import Engine as MagickEngine
-from needle.engines.pil_engine import Engine as PilEngine
-from PIL import Image
-
+try:
+    from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
+    # from needle.engines.imagemagick_engine import Engine as MagickEngine
+    from needle.engines.pil_engine import Engine as PilEngine
+    from PIL import Image
+except ImportError:
+    pass
 
 class VisualTest(object):
     template_name = 'VisualTestsTemplate.html'
@@ -45,6 +47,8 @@ class VisualTest(object):
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
         if not self.driver_wrapper.config.getboolean_optional('VisualTests', 'enabled'):
             return
+        if 'PerceptualEngine' not in globals():
+            raise Exception('The visual tests are enabled, but needle is not installed')
 
         self.utils = self.driver_wrapper.utils
         self.logger = logging.getLogger(__name__)

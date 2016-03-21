@@ -301,12 +301,29 @@ class DriverWrapperTests(DriverWrapperCommon):
         instance.create_driver.return_value = expected_driver
         self.driver_wrapper.utils = mock.MagicMock()
 
-        # Check the returned driver
-        self.driver_wrapper.configure()
+        # Connect and check the returned driver
         assert_equal(expected_driver, self.driver_wrapper.connect(maximize=False))
 
         # Check that the wrapper has been configured
         assert_equal('firefox', self.driver_wrapper.config.get('Browser', 'browser'))
+        logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
+        assert_equal('DEBUG', logging.getLevelName(logger.level))
+
+    def test_connect_api(self):
+        # Mock data
+        expected_driver = None
+
+        # Change browser to api and configure again
+        os.environ["Config_prop_filenames"] = os.path.join(self.root_path, 'conf', 'api-properties.cfg')
+        self.driver_wrapper.configure()
+
+        # Connect and check that the returned driver is None
+        self.driver_wrapper.configure()
+        assert_equal(expected_driver, self.driver_wrapper.connect(maximize=False))
+
+        # Check that the wrapper has been configured
+        assert_equal('', self.driver_wrapper.config.get('Browser', 'browser'))
+        assert_equal('false', self.driver_wrapper.config.get('Jira', 'enabled'))
         logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
         assert_equal('DEBUG', logging.getLevelName(logger.level))
 

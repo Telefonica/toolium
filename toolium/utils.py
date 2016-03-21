@@ -25,6 +25,7 @@ from six.moves.urllib.parse import urlparse
 import logging
 import os
 import time
+from io import open
 
 import requests
 from selenium.webdriver.remote.webelement import WebElement
@@ -98,9 +99,9 @@ class Utils(object):
             log_file_name = '{}_{}{}'.format(log_file_ext[0], log_type, log_file_ext[1])
             with open(log_file_name, 'a+', encoding='utf-8') as log_file:
                 browser = self.driver_wrapper.config.get('Browser', 'browser')
-                log_file.write("\n{} '{}' test logs with browser = {}\n\n".format(datetime.now(), test_name, browser))
+                log_file.write(u"\n{} '{}' test logs with browser = {}\n\n".format(datetime.now(), test_name, browser))
                 for entry in logs:
-                    log_file.write('{}\t{}\n'.format(entry['level'], entry['message'].rstrip()))
+                    log_file.write(u'{}\t{}\n'.format(entry['level'], entry['message'].rstrip()))
 
     def discard_logcat_logs(self):
         """Discard previous logcat logs"""
