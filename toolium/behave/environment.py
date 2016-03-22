@@ -49,9 +49,8 @@ def bdd_common_before_scenario(context_or_world, scenario):
     :param scenario: running scenario
     """
     # Initialize and connect driver wrapper
-    if DriverWrappersPool.is_empty():
-        create_and_configure_wrapper(context_or_world)
     if not DriverWrappersPool.get_default_wrapper().driver:
+        create_and_configure_wrapper(context_or_world)
         connect_wrapper(context_or_world)
 
     # Add assert screenshot methods with scenario configuration
@@ -191,11 +190,14 @@ def after_all(context):
 
     :param context: behave context
     """
-    bdd_common_after_all()
+    bdd_common_after_all(context)
 
 
-def bdd_common_after_all():
-    """Common after all method in behave or lettuce"""
+def bdd_common_after_all(context_or_world):
+    """Common after all method in behave or lettuce
+
+    :param context_or_world: behave context or lettuce world
+    """
     # Close browser and stop driver if it has been reused
     DriverWrappersPool.close_drivers_and_download_videos('multiple_tests')
 

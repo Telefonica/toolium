@@ -28,6 +28,7 @@ import re
 import shutil
 from io import BytesIO
 from os import path
+import datetime
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 import itertools
@@ -42,9 +43,14 @@ except ImportError:
 
 
 class VisualTest(object):
-    template_name = 'VisualTestsTemplate.html'
-    report_name = 'VisualTests.html'
-    driver_wrapper = None
+    """Visual testing class
+
+    :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
+    """
+    template_name = 'VisualTestsTemplate.html'  #: name of the report template
+    report_name = 'VisualTests.html'  #: final visual report name
+    driver_wrapper = None  #: driver wrapper instance
+    results = {'equal': 0, 'diff': 0, 'baseline': 0}  #: dict to save visual assert results
 
     def __init__(self, driver_wrapper=None):
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
@@ -90,6 +96,7 @@ class VisualTest(object):
         dst_template_path = os.path.join(self.output_directory, self.report_name)
         if not os.path.exists(dst_template_path):
             shutil.copyfile(orig_template_path, dst_template_path)
+            self._add_summary_to_report()
 
     def assert_screenshot(self, element, filename, file_suffix=None, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold
@@ -134,7 +141,7 @@ class VisualTest(object):
             shutil.copyfile(output_file, baseline_file)
 
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'complete_report'):
-                self._add_to_report('baseline', report_name, output_file, None, 'Added to baseline')
+                self._add_result_to_report('baseline', report_name, output_file, None, 'Screenshot added to baseline')
 
             self.logger.debug("Visual screenshot '{}' saved in visualtests/baseline folder".format(filename))
         else:
@@ -209,17 +216,17 @@ class VisualTest(object):
         try:
             self.engine.assertSameFiles(image_file, baseline_file, threshold)
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'complete_report'):
-                self._add_to_report('equal', report_name, image_file, baseline_file)
+                self._add_result_to_report('equal', report_name, image_file, baseline_file)
             return None
         except AssertionError as exc:
-            self._add_to_report('diff', report_name, image_file, baseline_file, str(exc))
+            self._add_result_to_report('diff', report_name, image_file, baseline_file, str(exc))
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'fail'):
                 raise exc
             else:
                 self.logger.warn('Visual error: {}'.format(str(exc)))
                 return str(exc)
 
-    def _add_to_report(self, result, report_name, image_file, baseline_file, message=None):
+    def _add_result_to_report(self, result, report_name, image_file, baseline_file, message=None):
         """Add the result of a visual test to the html report
 
         :param result: comparation result (equal, diff, baseline)
@@ -228,15 +235,41 @@ class VisualTest(object):
         :param baseline_file: baseline image file path
         :param message: error message
         """
+        self.results[result] += 1
         relative_image_file = path.relpath(image_file, self.output_directory) if image_file else None
         relative_baseline_file = path.relpath(baseline_file, self.output_directory) if baseline_file else None
         row = VisualTest._get_html_row(result, report_name, relative_image_file, relative_baseline_file, message)
+        self._add_data_to_report_before_tag(row, '</tbody>')
+        self._update_report_summary()
+
+    def _add_data_to_report_before_tag(self, data, tag):
+        """Add data to visual report before tag
+
+        :param data: data to be added
+        :param tag: data will be added before this tag
+        """
         with open(os.path.join(self.output_directory, self.report_name), "r+") as f:
             report = f.read()
-            index = report.find('</tbody>')
-            report = report[:index] + row + report[index:]
+            index = report.find(tag)
+            report = report[:index] + data + report[index:]
             f.seek(0)
             f.write(report)
+
+    def _update_report_summary(self):
+        """Update asserts counter in report"""
+        new_results = 'Visual asserts</b>: {} ({} failed)'.format(sum(self.results.values()), self.results['diff'])
+        with open(os.path.join(self.output_directory, self.report_name), "r+") as f:
+            report = f.read()
+            report = re.sub(r'Visual asserts</b>: [0-9]* \([0-9]* failed\)', new_results, report)
+            f.seek(0)
+            f.write(report)
+
+    def _add_summary_to_report(self):
+        """Add visual data summary to the html report"""
+        summary = '<p><b>Execution date</b>: {}</p>'.format(datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
+        summary += '<p><b>Baseline name</b>: {}</p>'.format(path.basename(self.baseline_directory))
+        summary += '<p><b>Visual asserts</b>: {} ({} failed)</p>'.format(sum(self.results.values()), self.results['diff'])
+        self._add_data_to_report_before_tag(summary, '</div>')
 
     @staticmethod
     def _get_html_row(result, report_name, image_file, baseline_file, message=None):
@@ -271,7 +304,10 @@ class VisualTest(object):
             diff_col = 'Image dimensions do not match'
         elif 'by a distance of' in message:
             m = re.search('\(by a distance of (.*)\)', message)
-            diff_col = 'Distance of ' + m.group(1)
+            diff_col = m.group(1) + ' pixels are different'
+        elif 'pixels are different' in message:
+            m = re.search('([0-9]*) pixels are different', message)
+            diff_col = m.group(1) + ' pixels are different'
         else:
             diff_col = message
         row += '<td>' + diff_col + '</td>'

@@ -43,4 +43,4 @@ def teardown_driver_all(total):
 
     :param total: results of executed features
     """
-    bdd_common_after_all()
+    bdd_common_after_all(world)
