@@ -59,8 +59,9 @@ class DriverWrapper(object):
 
     def __init__(self):
         if not DriverWrappersPool.is_empty():
-            # Copy config object from default driver
+            # Copy config object from default driver and configure visual baseline
             self.config = DriverWrappersPool.get_default_wrapper().config.deepcopy()
+            self.configure_visual_baseline()
 
         # Create utils instance and add wrapper to the pool
         self.utils = Utils(self)

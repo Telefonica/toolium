@@ -48,9 +48,10 @@ def bdd_common_before_scenario(context_or_world, scenario):
     :param context_or_world: behave context or lettuce world
     :param scenario: running scenario
     """
-    # Initialize driver wrapper
-    if not DriverWrappersPool.get_default_wrapper().driver:
+    # Initialize and connect driver wrapper
+    if DriverWrappersPool.is_empty():
         create_and_configure_wrapper(context_or_world)
+    if not DriverWrappersPool.get_default_wrapper().driver:
         connect_wrapper(context_or_world)
 
     # Add assert screenshot methods with scenario configuration
@@ -88,7 +89,7 @@ def create_and_configure_wrapper(context_or_world):
     context_or_world.toolium_config = context_or_world.driver_wrapper.config
 
     # Configure logger
-    context_or_world.logger = logging.getLogger()
+    context_or_world.logger = logging.getLogger(__name__)
 
 
 def connect_wrapper(context_or_world):
