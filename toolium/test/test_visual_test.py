@@ -150,7 +150,7 @@ class VisualTests(unittest.TestCase):
             self.visual.compare_files(self._testMethodName, self.file_v1, self.file_small, 0)
 
     def test_get_html_row(self):
-        expected_row = '<tr class=diff><td>test_get_html_row</td><td><img style="width: 100%" onclick="window.open\(this.src\)" src=".*register_v2.png"/></td></td><td><img style="width: 100%" onclick="window.open\(this.src\)" src=".*register.png"/></td></td><td></td></tr>'
+        expected_row = '<tr class=diff><td>test_get_html_row</td><td><img style="width: 100%" onclick="launchModal\(this.src\)" src=".*register_v2.png"/></td></td><td><img style="width: 100%" onclick="launchModal\(this.src\)" src=".*register.png"/></td></td><td></td></tr>'
         row = self.visual._get_html_row('diff', self._testMethodName, self.file_v1, self.file_v2)
         assertRegex(self, row, expected_row)
 
@@ -373,6 +373,21 @@ class VisualTests(unittest.TestCase):
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_ios_web.png')
         PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
+
+    def test_baseline(self):
+        expected_baseline_directory = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox')
+        assert_equal(self.visual.baseline_directory, expected_baseline_directory)
+
+    def test_baseline_platform_version(self):
+        # Configure driver mock
+        self.driver_wrapper.driver.desired_capabilities.__getitem__.return_value = '9.3'
+
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.baseline_name = 'ios_{platformVersion}'
+        self.visual = VisualTest(self.driver_wrapper)
+
+        expected_baseline_directory = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'ios_9.3')
+        assert_equal(self.visual.baseline_directory, expected_baseline_directory)
 
 
 @mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)

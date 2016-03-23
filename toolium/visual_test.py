@@ -268,7 +268,8 @@ class VisualTest(object):
         """Add visual data summary to the html report"""
         summary = '<p><b>Execution date</b>: {}</p>'.format(datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
         summary += '<p><b>Baseline name</b>: {}</p>'.format(path.basename(self.baseline_directory))
-        summary += '<p><b>Visual asserts</b>: {} ({} failed)</p>'.format(sum(self.results.values()), self.results['diff'])
+        summary += '<p><b>Visual asserts</b>: {} ({} failed)</p>'.format(sum(self.results.values()),
+                                                                         self.results['diff'])
         self._add_data_to_report_before_tag(summary, '</div>')
 
     @staticmethod
@@ -282,7 +283,7 @@ class VisualTest(object):
         :param message: error message
         :returns: str with the html row
         """
-        img = '<img style="width: 100%" onclick="window.open(this.src)" src="{}"/></td>'
+        img = '<img style="width: 100%" onclick="launchModal(this.src)" src="{}"/></td>'
         row = '<tr class=' + result + '>'
         row += '<td>' + report_name + '</td>'
 
@@ -297,15 +298,19 @@ class VisualTest(object):
         # diff column
         diff_file = image_file.replace('.png', '.diff.png')
         if os.path.exists(diff_file):
+            # perceptualdiff engine
             diff_col = img.format(diff_file)
         elif message is None:
             diff_col = ''
         elif message == '' or 'Image dimensions do not match' in message:
+            # pil or perceptualdiff engine
             diff_col = 'Image dimensions do not match'
         elif 'by a distance of' in message:
+            # pil engine
             m = re.search('\(by a distance of (.*)\)', message)
             diff_col = m.group(1) + ' pixels are different'
         elif 'pixels are different' in message:
+            # perceptualdiff engine
             m = re.search('([0-9]*) pixels are different', message)
             diff_col = m.group(1) + ' pixels are different'
         else:
