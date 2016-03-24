@@ -120,8 +120,7 @@ class PageElement(object):
                                  locator_value) that must be excluded from the assertion
         """
         VisualTest(self.driver_wrapper).assert_screenshot(self.web_element, filename, self.__class__.__name__,
-                                                          threshold,
-                                                          exclude_elements)
+                                                          threshold, exclude_elements)
 
     def get_attribute(self, name):
         """Get the given attribute or property of the element

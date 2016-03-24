@@ -64,6 +64,7 @@ class TestPageObject(unittest.TestCase):
 
         # Reset wrappers pool values
         DriverWrappersPool._empty_pool()
+        DriverWrappersPool.output_directory = ''
         DriverWrapper.config_properties_filenames = None
 
         # Create a new wrapper
