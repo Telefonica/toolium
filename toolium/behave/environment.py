@@ -48,7 +48,7 @@ def bdd_common_before_scenario(context_or_world, scenario):
     :param context_or_world: behave context or lettuce world
     :param scenario: running scenario
     """
-    # Initialize driver wrapper
+    # Initialize and connect driver wrapper
     if not DriverWrappersPool.get_default_wrapper().driver:
         create_and_configure_wrapper(context_or_world)
         connect_wrapper(context_or_world)
@@ -88,7 +88,7 @@ def create_and_configure_wrapper(context_or_world):
     context_or_world.toolium_config = context_or_world.driver_wrapper.config
 
     # Configure logger
-    context_or_world.logger = logging.getLogger()
+    context_or_world.logger = logging.getLogger(__name__)
 
 
 def connect_wrapper(context_or_world):
@@ -113,14 +113,15 @@ def add_assert_screenshot_methods(context_or_world, scenario):
     :param scenario: running scenario
     """
 
-    def assert_screenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
+    def assert_screenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None,
+                          force=False):
         file_suffix = scenario.name.replace(' ', '_')
-        VisualTest(driver_wrapper).assert_screenshot(element_or_selector, filename, file_suffix, threshold,
-                                                     exclude_elements)
+        VisualTest(driver_wrapper, force).assert_screenshot(element_or_selector, filename, file_suffix, threshold,
+                                                            exclude_elements)
 
-    def assert_full_screenshot(filename, threshold=0, exclude_elements=[], driver_wrapper=None):
+    def assert_full_screenshot(filename, threshold=0, exclude_elements=[], driver_wrapper=None, force=False):
         file_suffix = scenario.name.replace(' ', '_')
-        VisualTest(driver_wrapper).assert_screenshot(None, filename, file_suffix, threshold, exclude_elements)
+        VisualTest(driver_wrapper, force).assert_screenshot(None, filename, file_suffix, threshold, exclude_elements)
 
     context_or_world.assert_screenshot = assert_screenshot
     context_or_world.assert_full_screenshot = assert_full_screenshot
@@ -190,11 +191,14 @@ def after_all(context):
 
     :param context: behave context
     """
-    bdd_common_after_all()
+    bdd_common_after_all(context)
 
 
-def bdd_common_after_all():
-    """Common after all method in behave or lettuce"""
+def bdd_common_after_all(context_or_world):
+    """Common after all method in behave or lettuce
+
+    :param context_or_world: behave context or lettuce world
+    """
     # Close browser and stop driver if it has been reused
     DriverWrappersPool.close_drivers_and_download_videos('multiple_tests')
 

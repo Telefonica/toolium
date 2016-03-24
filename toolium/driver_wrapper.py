@@ -34,7 +34,8 @@ class DriverWrapper(object):
     :type utils: toolium.utils.Utils
     :type app_strings: dict
     :type session_id: str
-    :type remote_video_node: str
+    :type remote_node: str
+    :type remote_node_video_enabled: bool
     :type logger: logging.Logger
     :type config_properties_filenames: str
     :type config_log_filename: str
@@ -47,7 +48,8 @@ class DriverWrapper(object):
     utils = None  #: test utils instance
     app_strings = None  #: mobile application strings
     session_id = None  #: remote webdriver session id
-    remote_video_node = None  #: remote webdriver video node
+    remote_node = None  #: remote grid node
+    remote_node_video_enabled = False  #: True if the remote grid node has the video recorder enabled
     logger = None  #: logger instance
 
     # Configuration and output files
@@ -59,8 +61,15 @@ class DriverWrapper(object):
 
     def __init__(self):
         if not DriverWrappersPool.is_empty():
-            # Copy config object from default driver
-            self.config = DriverWrappersPool.get_default_wrapper().config.deepcopy()
+            # Copy config object and other properties from default driver
+            default_wrapper = DriverWrappersPool.get_default_wrapper()
+            self.config = default_wrapper.config.deepcopy()
+            self.logger = default_wrapper.logger
+            self.config_properties_filenames = default_wrapper.config_properties_filenames
+            self.config_log_filename = default_wrapper.config_log_filename
+            self.output_log_filename = default_wrapper.output_log_filename
+            self.visual_baseline_directory = default_wrapper.visual_baseline_directory
+            self.baseline_name = default_wrapper.baseline_name
 
         # Create utils instance and add wrapper to the pool
         self.utils = Utils(self)
@@ -128,6 +137,21 @@ class DriverWrapper(object):
             self.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory, 'visualtests',
                                                           'baseline', baseline_name)
 
+    def update_visual_baseline(self):
+        """Configure baseline directory after driver is created"""
+        # Update baseline with real platformVersion value
+        if '{PlatformVersion}' in self.baseline_name:
+            platform_version = self.driver.desired_capabilities['platformVersion']
+            self.baseline_name = self.baseline_name.replace('{PlatformVersion}', str(platform_version))
+            self.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory, 'visualtests',
+                                                          'baseline', self.baseline_name)
+
+        # Update baseline with remote node value
+        if '{RemoteNode}' in self.baseline_name:
+            self.baseline_name = self.baseline_name.replace('{RemoteNode}', str(self.remote_node))
+            self.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory, 'visualtests',
+                                                          'baseline', self.baseline_name)
+
     def configure(self, is_selenium_test=True, tc_config_files=ConfigFiles()):
         """Configure initial selenium instance using logging and properties files for Selenium or Appium tests
 
@@ -162,7 +186,8 @@ class DriverWrapper(object):
 
         # Save session id and remote node to download video after the test execution
         self.session_id = self.driver.session_id
-        self.remote_video_node = self.utils.get_remote_video_node()
+        self.remote_node = self.utils.get_remote_node()
+        self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.remote_node)
 
         # Save app_strings in mobile tests
         if self.is_mobile_test() and not self.is_web_test() and self.config.getboolean_optional('Common',
@@ -172,6 +197,9 @@ class DriverWrapper(object):
         # Maximize browser
         if maximize and self.is_maximizable():
             self.driver.maximize_window()
+
+        # Update baseline
+        self.update_visual_baseline()
 
         return self.driver
 

@@ -109,9 +109,9 @@ class DriverWrappersPool(object):
         video_name = '{}_driver{}' if len(cls.driver_wrappers) > 1 else '{}'
         driver_index = 1
         if ((driver_wrapper.config.getboolean_optional('Server', 'video_enabled')
-             or not test_passed) and driver_wrapper.remote_video_node):
+             or not test_passed) and driver_wrapper.remote_node_video_enabled):
             video_name = video_name if test_passed else 'error_{}'.format(video_name)
-            driver_wrapper.utils.download_remote_video(driver_wrapper.remote_video_node, driver_wrapper.session_id,
+            driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
                                                        video_name.format(name, driver_index))
 
     @classmethod

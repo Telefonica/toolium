@@ -151,27 +151,14 @@ class Utils(object):
             session_id = self.driver_wrapper.driver.session_id
             url = 'http://{}:{}/grid/api/testsession?session={}'.format(host, port, session_id)
             try:
-                response = requests.get(url).json()
-            except ValueError:
-                # The remote node is not a grid node
-                return remote_node
+                # Extract remote node from response
+                remote_node = urlparse(requests.get(url).json()['proxyId']).hostname
+                self.logger.debug("Test running in remote node {}".format(remote_node))
+            except (ValueError, KeyError):
+                # The remote node is not a grid node or the session has been closed
+                pass
 
-            # Extract remote node from response
-            remote_node = urlparse(response['proxyId']).hostname
-            self.logger.debug("Test running in remote node {}".format(remote_node))
         return remote_node
-
-    def get_remote_video_node(self):
-        """Return the remote node only if it has video capabilities
-
-        :returns: remote video node name
-        """
-        remote_node = self.get_remote_node()
-        if remote_node and self._is_remote_video_enabled(remote_node):
-            # Wait to the video recorder start
-            time.sleep(1)
-            return remote_node
-        return None
 
     def download_remote_video(self, remote_node, session_id, video_name):
         """Download the video recorded in the remote node during the specified test session and save it in videos folder
@@ -238,19 +225,25 @@ class Utils(object):
         self.logger.info("Video saved in '{}'".format(filepath))
         DriverWrappersPool.videos_number += 1
 
-    def _is_remote_video_enabled(self, remote_node):
+    def is_remote_video_enabled(self, remote_node):
         """Check if the remote node has the video recorder enabled
 
         :param remote_node: remote node name
         :returns: true if it has the video recorder enabled
         """
-        url = '{}/config'.format(self._get_remote_node_url(remote_node))
-        try:
-            response = requests.get(url).json()
-            record_videos = response['config_runtime']['theConfigMap']['video_recording_options']['record_test_videos']
-        except (requests.exceptions.ConnectionError, KeyError):
-            record_videos = 'false'
-        return True if record_videos == 'true' else False
+        enabled = False
+        if remote_node:
+            url = '{}/config'.format(self._get_remote_node_url(remote_node))
+            try:
+                response = requests.get(url).json()
+                record_videos = response['config_runtime']['theConfigMap']['video_recording_options']['record_test_videos']
+            except (requests.exceptions.ConnectionError, KeyError):
+                record_videos = 'false'
+            if record_videos == 'true':
+                # Wait to the video recorder start
+                time.sleep(1)
+                enabled = True
+        return enabled
 
     def get_center(self, element):
         """Get center coordinates of an element

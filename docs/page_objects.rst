@@ -68,8 +68,8 @@ These groups help execute an action on all their elements, for example to clear 
     for input in inputs.page_elements:
         input.clear()
 
-Concurrent issues
------------------
+Concurrency issues
+------------------
 
 If using multiple instances of a page object class at the same time (e.g. having two simultaneous drivers), class
 attributes can not be used to define page elements. In this case, page elements must be defined as instance attributes

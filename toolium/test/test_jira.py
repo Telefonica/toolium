@@ -29,6 +29,15 @@ from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
 class JiraTests(unittest.TestCase):
+    def setUp(self):
+        # Configure logger mock
+        self.logger = mock.MagicMock()
+        self.logger_patch = mock.patch('logging.getLogger', mock.MagicMock(return_value=self.logger))
+        self.logger_patch.start()
+
+    def tearDown(self):
+        self.logger_patch.stop()
+
     def tearDown(self):
         # Clear jira module configuration
         jira.enabled = None
@@ -42,9 +51,8 @@ class JiraTests(unittest.TestCase):
         jira.jira_tests_status.clear()
         jira.attachments = []
 
-    @mock.patch('toolium.jira.logger')
     @requests_mock.Mocker()
-    def test_change_jira_status(self, jira_logger, req_mock):
+    def test_change_jira_status(self, req_mock):
         # Test response
         response = b"The Test Case Execution 'TOOLIUM-2' has been created\r\n"
 
@@ -73,11 +81,10 @@ class JiraTests(unittest.TestCase):
 
         # Check that binary response has been decoded
         expected_response = "The Test Case Execution 'TOOLIUM-2' has been created"
-        jira_logger.debug.assert_called_with(expected_response)
+        self.logger.debug.assert_called_with(expected_response)
 
-    @mock.patch('toolium.jira.logger')
     @requests_mock.Mocker()
-    def test_change_jira_status_attachments(self, jira_logger, req_mock):
+    def test_change_jira_status_attachments(self, req_mock):
         # Test response
         response = b"The Test Case Execution 'TOOLIUM-2' has been created\r\n"
 
@@ -116,11 +123,10 @@ class JiraTests(unittest.TestCase):
 
         # Check that binary response has been decoded
         expected_response = "The Test Case Execution 'TOOLIUM-2' has been created"
-        jira_logger.debug.assert_called_with(expected_response)
+        self.logger.debug.assert_called_with(expected_response)
 
-    @mock.patch('toolium.jira.logger')
     @mock.patch('toolium.jira.requests.get')
-    def test_change_jira_status_empty_url(self, jira_get, jira_logger):
+    def test_change_jira_status_empty_url(self, jira_get):
         # Configure jira mock
         jira_get.side_effect = ConnectionError('exception error')
 
@@ -132,11 +138,10 @@ class JiraTests(unittest.TestCase):
 
         # Check logging error message
         expected_response = "Test Case 'TOOLIUM-1' can not be updated: execution_url is not configured"
-        jira_logger.warn.assert_called_with(expected_response)
+        self.logger.warn.assert_called_with(expected_response)
 
-    @mock.patch('toolium.jira.logger')
     @mock.patch('toolium.jira.requests.post')
-    def test_change_jira_status_exception(self, jira_post, jira_logger):
+    def test_change_jira_status_exception(self, jira_post):
         # Configure jira mock
         jira_post.side_effect = ConnectionError('exception error')
 
@@ -149,7 +154,7 @@ class JiraTests(unittest.TestCase):
 
         # Check logging error message
         expected_response = "Error updating Test Case 'TOOLIUM-1': exception error"
-        jira_logger.warn.assert_called_with(expected_response)
+        self.logger.warn.assert_called_with(expected_response)
 
     def test_jira_annotation_pass(self):
         # Configure jira module

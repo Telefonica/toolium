@@ -84,6 +84,12 @@ or
 
     self.assert_full_screenshot(screenshot_name, threshold=0.1)
 
+* They have other optional parameter called *force* that forces to compare the screenshot even if visual testing is disabled by configuration
+
+.. code-block:: python
+
+    self.assert_full_screenshot(screenshot_name, force=True)
+
 How to configure it?
 --------------------
 
@@ -126,6 +132,8 @@ baseline_name
 - *{Browser_browser}*: depending on the value of *browser* property, baseline_name might take one of these values: firefox, iexplore, chrome... This is the value by default.
 - *{Browser_browser}-{Capabilities_version}-{Capabilities_platform}*: baseline_name might take one of these values: iexplore-11-WIN8, safari-9.0-YOSEMITE...
 - *{AppiumCapabilities_deviceName}-{AppiumCapabilities_platformVersion}*: baseline_name might take one of these values: iPhone_6-8.3, iPhone_6-9.1, iPhone_6s-9.1...
+- *{PlatformVersion}*: baseline_name will take the value of the mobile platform version, instead of the platformVersion configuration property
+- *{RemoteNode}*: baseline_name will take the value of the remote node name
 
 engine
 ~~~~~~

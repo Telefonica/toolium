@@ -40,8 +40,6 @@ fix_version = None
 build = None
 only_if_changes = None
 
-logger = logging.getLogger(__name__)
-
 
 def jira(test_key):
     """Decorator to update test status in Jira
@@ -129,6 +127,8 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments):
     :param test_comment: test case comments
     :param test_attachments: test case attachments
     """
+    logger = logging.getLogger(__name__)
+
     if not execution_url:
         logger.warn("Test Case '{}' can not be updated: execution_url is not configured".format(test_key))
         return

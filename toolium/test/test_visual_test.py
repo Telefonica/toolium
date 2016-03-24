@@ -150,7 +150,7 @@ class VisualTests(unittest.TestCase):
             self.visual.compare_files(self._testMethodName, self.file_v1, self.file_small, 0)
 
     def test_get_html_row(self):
-        expected_row = '<tr class=diff><td>test_get_html_row</td><td><img style="width: 100%" onclick="window.open\(this.src\)" src="file://.*register_v2.png"/></td></td><td><img style="width: 100%" onclick="window.open\(this.src\)" src="file://.*register.png"/></td></td><td></td></tr>'
+        expected_row = '<tr class=diff><td>test_get_html_row</td><td><img style="width: 100%" onclick="launchModal\(this.src\)" src=".*register_v2.png"/></td></td><td><img style="width: 100%" onclick="launchModal\(this.src\)" src=".*register.png"/></td></td><td></td></tr>'
         row = self.visual._get_html_row('diff', self._testMethodName, self.file_v1, self.file_v2)
         assertRegex(self, row, expected_row)
 
@@ -236,6 +236,22 @@ class VisualTests(unittest.TestCase):
 
         # Assert output image
         self.assert_image(img, self._testMethodName, 'register')
+
+    def test_assert_screenshot_no_enabled_force(self):
+        # Configure driver mock
+        def copy_file_side_effect(output_file):
+            shutil.copyfile(self.file_v1, output_file)
+
+        self.driver_wrapper.driver.save_screenshot.side_effect = copy_file_side_effect
+
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.config.set('VisualTests', 'enabled', 'false')
+        self.visual = VisualTest(self.driver_wrapper, force=True)
+
+        # Assert screenshot
+        self.visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
+        output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
+        self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
 
     def test_assert_screenshot_full_and_save_baseline(self):
         # Configure driver mock

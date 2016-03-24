@@ -111,17 +111,17 @@ class PageElement(object):
         self._web_element = self.utils.wait_until_element_not_visible(self.locator, timeout)
         return self
 
-    def assert_screenshot(self, filename, threshold=0, exclude_elements=[]):
+    def assert_screenshot(self, filename, threshold=0, exclude_elements=[], force=False):
         """Assert that a screenshot of the element is the same as a screenshot on disk, within a given threshold.
 
         :param filename: the filename for the screenshot, which will be appended with ``.png``
         :param threshold: the threshold for triggering a test failure
         :param exclude_elements: list of WebElements, PageElements or element locators as a tuple (locator_type,
                                  locator_value) that must be excluded from the assertion
+        :param force: if True, the screenshot is compared even if visual testing is disabled by configuration
         """
-        VisualTest(self.driver_wrapper).assert_screenshot(self.web_element, filename, self.__class__.__name__,
-                                                          threshold,
-                                                          exclude_elements)
+        VisualTest(self.driver_wrapper, force).assert_screenshot(self.web_element, filename, self.__class__.__name__,
+                                                                 threshold, exclude_elements)
 
     def get_attribute(self, name):
         """Get the given attribute or property of the element
