@@ -142,7 +142,7 @@ class SeleniumTestCase(BasicTestCase):
         if not self.reuse_driver:
             SeleniumTestCase.driver = None
 
-    def assert_screenshot(self, element, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
+    def assert_screenshot(self, element, filename, threshold=0, exclude_elements=[], driver_wrapper=None, force=False):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
 
         :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value).
@@ -152,11 +152,12 @@ class SeleniumTestCase(BasicTestCase):
         :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
                                  from the assertion.
         :param driver_wrapper: driver wrapper instance
+        :param force: if True, the screenshot is compared even if visual testing is disabled by configuration
         """
         file_suffix = self.get_method_name()
-        VisualTest(driver_wrapper).assert_screenshot(element, filename, file_suffix, threshold, exclude_elements)
+        VisualTest(driver_wrapper, force).assert_screenshot(element, filename, file_suffix, threshold, exclude_elements)
 
-    def assert_full_screenshot(self, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
+    def assert_full_screenshot(self, filename, threshold=0, exclude_elements=[], driver_wrapper=None, force=False):
         """Assert that a driver screenshot is the same as a screenshot on disk, within a given threshold.
 
         :param filename: the filename for the screenshot, which will be appended with ``.png``
@@ -164,9 +165,10 @@ class SeleniumTestCase(BasicTestCase):
         :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
                                  from the assertion.
         :param driver_wrapper: driver wrapper instance
+        :param force: if True, the screenshot is compared even if visual testing is disabled by configuration
         """
         file_suffix = self.get_method_name()
-        VisualTest(driver_wrapper).assert_screenshot(None, filename, file_suffix, threshold, exclude_elements)
+        VisualTest(driver_wrapper, force).assert_screenshot(None, filename, file_suffix, threshold, exclude_elements)
 
 
 class AppiumTestCase(SeleniumTestCase):

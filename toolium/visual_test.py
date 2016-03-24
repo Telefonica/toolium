@@ -51,10 +51,12 @@ class VisualTest(object):
     report_name = 'VisualTests.html'  #: final visual report name
     driver_wrapper = None  #: driver wrapper instance
     results = {'equal': 0, 'diff': 0, 'baseline': 0}  #: dict to save visual assert results
+    enabled = True
 
-    def __init__(self, driver_wrapper=None):
+    def __init__(self, driver_wrapper=None, force=False):
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
-        if not self.driver_wrapper.config.getboolean_optional('VisualTests', 'enabled'):
+        if not self.driver_wrapper.config.getboolean_optional('VisualTests', 'enabled') and not force:
+            self.enabled = False
             return
         if 'PerceptualEngine' not in globals():
             raise Exception('The visual tests are enabled, but needle is not installed')
@@ -109,7 +111,7 @@ class VisualTest(object):
         :param exclude_elements: list of WebElements, PageElements or element locators as a tuple (locator_type,
                                  locator_value) that must be excluded from the assertion
         """
-        if not self.driver_wrapper.config.getboolean_optional('VisualTests', 'enabled'):
+        if not self.enabled:
             return
 
         # Search elements
@@ -236,9 +238,7 @@ class VisualTest(object):
         :param message: error message
         """
         self.results[result] += 1
-        relative_image_file = path.relpath(image_file, self.output_directory) if image_file else None
-        relative_baseline_file = path.relpath(baseline_file, self.output_directory) if baseline_file else None
-        row = VisualTest._get_html_row(result, report_name, relative_image_file, relative_baseline_file, message)
+        row = self._get_html_row(result, report_name, image_file, baseline_file, message)
         self._add_data_to_report_before_tag(row, '</tbody>')
         self._update_report_summary()
 
@@ -272,8 +272,7 @@ class VisualTest(object):
                                                                          self.results['diff'])
         self._add_data_to_report_before_tag(summary, '</div>')
 
-    @staticmethod
-    def _get_html_row(result, report_name, image_file, baseline_file, message=None):
+    def _get_html_row(self, result, report_name, image_file, baseline_file, message=None):
         """Create the html row with the result of a visual test
 
         :param result: comparation result (equal, diff, baseline)
@@ -288,18 +287,18 @@ class VisualTest(object):
         row += '<td>' + report_name + '</td>'
 
         # baseline column
-        baseline_col = img.format(baseline_file) if baseline_file is not None else ''
+        baseline_col = img.format(path.relpath(baseline_file, self.output_directory)) if baseline_file else ''
         row += '<td>' + baseline_col + '</td>'
 
         # image column
-        image_col = img.format(image_file) if image_file is not None else ''
+        image_col = img.format(path.relpath(image_file, self.output_directory)) if image_file else ''
         row += '<td>' + image_col + '</td>'
 
         # diff column
         diff_file = image_file.replace('.png', '.diff.png')
         if os.path.exists(diff_file):
             # perceptualdiff engine
-            diff_col = img.format(diff_file)
+            diff_col = img.format(path.relpath(diff_file, self.output_directory))
         elif message is None:
             diff_col = ''
         elif message == '' or 'Image dimensions do not match' in message:
@@ -310,7 +309,7 @@ class VisualTest(object):
             m = re.search('\(by a distance of (.*)\)', message)
             diff_col = m.group(1) + ' pixels are different'
         elif 'pixels are different' in message:
-            # perceptualdiff engine
+            # perceptualdiff engine without diff image
             m = re.search('([0-9]*) pixels are different', message)
             diff_col = m.group(1) + ' pixels are different'
         else:

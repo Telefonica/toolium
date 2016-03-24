@@ -113,14 +113,15 @@ def add_assert_screenshot_methods(context_or_world, scenario):
     :param scenario: running scenario
     """
 
-    def assert_screenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None):
+    def assert_screenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None,
+                          force=False):
         file_suffix = scenario.name.replace(' ', '_')
-        VisualTest(driver_wrapper).assert_screenshot(element_or_selector, filename, file_suffix, threshold,
-                                                     exclude_elements)
+        VisualTest(driver_wrapper, force).assert_screenshot(element_or_selector, filename, file_suffix, threshold,
+                                                            exclude_elements)
 
-    def assert_full_screenshot(filename, threshold=0, exclude_elements=[], driver_wrapper=None):
+    def assert_full_screenshot(filename, threshold=0, exclude_elements=[], driver_wrapper=None, force=False):
         file_suffix = scenario.name.replace(' ', '_')
-        VisualTest(driver_wrapper).assert_screenshot(None, filename, file_suffix, threshold, exclude_elements)
+        VisualTest(driver_wrapper, force).assert_screenshot(None, filename, file_suffix, threshold, exclude_elements)
 
     context_or_world.assert_screenshot = assert_screenshot
     context_or_world.assert_full_screenshot = assert_full_screenshot

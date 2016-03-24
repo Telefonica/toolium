@@ -84,6 +84,12 @@ or
 
     self.assert_full_screenshot(screenshot_name, threshold=0.1)
 
+* They have other optional parameter called *force* that forces to compare the screenshot even if visual testing is disabled by configuration
+
+.. code-block:: python
+
+    self.assert_full_screenshot(screenshot_name, force=True)
+
 How to configure it?
 --------------------
 

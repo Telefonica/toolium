@@ -32,10 +32,19 @@
       div#summary {
         margin-top: 20px;
         margin-bottom: 30px;
+        background: #f5f5f5;
+        border-top: 2px solid gray;
+        border-bottom: 2px solid gray;
+        padding-left: 10px;
+        padding-right: 10px;
+        display: inline-block;
       }
       p {
         margin-top: 5px;
         margin-bottom: 5px;
+      }
+      img {
+        cursor: pointer;
       }
       .tc-modal {
         display: none;
@@ -48,6 +57,7 @@
         text-align: center;
         z-index: 100;
         font-size: 0;
+        cursor: pointer;
       }
       .tc-modal:before {
         content: "";
@@ -71,6 +81,7 @@
         padding: 30px 40px;
         max-width: 100%;
         max-height: 100%;
+        width: 100%;
       }
     </style>
   </head>
