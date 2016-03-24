@@ -390,21 +390,6 @@ class VisualTests(unittest.TestCase):
                                      'screenshot_ios_web.png')
         PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
-    def test_baseline(self):
-        expected_baseline_directory = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox')
-        assert_equal(self.visual.baseline_directory, expected_baseline_directory)
-
-    def test_baseline_platform_version(self):
-        # Configure driver mock
-        self.driver_wrapper.driver.desired_capabilities.__getitem__.return_value = '9.3'
-
-        # Update conf and create a new VisualTest instance
-        self.driver_wrapper.baseline_name = 'ios_{platformVersion}'
-        self.visual = VisualTest(self.driver_wrapper)
-
-        expected_baseline_directory = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'ios_9.3')
-        assert_equal(self.visual.baseline_directory, expected_baseline_directory)
-
 
 @mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
 def get_mock_element(WebElement, x, y, height, width):

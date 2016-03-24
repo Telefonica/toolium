@@ -53,100 +53,100 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
         DriverWrapper.config_properties_filenames = None
 
         # Create a new wrapper
-        self.wrapper = DriverWrappersPool.get_default_wrapper()
+        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
 
         config_files = ConfigFiles()
         config_files.set_config_directory(os.path.join(self.root_path, 'conf'))
         config_files.set_output_directory(os.path.join(self.root_path, 'output'))
         DriverWrappersPool.configure_common_directories(config_files)
-        self.wrapper.configure_logger()
+        self.driver_wrapper.configure_logger()
 
     def test_configure_properties(self):
         os.environ["Config_prop_filenames"] = 'properties.cfg'
-        self.wrapper.configure_properties()
-        assert_equal('firefox', self.wrapper.config.get('Browser', 'browser'))  # get last value
-        assert_equal('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
-        assert_equal(None, self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
+        self.driver_wrapper.configure_properties()
+        assert_equal('firefox', self.driver_wrapper.config.get('Browser', 'browser'))  # get last value
+        assert_equal('5', self.driver_wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
+        assert_equal(None, self.driver_wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_android(self):
         os.environ["Config_prop_filenames"] = 'android-properties.cfg'
-        self.wrapper.configure_properties()
-        assert_equal('android', self.wrapper.config.get('Browser', 'browser'))  # get last value
-        assert_equal(None, self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
+        self.driver_wrapper.configure_properties()
+        assert_equal('android', self.driver_wrapper.config.get('Browser', 'browser'))  # get last value
+        assert_equal(None, self.driver_wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
         assert_equal('http://invented_url/Demo.apk',
-                     self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
+                     self.driver_wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_two_files(self):
         os.environ["Config_prop_filenames"] = 'properties.cfg;android-properties.cfg'
-        self.wrapper.configure_properties()
-        assert_equal('android', self.wrapper.config.get('Browser', 'browser'))  # get last value
-        assert_equal('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
+        self.driver_wrapper.configure_properties()
+        assert_equal('android', self.driver_wrapper.config.get('Browser', 'browser'))  # get last value
+        assert_equal('5', self.driver_wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
         assert_equal('http://invented_url/Demo.apk',
-                     self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
+                     self.driver_wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_two_files_android_first(self):
         os.environ["Config_prop_filenames"] = 'android-properties.cfg;properties.cfg'
-        self.wrapper.configure_properties()
-        assert_equal('firefox', self.wrapper.config.get('Browser', 'browser'))  # get last value
-        assert_equal('5', self.wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
+        self.driver_wrapper.configure_properties()
+        assert_equal('firefox', self.driver_wrapper.config.get('Browser', 'browser'))  # get last value
+        assert_equal('5', self.driver_wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
         assert_equal('http://invented_url/Demo.apk',
-                     self.wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
+                     self.driver_wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_system_property(self):
         os.environ["Config_prop_filenames"] = 'properties.cfg'
         os.environ["Browser_browser"] = 'opera'
-        self.wrapper.configure_properties()
-        assert_equal('opera', self.wrapper.config.get('Browser', 'browser'))
+        self.driver_wrapper.configure_properties()
+        assert_equal('opera', self.driver_wrapper.config.get('Browser', 'browser'))
 
     def test_configure_properties_file_default_file(self):
-        self.wrapper.configure_properties()
-        assert_equal('firefox', self.wrapper.config.get('Browser', 'browser'))
+        self.driver_wrapper.configure_properties()
+        assert_equal('firefox', self.driver_wrapper.config.get('Browser', 'browser'))
 
     def test_configure_properties_file_not_found(self):
         os.environ["Config_prop_filenames"] = 'notfound-properties.cfg'
         with assert_raises(Exception) as cm:
-            self.wrapper.configure_properties()
+            self.driver_wrapper.configure_properties()
         assert_in('Properties config file not found', str(cm.exception))
 
     def test_configure_properties_no_changes(self):
         # Configure properties
         os.environ["Config_prop_filenames"] = 'properties.cfg'
-        self.wrapper.configure_properties()
-        assert_equal('firefox', self.wrapper.config.get('Browser', 'browser'))
+        self.driver_wrapper.configure_properties()
+        assert_equal('firefox', self.driver_wrapper.config.get('Browser', 'browser'))
 
         # Modify property
         new_browser = 'opera'
-        self.wrapper.config.set('Browser', 'browser', new_browser)
-        assert_equal(new_browser, self.wrapper.config.get('Browser', 'browser'))
+        self.driver_wrapper.config.set('Browser', 'browser', new_browser)
+        assert_equal(new_browser, self.driver_wrapper.config.get('Browser', 'browser'))
 
         # Trying to configure again
-        self.wrapper.configure_properties()
+        self.driver_wrapper.configure_properties()
 
         # Configuration has not been initialized
-        assert_equal(new_browser, self.wrapper.config.get('Browser', 'browser'))
+        assert_equal(new_browser, self.driver_wrapper.config.get('Browser', 'browser'))
 
     def test_configure_properties_change_configuration_file(self):
         # Configure properties
         os.environ["Config_prop_filenames"] = 'properties.cfg'
-        self.wrapper.configure_properties()
-        assert_equal('firefox', self.wrapper.config.get('Browser', 'browser'))
+        self.driver_wrapper.configure_properties()
+        assert_equal('firefox', self.driver_wrapper.config.get('Browser', 'browser'))
 
         # Modify property
         new_browser = 'opera'
-        self.wrapper.config.set('Browser', 'browser', new_browser)
-        assert_equal(new_browser, self.wrapper.config.get('Browser', 'browser'))
+        self.driver_wrapper.config.set('Browser', 'browser', new_browser)
+        assert_equal(new_browser, self.driver_wrapper.config.get('Browser', 'browser'))
 
         # Change file and try to configure again
         os.environ["Config_prop_filenames"] = 'android-properties.cfg'
-        self.wrapper.configure_properties()
+        self.driver_wrapper.configure_properties()
 
         # Check that configuration has been initialized
-        assert_equal('android', self.wrapper.config.get('Browser', 'browser'))
+        assert_equal('android', self.driver_wrapper.config.get('Browser', 'browser'))
 
 
 class DriverWrapperLoggerTests(DriverWrapperCommon):
     def setUp(self):
-        self.wrapper = DriverWrappersPool.get_default_wrapper()
+        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
         config_files = ConfigFiles()
         config_files.set_config_directory(os.path.join(self.root_path, 'conf'))
         config_files.set_output_directory(os.path.join(self.root_path, 'output'))
@@ -154,22 +154,22 @@ class DriverWrapperLoggerTests(DriverWrapperCommon):
 
     def test_configure_logger(self):
         os.environ["Config_log_filename"] = 'logging.conf'
-        self.wrapper.configure_logger()
-        assert_equal('DEBUG', logging.getLevelName(self.wrapper.logger.getEffectiveLevel()))
+        self.driver_wrapper.configure_logger()
+        assert_equal('DEBUG', logging.getLevelName(self.driver_wrapper.logger.getEffectiveLevel()))
 
     def test_configure_logger_file_not_configured(self):
-        self.wrapper.configure_logger()
-        self.wrapper.logger.info('No error, default logging configuration')
+        self.driver_wrapper.configure_logger()
+        self.driver_wrapper.logger.info('No error, default logging configuration')
 
     def test_configure_logger_file_not_found(self):
         os.environ["Config_log_filename"] = 'notfound-logging.conf'
-        self.wrapper.configure_logger()
-        self.wrapper.logger.info('No error, default logging configuration')
+        self.driver_wrapper.configure_logger()
+        self.driver_wrapper.logger.info('No error, default logging configuration')
 
     def test_configure_logger_no_changes(self):
         # Configure logger
         os.environ["Config_log_filename"] = 'logging.conf'
-        self.wrapper.configure_logger()
+        self.driver_wrapper.configure_logger()
         logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
         assert_equal('DEBUG', logging.getLevelName(logger.level))
 
@@ -179,7 +179,7 @@ class DriverWrapperLoggerTests(DriverWrapperCommon):
         assert_equal(new_level, logging.getLevelName(logger.level))
 
         # Trying to configure again
-        self.wrapper.configure_logger()
+        self.driver_wrapper.configure_logger()
 
         # Configuration has not been initialized
         assert_equal(new_level, logging.getLevelName(logger.level))
@@ -197,10 +197,81 @@ class DriverWrapperLoggerTests(DriverWrapperCommon):
 
         # Change file and try to configure again
         os.environ["Config_log_filename"] = 'warn-logging.conf'
-        self.wrapper.configure_logger()
+        self.driver_wrapper.configure_logger()
 
         # Check that configuration has been initialized
         assert_equal('WARNING', logging.getLevelName(logger.level))
+
+
+class DriverWrapperBaselineTests(DriverWrapperCommon):
+    def setUp(self):
+        # Reset wrappers pool values
+        DriverWrappersPool._empty_pool()
+        DriverWrapper.config_properties_filenames = None
+
+        # Create a new wrapper
+        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
+
+        config_files = ConfigFiles()
+        config_files.set_config_directory(os.path.join(self.root_path, 'conf'))
+        config_files.set_output_directory(os.path.join(self.root_path, 'output'))
+        DriverWrappersPool.configure_common_directories(config_files)
+        self.driver_wrapper.configure_properties()
+
+    def test_configure_visual_baseline_not_configured(self):
+        self.driver_wrapper.config.remove_option('VisualTests', 'baseline_name')
+
+        self.driver_wrapper.configure_visual_baseline()
+
+        expected_baseline_directory = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox')
+        assert_equal(self.driver_wrapper.baseline_name, 'firefox')
+        assert_equal(self.driver_wrapper.visual_baseline_directory, expected_baseline_directory)
+
+    def test_configure_visual_baseline_browser(self):
+        self.driver_wrapper.config.set('VisualTests', 'baseline_name', '{Browser_browser}')
+
+        self.driver_wrapper.configure_visual_baseline()
+
+        expected_baseline_directory = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox')
+        assert_equal(self.driver_wrapper.baseline_name, 'firefox')
+        assert_equal(self.driver_wrapper.visual_baseline_directory, expected_baseline_directory)
+
+    def test_update_visual_baseline_platform_version(self):
+        # Configure baseline and driver mock
+        self.driver_wrapper.config.set('VisualTests', 'baseline_name', 'ios_{PlatformVersion}')
+        self.driver_wrapper.driver = mock.MagicMock()
+        self.driver_wrapper.driver.desired_capabilities.__getitem__.return_value = '9.3'
+
+        self.driver_wrapper.configure_visual_baseline()
+        self.driver_wrapper.update_visual_baseline()
+
+        expected_baseline_directory = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'ios_9.3')
+        assert_equal(self.driver_wrapper.baseline_name, 'ios_9.3')
+        assert_equal(self.driver_wrapper.visual_baseline_directory, expected_baseline_directory)
+
+    def test_update_visual_baseline_remote_node(self):
+        # Configure baseline and remote node
+        self.driver_wrapper.config.set('VisualTests', 'baseline_name', 'firefox_{RemoteNode}')
+        self.driver_wrapper.remote_node = '255.255.255.255'
+
+        self.driver_wrapper.configure_visual_baseline()
+        self.driver_wrapper.update_visual_baseline()
+
+        expected_baseline_directory = os.path.join(self.root_path, 'output', 'visualtests', 'baseline',
+                                                   'firefox_255.255.255.255')
+        assert_equal(self.driver_wrapper.baseline_name, 'firefox_255.255.255.255')
+        assert_equal(self.driver_wrapper.visual_baseline_directory, expected_baseline_directory)
+
+    def test_update_visual_baseline_remote_node_empty(self):
+        # Configure baseline
+        self.driver_wrapper.config.set('VisualTests', 'baseline_name', 'firefox_{RemoteNode}')
+
+        self.driver_wrapper.configure_visual_baseline()
+        self.driver_wrapper.update_visual_baseline()
+
+        expected_baseline_directory = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox_None')
+        assert_equal(self.driver_wrapper.baseline_name, 'firefox_None')
+        assert_equal(self.driver_wrapper.visual_baseline_directory, expected_baseline_directory)
 
 
 # (browser, is_mobile, is_android, is_ios)
