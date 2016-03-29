@@ -84,7 +84,7 @@ or
 
     self.assert_full_screenshot(screenshot_name, threshold=0.1)
 
-* They have other optional parameter called *force* that forces to compare the screenshot even if visual testing is disabled by configuration
+* They have other optional parameter called *force* that forces to compare the screenshot even if visual testing is disabled by configuration. If the assertion fails, the test fails.
 
 .. code-block:: python
 

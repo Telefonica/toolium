@@ -21,7 +21,7 @@ v1.0.0
 - Baseline name property can contain *{PlatformVersion}* or *{RemoteNode}* to add actual platform version or remote
   node name to the baseline name
 - Add force parameter to *assert_screenshot* methods to compare the screenshot even if visual testing is disabled by
-  configuration
+  configuration. If the assertion fails, the test fails.
 
 v0.12.1
 -------
