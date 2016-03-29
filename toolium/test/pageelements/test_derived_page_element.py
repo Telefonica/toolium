@@ -93,6 +93,9 @@ class TestDerivedPageElement(unittest.TestCase):
         assert_equal(page_object.menu.locator, (By.ID, 'menu'))
         assert_equal(page_object.menu.logo.locator, (By.ID, 'image'))
 
+        # Check that elements inside a group have the group as parent
+        assert_equal(page_object.menu.logo.parent, page_object.menu)
+
     def test_get_text(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
 

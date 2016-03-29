@@ -78,13 +78,19 @@ class PageObject(object):
                 page_elements.append(element)
         return page_elements
 
-    def _update_page_elements(self):
-        """Copy driver and utils instances to all page elements of this page object"""
+    def _update_page_elements(self, parent=None):
+        """Copy driver and utils instances to all page elements of this page object
+
+        :param parent: parent element (WebElement, PageElement or locator tuple)
+        """
         for element in self._get_page_elements():
             element.set_driver_wrapper(self.driver_wrapper)
+            if parent and not isinstance(element, PageObject) and not element.parent:
+                # If this instance is a group and element is not a page object, update element parent
+                element.parent = parent
             if isinstance(element, PageObject):
                 # If element is a page object, update also its page elements
-                element._update_page_elements()
+                element._update_page_elements(parent)
 
     def reset_web_elements(self):
         """Reset web element object in all page elements"""

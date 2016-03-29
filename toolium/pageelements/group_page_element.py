@@ -36,7 +36,7 @@ class Group(PageObject, PageElement):
         self.parent = parent
         self.set_driver_wrapper(driver_wrapper)
         self.init_page_elements()
-        self._update_page_elements()
+        self._update_page_elements(parent=self)
 
     def reset_web_elements(self):
         """Reset web element object in all page elements"""
