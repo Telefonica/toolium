@@ -413,6 +413,14 @@ class VisualTests(unittest.TestCase):
                                      'screenshot_ios_web.png')
         PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
+    def test_assert_screenshot_str_threshold(self):
+        with assert_raises(TypeError):
+            self.visual.assert_screenshot(None, 'screenshot_full', threshold='name')
+
+    def test_assert_screenshot_greater_threshold(self):
+        with assert_raises(TypeError):
+            self.visual.assert_screenshot(None, 'screenshot_full', threshold=2)
+
 
 @mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
 def get_mock_element(WebElement, x, y, height, width):

@@ -148,7 +148,7 @@ class SeleniumTestCase(BasicTestCase):
         :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value).
                         If None, a full screenshot is taken.
         :param filename: the filename for the screenshot, which will be appended with ``.png``
-        :param threshold: the threshold for triggering a test failure
+        :param threshold: percentage threshold for triggering a test failure (value between 0 and 1)
         :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
                                  from the assertion.
         :param driver_wrapper: driver wrapper instance
@@ -161,7 +161,7 @@ class SeleniumTestCase(BasicTestCase):
         """Assert that a driver screenshot is the same as a screenshot on disk, within a given threshold.
 
         :param filename: the filename for the screenshot, which will be appended with ``.png``
-        :param threshold: the threshold for triggering a test failure
+        :param threshold: percentage threshold for triggering a test failure (value between 0 and 1)
         :param exclude_elements: list of CSS/XPATH selectors as a string or WebElement objects that must be excluded
                                  from the assertion.
         :param driver_wrapper: driver wrapper instance
