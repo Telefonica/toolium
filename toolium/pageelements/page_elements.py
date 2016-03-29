@@ -37,7 +37,6 @@ class PageElements(CommonObject):
                   or toolium.pageelements.PageElement
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     :type page_element_class: class
-    :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
     """
     page_element_class = PageElement  #: class of page elements (PageElement, Button...)
 

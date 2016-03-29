@@ -27,12 +27,15 @@ class Group(PageObject, PageElement):
     def __init__(self, by, value, parent=None, driver_wrapper=None):
         """Initialize the Group object with the given locator components.
 
+        If parent is not None, find_elements will be performed over it, instead of
+        using the driver's method, so it can find nested elements.
+
         :param by: locator type
         :param value: locator value
         :param parent: parent element (WebElement, PageElement or locator tuple)
         :param driver_wrapper: driver wrapper instance
         """
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)  #: logger instance
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance

@@ -25,7 +25,7 @@ class CommonObject(object):
 
     def __init__(self):
         """Initialize common object"""
-        self.driver_wrapper = None
+        self.driver_wrapper = None  #: driver wrapper instance
 
     def set_driver_wrapper(self, driver_wrapper):
         """Initialize driver_wrapper

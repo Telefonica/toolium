@@ -31,6 +31,16 @@ checkbox_page_element
     :undoc-members:
     :show-inheritance:
 
+.. _group_page_element:
+
+group_page_element
+------------------
+
+.. automodule:: toolium.pageelements.group_page_element
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. _input_radio_page_element:
 
 input_radio_page_element

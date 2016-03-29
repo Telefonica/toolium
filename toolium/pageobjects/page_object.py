@@ -25,8 +25,8 @@ from toolium.pageobjects.common_object import CommonObject
 class PageObject(CommonObject):
     """Class to represent a web page or a mobile application screen
 
-    :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
     :type app_strings: str
+    :type logger: logging.Logger
     """
 
     def __init__(self, driver_wrapper=None):
@@ -34,7 +34,7 @@ class PageObject(CommonObject):
 
         :param driver_wrapper: driver wrapper instance
         """
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)  #: logger instance
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self.app_strings = None  #:mobile application strings
         self.init_page_elements()

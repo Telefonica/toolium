@@ -28,7 +28,6 @@ class PageElement(CommonObject):
     :type parent: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
                   or toolium.pageelements.PageElement
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
-    :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
     """
 
     def __init__(self, by, value, parent=None):
