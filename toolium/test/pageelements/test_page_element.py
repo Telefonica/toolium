@@ -20,7 +20,7 @@ import unittest
 
 import mock
 import six
-from nose.tools import assert_equal, assert_not_equal, assert_is_not_none, assert_is_none
+from nose.tools import assert_equal, assert_is_not_none, assert_is_none
 from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper

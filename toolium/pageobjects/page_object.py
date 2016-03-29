@@ -20,7 +20,6 @@ import logging
 
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.pageelements.page_element import PageElement
-from toolium.pageelements.page_elements import PageElements
 
 
 class PageObject(object):
@@ -72,6 +71,7 @@ class PageObject(object):
 
         :returns: list of page elements and page objects
         """
+        from toolium.pageelements.page_elements import PageElements
         page_elements = []
         for element in list(self.__dict__.values()) + list(self.__class__.__dict__.values()):
             if isinstance(element, PageElement) or isinstance(element, PageElements) or isinstance(element, PageObject):

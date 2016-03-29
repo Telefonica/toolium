@@ -24,7 +24,7 @@ from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.pageelements import PageElement
+from toolium.pageelements import PageElement, Group
 from toolium.pageobjects.page_object import PageObject
 
 child_element = 'child_element'
@@ -38,6 +38,18 @@ def get_mock_element(WebElement):
     return web_element
 
 
+class MenuPageObject(PageObject):
+    register = PageElement(By.ID, 'register')
+
+    def init_page_elements(self):
+        self.logo = PageElement(By.ID, 'image')
+
+
+class MenuGroup(Group):
+    def init_page_elements(self):
+        self.logo = PageElement(By.ID, 'image')
+
+
 class RegisterPageObject(PageObject):
     username = PageElement(By.XPATH, '//input[0]')
     password = PageElement(By.ID, 'password', username)
@@ -47,13 +59,7 @@ class RegisterPageObject(PageObject):
         self.email = PageElement(By.ID, 'email', mock_element)
         self.address = PageElement(By.ID, 'address', (By.ID, 'parent'))
         self.menu = MenuPageObject()
-
-
-class MenuPageObject(PageObject):
-    register = PageElement(By.ID, 'register')
-
-    def init_page_elements(self):
-        self.logo = PageElement(By.ID, 'image')
+        self.menu_group = MenuGroup(By.ID, 'menu')
 
 
 class TestPageObject(unittest.TestCase):
@@ -86,6 +92,8 @@ class TestPageObject(unittest.TestCase):
         assert_equal(page_object.menu.driver_wrapper, self.driver_wrapper)
         assert_equal(page_object.menu.register.driver_wrapper, self.driver_wrapper)
         assert_equal(page_object.menu.logo.driver_wrapper, self.driver_wrapper)
+        assert_equal(page_object.menu_group.driver_wrapper, self.driver_wrapper)
+        assert_equal(page_object.menu_group.logo.driver_wrapper, self.driver_wrapper)
 
     def test_two_driver_wrappers(self):
         page_object = RegisterPageObject()
@@ -99,6 +107,8 @@ class TestPageObject(unittest.TestCase):
         assert_equal(page_object.address.driver_wrapper, self.driver_wrapper)
         assert_equal(page_object.menu.driver_wrapper, self.driver_wrapper)
         assert_equal(page_object.menu.logo.driver_wrapper, self.driver_wrapper)
+        assert_equal(page_object.menu_group.driver_wrapper, self.driver_wrapper)
+        assert_equal(page_object.menu_group.logo.driver_wrapper, self.driver_wrapper)
 
         # Check that the second page object and its instance page elements have the second driver wrapper
         assert_equal(second_page_object.driver_wrapper, second_driver_wrapper)
@@ -107,6 +117,8 @@ class TestPageObject(unittest.TestCase):
         assert_equal(second_page_object.address.driver_wrapper, second_driver_wrapper)
         assert_equal(second_page_object.menu.driver_wrapper, second_driver_wrapper)
         assert_equal(second_page_object.menu.logo.driver_wrapper, second_driver_wrapper)
+        assert_equal(second_page_object.menu_group.driver_wrapper, second_driver_wrapper)
+        assert_equal(second_page_object.menu_group.logo.driver_wrapper, second_driver_wrapper)
 
         # Check that the class elements have the last driver wrapper
         # This kind of elements could not be used with multiple drivers
@@ -118,32 +130,39 @@ class TestPageObject(unittest.TestCase):
         assert_equal(second_page_object.menu.register.driver_wrapper, second_driver_wrapper)
 
     def test_reset_web_elements(self):
-        login_page = RegisterPageObject()
-        # Serach page elements
-        login_page.username.web_element
-        login_page.password.web_element
-        login_page.language.web_element
-        login_page.email.web_element
-        login_page.address.web_element
-        login_page.menu.register.web_element
-        login_page.menu.logo.web_element
+        page_object = RegisterPageObject()
+
+        # Search page elements
+        page_object.username.web_element
+        page_object.password.web_element
+        page_object.language.web_element
+        page_object.email.web_element
+        page_object.address.web_element
+        page_object.menu.register.web_element
+        page_object.menu.logo.web_element
+        page_object.menu_group.web_element
+        page_object.menu_group.logo.web_element
 
         # Check that all page elements have a web element
-        assert_is_not_none(login_page.username._web_element)
-        assert_is_not_none(login_page.password._web_element)
-        assert_is_not_none(login_page.language._web_element)
-        assert_is_not_none(login_page.email._web_element)
-        assert_is_not_none(login_page.address._web_element)
-        assert_is_not_none(login_page.menu.register._web_element)
-        assert_is_not_none(login_page.menu.logo._web_element)
+        assert_is_not_none(page_object.username._web_element)
+        assert_is_not_none(page_object.password._web_element)
+        assert_is_not_none(page_object.language._web_element)
+        assert_is_not_none(page_object.email._web_element)
+        assert_is_not_none(page_object.address._web_element)
+        assert_is_not_none(page_object.menu.register._web_element)
+        assert_is_not_none(page_object.menu.logo._web_element)
+        assert_is_not_none(page_object.menu_group._web_element)
+        assert_is_not_none(page_object.menu_group.logo._web_element)
 
-        login_page.reset_web_elements()
+        page_object.reset_web_elements()
 
         # Check that all page elements are reset
-        assert_is_none(login_page.username._web_element)
-        assert_is_none(login_page.password._web_element)
-        assert_is_none(login_page.language._web_element)
-        assert_is_none(login_page.email._web_element)
-        assert_is_none(login_page.address._web_element)
-        assert_is_none(login_page.menu.register._web_element)
-        assert_is_none(login_page.menu.logo._web_element)
+        assert_is_none(page_object.username._web_element)
+        assert_is_none(page_object.password._web_element)
+        assert_is_none(page_object.language._web_element)
+        assert_is_none(page_object.email._web_element)
+        assert_is_none(page_object.address._web_element)
+        assert_is_none(page_object.menu.register._web_element)
+        assert_is_none(page_object.menu.logo._web_element)
+        assert_is_none(page_object.menu_group._web_element)
+        assert_is_none(page_object.menu_group.logo._web_element)

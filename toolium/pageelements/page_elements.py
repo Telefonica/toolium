@@ -25,6 +25,7 @@ from toolium.pageelements.link_page_element import Link
 from toolium.pageelements.page_element import PageElement
 from toolium.pageelements.select_page_element import Select
 from toolium.pageelements.text_page_element import Text
+from toolium.pageelements.group_page_element import Group
 
 
 class PageElements(object):
@@ -141,3 +142,7 @@ class Selects(PageElements):
 
 class Texts(PageElements):
     page_element_class = Text
+
+
+class Groups(PageElements):
+    page_element_class = Group
