@@ -51,12 +51,12 @@ class VisualTest(object):
     report_name = 'VisualTests.html'  #: final visual report name
     driver_wrapper = None  #: driver wrapper instance
     results = {'equal': 0, 'diff': 0, 'baseline': 0}  #: dict to save visual assert results
-    enabled = True
+    force = False
 
     def __init__(self, driver_wrapper=None, force=False):
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
-        if not self.driver_wrapper.config.getboolean_optional('VisualTests', 'enabled') and not force:
-            self.enabled = False
+        self.force = force
+        if not self.driver_wrapper.config.getboolean_optional('VisualTests', 'enabled') and not self.force:
             return
         if 'PerceptualEngine' not in globals():
             raise Exception('The visual tests are enabled, but needle is not installed')
@@ -107,12 +107,14 @@ class VisualTest(object):
                         If None, a full screenshot is taken.
         :param filename: the filename for the screenshot, which will be appended with ``.png``
         :param file_suffix: a string to be appended to the output filename
-        :param threshold: the threshold for triggering a test failure
+        :param threshold: percentage threshold for triggering a test failure (value between 0 and 1)
         :param exclude_elements: list of WebElements, PageElements or element locators as a tuple (locator_type,
                                  locator_value) that must be excluded from the assertion
         """
-        if not self.enabled:
+        if not self.driver_wrapper.config.getboolean_optional('VisualTests', 'enabled') and not self.force:
             return
+        if not isinstance(threshold, int) or threshold < 0 or threshold > 1:
+            raise TypeError('Threshold must be an integer between 0 and 1: {}'.format(threshold))
 
         # Search elements
         web_element = self.utils.get_web_element(element)
@@ -215,6 +217,10 @@ class VisualTest(object):
         :param threshold: percentage threshold
         :returns: error message
         """
+        if isinstance(self.engine, PilEngine):
+            # Pil needs a pixel number threshold instead of a percentage threshold
+            width, height = Image.open(image_file).size
+            threshold = int(width * height * threshold)
         try:
             self.engine.assertSameFiles(image_file, baseline_file, threshold)
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'complete_report'):
@@ -222,7 +228,7 @@ class VisualTest(object):
             return None
         except AssertionError as exc:
             self._add_result_to_report('diff', report_name, image_file, baseline_file, str(exc))
-            if self.driver_wrapper.config.getboolean_optional('VisualTests', 'fail'):
+            if self.driver_wrapper.config.getboolean_optional('VisualTests', 'fail') or self.force:
                 raise exc
             else:
                 self.logger.warn('Visual error: {}'.format(str(exc)))

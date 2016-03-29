@@ -115,7 +115,7 @@ class PageElement(object):
         """Assert that a screenshot of the element is the same as a screenshot on disk, within a given threshold.
 
         :param filename: the filename for the screenshot, which will be appended with ``.png``
-        :param threshold: the threshold for triggering a test failure
+        :param threshold: percentage threshold for triggering a test failure (value between 0 and 1)
         :param exclude_elements: list of WebElements, PageElements or element locators as a tuple (locator_type,
                                  locator_value) that must be excluded from the assertion
         :param force: if True, the screenshot is compared even if visual testing is disabled by configuration

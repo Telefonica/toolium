@@ -78,13 +78,13 @@ or
     page_element_2 = PageElement(By.ID, 'second_id')
     self.assert_full_screenshot(screenshot_name, exclude_elements=[page_element_1, page_element_2])
 
-* Both comparing methods have an optional parameter called *threshold* that marks the percentage of pixels that are allowed to be different
+* Both comparing methods have an optional parameter called *threshold* that marks the percentage of pixels that are allowed to be different. It must be a number between 0 and 1.
 
 .. code-block:: python
 
     self.assert_full_screenshot(screenshot_name, threshold=0.1)
 
-* They have other optional parameter called *force* that forces to compare the screenshot even if visual testing is disabled by configuration
+* They have other optional parameter called *force* that forces to compare the screenshot even if visual testing is disabled by configuration. If the assertion fails, the test fails.
 
 .. code-block:: python
 

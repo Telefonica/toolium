@@ -253,6 +253,29 @@ class VisualTests(unittest.TestCase):
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
         self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
 
+    def test_assert_screenshot_no_enabled_force_fail(self):
+        # Configure driver mock
+        def copy_file_side_effect(output_file):
+            shutil.copyfile(self.file_v1, output_file)
+
+        self.driver_wrapper.driver.save_screenshot.side_effect = copy_file_side_effect
+
+        # Add v2 baseline image
+        baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
+                                     'screenshot_full.png')
+        shutil.copyfile(self.file_v2, baseline_file)
+
+        # Update conf and create a new VisualTest instance
+        self.driver_wrapper.config.set('VisualTests', 'fail', 'false')
+        self.driver_wrapper.config.set('VisualTests', 'enabled', 'false')
+        self.visual = VisualTest(self.driver_wrapper, force=True)
+
+        # Assert screenshot
+        with assert_raises(AssertionError):
+            self.visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
+        output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
+        self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
+
     def test_assert_screenshot_full_and_save_baseline(self):
         # Configure driver mock
         def copy_file_side_effect(output_file):
@@ -389,6 +412,14 @@ class VisualTests(unittest.TestCase):
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                      'screenshot_ios_web.png')
         PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
+
+    def test_assert_screenshot_str_threshold(self):
+        with assert_raises(TypeError):
+            self.visual.assert_screenshot(None, 'screenshot_full', threshold='name')
+
+    def test_assert_screenshot_greater_threshold(self):
+        with assert_raises(TypeError):
+            self.visual.assert_screenshot(None, 'screenshot_full', threshold=2)
 
 
 @mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
