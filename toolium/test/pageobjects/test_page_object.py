@@ -129,7 +129,7 @@ class TestPageObject(unittest.TestCase):
         assert_equal(second_page_object.password.driver_wrapper, second_driver_wrapper)
         assert_equal(second_page_object.menu.register.driver_wrapper, second_driver_wrapper)
 
-    def test_reset_web_elements(self):
+    def test_reset_object(self):
         page_object = RegisterPageObject()
 
         # Search page elements
@@ -154,7 +154,7 @@ class TestPageObject(unittest.TestCase):
         assert_is_not_none(page_object.menu_group._web_element)
         assert_is_not_none(page_object.menu_group.logo._web_element)
 
-        page_object.reset_web_elements()
+        page_object.reset_object()
 
         # Check that all page elements are reset
         assert_is_none(page_object.username._web_element)

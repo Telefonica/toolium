@@ -18,6 +18,7 @@ limitations under the License.
 
 import logging
 
+from toolium.driver_wrapper import DriverWrappersPool
 from toolium.pageelements.page_element import PageElement
 from toolium.pageobjects.page_object import PageObject
 
@@ -32,14 +33,15 @@ class Group(PageObject, PageElement):
         :param driver_wrapper: driver wrapper instance
         """
         self.logger = logging.getLogger(__name__)
-        self.locator = (by, value)
-        self.parent = parent
-        self.set_driver_wrapper(driver_wrapper)
+        self.locator = (by, value)  #: tuple with locator type and locator value
+        self.parent = parent  #: element from which to find actual elements
+        self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
+        self._web_element = None
         self.init_page_elements()
         self._update_page_elements(parent=self)
 
-    def reset_web_elements(self):
+    def reset_object(self):
         """Reset web element object in all page elements"""
         self._web_element = None
         for element in self._get_page_elements():
-            element.reset_web_elements()
+            element.reset_object()

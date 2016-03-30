@@ -17,28 +17,19 @@ limitations under the License.
 """
 
 from toolium.driver_wrapper import DriverWrappersPool
+from toolium.pageobjects.common_object import CommonObject
 from toolium.visual_test import VisualTest
 
 
-class PageElement(object):
+class PageElement(CommonObject):
     """Class to represent a web or a mobile page element
 
-    :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
-    :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
-    :type config: toolium.config_parser.ExtendedConfigParser
-    :type utils: toolium.utils.Utils
     :type locator: (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     :type parent: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
                   or toolium.pageelements.PageElement
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
+    :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
     """
-    driver_wrapper = None  #: driver wrapper instance
-    driver = None  #: webdriver instance
-    config = None  #: driver configuration
-    utils = None  #: test utils instance
-    locator = None  #: tuple with locator type and locator value
-    parent = None  #: element from which to find actual element
-    _web_element = None
 
     def __init__(self, by, value, parent=None):
         """Initialize the PageElement object with the given locator components.
@@ -50,24 +41,13 @@ class PageElement(object):
         :param value: locator value
         :param parent: parent element (WebElement, PageElement or locator tuple)
         """
-        self.locator = (by, value)
-        self.parent = parent
-        self.set_driver_wrapper()
+        self.locator = (by, value)  #: tuple with locator type and locator value
+        self.parent = parent  #: element from which to find actual elements
+        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
+        self._web_element = None
 
-    def set_driver_wrapper(self, driver_wrapper=None):
-        """Initialize driver_wrapper, driver, config and utils
-
-        :param driver_wrapper: driver wrapper instance
-        """
-        self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
-        # Add some driver_wrapper attributes to page element instance
-        self.driver = self.driver_wrapper.driver
-        self.config = self.driver_wrapper.config
-        self.utils = self.driver_wrapper.utils
-        self.reset_web_elements()
-
-    def reset_web_elements(self):
-        """Reset web element object"""
+    def reset_object(self):
+        """Initialize web element object"""
         self._web_element = None
 
     @property

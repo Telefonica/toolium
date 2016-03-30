@@ -19,7 +19,7 @@ limitations under the License.
 import unittest
 
 import mock
-from nose.tools import assert_equal, assert_is_instance, assert_is, assert_is_not_none, assert_is_none
+from nose.tools import assert_equal, assert_is_instance, assert_is, assert_is_not_none, assert_is_none, assert_list_equal
 from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper
@@ -29,6 +29,7 @@ from toolium.pageobjects.page_object import PageObject
 
 
 child_elements = ['child_element_1', 'child_element_2']
+other_child_elements = ['child_element_3', 'child_element_4']
 mock_element = None
 
 
@@ -41,6 +42,7 @@ def get_mock_element(WebElement):
 
 class LoginPageObject(PageObject):
     inputs = PageElements(By.XPATH, '//input')
+    links = PageElements(By.XPATH, '//a')
     inputs_parent = PageElements(By.XPATH, '//input', (By.ID, 'parent'))
 
 
@@ -107,10 +109,37 @@ class TestPageElements(unittest.TestCase):
         assert_is(web_elements[0], page_elements[0]._web_element)
         assert_is(web_elements[1], page_elements[1]._web_element)
 
-    def test_reset_web_elements(self):
+    def test_multiple_page_elements(self):
+        self.driver_wrapper.driver.find_elements.side_effect = [child_elements, other_child_elements]
+        input_page_elements = LoginPageObject().inputs.page_elements
+        links_page_elements = LoginPageObject().links.page_elements
+
+        # Check that the response is a list of 2 PageElement with the expected web element
+        assert_equal(len(input_page_elements), 2)
+        assert_is_instance(input_page_elements[0], PageElement)
+        assert_equal(input_page_elements[0]._web_element, child_elements[0])
+        assert_is_instance(input_page_elements[1], PageElement)
+        assert_equal(input_page_elements[1]._web_element, child_elements[1])
+
+        # Check that the response is a list of 2 PageElement with the expected web element
+        assert_equal(len(links_page_elements), 2)
+        assert_is_instance(links_page_elements[0], PageElement)
+        assert_equal(links_page_elements[0]._web_element, other_child_elements[0])
+        assert_is_instance(links_page_elements[1], PageElement)
+        assert_equal(links_page_elements[1]._web_element, other_child_elements[1])
+
+    def test_reset_object(self):
+        self.driver_wrapper.driver.find_elements.side_effect = [child_elements, other_child_elements]
         login_page = LoginPageObject()
         login_page.inputs.web_elements
+        login_page.links.web_elements
 
-        assert_is_not_none(login_page.inputs._web_elements)
-        login_page.inputs.reset_web_elements()
-        assert_is_none(login_page.inputs._web_elements)
+        # Check that web elements are filled
+        assert_equal(len(login_page.inputs._web_elements), 2)
+        assert_equal(len(login_page.links._web_elements), 2)
+
+        login_page.inputs.reset_object()
+
+        # Check that only username is reset
+        assert_equal(len(login_page.inputs._web_elements), 0)
+        assert_equal(len(login_page.links._web_elements), 2)
