@@ -22,6 +22,8 @@ v1.0.0
   node name to the baseline name
 - Add force parameter to *assert_screenshot* methods to compare the screenshot even if visual testing is disabled by
   configuration. If the assertion fails, the test fails.
+- Allow to add extensions to firefox profile from properties file
+   New config section [FirefoxExtensions] with extensions file paths, e.g. 'firebug = firebug-3.0.0-beta.3.xpi'
 
 v0.12.1
 -------

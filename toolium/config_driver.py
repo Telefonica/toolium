@@ -206,6 +206,14 @@ class ConfigDriver(object):
         except NoSectionError:
             pass
 
+        # Add Firefox extensions
+        try:
+            for pref, pref_value in dict(self.config.items('FirefoxExtensions')).items():
+                self.logger.debug("Added firefox extension: {0} = {1}".format(pref, pref_value))
+                profile.add_extension(pref_value)
+        except NoSectionError:
+            pass
+
         return profile
 
     def _convert_property_type(self, value):
