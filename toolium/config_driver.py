@@ -88,20 +88,22 @@ class ConfigDriver(object):
         server_url = 'http://{0}:{1}/wd/hub'.format(server_host, server_port)
 
         # Get browser type capabilities
-        capabilities_list = {'firefox': DesiredCapabilities.FIREFOX,
-                             'chrome': DesiredCapabilities.CHROME,
-                             'safari': DesiredCapabilities.SAFARI,
-                             'opera': DesiredCapabilities.OPERA,
-                             'iexplore': DesiredCapabilities.INTERNETEXPLORER,
-                             'edge': DesiredCapabilities.EDGE,
-                             'phantomjs': DesiredCapabilities.PHANTOMJS,
-                             'android': DesiredCapabilities.ANDROID,
-                             'ios': DesiredCapabilities.IPHONE,
-                             'iphone': DesiredCapabilities.IPHONE}
+        capabilities_list = {
+            'firefox': DesiredCapabilities.FIREFOX,
+            'chrome': DesiredCapabilities.CHROME,
+            'safari': DesiredCapabilities.SAFARI,
+            'opera': DesiredCapabilities.OPERA,
+            'iexplore': DesiredCapabilities.INTERNETEXPLORER,
+            'edge': DesiredCapabilities.EDGE,
+            'phantomjs': DesiredCapabilities.PHANTOMJS,
+            'android': {},
+            'ios': {},
+            'iphone': {}
+        }
         browser = self.config.get('Browser', 'browser')
         browser_name = browser.split('-')[0]
         capabilities = capabilities_list.get(browser_name)
-        if not capabilities:
+        if capabilities is None:
             raise Exception('Unknown driver {0}'.format(browser_name))
 
         # Add browser version
