@@ -51,6 +51,7 @@ class PageElements(CommonObject):
         :param parent: parent element (WebElement, PageElement or locator tuple)
         :param page_element_class: class of page elements (PageElement, Button...)
         """
+        super(PageElements, self).__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance

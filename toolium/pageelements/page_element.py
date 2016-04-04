@@ -16,6 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
+
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.pageobjects.common_object import CommonObject
 from toolium.visual_test import VisualTest
@@ -40,6 +42,7 @@ class PageElement(CommonObject):
         :param value: locator value
         :param parent: parent element (WebElement, PageElement or locator tuple)
         """
+        super(PageElement, self).__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
@@ -57,10 +60,16 @@ class PageElement(CommonObject):
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
         if not self._web_element:
-            if self.parent:
-                self._web_element = self.utils.get_web_element(self.parent).find_element(*self.locator)
-            else:
-                self._web_element = self.driver.find_element(*self.locator)
+            try:
+                if self.parent:
+                    self._web_element = self.utils.get_web_element(self.parent).find_element(*self.locator)
+                else:
+                    self._web_element = self.driver.find_element(*self.locator)
+            except NoSuchElementException as exception:
+                msg = "Page element of type '{}' with locator {} not found".format(type(self).__name__, self.locator)
+                self.logger.error(msg)
+                exception.msg += "\n  {}".format(msg)
+                raise exception
         return self._web_element
 
     def scroll_element_into_view(self):
@@ -78,7 +87,14 @@ class PageElement(CommonObject):
         :param timeout: max time to wait
         :returns: page element instance
         """
-        self._web_element = self.utils.wait_until_element_visible(self.locator, timeout)
+        try:
+            self._web_element = self.utils.wait_until_element_visible(self.locator, timeout)
+        except TimeoutException as exception:
+            msg = "Page element of type '{}' with locator {} not found or is not visible after {} seconds".format(
+                type(self).__name__, self.locator, timeout)
+            self.logger.error(msg)
+            exception.msg += "\n  {}".format(msg)
+            raise exception
         return self
 
     def wait_until_not_visible(self, timeout=10):
@@ -87,7 +103,14 @@ class PageElement(CommonObject):
         :param timeout: max time to wait
         :returns: page element instance
         """
-        self._web_element = self.utils.wait_until_element_not_visible(self.locator, timeout)
+        try:
+            self._web_element = self.utils.wait_until_element_not_visible(self.locator, timeout)
+        except TimeoutException as exception:
+            msg = "Page element of type '{}' with locator {} is still visible after {} seconds".format(
+                type(self).__name__, self.locator, timeout)
+            self.logger.error(msg)
+            exception.msg += "\n  {}".format(msg)
+            raise exception
         return self
 
     def assert_screenshot(self, filename, threshold=0, exclude_elements=[], force=False):

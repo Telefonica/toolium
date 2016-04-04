@@ -16,15 +16,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import logging
+
 
 class CommonObject(object):
     """Base class for page objects and page elements
 
+    :type logger: logging.Logger
     :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
     """
 
     def __init__(self):
         """Initialize common object"""
+        self.logger = logging.getLogger(__name__)  #: logger instance
         self.driver_wrapper = None  #: driver wrapper instance
 
     def set_driver_wrapper(self, driver_wrapper):
