@@ -193,8 +193,15 @@ class ConfigDriver(object):
 
         :returns: firefox profile
         """
+        # Get Firefox profile
+        try:
+            profile_directory = self.config.get('Firefox', 'profile')
+            self.logger.debug("Using firefox profile: {0}".format(profile_directory))
+        except NoSectionError:
+            profile_directory = None
+
         # Create Firefox profile
-        profile = webdriver.FirefoxProfile()
+        profile = webdriver.FirefoxProfile(profile_directory=profile_directory)
         profile.native_events_enabled = True
 
         # Add Firefox preferences

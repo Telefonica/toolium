@@ -24,6 +24,8 @@ v1.0.0
   configuration. If the assertion fails, the test fails.
 - Allow to add extensions to firefox profile from properties file
    New config section [FirefoxExtensions] with extensions file paths, e.g. 'firebug = firebug-3.0.0-beta.3.xpi'
+- Allow to use a predefined firefox profile
+   New config property 'profile' in [Firefox] section to configure the profile directory
 
 v0.12.1
 -------

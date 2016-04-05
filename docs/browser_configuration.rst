@@ -131,6 +131,12 @@ For example, the following configuration exports network information to har file
     [FirefoxExtensions]
     firebug: resources/firebug-3.0.0-beta.3.xpi
 
+To use a predefined firefox profile, configure the profile directory in *[Firefox]* configuration section::
+
+    [Firefox]
+    profile: resources/firefox-profile.default
+
+
 Chrome
 ~~~~~~
 
