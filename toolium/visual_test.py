@@ -113,8 +113,8 @@ class VisualTest(object):
         """
         if not self.driver_wrapper.config.getboolean_optional('VisualTests', 'enabled') and not self.force:
             return
-        if not isinstance(threshold, int) or threshold < 0 or threshold > 1:
-            raise TypeError('Threshold must be an integer between 0 and 1: {}'.format(threshold))
+        if not (isinstance(threshold, int) or isinstance(threshold, float)) or threshold < 0 or threshold > 1:
+            raise TypeError('Threshold must be a number between 0 and 1: {}'.format(threshold))
 
         # Search elements
         web_element = self.utils.get_web_element(element)

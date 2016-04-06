@@ -112,6 +112,31 @@ For example, the following configuration allows to download files without asking
     browser.helperApps.neverAsk.saveToDisk: application/octet-stream
     dom.serviceWorkers.enabled: True
 
+Firefox plugins can also be installed adding their file paths to *[FirefoxExtensions]* configuration section.
+
+For example, the following configuration exports network information to har files::
+
+    [Browser]
+    browser: firefox
+
+    [FirefoxPreferences]
+    devtools.netmonitor.har.enableAutoExportToFile: True
+    devtools.netmonitor.har.defaultLogDir: /tmp/har
+    devtools.netmonitor.har.forceExport: False
+    devtools.netmonitor.har.pageLoadedTimeout: 10
+    extensions.netmonitor.har.enableAutomation: True
+    extensions.netmonitor.har.autoConnect: True
+    devtools.netmonitor.har.defaultFileName: network-test
+
+    [FirefoxExtensions]
+    firebug: resources/firebug-3.0.0-beta.3.xpi
+
+To use a predefined firefox profile, configure the profile directory in *[Firefox]* configuration section::
+
+    [Firefox]
+    profile: resources/firefox-profile.default
+
+
 Chrome
 ~~~~~~
 
