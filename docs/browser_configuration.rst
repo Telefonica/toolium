@@ -14,6 +14,13 @@ The following example shows how to choose Firefox::
     [Browser]
     browser: firefox
 
+By default, the browser is maximized. To define a different window size, configure *window_width* and *window_height*
+properties in *[Browser]* section::
+
+    [Browser]
+    window_width: 1024
+    window_height: 768
+
 Mandatory Configuration
 -----------------------
 

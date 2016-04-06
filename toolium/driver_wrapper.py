@@ -196,7 +196,17 @@ class DriverWrapper(object):
 
         # Maximize browser
         if maximize and self.is_maximizable():
-            self.driver.maximize_window()
+            # Set window size or maximize
+            window_width = self.config.get_optional('Browser', 'window_width')
+            window_height = self.config.get_optional('Browser', 'window_height')
+            if window_width and window_height:
+                self.driver.set_window_size(window_width, window_height)
+            else:
+                self.driver.maximize_window()
+
+        # Log window size
+        window_size = self.utils.get_window_size()
+        self.logger.debug('Window size: {}x{}'.format(window_size['width'], window_size['height']))
 
         # Update baseline
         self.update_visual_baseline()
