@@ -11,6 +11,7 @@ Main Features
 
 - :ref:`Choosing driver through a configuration file <driver_configuration>`
 - :ref:`Page Object pattern <page_objects>`
+- :ref:`BDD integration <bdd_integration>`
 - :ref:`Visual testing solution <visual_testing>`
 - Make a screenshot in the happenning of an error
 
@@ -22,6 +23,7 @@ Library Reference
 
    driver_configuration.rst
    page_objects.rst
+   bdd_integration.rst
    visual_testing.rst
    Changelog <changelog.rst>
 

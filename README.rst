@@ -72,6 +72,7 @@ Main Features
 
 - `Choosing driver through a configuration file </docs/driver_configuration.rst>`_
 - `Page Object pattern </docs/page_objects.rst>`_
+- `BDD integration </docs/bdd_integration.rst>`_
 - `Visual testing solution </docs/visual_testing.rst>`_
 - Make a screenshot in the happenning of an error
 

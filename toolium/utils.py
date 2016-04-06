@@ -78,7 +78,7 @@ class Utils(object):
         except Exception:
             return
 
-        self.logger.debug('Reading logs from {} and writing them to log files'.format(log_types))
+        self.logger.debug("Reading logs from '{}' and writing them to log files".format(','.join(log_types)))
         for log_type in log_types:
             self.save_webdriver_logs(log_type, test_name)
 
