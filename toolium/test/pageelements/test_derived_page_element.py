@@ -55,12 +55,17 @@ def get_mock_select():
     return mock_select
 
 
+class Menu(Group):
+    logo = PageElement(By.ID, 'image')
+
+
 class LoginPageObject(PageObject):
     title = Text(By.ID, 'title')
     username = InputText(By.XPATH, '//input[0]')
     password = InputText(By.ID, 'password')
     language = Select(By.ID, 'language')
     login = Button(By.ID, 'login')
+    menu = Menu(By.ID, 'menu')
 
 
 class TestDerivedPageElement(unittest.TestCase):
@@ -85,6 +90,11 @@ class TestDerivedPageElement(unittest.TestCase):
         assert_equal(page_object.password.locator, (By.ID, 'password'))
         assert_equal(page_object.language.locator, (By.ID, 'language'))
         assert_equal(page_object.login.locator, (By.ID, 'login'))
+        assert_equal(page_object.menu.locator, (By.ID, 'menu'))
+        assert_equal(page_object.menu.logo.locator, (By.ID, 'image'))
+
+        # Check that elements inside a group have the group as parent
+        assert_equal(page_object.menu.logo.parent, page_object.menu)
 
     def test_get_text(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element

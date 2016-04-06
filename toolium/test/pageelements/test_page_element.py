@@ -20,7 +20,7 @@ import unittest
 
 import mock
 import six
-from nose.tools import assert_equal, assert_not_equal, assert_is_not_none, assert_is_none
+from nose.tools import assert_equal, assert_is_not_none, assert_is_none
 from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper
@@ -131,19 +131,41 @@ class TestPageElement(unittest.TestCase):
 
     def test_get_web_element_two_objects(self):
         login_page = RegisterPageObject()
-        login_page.username.web_element
-
+        login_page.language.web_element
         second_login_page = RegisterPageObject()
-        second_login_page.username.web_element
+        second_login_page.language.web_element
 
         # Check that find_element is called two times
         assert_equal(self.driver_wrapper.driver.find_element.mock_calls,
-                     [mock.call(By.XPATH, '//input[0]'), mock.call(By.XPATH, '//input[0]')])
+                     [mock.call(By.ID, 'language'), mock.call(By.ID, 'language')])
 
-    def test_reset_web_element(self):
+    def test_reset_object(self):
         login_page = RegisterPageObject()
         login_page.username.web_element
+        login_page.language.web_element
 
+        # Check that web elements are filled
         assert_is_not_none(login_page.username._web_element)
-        login_page.username.reset_web_elements()
+        assert_is_not_none(login_page.language._web_element)
+
+        login_page.username.reset_object()
+
+        # Check that only username is reset
         assert_is_none(login_page.username._web_element)
+        assert_is_not_none(login_page.language._web_element)
+
+    def test_reset_object_two_page_objects(self):
+        login_page = RegisterPageObject()
+        login_page.language.web_element
+        second_login_page = RegisterPageObject()
+        second_login_page.language.web_element
+
+        # Check that web elements are filled
+        assert_is_not_none(login_page.language._web_element)
+        assert_is_not_none(second_login_page.language._web_element)
+
+        login_page.language.reset_object()
+
+        # Check that only first language is reset
+        assert_is_none(login_page.language._web_element)
+        assert_is_not_none(second_login_page.language._web_element)

@@ -33,7 +33,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.pageelements.page_element import PageElement
 from datetime import datetime
 
 
@@ -321,6 +320,7 @@ class Utils(object):
         :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value)
         :returns: WebElement object
         """
+        from toolium.pageelements.page_element import PageElement
         if isinstance(element, WebElement):
             web_element = element
         elif isinstance(element, PageElement):

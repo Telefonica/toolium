@@ -16,29 +16,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
+
 from toolium.driver_wrapper import DriverWrappersPool
+from toolium.pageobjects.common_object import CommonObject
 from toolium.visual_test import VisualTest
 
 
-class PageElement(object):
+class PageElement(CommonObject):
     """Class to represent a web or a mobile page element
 
-    :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
-    :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
-    :type config: toolium.config_parser.ExtendedConfigParser
-    :type utils: toolium.utils.Utils
     :type locator: (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     :type parent: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
                   or toolium.pageelements.PageElement
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     """
-    driver_wrapper = None  #: driver wrapper instance
-    driver = None  #: webdriver instance
-    config = None  #: driver configuration
-    utils = None  #: test utils instance
-    locator = None  #: tuple with locator type and locator value
-    parent = None  #: element from which to find actual element
-    _web_element = None
 
     def __init__(self, by, value, parent=None):
         """Initialize the PageElement object with the given locator components.
@@ -50,24 +42,14 @@ class PageElement(object):
         :param value: locator value
         :param parent: parent element (WebElement, PageElement or locator tuple)
         """
-        self.locator = (by, value)
-        self.parent = parent
-        self.set_driver_wrapper()
+        super(PageElement, self).__init__()
+        self.locator = (by, value)  #: tuple with locator type and locator value
+        self.parent = parent  #: element from which to find actual elements
+        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
+        self._web_element = None
 
-    def set_driver_wrapper(self, driver_wrapper=None):
-        """Initialize driver_wrapper, driver, config and utils
-
-        :param driver_wrapper: driver wrapper instance
-        """
-        self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
-        # Add some driver_wrapper attributes to page element instance
-        self.driver = self.driver_wrapper.driver
-        self.config = self.driver_wrapper.config
-        self.utils = self.driver_wrapper.utils
-        self.reset_web_elements()
-
-    def reset_web_elements(self):
-        """Reset web element object"""
+    def reset_object(self):
+        """Initialize web element object"""
         self._web_element = None
 
     @property
@@ -78,10 +60,16 @@ class PageElement(object):
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
         if not self._web_element:
-            if self.parent:
-                self._web_element = self.utils.get_web_element(self.parent).find_element(*self.locator)
-            else:
-                self._web_element = self.driver.find_element(*self.locator)
+            try:
+                if self.parent:
+                    self._web_element = self.utils.get_web_element(self.parent).find_element(*self.locator)
+                else:
+                    self._web_element = self.driver.find_element(*self.locator)
+            except NoSuchElementException as exception:
+                msg = "Page element of type '{}' with locator {} not found".format(type(self).__name__, self.locator)
+                self.logger.error(msg)
+                exception.msg += "\n  {}".format(msg)
+                raise exception
         return self._web_element
 
     def scroll_element_into_view(self):
@@ -99,7 +87,14 @@ class PageElement(object):
         :param timeout: max time to wait
         :returns: page element instance
         """
-        self._web_element = self.utils.wait_until_element_visible(self.locator, timeout)
+        try:
+            self._web_element = self.utils.wait_until_element_visible(self.locator, timeout)
+        except TimeoutException as exception:
+            msg = "Page element of type '{}' with locator {} not found or is not visible after {} seconds".format(
+                type(self).__name__, self.locator, timeout)
+            self.logger.error(msg)
+            exception.msg += "\n  {}".format(msg)
+            raise exception
         return self
 
     def wait_until_not_visible(self, timeout=10):
@@ -108,7 +103,14 @@ class PageElement(object):
         :param timeout: max time to wait
         :returns: page element instance
         """
-        self._web_element = self.utils.wait_until_element_not_visible(self.locator, timeout)
+        try:
+            self._web_element = self.utils.wait_until_element_not_visible(self.locator, timeout)
+        except TimeoutException as exception:
+            msg = "Page element of type '{}' with locator {} is still visible after {} seconds".format(
+                type(self).__name__, self.locator, timeout)
+            self.logger.error(msg)
+            exception.msg += "\n  {}".format(msg)
+            raise exception
         return self
 
     def assert_screenshot(self, filename, threshold=0, exclude_elements=[], force=False):
