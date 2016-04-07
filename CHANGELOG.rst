@@ -28,6 +28,8 @@ v1.0.0
 - Allow to use a predefined firefox profile
    New config property 'profile' in [Firefox] section to configure the profile directory
 - New config properties 'window_width' and 'window_height' in [Driver] section to configure browser window size
+- Add *wait_until_first_element_is_found* method to Utils class to search a list of elements and wait until one of them
+  is found
 
 v0.12.1
 -------

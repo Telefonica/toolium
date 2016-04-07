@@ -146,27 +146,32 @@ class ConfigDriver(object):
         """
         driver_type = self.config.get('Driver', 'type')
         driver_name = driver_type.split('-')[0]
-        driver_setup = {
-            'firefox': self._setup_firefox,
-            'chrome': self._setup_chrome,
-            'safari': self._setup_safari,
-            'opera': self._setup_opera,
-            'iexplore': self._setup_explorer,
-            'edge': self._setup_edge,
-            'phantomjs': self._setup_phantomjs,
-            'android': self._setup_appium,
-            'ios': self._setup_appium,
-            'iphone': self._setup_appium
-        }
-        driver_setup_method = driver_setup.get(driver_name)
-        if not driver_setup_method:
-            raise Exception('Unknown driver {0}'.format(driver_name))
 
-        # Get driver capabilities
-        capabilities = self._get_capabilities(driver_name)
-        self._add_capabilities(capabilities)
+        if driver_name in ('android', 'ios', 'iphone'):
+            # Create local appium driver
+            driver = self._setup_appium()
+        else:
+            driver_setup = {
+                'firefox': self._setup_firefox,
+                'chrome': self._setup_chrome,
+                'safari': self._setup_safari,
+                'opera': self._setup_opera,
+                'iexplore': self._setup_explorer,
+                'edge': self._setup_edge,
+                'phantomjs': self._setup_phantomjs
+            }
+            driver_setup_method = driver_setup.get(driver_name)
+            if not driver_setup_method:
+                raise Exception('Unknown driver {0}'.format(driver_name))
 
-        return driver_setup_method(capabilities)
+            # Get driver capabilities
+            capabilities = self._get_capabilities(driver_name)
+            self._add_capabilities(capabilities)
+
+            # Create local selenium driver
+            driver = driver_setup_method(capabilities)
+
+        return driver
 
     def _get_capabilities(self, driver_name):
         """Create initial driver capabilities
@@ -359,10 +364,9 @@ class ConfigDriver(object):
         self.logger.debug("Phantom driver path given in properties: {0}".format(phantom_driver))
         return webdriver.PhantomJS(executable_path=phantom_driver, desired_capabilities=capabilities)
 
-    def _setup_appium(self, capabilities):
+    def _setup_appium(self):
         """Setup Appium webdriver
 
-        :param capabilities: capabilities object (not used)
         :returns: a new remote Appium driver
         """
         self.config.set('Server', 'host', '127.0.0.1')

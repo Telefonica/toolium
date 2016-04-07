@@ -31,6 +31,7 @@ import requests
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from datetime import datetime
@@ -78,7 +79,7 @@ class Utils(object):
         except Exception:
             return
 
-        self.logger.debug("Reading logs from '{}' and writing them to log files".format(','.join(log_types)))
+        self.logger.debug("Reading logs from '{}' and writing them to log files".format(', '.join(log_types)))
         for log_type in log_types:
             self.save_webdriver_logs(log_type, test_name)
 
@@ -116,8 +117,8 @@ class Utils(object):
 
         :param locator: locator element
         :param timeout: max time to wait
-        :returns: the element if it is visible or False
-        :rtype: selenium.webdriver.remote.webelement.WebElement
+        :returns: the element if it is visible
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
         return WebDriverWait(self.driver_wrapper.driver, timeout).until(EC.visibility_of_element_located(locator))
 
@@ -126,13 +127,59 @@ class Utils(object):
 
         :param locator: locator element
         :param timeout: max time to wait
-        :returns: the element if it is not visible or False
-        :rtype: selenium.webdriver.remote.webelement.WebElement
+        :returns: the element if it exists but is not visible or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
         # Remove implicit wait
         self.driver_wrapper.driver.implicitly_wait(0)
         # Wait for invisibility
         element = WebDriverWait(self.driver_wrapper.driver, timeout).until(EC.invisibility_of_element_located(locator))
+        # Restore implicit wait from properties
+        self.set_implicit_wait()
+        return element
+
+    def get_first_element(self, elements):
+        """Try to find sequentially the elements of the list and return the first element found
+
+        :param elements: list of PageElements or element locators as a tuple (locator_type, locator_value) to be found
+                         sequentially
+        :returns: first element found or None
+        :rtype: toolium.pageelements.PageElement or tuple
+        """
+        from toolium.pageelements.page_element import PageElement
+        element_found = None
+        for element in elements:
+            try:
+                if isinstance(element, PageElement):
+                    element._find_web_element()
+                else:
+                    self.driver_wrapper.driver.find_element(*element)
+                element_found = element
+                break
+            except NoSuchElementException:
+                pass
+        return element_found
+
+    def wait_until_first_element_is_found(self, elements, timeout=10):
+        """Search list of elements and wait until one of them is found
+
+        :param elements: list of PageElements or element locators as a tuple (locator_type, locator_value) to be found
+                         sequentially
+        :param timeout: max time to wait
+        :returns: first element found
+        :rtype: toolium.pageelements.PageElement or tuple
+        """
+        # Remove implicit wait
+        self.driver_wrapper.driver.implicitly_wait(0)
+        # Wait for elements
+        try:
+            element = WebDriverWait(self.driver_wrapper.driver, timeout).until(
+                lambda s: self.get_first_element(elements))
+        except TimeoutException as exception:
+            msg = "None of the page elements has been found after {} seconds".format(timeout)
+            self.logger.error(msg)
+            exception.msg += "\n  {}".format(msg)
+            raise exception
         # Restore implicit wait from properties
         self.set_implicit_wait()
         return element
