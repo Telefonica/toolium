@@ -30,7 +30,7 @@ class DriverWrapper(object):
     """Wrapper with the webdriver and the configuration needed to execute tests
 
     :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
-    :type config: toolium.config_parser.ExtendedConfigParser
+    :type config: toolium.config_parser.ExtendedConfigParser or configparser.ConfigParser
     :type utils: toolium.utils.Utils
     :type app_strings: dict
     :type session_id: str
@@ -206,7 +206,7 @@ class DriverWrapper(object):
 
         # Log window size
         window_size = self.utils.get_window_size()
-        self.logger.debug('Window size: {}x{}'.format(window_size['width'], window_size['height']))
+        self.logger.debug('Window size: {} x {}'.format(window_size['width'], window_size['height']))
 
         # Update baseline
         self.update_visual_baseline()

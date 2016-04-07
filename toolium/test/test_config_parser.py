@@ -45,6 +45,10 @@ optional_boolean_values = (
 
 @ddt
 class ExtendedConfigParserTests(unittest.TestCase):
+    """
+    :type config: toolium.config_parser.ExtendedConfigParser or configparser.ConfigParser
+    """
+
     def setUp(self):
         root_path = os.path.dirname(os.path.realpath(__file__))
         conf_properties_file = os.path.join(root_path, 'conf', 'properties.cfg')

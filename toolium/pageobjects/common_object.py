@@ -57,7 +57,7 @@ class CommonObject(object):
     def config(self):
         """Get config instance
 
-        :type config: toolium.config_parser.ExtendedConfigParser
+        :type config: toolium.config_parser.ExtendedConfigParser or configparser.ConfigParser
         :returns: config instance
         """
         return self.driver_wrapper.config

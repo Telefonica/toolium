@@ -179,22 +179,23 @@ class ConfigDriver(object):
         :params driver_name: name of selected driver
         :returns: capabilities dictionary
         """
-        capabilities_list = {
-            'firefox': DesiredCapabilities.FIREFOX,
-            'chrome': DesiredCapabilities.CHROME,
-            'safari': DesiredCapabilities.SAFARI,
-            'opera': DesiredCapabilities.OPERA,
-            'iexplore': DesiredCapabilities.INTERNETEXPLORER,
-            'edge': DesiredCapabilities.EDGE,
-            'phantomjs': DesiredCapabilities.PHANTOMJS,
-            'android': {},
-            'ios': {},
-            'iphone': {}
-        }
-        capabilities = capabilities_list.get(driver_name)
-        if capabilities is None:
-            raise Exception('Unknown driver {0}'.format(driver_name))
-        return capabilities
+        if driver_name == 'firefox':
+            return DesiredCapabilities.FIREFOX.copy()
+        elif driver_name == 'chrome':
+            return DesiredCapabilities.CHROME.copy()
+        elif driver_name == 'safari':
+            return DesiredCapabilities.SAFARI.copy()
+        elif driver_name == 'opera':
+            return DesiredCapabilities.OPERA.copy()
+        elif driver_name == 'iexplore':
+            return DesiredCapabilities.INTERNETEXPLORER.copy()
+        elif driver_name == 'edge':
+            return DesiredCapabilities.EDGE.copy()
+        elif driver_name == 'phantomjs':
+            return DesiredCapabilities.PHANTOMJS.copy()
+        elif driver_name in ('android', 'ios', 'iphone'):
+            return {}
+        raise Exception('Unknown driver {0}'.format(driver_name))
 
     def _add_capabilities(self, capabilities):
         """Add capabilities from properties file
