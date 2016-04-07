@@ -97,8 +97,9 @@ class Utils(object):
             log_file_ext = os.path.splitext(self.driver_wrapper.output_log_filename)
             log_file_name = '{}_{}{}'.format(log_file_ext[0], log_type, log_file_ext[1])
             with open(log_file_name, 'a+', encoding='utf-8') as log_file:
-                browser = self.driver_wrapper.config.get('Browser', 'browser')
-                log_file.write(u"\n{} '{}' test logs with browser = {}\n\n".format(datetime.now(), test_name, browser))
+                driver_type = self.driver_wrapper.config.get('Driver', 'type')
+                log_file.write(
+                    u"\n{} '{}' test logs with driver = {}\n\n".format(datetime.now(), test_name, driver_type))
                 for entry in logs:
                     log_file.write(u'{}\t{}\n'.format(entry['level'], entry['message'].rstrip()))
 
@@ -235,7 +236,8 @@ class Utils(object):
             url = '{}/config'.format(self._get_remote_node_url(remote_node))
             try:
                 response = requests.get(url).json()
-                record_videos = response['config_runtime']['theConfigMap']['video_recording_options']['record_test_videos']
+                record_videos = response['config_runtime']['theConfigMap']['video_recording_options'][
+                    'record_test_videos']
             except (requests.exceptions.ConnectionError, KeyError):
                 record_videos = 'false'
             if record_videos == 'true':

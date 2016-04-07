@@ -100,7 +100,7 @@ Toolium properties related to Visual Testing are stored in properties.cfg ::
     fail: false
     save: false
     complete_report: true
-    baseline_name: {Browser_browser}
+    baseline_name: {Driver_type}
     engine: pil
 
 enabled
@@ -129,8 +129,8 @@ baseline_name
 | The easiest way of generating a custom name per environment is to use the values of other configuration properties. To access a property value use the following format: {SectionName_optionName}.
 | Some examples of baseline_name values are:
 
-- *{Browser_browser}*: depending on the value of *browser* property, baseline_name might take one of these values: firefox, iexplore, chrome... This is the value by default.
-- *{Browser_browser}-{Capabilities_version}-{Capabilities_platform}*: baseline_name might take one of these values: iexplore-11-WIN8, safari-9.0-YOSEMITE...
+- *{Driver_type}*: depending on the value of *type* property, baseline_name might take one of these values: firefox, iexplore, chrome... This is the value by default.
+- *{Driver_type}-{Capabilities_version}-{Capabilities_platform}*: baseline_name might take one of these values: iexplore-11-WIN8, safari-9.0-YOSEMITE...
 - *{AppiumCapabilities_deviceName}-{AppiumCapabilities_platformVersion}*: baseline_name might take one of these values: iPhone_6-8.3, iPhone_6-9.1, iPhone_6s-9.1...
 - *{PlatformVersion}*: baseline_name will take the value of the mobile platform version, instead of the platformVersion configuration property
 - *{RemoteNode}*: baseline_name will take the value of the remote node name

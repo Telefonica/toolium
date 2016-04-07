@@ -43,12 +43,12 @@ After initialization, the following attributes will be available in behave conte
 - context.driver: Selenium or Appium driver instance
 - context.utils: :ref:`Utils <utils>` instance
 
-Toolium properties can be modified from behave userdata configuration. For example, to select the browser name from
-command line instead of using the browser name defined in properties.cfg:
+Toolium properties can be modified from behave userdata configuration. For example, to select the driver type from
+command line instead of using the driver type defined in properties.cfg:
 
 .. code:: console
 
-    $ behave -D Browser_browser=chrome
+    $ behave -D Driver_type=chrome
 
 Lettuce
 -------

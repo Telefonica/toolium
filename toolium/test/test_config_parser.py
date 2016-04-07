@@ -27,10 +27,10 @@ from toolium.config_parser import ExtendedConfigParser
 optional_values = (
     ('No section', 'No option', None, None),
     ('No section', 'No option', 'chrome', 'chrome'),
-    ('Browser', 'No option', None, None),
-    ('Browser', 'No option', 'chrome', 'chrome'),
-    ('Browser', 'browser', None, 'firefox'),
-    ('Browser', 'browser', 'chrome', 'firefox'),
+    ('Driver', 'No option', None, None),
+    ('Driver', 'No option', 'chrome', 'chrome'),
+    ('Driver', 'type', None, 'firefox'),
+    ('Driver', 'type', 'chrome', 'firefox'),
 )
 
 optional_boolean_values = (

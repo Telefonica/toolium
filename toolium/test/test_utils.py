@@ -70,8 +70,8 @@ class UtilsTests(unittest.TestCase):
 
     @data(*navigation_bar_tests)
     @unpack
-    def test_get_safari_navigation_bar_height(self, browser, appium_app, appium_browser_name, bar_height):
-        self.driver_wrapper.config.set('Browser', 'browser', browser)
+    def test_get_safari_navigation_bar_height(self, driver_type, appium_app, appium_browser_name, bar_height):
+        self.driver_wrapper.config.set('Driver', 'type', driver_type)
         if appium_app:
             self.driver_wrapper.config.set('AppiumCapabilities', 'app', appium_app)
         if appium_browser_name:
@@ -82,7 +82,7 @@ class UtilsTests(unittest.TestCase):
         # Configure driver mock
         window_size = {'width': 375, 'height': 667}
         self.driver_wrapper.driver.get_window_size.return_value = window_size
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
         assert_equal(self.utils.get_window_size(), window_size)
@@ -92,7 +92,7 @@ class UtilsTests(unittest.TestCase):
         window_size = {'width': 375, 'height': 667}
         self.driver_wrapper.driver.current_context = 'WEBVIEW'
         self.driver_wrapper.driver.execute_script.side_effect = [window_size['width'], window_size['height']]
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
 
         assert_equal(self.utils.get_window_size(), window_size)
@@ -105,7 +105,7 @@ class UtilsTests(unittest.TestCase):
         self.driver_wrapper.driver.execute_script.side_effect = [web_window_size['width'], web_window_size['height'],
                                                                  native_window_size['width'],
                                                                  native_window_size['height']]
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
 
         web_coords = {'x': 105, 'y': 185}
@@ -117,7 +117,7 @@ class UtilsTests(unittest.TestCase):
         web_window_size = {'width': 500, 'height': 667}
         native_window_size = {'width': 250, 'height': 450}
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
-        self.driver_wrapper.config.set('Browser', 'browser', 'ios')
+        self.driver_wrapper.config.set('Driver', 'type', 'ios')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
 
         web_coords = {'x': 105, 'y': 185}
@@ -130,7 +130,7 @@ class UtilsTests(unittest.TestCase):
         native_window_size = {'width': 250, 'height': 450}
         self.driver_wrapper.driver.current_context = 'NATIVE_APP'
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
         # Create element mock
@@ -147,7 +147,7 @@ class UtilsTests(unittest.TestCase):
         self.driver_wrapper.driver.execute_script.side_effect = [web_window_size['width'], web_window_size['height'],
                                                                  native_window_size['width'],
                                                                  native_window_size['height']]
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
 
         # Create element mock
@@ -162,7 +162,7 @@ class UtilsTests(unittest.TestCase):
         native_window_size = {'width': 250, 'height': 450}
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
         self.driver_wrapper.driver.current_context = 'NATIVE_APP'
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
         # Create element mock
@@ -177,7 +177,7 @@ class UtilsTests(unittest.TestCase):
         native_window_size = {'width': 250, 'height': 450}
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
         self.driver_wrapper.driver.current_context = 'WEBVIEW'
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
         # Create element mock
@@ -191,7 +191,7 @@ class UtilsTests(unittest.TestCase):
         web_window_size = {'width': 500, 'height': 667}
         native_window_size = {'width': 250, 'height': 450}
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
-        self.driver_wrapper.config.set('Browser', 'browser', 'ios')
+        self.driver_wrapper.config.set('Driver', 'type', 'ios')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
 
         # Create element mock
@@ -202,7 +202,7 @@ class UtilsTests(unittest.TestCase):
 
     def test_swipe_web(self):
         # Configure driver mock
-        self.driver_wrapper.config.set('Browser', 'browser', 'firefox')
+        self.driver_wrapper.config.set('Driver', 'type', 'firefox')
 
         # Create element mock
         element = get_mock_element(x=250, y=40, height=40, width=300)

@@ -10,8 +10,8 @@ Although it is also possible to create additional drivers with *DriverWrapper* c
 
 For instance, to create a driver with the same configuration as the default driver (in this case two Firefox drivers)::
 
-    [Browser]
-    browser: firefox
+    [Driver]
+    type: firefox
 
 .. code-block:: python
 
@@ -20,13 +20,13 @@ For instance, to create a driver with the same configuration as the default driv
 
 To create a driver with a different configuration (in this case one Android driver and one Firefox driver)::
 
-    [Browser]
-    browser: android
+    [Driver]
+    type: android
 
 .. code-block:: python
 
     second_wrapper = DriverWrapper()
-    second_wrapper.config.set('Browser', 'browser', 'firefox')
+    second_wrapper.config.set('Driver', 'type', 'firefox')
     second_wrapper.connect()
 
 The driver wrapper contains the driver instance, that can be used as a regular driver, e.g.:

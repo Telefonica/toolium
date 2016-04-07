@@ -46,12 +46,12 @@ class DriverWrappersPoolTests(unittest.TestCase):
         new_wrapper = DriverWrappersPool.get_default_wrapper()
 
         # Modify new wrapper
-        new_browser = 'opera'
-        new_wrapper.config.set('Browser', 'browser', new_browser)
+        new_driver_type = 'opera'
+        new_wrapper.config.set('Driver', 'type', new_driver_type)
 
         # Check that both wrappers are the same object
-        assert_equal(new_browser, self.driver_wrapper.config.get('Browser', 'browser'))
-        assert_equal(new_browser, new_wrapper.config.get('Browser', 'browser'))
+        assert_equal(new_driver_type, self.driver_wrapper.config.get('Driver', 'type'))
+        assert_equal(new_driver_type, new_wrapper.config.get('Driver', 'type'))
         assert_equal(self.driver_wrapper, new_wrapper)
         assert_equal(DriverWrappersPool.driver_wrappers[0], self.driver_wrapper)
 

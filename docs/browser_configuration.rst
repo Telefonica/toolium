@@ -6,18 +6,18 @@ Browser Configuration
 Common Configuration
 --------------------
 
-To choose the browser in which Selenium will execute the tests, configure *browser* property in *[Browser]* section in
+To choose the browser in which Selenium will execute the tests, configure *type* property in *[Driver]* section in
 properties.cfg file with one of these values: firefox, chrome, iexplore, edge, safari, opera or phantomjs.
 
 The following example shows how to choose Firefox::
 
-    [Browser]
-    browser: firefox
+    [Driver]
+    type: firefox
 
 By default, the browser is maximized. To define a different window size, configure *window_width* and *window_height*
-properties in *[Browser]* section::
+properties in *[Driver]* section::
 
-    [Browser]
+    [Driver]
     window_width: 1024
     window_height: 768
 
@@ -31,18 +31,18 @@ Firefox
 
 - No extra configuration is needed ::
 
-    [Browser]
-    browser: firefox
+    [Driver]
+    type: firefox
 
 Chrome
 ~~~~~~
 
 - Download `chromedriver_*.zip <http://chromedriver.storage.googleapis.com/index.html>`_
 - Unzip file and save the executable in a local folder
-- Configure driver path in *[Browser]* section in properties.cfg file ::
+- Configure driver path in *[Driver]* section in properties.cfg file ::
 
-    [Browser]
-    browser: chrome
+    [Driver]
+    type: chrome
     chromedriver_path: C:\Drivers\chromedriver.exe
 
 Internet Explorer
@@ -51,10 +51,10 @@ Internet Explorer
 - Download `IEDriverServer_Win32_*.zip <http://selenium-release.storage.googleapis.com/index.html>`_
 - It's recommended to use Win32 version, because x64 version is very slow
 - Unzip file and save the executable in a local folder
-- Configure driver path in *[Browser]* section in properties.cfg file ::
+- Configure driver path in *[Driver]* section in properties.cfg file ::
 
-    [Browser]
-    browser: iexplore
+    [Driver]
+    type: iexplore
     explorerdriver_path: C:\Drivers\IEDriverServer.exe
 
 Edge
@@ -62,10 +62,10 @@ Edge
 
 - Download `MicrosoftWebDriver.msi <https://www.microsoft.com/en-us/download/details.aspx?id=48212>`_
 - Install MicrosoftWebDriver.msi
-- Configure driver path in *[Browser]* section in properties.cfg file ::
+- Configure driver path in *[Driver]* section in properties.cfg file ::
 
-    [Browser]
-    browser: edge
+    [Driver]
+    type: edge
     edgedriver_path: C:\Drivers\MicrosoftWebDriver.exe
 
 Safari
@@ -74,18 +74,18 @@ Safari
 - Download `SafariDriver.safariextz <http://selenium-release.storage.googleapis.com/index.html>`_
 - Open file in Safari and install it ::
 
-    [Browser]
-    browser: safari
+    [Driver]
+    type: safari
 
 Opera
 ~~~~~
 
 - Download `operadriver_*.zip <https://github.com/operasoftware/operachromiumdriver/releases>`_
 - Unzip file and save the executable in a local folder
-- Configure driver path in *[Browser]* section in properties.cfg file ::
+- Configure driver path in *[Driver]* section in properties.cfg file ::
 
-    [Browser]
-    browser: opera
+    [Driver]
+    type: opera
     operadriver_path: C:\Drivers\operadriver.exe
 
 PhantomJS
@@ -93,10 +93,10 @@ PhantomJS
 
 - Download `phantomjs-*.zip <http://phantomjs.org/download.html>`_
 - Unzip file and save the executable in a local folder
-- Configure driver path in *[Browser]* section in properties.cfg file ::
+- Configure driver path in *[Driver]* section in properties.cfg file ::
 
-    [Browser]
-    browser: phantomjs
+    [Driver]
+    type: phantomjs
     phantomdriver_path: C:\Drivers\phantomjs.exe
 
 Additional Configuration
@@ -110,8 +110,8 @@ you want to configure with its value.
 
 For example, the following configuration allows to download files without asking user::
 
-    [Browser]
-    browser: firefox
+    [Driver]
+    type: firefox
 
     [FirefoxPreferences]
     browser.download.folderList: 2
@@ -123,8 +123,8 @@ Firefox plugins can also be installed adding their file paths to *[FirefoxExtens
 
 For example, the following configuration exports network information to har files::
 
-    [Browser]
-    browser: firefox
+    [Driver]
+    type: firefox
 
     [FirefoxPreferences]
     devtools.netmonitor.har.enableAutoExportToFile: True
@@ -140,6 +140,9 @@ For example, the following configuration exports network information to har file
 
 To use a predefined firefox profile, configure the profile directory in *[Firefox]* configuration section::
 
+    [Driver]
+    type: firefox
+
     [Firefox]
     profile: resources/firefox-profile.default
 
@@ -152,24 +155,24 @@ you want to configure with its value.
 
 For example, the following configuration allows to download files without asking user::
 
-    [Browser]
-    browser: chrome
+    [Driver]
+    type: chrome
 
     [ChromePreferences]
     download.default_directory: C:\tmp
 
 Another examples showing how to use Chrome Device Mode in two different ways::
 
-    [Browser]
-    browser: chrome
+    [Driver]
+    type: chrome
 
     [ChromeMobileEmulation]
     deviceName: Google Nexus 5
 
 ::
 
-    [Browser]
-    browser: chrome
+    [Driver]
+    type: chrome
 
     [ChromeMobileEmulation]
     deviceMetrics: { "width": 360, "height": 640, "pixelRatio": 3.0 }
