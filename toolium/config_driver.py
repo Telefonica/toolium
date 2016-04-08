@@ -312,8 +312,15 @@ class ConfigDriver(object):
         except NoSectionError:
             pass
 
-        # Temporal option to solve https://code.google.com/p/chromedriver/issues/detail?id=799
-        options.add_argument("test-type")
+        # Add Chrome arguments
+        try:
+            for pref, pref_value in dict(self.config.items('ChromeArguments')).items():
+                pref_value = '={}'.format(pref_value) if pref_value else ''
+                self.logger.debug("Added chrome argument: {0}{1}".format(pref, pref_value))
+                options.add_argument('{}{}'.format(pref, self._convert_property_type(pref_value)))
+        except NoSectionError:
+            pass
+
         return options
 
     def _setup_safari(self, capabilities):

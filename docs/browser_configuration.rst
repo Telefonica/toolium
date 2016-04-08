@@ -161,6 +161,17 @@ For example, the following configuration allows to download files without asking
     [ChromePreferences]
     download.default_directory: C:\tmp
 
+To configure Chrome arguments, create a *[ChromeArguments]* configuration section and add every argument that you want
+to configure with its value.
+
+For example, to change the browser language::
+
+    [Driver]
+    type: chrome
+
+    [ChromeArguments]
+    lang: es
+
 Another examples showing how to use Chrome Device Mode in two different ways::
 
     [Driver]

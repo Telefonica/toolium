@@ -27,6 +27,8 @@ v1.0.0
    New config section [FirefoxExtensions] with extensions file paths, e.g. 'firebug = firebug-3.0.0-beta.3.xpi'
 - Allow to use a predefined firefox profile
    New config property 'profile' in [Firefox] section to configure the profile directory
+- Allow to set chrome arguments from properties file
+   | New config section [ChromeArguments] with chrome arguments, e.g. 'lang = es'
 - New config properties 'window_width' and 'window_height' in [Driver] section to configure browser window size
 - Add *wait_until_first_element_is_found* method to Utils class to search a list of elements and wait until one of them
   is found
