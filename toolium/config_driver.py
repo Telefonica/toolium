@@ -64,10 +64,10 @@ class ConfigDriver(object):
         try:
             if self.config.getboolean_optional('Server', 'enabled'):
                 self.logger.info("Creating remote driver (type = {0})".format(driver_type))
-                driver = self._create_remotedriver()
+                driver = self._create_remote_driver()
             else:
                 self.logger.info("Creating local driver (type = {0})".format(driver_type))
-                driver = self._create_localdriver()
+                driver = self._create_local_driver()
         except Exception as exc:
             error_message = get_error_message_from_exception(exc)
             message = "{0} driver can not be launched: {1}".format(driver_type.capitalize(), error_message)
@@ -76,7 +76,7 @@ class ConfigDriver(object):
 
         return driver
 
-    def _create_remotedriver(self):
+    def _create_remote_driver(self):
         """Create a driver in a remote server
         View valid capabilities in https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
 
@@ -90,7 +90,7 @@ class ConfigDriver(object):
         # Get driver capabilities
         driver_type = self.config.get('Driver', 'type')
         driver_name = driver_type.split('-')[0]
-        capabilities = self._get_capabilities(driver_name)
+        capabilities = self._get_capabilities_from_driver_type(driver_name)
 
         # Add driver version
         try:
@@ -120,7 +120,7 @@ class ConfigDriver(object):
             capabilities['chromeOptions'] = self._create_chrome_options().to_capabilities()["chromeOptions"]
 
         # Add custom driver capabilities
-        self._add_capabilities(capabilities)
+        self._add_capabilities_from_properties(capabilities)
 
         if driver_name in ('android', 'ios', 'iphone'):
             # Add Appium server capabilities
@@ -139,7 +139,7 @@ class ConfigDriver(object):
             # Create remote web driver
             return webdriver.Remote(command_executor=server_url, desired_capabilities=capabilities)
 
-    def _create_localdriver(self):
+    def _create_local_driver(self):
         """Create a driver in local machine
 
         :returns: a new local selenium driver
@@ -165,15 +165,16 @@ class ConfigDriver(object):
                 raise Exception('Unknown driver {0}'.format(driver_name))
 
             # Get driver capabilities
-            capabilities = self._get_capabilities(driver_name)
-            self._add_capabilities(capabilities)
+            capabilities = self._get_capabilities_from_driver_type(driver_name)
+            self._add_capabilities_from_properties(capabilities)
 
             # Create local selenium driver
             driver = driver_setup_method(capabilities)
 
         return driver
 
-    def _get_capabilities(self, driver_name):
+    @staticmethod
+    def _get_capabilities_from_driver_type(driver_name):
         """Create initial driver capabilities
 
         :params driver_name: name of selected driver
@@ -197,7 +198,7 @@ class ConfigDriver(object):
             return {}
         raise Exception('Unknown driver {0}'.format(driver_name))
 
-    def _add_capabilities(self, capabilities):
+    def _add_capabilities_from_properties(self, capabilities):
         """Add capabilities from properties file
 
         :param capabilities: capabilities object
@@ -254,7 +255,8 @@ class ConfigDriver(object):
 
         return profile
 
-    def _convert_property_type(self, value):
+    @staticmethod
+    def _convert_property_type(value):
         """Converts the string value in a boolean, integer or string
 
         :param value: string value
@@ -278,7 +280,7 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Chrome driver
         """
-        chrome_driver = self.config.get('Driver', 'chromedriver_path')
+        chrome_driver = self.config.get('Driver', 'chrome_driver_path')
         self.logger.debug("Chrome driver path given in properties: {0}".format(chrome_driver))
         return webdriver.Chrome(chrome_driver, chrome_options=self._create_chrome_options(),
                                 desired_capabilities=capabilities)
@@ -338,7 +340,7 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Opera driver
         """
-        opera_driver = self.config.get('Driver', 'operadriver_path')
+        opera_driver = self.config.get('Driver', 'opera_driver_path')
         self.logger.debug("Opera driver path given in properties: {0}".format(opera_driver))
         return webdriver.Opera(executable_path=opera_driver, desired_capabilities=capabilities)
 
@@ -348,7 +350,7 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Internet Explorer driver
         """
-        explorer_driver = self.config.get('Driver', 'explorerdriver_path')
+        explorer_driver = self.config.get('Driver', 'explorer_driver_path')
         self.logger.debug("Explorer driver path given in properties: {0}".format(explorer_driver))
         return webdriver.Ie(explorer_driver, capabilities=capabilities)
 
@@ -358,7 +360,7 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Edge driver
         """
-        edge_driver = self.config.get('Driver', 'edgedriver_path')
+        edge_driver = self.config.get('Driver', 'edge_driver_path')
         self.logger.debug("Edge driver path given in properties: {0}".format(edge_driver))
         return webdriver.Edge(edge_driver, capabilities=capabilities)
 
@@ -368,9 +370,9 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local phantomjs driver
         """
-        phantom_driver = self.config.get('Driver', 'phantomdriver_path')
-        self.logger.debug("Phantom driver path given in properties: {0}".format(phantom_driver))
-        return webdriver.PhantomJS(executable_path=phantom_driver, desired_capabilities=capabilities)
+        phantomjs_driver = self.config.get('Driver', 'phantomjs_driver_path')
+        self.logger.debug("Phantom driver path given in properties: {0}".format(phantomjs_driver))
+        return webdriver.PhantomJS(executable_path=phantomjs_driver, desired_capabilities=capabilities)
 
     def _setup_appium(self):
         """Setup Appium webdriver
@@ -379,4 +381,4 @@ class ConfigDriver(object):
         """
         self.config.set('Server', 'host', '127.0.0.1')
         self.config.set('Server', 'port', '4723')
-        return self._create_remotedriver()
+        return self._create_remote_driver()

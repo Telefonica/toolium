@@ -32,6 +32,8 @@ v1.0.0
 - New config properties 'window_width' and 'window_height' in [Driver] section to configure browser window size
 - Add *wait_until_first_element_is_found* method to Utils class to search a list of elements and wait until one of them
   is found
+- Refactor to rename 'driver_path' config properties to 'chrome_driver_path', 'explorer_driver_path',
+  'edge_driver_path', 'opera_driver_path' and 'phantomjs_driver_path'
 
 v0.12.1
 -------

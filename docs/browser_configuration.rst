@@ -43,7 +43,7 @@ Chrome
 
     [Driver]
     type: chrome
-    chromedriver_path: C:\Drivers\chromedriver.exe
+    chrome_driver_path: C:\Drivers\chromedriver.exe
 
 Internet Explorer
 ~~~~~~~~~~~~~~~~~
@@ -55,7 +55,7 @@ Internet Explorer
 
     [Driver]
     type: iexplore
-    explorerdriver_path: C:\Drivers\IEDriverServer.exe
+    explorer_driver_path: C:\Drivers\IEDriverServer.exe
 
 Edge
 ~~~~
@@ -66,7 +66,7 @@ Edge
 
     [Driver]
     type: edge
-    edgedriver_path: C:\Drivers\MicrosoftWebDriver.exe
+    edge_driver_path: C:\Drivers\MicrosoftWebDriver.exe
 
 Safari
 ~~~~~~
@@ -86,7 +86,7 @@ Opera
 
     [Driver]
     type: opera
-    operadriver_path: C:\Drivers\operadriver.exe
+    opera_driver_path: C:\Drivers\operadriver.exe
 
 PhantomJS
 ~~~~~~~~~
@@ -97,7 +97,7 @@ PhantomJS
 
     [Driver]
     type: phantomjs
-    phantomdriver_path: C:\Drivers\phantomjs.exe
+    phantomjs_driver_path: C:\Drivers\phantomjs.exe
 
 Additional Configuration
 ------------------------

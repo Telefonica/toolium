@@ -39,8 +39,8 @@ class ConfigDriverTests(unittest.TestCase):
     def test_create_driver_local_not_configured(self):
         self.config.set('Driver', 'type', 'firefox')
         config_driver = ConfigDriver(self.config)
-        config_driver._create_localdriver = lambda: 'local driver mock'
-        config_driver._create_remotedriver = lambda: 'remote driver mock'
+        config_driver._create_local_driver = lambda: 'local driver mock'
+        config_driver._create_remote_driver = lambda: 'remote driver mock'
 
         driver = config_driver.create_driver()
 
@@ -50,8 +50,8 @@ class ConfigDriverTests(unittest.TestCase):
         self.config.set('Server', 'enabled', 'false')
         self.config.set('Driver', 'type', 'firefox')
         config_driver = ConfigDriver(self.config)
-        config_driver._create_localdriver = lambda: 'local driver mock'
-        config_driver._create_remotedriver = lambda: 'remote driver mock'
+        config_driver._create_local_driver = lambda: 'local driver mock'
+        config_driver._create_remote_driver = lambda: 'remote driver mock'
 
         driver = config_driver.create_driver()
 
@@ -61,128 +61,128 @@ class ConfigDriverTests(unittest.TestCase):
         self.config.set('Server', 'enabled', 'true')
         self.config.set('Driver', 'type', 'firefox')
         config_driver = ConfigDriver(self.config)
-        config_driver._create_localdriver = lambda: 'local driver mock'
-        config_driver._create_remotedriver = lambda: 'remote driver mock'
+        config_driver._create_local_driver = lambda: 'local driver mock'
+        config_driver._create_remote_driver = lambda: 'remote driver mock'
 
         driver = config_driver.create_driver()
 
         assert_equal(driver, 'remote driver mock')
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_localdriver_firefox(self, webdriver_mock):
+    def test_create_local_driver_firefox(self, webdriver_mock):
         self.config.set('Driver', 'type', 'firefox')
         config_driver = ConfigDriver(self.config)
         config_driver._create_firefox_profile = lambda: 'firefox profile'
 
-        config_driver._create_localdriver()
+        config_driver._create_local_driver()
         webdriver_mock.Firefox.assert_called_with(capabilities=DesiredCapabilities.FIREFOX,
                                                   firefox_profile='firefox profile')
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_localdriver_chrome(self, webdriver_mock):
+    def test_create_local_driver_chrome(self, webdriver_mock):
         self.config.set('Driver', 'type', 'chrome')
-        self.config.set('Driver', 'chromedriver_path', '/tmp/driver')
+        self.config.set('Driver', 'chrome_driver_path', '/tmp/driver')
         config_driver = ConfigDriver(self.config)
         config_driver._create_chrome_options = lambda: 'chrome options'
 
-        config_driver._create_localdriver()
+        config_driver._create_local_driver()
         webdriver_mock.Chrome.assert_called_with('/tmp/driver', desired_capabilities=DesiredCapabilities.CHROME,
                                                  chrome_options='chrome options')
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_localdriver_safari(self, webdriver_mock):
+    def test_create_local_driver_safari(self, webdriver_mock):
         self.config.set('Driver', 'type', 'safari')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_localdriver()
+        config_driver._create_local_driver()
         webdriver_mock.Safari.assert_called_with(desired_capabilities=DesiredCapabilities.SAFARI)
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_localdriver_opera(self, webdriver_mock):
+    def test_create_local_driver_opera(self, webdriver_mock):
         self.config.set('Driver', 'type', 'opera')
-        self.config.set('Driver', 'operadriver_path', '/tmp/driver')
+        self.config.set('Driver', 'opera_driver_path', '/tmp/driver')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_localdriver()
+        config_driver._create_local_driver()
         webdriver_mock.Opera.assert_called_with(desired_capabilities=DesiredCapabilities.OPERA,
                                                 executable_path='/tmp/driver')
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_localdriver_iexplore(self, webdriver_mock):
+    def test_create_local_driver_iexplore(self, webdriver_mock):
         self.config.set('Driver', 'type', 'iexplore')
-        self.config.set('Driver', 'explorerdriver_path', '/tmp/driver')
+        self.config.set('Driver', 'explorer_driver_path', '/tmp/driver')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_localdriver()
+        config_driver._create_local_driver()
         webdriver_mock.Ie.assert_called_with('/tmp/driver', capabilities=DesiredCapabilities.INTERNETEXPLORER)
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_localdriver_edge(self, webdriver_mock):
+    def test_create_local_driver_edge(self, webdriver_mock):
         self.config.set('Driver', 'type', 'edge')
-        self.config.set('Driver', 'edgedriver_path', '/tmp/driver')
+        self.config.set('Driver', 'edge_driver_path', '/tmp/driver')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_localdriver()
+        config_driver._create_local_driver()
         webdriver_mock.Edge.assert_called_with('/tmp/driver', capabilities=DesiredCapabilities.EDGE)
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_localdriver_phantomjs(self, webdriver_mock):
+    def test_create_local_driver_phantomjs(self, webdriver_mock):
         self.config.set('Driver', 'type', 'phantomjs')
-        self.config.set('Driver', 'phantomdriver_path', '/tmp/driver')
+        self.config.set('Driver', 'phantomjs_driver_path', '/tmp/driver')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_localdriver()
+        config_driver._create_local_driver()
         webdriver_mock.PhantomJS.assert_called_with(desired_capabilities=DesiredCapabilities.PHANTOMJS,
                                                     executable_path='/tmp/driver')
 
-    def test_create_localdriver_android(self):
+    def test_create_local_driver_android(self):
         self.config.set('Driver', 'type', 'android')
         config_driver = ConfigDriver(self.config)
-        config_driver._create_remotedriver = lambda: 'remote driver mock'
+        config_driver._create_remote_driver = lambda: 'remote driver mock'
 
-        driver = config_driver._create_localdriver()
+        driver = config_driver._create_local_driver()
         assert_equal(driver, 'remote driver mock')
 
-    def test_create_localdriver_ios(self):
+    def test_create_local_driver_ios(self):
         self.config.set('Driver', 'type', 'ios')
         config_driver = ConfigDriver(self.config)
-        config_driver._create_remotedriver = lambda: 'remote driver mock'
+        config_driver._create_remote_driver = lambda: 'remote driver mock'
 
-        driver = config_driver._create_localdriver()
+        driver = config_driver._create_local_driver()
         assert_equal(driver, 'remote driver mock')
 
-    def test_create_localdriver_iphone(self):
+    def test_create_local_driver_iphone(self):
         self.config.set('Driver', 'type', 'iphone')
         config_driver = ConfigDriver(self.config)
-        config_driver._create_remotedriver = lambda: 'remote driver mock'
+        config_driver._create_remote_driver = lambda: 'remote driver mock'
 
-        driver = config_driver._create_localdriver()
+        driver = config_driver._create_local_driver()
         assert_equal(driver, 'remote driver mock')
 
-    def test_create_localdriver_unknown_driver(self):
+    def test_create_local_driver_unknown_driver(self):
         self.config.set('Driver', 'type', 'unknown')
         config_driver = ConfigDriver(self.config)
 
         with assert_raises(Exception) as cm:
-            config_driver._create_localdriver()
+            config_driver._create_local_driver()
         assert_equal('Unknown driver unknown', str(cm.exception))
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_localdriver_capabilities(self, webdriver_mock):
+    def test_create_local_driver_capabilities(self, webdriver_mock):
         self.config.set('Driver', 'type', 'firefox')
         self.config.add_section('Capabilities')
         self.config.set('Capabilities', 'version', '45')
         config_driver = ConfigDriver(self.config)
         config_driver._create_firefox_profile = lambda: 'firefox profile'
 
-        config_driver._create_localdriver()
+        config_driver._create_local_driver()
         capabilities = DesiredCapabilities.FIREFOX
         capabilities['version'] = '45'
         webdriver_mock.Firefox.assert_called_with(capabilities=capabilities,
                                                   firefox_profile='firefox profile')
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_remotedriver_firefox(self, webdriver_mock):
+    def test_create_remote_driver_firefox(self, webdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'firefox')
@@ -193,14 +193,14 @@ class ConfigDriverTests(unittest.TestCase):
         setattr(profile_mock, 'encoded', 'encoded profile')
         config_driver._create_firefox_profile = mock.MagicMock(return_value=profile_mock)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = DesiredCapabilities.FIREFOX
         capabilities['firefox_profile'] = 'encoded profile'
         webdriver_mock.Remote.assert_called_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                  desired_capabilities=capabilities)
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_remotedriver_chrome(self, webdriver_mock):
+    def test_create_remote_driver_chrome(self, webdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'chrome')
@@ -211,32 +211,32 @@ class ConfigDriverTests(unittest.TestCase):
         chrome_options.to_capabilities.return_value = {'chromeOptions': 'chrome options'}
         config_driver._create_chrome_options = mock.MagicMock(return_value=chrome_options)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = DesiredCapabilities.CHROME
         capabilities['chromeOptions'] = 'chrome options'
         webdriver_mock.Remote.assert_called_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                  desired_capabilities=capabilities)
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_remotedriver_safari(self, webdriver_mock):
+    def test_create_remote_driver_safari(self, webdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'safari')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = DesiredCapabilities.SAFARI
         webdriver_mock.Remote.assert_called_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                  desired_capabilities=capabilities)
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_remotedriver_opera(self, webdriver_mock):
+    def test_create_remote_driver_opera(self, webdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'opera')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = DesiredCapabilities.OPERA
         capabilities['opera.autostart'] = True
         capabilities['opera.arguments'] = '-fullscreen'
@@ -244,43 +244,43 @@ class ConfigDriverTests(unittest.TestCase):
                                                  desired_capabilities=capabilities)
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_remotedriver_iexplore(self, webdriver_mock):
+    def test_create_remote_driver_iexplore(self, webdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'iexplore')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = DesiredCapabilities.INTERNETEXPLORER
         webdriver_mock.Remote.assert_called_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                  desired_capabilities=capabilities)
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_remotedriver_edge(self, webdriver_mock):
+    def test_create_remote_driver_edge(self, webdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'edge')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = DesiredCapabilities.EDGE
         webdriver_mock.Remote.assert_called_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                  desired_capabilities=capabilities)
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_remotedriver_phantomjs(self, webdriver_mock):
+    def test_create_remote_driver_phantomjs(self, webdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'phantomjs')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = DesiredCapabilities.PHANTOMJS
         webdriver_mock.Remote.assert_called_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                  desired_capabilities=capabilities)
 
     @mock.patch('toolium.config_driver.appiumdriver')
-    def test_create_remotedriver_android(self, appiumdriver_mock):
+    def test_create_remote_driver_android(self, appiumdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'android')
@@ -289,13 +289,13 @@ class ConfigDriverTests(unittest.TestCase):
         self.config.set('AppiumCapabilities', 'platformName', 'Android')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = {'automationName': 'Appium', 'platformName': 'Android'}
         appiumdriver_mock.Remote.assert_called_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                     desired_capabilities=capabilities)
 
     @mock.patch('toolium.config_driver.appiumdriver')
-    def test_create_remotedriver_ios(self, appiumdriver_mock):
+    def test_create_remote_driver_ios(self, appiumdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'ios')
@@ -304,13 +304,13 @@ class ConfigDriverTests(unittest.TestCase):
         self.config.set('AppiumCapabilities', 'platformName', 'iOS')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = {'automationName': 'Appium', 'platformName': 'iOS'}
         appiumdriver_mock.Remote.assert_called_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                     desired_capabilities=capabilities)
 
     @mock.patch('toolium.config_driver.appiumdriver')
-    def test_create_remotedriver_iphone(self, appiumdriver_mock):
+    def test_create_remote_driver_iphone(self, appiumdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'iphone')
@@ -319,19 +319,19 @@ class ConfigDriverTests(unittest.TestCase):
         self.config.set('AppiumCapabilities', 'platformName', 'iOS')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = {'automationName': 'Appium', 'platformName': 'iOS'}
         appiumdriver_mock.Remote.assert_called_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                     desired_capabilities=capabilities)
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_remotedriver_version_platform(self, webdriver_mock):
+    def test_create_remote_driver_version_platform(self, webdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'iexplore-11-on-WIN10')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = DesiredCapabilities.INTERNETEXPLORER
         capabilities['version'] = '11'
         capabilities['platform'] = 'WIN10'
@@ -339,20 +339,20 @@ class ConfigDriverTests(unittest.TestCase):
                                                  desired_capabilities=capabilities)
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_remotedriver_version(self, webdriver_mock):
+    def test_create_remote_driver_version(self, webdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'iexplore-11')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = DesiredCapabilities.INTERNETEXPLORER
         capabilities['version'] = '11'
         webdriver_mock.Remote.assert_called_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                  desired_capabilities=capabilities)
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_remotedriver_capabilities(self, webdriver_mock):
+    def test_create_remote_driver_capabilities(self, webdriver_mock):
         self.config.set('Server', 'host', '10.20.30.40')
         self.config.set('Server', 'port', '5555')
         self.config.set('Driver', 'type', 'iexplore-11')
@@ -360,7 +360,7 @@ class ConfigDriverTests(unittest.TestCase):
         self.config.set('Capabilities', 'version', '11')
         config_driver = ConfigDriver(self.config)
 
-        config_driver._create_remotedriver()
+        config_driver._create_remote_driver()
         capabilities = DesiredCapabilities.INTERNETEXPLORER
         capabilities['version'] = '11'
         webdriver_mock.Remote.assert_called_with(command_executor='http://10.20.30.40:5555/wd/hub',

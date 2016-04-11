@@ -81,7 +81,11 @@ class Utils(object):
 
         self.logger.debug("Reading logs from '{}' and writing them to log files".format(', '.join(log_types)))
         for log_type in log_types:
-            self.save_webdriver_logs(log_type, test_name)
+            try:
+                self.save_webdriver_logs(log_type, test_name)
+            except Exception:
+                # Capture exceptions to avoid errors in teardown method
+                pass
 
     def save_webdriver_logs(self, log_type, test_name):
         """Get webdriver logs of the specified type and write them to a log file
