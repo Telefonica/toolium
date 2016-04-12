@@ -30,7 +30,7 @@ class DriverWrapper(object):
     """Wrapper with the webdriver and the configuration needed to execute tests
 
     :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
-    :type config: toolium.config_parser.ExtendedConfigParser
+    :type config: toolium.config_parser.ExtendedConfigParser or configparser.ConfigParser
     :type utils: toolium.utils.Utils
     :type app_strings: dict
     :type session_id: str
@@ -125,7 +125,7 @@ class DriverWrapper(object):
     def configure_visual_baseline(self):
         """Configure baseline directory"""
         # Get baseline name
-        baseline_name = self.config.get_optional('VisualTests', 'baseline_name', '{Browser_browser}')
+        baseline_name = self.config.get_optional('VisualTests', 'baseline_name', '{Driver_type}')
         for section in self.config.sections():
             for option in self.config.options(section):
                 option_value = self.config.get(section, option).replace('-', '_').replace(' ', '_')
@@ -169,17 +169,17 @@ class DriverWrapper(object):
 
         # Configure visual directories
         if is_selenium_test:
-            browser_info = self.config.get('Browser', 'browser').replace('-', '_')
-            DriverWrappersPool.configure_visual_directories(browser_info)
+            driver_info = self.config.get('Driver', 'type').replace('-', '_')
+            DriverWrappersPool.configure_visual_directories(driver_info)
             self.configure_visual_baseline()
 
     def connect(self, maximize=True):
         """Set up the selenium driver and connect to the server
 
-        :param maximize: True if the browser should be maximized
+        :param maximize: True if the driver should be maximized
         :returns: selenium driver
         """
-        if not self.config.get('Browser', 'browser'):
+        if not self.config.get('Driver', 'type'):
             return None
 
         self.driver = ConfigDriver(self.config).create_driver()
@@ -196,7 +196,17 @@ class DriverWrapper(object):
 
         # Maximize browser
         if maximize and self.is_maximizable():
-            self.driver.maximize_window()
+            # Set window size or maximize
+            window_width = self.config.get_optional('Driver', 'window_width')
+            window_height = self.config.get_optional('Driver', 'window_height')
+            if window_width and window_height:
+                self.driver.set_window_size(window_width, window_height)
+            else:
+                self.driver.maximize_window()
+
+        # Log window size
+        window_size = self.utils.get_window_size()
+        self.logger.debug('Window size: {} x {}'.format(window_size['width'], window_size['height']))
 
         # Update baseline
         self.update_visual_baseline()
@@ -208,16 +218,16 @@ class DriverWrapper(object):
 
         :returns: true if test must be executed in an Android mobile
         """
-        browser_name = self.config.get('Browser', 'browser').split('-')[0]
-        return browser_name == 'android'
+        driver_name = self.config.get('Driver', 'type').split('-')[0]
+        return driver_name == 'android'
 
     def is_ios_test(self):
         """Check if actual test must be executed in an iOS mobile
 
         :returns: true if test must be executed in an iOS mobile
         """
-        browser_name = self.config.get('Browser', 'browser').split('-')[0]
-        return browser_name in ('ios', 'iphone')
+        driver_name = self.config.get('Driver', 'type').split('-')[0]
+        return driver_name in ('ios', 'iphone')
 
     def is_mobile_test(self):
         """Check if actual test must be executed in a mobile

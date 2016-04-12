@@ -20,8 +20,10 @@ import os
 import unittest
 
 import mock
+import requests_mock
 from ddt import ddt, data, unpack
 from nose.tools import assert_is_none, assert_equal, assert_raises
+from requests.exceptions import ConnectionError
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -68,10 +70,111 @@ class UtilsTests(unittest.TestCase):
         DriverWrappersPool._empty_pool()
         DriverWrapper.config_properties_filenames = None
 
+    @requests_mock.Mocker()
+    def test_get_remote_node(self, req_mock):
+        # Configure mock
+        self.driver_wrapper.driver.session_id = '5af'
+        url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
+        grid_response_json = {'session': 'e2', 'proxyId': 'http://10.20.30.40:5555', 'msg': 'slot found !',
+                              'inactivityTime': 78, 'success': True, 'internalKey': '7a'}
+        req_mock.get(url, json=grid_response_json)
+
+        # Get remote node and check result
+        assert_equal(self.utils.get_remote_node(), '10.20.30.40')
+        assert_equal(url, req_mock.request_history[0].url)
+
+    @requests_mock.Mocker()
+    def test_get_remote_node_non_grid(self, req_mock):
+        # Configure mock
+        self.driver_wrapper.driver.session_id = '5af'
+        url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
+        req_mock.get(url, text='non_json_response')
+
+        # Get remote node and check result
+        assert_is_none(self.utils.get_remote_node())
+        assert_equal(url, req_mock.request_history[0].url)
+
+    def test_get_remote_node_local_execution(self):
+        self.driver_wrapper.config.set('Server', 'enabled', 'false')
+        assert_is_none(self.utils.get_remote_node())
+
+    @requests_mock.Mocker()
+    def test_get_remote_video_url(self, req_mock):
+        # Configure mock
+        url = 'http://{}:{}/video'.format('10.20.30.40', 3000)
+        video_url = 'http://{}:{}/download_video/f4.mp4'.format('10.20.30.40', 3000)
+        video_response_json = {'exit_code': 1, 'out': [],
+                               'error': ['Cannot call this endpoint without required parameters: session and action'],
+                               'available_videos': {'5af': {'size': 489701,
+                                                            'session': '5af',
+                                                            'last_modified': 1460041262558,
+                                                            'download_url': video_url,
+                                                            'absolute_path': 'C:\\f4.mp4'}},
+                               'current_videos': []}
+        req_mock.get(url, json=video_response_json)
+
+        # Get remote video url and check result
+        assert_equal(self.utils._get_remote_video_url('10.20.30.40', '5af'), video_url)
+        assert_equal(url, req_mock.request_history[0].url)
+
+    @requests_mock.Mocker()
+    def test_get_remote_video_url_no_videos(self, req_mock):
+        # Configure mock
+        url = 'http://{}:{}/video'.format('10.20.30.40', 3000)
+        video_response_json = {'exit_code': 1, 'out': [],
+                               'error': ['Cannot call this endpoint without required parameters: session and action'],
+                               'available_videos': {},
+                               'current_videos': []}
+        req_mock.get(url, json=video_response_json)
+
+        # Get remote video url and check result
+        assert_is_none(self.utils._get_remote_video_url('10.20.30.40', '5af'))
+        assert_equal(url, req_mock.request_history[0].url)
+
+    @requests_mock.Mocker()
+    def test_is_remote_video_enabled(self, req_mock):
+        # Configure mock
+        url = 'http://{}:{}/config'.format('10.20.30.40', 3000)
+        config_response_json = {'out': [], 'error': [], 'exit_code': 0,
+                                'filename': ['selenium_grid_extras_config.json'],
+                                'config_runtime': {'theConfigMap': {
+                                    'video_recording_options': {'width': '1024', 'videos_to_keep': '5',
+                                                                'frames': '30',
+                                                                'record_test_videos': 'true'}}}}
+        req_mock.get(url, json=config_response_json)
+
+        # Get remote video configuration and check result
+        assert_equal(self.utils.is_remote_video_enabled('10.20.30.40'), True)
+        assert_equal(url, req_mock.request_history[0].url)
+
+    @requests_mock.Mocker()
+    def test_is_remote_video_enabled_disabled(self, req_mock):
+        # Configure mock
+        url = 'http://{}:{}/config'.format('10.20.30.40', 3000)
+        config_response_json = {'out': [], 'error': [], 'exit_code': 0,
+                                'filename': ['selenium_grid_extras_config.json'],
+                                'config_runtime': {'theConfigMap': {
+                                    'video_recording_options': {'width': '1024', 'videos_to_keep': '5',
+                                                                'frames': '30',
+                                                                'record_test_videos': 'false'}}}}
+        req_mock.get(url, json=config_response_json)
+
+        # Get remote video configuration and check result
+        assert_equal(self.utils.is_remote_video_enabled('10.20.30.40'), False)
+        assert_equal(url, req_mock.request_history[0].url)
+
+    @mock.patch('toolium.utils.requests.get')
+    def test_is_remote_video_enabled_non_grid_extras(self, req_get_mock):
+        # Configure mock
+        req_get_mock.side_effect = ConnectionError('exception error')
+
+        # Get remote video configuration and check result
+        assert_equal(self.utils.is_remote_video_enabled('10.20.30.40'), False)
+
     @data(*navigation_bar_tests)
     @unpack
-    def test_get_safari_navigation_bar_height(self, browser, appium_app, appium_browser_name, bar_height):
-        self.driver_wrapper.config.set('Browser', 'browser', browser)
+    def test_get_safari_navigation_bar_height(self, driver_type, appium_app, appium_browser_name, bar_height):
+        self.driver_wrapper.config.set('Driver', 'type', driver_type)
         if appium_app:
             self.driver_wrapper.config.set('AppiumCapabilities', 'app', appium_app)
         if appium_browser_name:
@@ -82,7 +185,7 @@ class UtilsTests(unittest.TestCase):
         # Configure driver mock
         window_size = {'width': 375, 'height': 667}
         self.driver_wrapper.driver.get_window_size.return_value = window_size
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
         assert_equal(self.utils.get_window_size(), window_size)
@@ -92,7 +195,7 @@ class UtilsTests(unittest.TestCase):
         window_size = {'width': 375, 'height': 667}
         self.driver_wrapper.driver.current_context = 'WEBVIEW'
         self.driver_wrapper.driver.execute_script.side_effect = [window_size['width'], window_size['height']]
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
 
         assert_equal(self.utils.get_window_size(), window_size)
@@ -105,7 +208,7 @@ class UtilsTests(unittest.TestCase):
         self.driver_wrapper.driver.execute_script.side_effect = [web_window_size['width'], web_window_size['height'],
                                                                  native_window_size['width'],
                                                                  native_window_size['height']]
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
 
         web_coords = {'x': 105, 'y': 185}
@@ -117,7 +220,7 @@ class UtilsTests(unittest.TestCase):
         web_window_size = {'width': 500, 'height': 667}
         native_window_size = {'width': 250, 'height': 450}
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
-        self.driver_wrapper.config.set('Browser', 'browser', 'ios')
+        self.driver_wrapper.config.set('Driver', 'type', 'ios')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
 
         web_coords = {'x': 105, 'y': 185}
@@ -130,7 +233,7 @@ class UtilsTests(unittest.TestCase):
         native_window_size = {'width': 250, 'height': 450}
         self.driver_wrapper.driver.current_context = 'NATIVE_APP'
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
         # Create element mock
@@ -147,7 +250,7 @@ class UtilsTests(unittest.TestCase):
         self.driver_wrapper.driver.execute_script.side_effect = [web_window_size['width'], web_window_size['height'],
                                                                  native_window_size['width'],
                                                                  native_window_size['height']]
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
 
         # Create element mock
@@ -162,7 +265,7 @@ class UtilsTests(unittest.TestCase):
         native_window_size = {'width': 250, 'height': 450}
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
         self.driver_wrapper.driver.current_context = 'NATIVE_APP'
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
         # Create element mock
@@ -177,7 +280,7 @@ class UtilsTests(unittest.TestCase):
         native_window_size = {'width': 250, 'height': 450}
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
         self.driver_wrapper.driver.current_context = 'WEBVIEW'
-        self.driver_wrapper.config.set('Browser', 'browser', 'android')
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
         # Create element mock
@@ -191,7 +294,7 @@ class UtilsTests(unittest.TestCase):
         web_window_size = {'width': 500, 'height': 667}
         native_window_size = {'width': 250, 'height': 450}
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
-        self.driver_wrapper.config.set('Browser', 'browser', 'ios')
+        self.driver_wrapper.config.set('Driver', 'type', 'ios')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
 
         # Create element mock
@@ -202,7 +305,7 @@ class UtilsTests(unittest.TestCase):
 
     def test_swipe_web(self):
         # Configure driver mock
-        self.driver_wrapper.config.set('Browser', 'browser', 'firefox')
+        self.driver_wrapper.config.set('Driver', 'type', 'firefox')
 
         # Create element mock
         element = get_mock_element(x=250, y=40, height=40, width=300)

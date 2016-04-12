@@ -59,18 +59,22 @@ class PageElement(CommonObject):
         :returns: web element object
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
-        if not self._web_element:
-            try:
-                if self.parent:
-                    self._web_element = self.utils.get_web_element(self.parent).find_element(*self.locator)
-                else:
-                    self._web_element = self.driver.find_element(*self.locator)
-            except NoSuchElementException as exception:
-                msg = "Page element of type '{}' with locator {} not found".format(type(self).__name__, self.locator)
-                self.logger.error(msg)
-                exception.msg += "\n  {}".format(msg)
-                raise exception
+        try:
+            self._find_web_element()
+        except NoSuchElementException as exception:
+            msg = "Page element of type '{}' with locator {} not found".format(type(self).__name__, self.locator)
+            self.logger.error(msg)
+            exception.msg += "\n  {}".format(msg)
+            raise exception
         return self._web_element
+
+    def _find_web_element(self):
+        """Find WebElement using element locator and save it in _web_element attribute"""
+        if not self._web_element:
+            if self.parent:
+                self._web_element = self.utils.get_web_element(self.parent).find_element(*self.locator)
+            else:
+                self._web_element = self.driver.find_element(*self.locator)
 
     def scroll_element_into_view(self):
         """Scroll element into view

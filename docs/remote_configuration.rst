@@ -45,11 +45,11 @@ you want to configure with its value.
 
 The following example requests to the Selenium Grid Hub a Windows environment with Internet Explorer 11::
 
-   [Browser]
-   browser: iexplore
+    [Driver]
+    type: iexplore
 
-   [Capabilities]
-   version: 11
-   platform: WINDOWS
+    [Capabilities]
+    version: 11
+    platform: WINDOWS
 
 See https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities for the complete Selenium capabilities list.

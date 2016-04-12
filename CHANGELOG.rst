@@ -4,20 +4,21 @@ Toolium Changelog
 v1.0.0
 ------
 
-*In development*
+*Release date: 2016-04-12*
 
 - Refactor to rename assertScreenshot to assert_screenshot and assertFullScreenshot to assert_full_screenshot
-- Add a config property *appium_app_strings* in [Common] section to request app strings before each Appium test
+- Refactor to move config property 'browser' in [Browser] section to 'type' property in [Driver] section
+- Add a config property 'appium_app_strings' in [Common] section to request app strings before each Appium test
 - Upload the error screenshot to Jira if the test fails
 - Allow to modify Toolium properties from behave userdata configuration, e.g.:
 
 .. code:: console
 
-    $ behave -D Browser_browser=chrome
+    $ behave -D Driver_type=chrome
 
 - Save WebElement in PageElement to avoid searching the same element multiple times
 - Refactor to rename get_element to get_web_element in Utils class and element to web_element in PageElement class
-- Allow to run API tests with behave: browser property must be empty
+- Allow to run API tests with behave: driver type property must be empty
 - Baseline name property can contain *{PlatformVersion}* or *{RemoteNode}* to add actual platform version or remote
   node name to the baseline name
 - Add force parameter to *assert_screenshot* methods to compare the screenshot even if visual testing is disabled by
@@ -26,6 +27,13 @@ v1.0.0
    New config section [FirefoxExtensions] with extensions file paths, e.g. 'firebug = firebug-3.0.0-beta.3.xpi'
 - Allow to use a predefined firefox profile
    New config property 'profile' in [Firefox] section to configure the profile directory
+- Allow to set chrome arguments from properties file
+   | New config section [ChromeArguments] with chrome arguments, e.g. 'lang = es'
+- New config properties 'window_width' and 'window_height' in [Driver] section to configure browser window size
+- Add *wait_until_first_element_is_found* method to Utils class to search a list of elements and wait until one of them
+  is found
+- Refactor to rename 'driver_path' config properties to 'chrome_driver_path', 'explorer_driver_path',
+  'edge_driver_path', 'opera_driver_path' and 'phantomjs_driver_path'
 
 v0.12.1
 -------

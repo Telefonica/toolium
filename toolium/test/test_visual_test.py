@@ -183,7 +183,7 @@ class VisualTests(unittest.TestCase):
     def test_mobile_resize(self):
         # Update conf and create a new VisualTest instance
         self.driver_wrapper.driver.get_window_size.return_value = {'width': 375, 'height': 667}
-        self.driver_wrapper.config.set('Browser', 'browser', 'ios')
+        self.driver_wrapper.config.set('Driver', 'type', 'ios')
         self.visual = VisualTest(self.driver_wrapper)
 
         # Resize image
@@ -196,7 +196,7 @@ class VisualTests(unittest.TestCase):
     def test_mobile_no_resize(self):
         # Update conf and create a new VisualTest instance
         self.driver_wrapper.driver.get_window_size.return_value = {'width': 750, 'height': 1334}
-        self.driver_wrapper.config.set('Browser', 'browser', 'ios')
+        self.driver_wrapper.config.set('Driver', 'type', 'ios')
         self.visual = VisualTest(self.driver_wrapper)
 
         # Resize image
@@ -363,7 +363,7 @@ class VisualTests(unittest.TestCase):
         self.driver_wrapper.driver.get_window_size.return_value = {'width': 375, 'height': 667}
 
         # Update conf and create a new VisualTest instance
-        self.driver_wrapper.config.set('Browser', 'browser', 'ios')
+        self.driver_wrapper.config.set('Driver', 'type', 'ios')
         self.visual = VisualTest(self.driver_wrapper)
 
         # Assert screenshot
@@ -394,7 +394,7 @@ class VisualTests(unittest.TestCase):
         self.driver_wrapper.driver.get_window_size.return_value = {'width': 375, 'height': 667}
 
         # Update conf and create a new VisualTest instance
-        self.driver_wrapper.config.set('Browser', 'browser', 'ios')
+        self.driver_wrapper.config.set('Driver', 'type', 'ios')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
         self.visual = VisualTest(self.driver_wrapper)
 

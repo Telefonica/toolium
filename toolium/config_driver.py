@@ -60,23 +60,23 @@ class ConfigDriver(object):
         :returns: a new selenium driver
         :rtype: selenium.webdriver.remote.webdriver.WebDriver
         """
-        browser = self.config.get('Browser', 'browser')
+        driver_type = self.config.get('Driver', 'type')
         try:
             if self.config.getboolean_optional('Server', 'enabled'):
-                self.logger.info("Creating remote driver (browser = {0})".format(browser))
-                driver = self._create_remotedriver()
+                self.logger.info("Creating remote driver (type = {0})".format(driver_type))
+                driver = self._create_remote_driver()
             else:
-                self.logger.info("Creating local driver (browser = {0})".format(browser))
-                driver = self._create_localdriver()
+                self.logger.info("Creating local driver (type = {0})".format(driver_type))
+                driver = self._create_local_driver()
         except Exception as exc:
             error_message = get_error_message_from_exception(exc)
-            message = "{0} driver can not be launched: {1}".format(browser.capitalize(), error_message)
+            message = "{0} driver can not be launched: {1}".format(driver_type.capitalize(), error_message)
             self.logger.error(message)
             raise
 
         return driver
 
-    def _create_remotedriver(self):
+    def _create_remote_driver(self):
         """Create a driver in a remote server
         View valid capabilities in https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
 
@@ -87,14 +87,14 @@ class ConfigDriver(object):
         server_port = self.config.get('Server', 'port')
         server_url = 'http://{0}:{1}/wd/hub'.format(server_host, server_port)
 
-        # Get browser capabilities
-        browser = self.config.get('Browser', 'browser')
-        browser_name = browser.split('-')[0]
-        capabilities = self._get_capabilities(browser_name)
+        # Get driver capabilities
+        driver_type = self.config.get('Driver', 'type')
+        driver_name = driver_type.split('-')[0]
+        capabilities = self._get_capabilities_from_driver_type(driver_name)
 
-        # Add browser version
+        # Add driver version
         try:
-            capabilities['version'] = browser.split('-')[1]
+            capabilities['version'] = driver_type.split('-')[1]
         except IndexError:
             pass
 
@@ -107,22 +107,22 @@ class ConfigDriver(object):
                               'linux': 'LINUX',
                               'android': 'ANDROID',
                               'mac': 'MAC'}
-            capabilities['platform'] = platforms_list.get(browser.split('-')[3], browser.split('-')[3])
+            capabilities['platform'] = platforms_list.get(driver_type.split('-')[3], driver_type.split('-')[3])
         except IndexError:
             pass
 
-        if browser_name == 'opera':
+        if driver_name == 'opera':
             capabilities['opera.autostart'] = True
             capabilities['opera.arguments'] = '-fullscreen'
-        elif browser_name == 'firefox':
+        elif driver_name == 'firefox':
             capabilities['firefox_profile'] = self._create_firefox_profile().encoded
-        elif browser_name == 'chrome':
+        elif driver_name == 'chrome':
             capabilities['chromeOptions'] = self._create_chrome_options().to_capabilities()["chromeOptions"]
 
         # Add custom driver capabilities
-        self._add_capabilities(capabilities)
+        self._add_capabilities_from_properties(capabilities)
 
-        if browser_name in ('android', 'ios', 'iphone'):
+        if driver_name in ('android', 'ios', 'iphone'):
             # Add Appium server capabilities
             for cap, cap_value in dict(self.config.items('AppiumCapabilities')).items():
                 self.logger.debug("Added Appium server capability: {0} = {1}".format(cap, cap_value))
@@ -139,60 +139,66 @@ class ConfigDriver(object):
             # Create remote web driver
             return webdriver.Remote(command_executor=server_url, desired_capabilities=capabilities)
 
-    def _create_localdriver(self):
+    def _create_local_driver(self):
         """Create a driver in local machine
 
         :returns: a new local selenium driver
         """
-        browser = self.config.get('Browser', 'browser')
-        browser_name = browser.split('-')[0]
-        browser_config = {
-            'firefox': self._setup_firefox,
-            'chrome': self._setup_chrome,
-            'safari': self._setup_safari,
-            'opera': self._setup_opera,
-            'iexplore': self._setup_explorer,
-            'edge': self._setup_edge,
-            'phantomjs': self._setup_phantomjs,
-            'android': self._setup_appium,
-            'ios': self._setup_appium,
-            'iphone': self._setup_appium
-        }
-        setup_driver_method = browser_config.get(browser_name)
-        if not setup_driver_method:
-            raise Exception('Unknown driver {0}'.format(browser_name))
+        driver_type = self.config.get('Driver', 'type')
+        driver_name = driver_type.split('-')[0]
 
-        # Get browser capabilities
-        capabilities = self._get_capabilities(browser_name)
-        self._add_capabilities(capabilities)
+        if driver_name in ('android', 'ios', 'iphone'):
+            # Create local appium driver
+            driver = self._setup_appium()
+        else:
+            driver_setup = {
+                'firefox': self._setup_firefox,
+                'chrome': self._setup_chrome,
+                'safari': self._setup_safari,
+                'opera': self._setup_opera,
+                'iexplore': self._setup_explorer,
+                'edge': self._setup_edge,
+                'phantomjs': self._setup_phantomjs
+            }
+            driver_setup_method = driver_setup.get(driver_name)
+            if not driver_setup_method:
+                raise Exception('Unknown driver {0}'.format(driver_name))
 
-        return setup_driver_method(capabilities)
+            # Get driver capabilities
+            capabilities = self._get_capabilities_from_driver_type(driver_name)
+            self._add_capabilities_from_properties(capabilities)
 
-    def _get_capabilities(self, browser_name):
-        """Create initial browser capabilities
+            # Create local selenium driver
+            driver = driver_setup_method(capabilities)
 
-        :params browser_name: name of selected browser
+        return driver
+
+    @staticmethod
+    def _get_capabilities_from_driver_type(driver_name):
+        """Create initial driver capabilities
+
+        :params driver_name: name of selected driver
         :returns: capabilities dictionary
         """
-        # Get browser type capabilities
-        capabilities_list = {
-            'firefox': DesiredCapabilities.FIREFOX,
-            'chrome': DesiredCapabilities.CHROME,
-            'safari': DesiredCapabilities.SAFARI,
-            'opera': DesiredCapabilities.OPERA,
-            'iexplore': DesiredCapabilities.INTERNETEXPLORER,
-            'edge': DesiredCapabilities.EDGE,
-            'phantomjs': DesiredCapabilities.PHANTOMJS,
-            'android': {},
-            'ios': {},
-            'iphone': {}
-        }
-        capabilities = capabilities_list.get(browser_name)
-        if capabilities is None:
-            raise Exception('Unknown driver {0}'.format(browser_name))
-        return capabilities
+        if driver_name == 'firefox':
+            return DesiredCapabilities.FIREFOX.copy()
+        elif driver_name == 'chrome':
+            return DesiredCapabilities.CHROME.copy()
+        elif driver_name == 'safari':
+            return DesiredCapabilities.SAFARI.copy()
+        elif driver_name == 'opera':
+            return DesiredCapabilities.OPERA.copy()
+        elif driver_name == 'iexplore':
+            return DesiredCapabilities.INTERNETEXPLORER.copy()
+        elif driver_name == 'edge':
+            return DesiredCapabilities.EDGE.copy()
+        elif driver_name == 'phantomjs':
+            return DesiredCapabilities.PHANTOMJS.copy()
+        elif driver_name in ('android', 'ios', 'iphone'):
+            return {}
+        raise Exception('Unknown driver {0}'.format(driver_name))
 
-    def _add_capabilities(self, capabilities):
+    def _add_capabilities_from_properties(self, capabilities):
         """Add capabilities from properties file
 
         :param capabilities: capabilities object
@@ -249,7 +255,8 @@ class ConfigDriver(object):
 
         return profile
 
-    def _convert_property_type(self, value):
+    @staticmethod
+    def _convert_property_type(value):
         """Converts the string value in a boolean, integer or string
 
         :param value: string value
@@ -273,7 +280,7 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Chrome driver
         """
-        chrome_driver = self.config.get('Browser', 'chromedriver_path')
+        chrome_driver = self.config.get('Driver', 'chrome_driver_path')
         self.logger.debug("Chrome driver path given in properties: {0}".format(chrome_driver))
         return webdriver.Chrome(chrome_driver, chrome_options=self._create_chrome_options(),
                                 desired_capabilities=capabilities)
@@ -308,8 +315,15 @@ class ConfigDriver(object):
         except NoSectionError:
             pass
 
-        # Temporal option to solve https://code.google.com/p/chromedriver/issues/detail?id=799
-        options.add_argument("test-type")
+        # Add Chrome arguments
+        try:
+            for pref, pref_value in dict(self.config.items('ChromeArguments')).items():
+                pref_value = '={}'.format(pref_value) if pref_value else ''
+                self.logger.debug("Added chrome argument: {0}{1}".format(pref, pref_value))
+                options.add_argument('{}{}'.format(pref, self._convert_property_type(pref_value)))
+        except NoSectionError:
+            pass
+
         return options
 
     def _setup_safari(self, capabilities):
@@ -326,7 +340,7 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Opera driver
         """
-        opera_driver = self.config.get('Browser', 'operadriver_path')
+        opera_driver = self.config.get('Driver', 'opera_driver_path')
         self.logger.debug("Opera driver path given in properties: {0}".format(opera_driver))
         return webdriver.Opera(executable_path=opera_driver, desired_capabilities=capabilities)
 
@@ -336,7 +350,7 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Internet Explorer driver
         """
-        explorer_driver = self.config.get('Browser', 'explorerdriver_path')
+        explorer_driver = self.config.get('Driver', 'explorer_driver_path')
         self.logger.debug("Explorer driver path given in properties: {0}".format(explorer_driver))
         return webdriver.Ie(explorer_driver, capabilities=capabilities)
 
@@ -346,7 +360,7 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Edge driver
         """
-        edge_driver = self.config.get('Browser', 'edgedriver_path')
+        edge_driver = self.config.get('Driver', 'edge_driver_path')
         self.logger.debug("Edge driver path given in properties: {0}".format(edge_driver))
         return webdriver.Edge(edge_driver, capabilities=capabilities)
 
@@ -356,16 +370,15 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local phantomjs driver
         """
-        phantom_driver = self.config.get('Browser', 'phantomdriver_path')
-        self.logger.debug("Phantom driver path given in properties: {0}".format(phantom_driver))
-        return webdriver.PhantomJS(executable_path=phantom_driver, desired_capabilities=capabilities)
+        phantomjs_driver = self.config.get('Driver', 'phantomjs_driver_path')
+        self.logger.debug("Phantom driver path given in properties: {0}".format(phantomjs_driver))
+        return webdriver.PhantomJS(executable_path=phantomjs_driver, desired_capabilities=capabilities)
 
-    def _setup_appium(self, capabilities):
+    def _setup_appium(self):
         """Setup Appium webdriver
 
-        :param capabilities: capabilities object (not used)
         :returns: a new remote Appium driver
         """
         self.config.set('Server', 'host', '127.0.0.1')
         self.config.set('Server', 'port', '4723')
-        return self._create_remotedriver()
+        return self._create_remote_driver()

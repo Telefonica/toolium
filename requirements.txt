@@ -1,4 +1,4 @@
-requests==2.9.1             # api tests
-selenium==2.53.1            # web tests
-Appium-Python-Client==0.22  # mobile tests
-six==1.10.0
+requests>=2.9.1             # api tests
+selenium>=2.53.1            # web tests
+Appium-Python-Client>=0.22  # mobile tests
+six>=1.10.0
