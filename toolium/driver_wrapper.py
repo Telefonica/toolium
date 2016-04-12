@@ -190,7 +190,7 @@ class DriverWrapper(object):
         self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.remote_node)
 
         # Save app_strings in mobile tests
-        if self.is_mobile_test() and not self.is_web_test() and self.config.getboolean_optional('Common',
+        if self.is_mobile_test() and not self.is_web_test() and self.config.getboolean_optional('Driver',
                                                                                                 'appium_app_strings'):
             self.app_strings = self.driver.app_strings()
 
