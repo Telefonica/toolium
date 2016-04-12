@@ -60,7 +60,7 @@ def bdd_common_before_scenario(context_or_world, scenario):
     save_jira_conf()
 
     # Add implicitly wait
-    implicitly_wait = context_or_world.toolium_config.get_optional('Common', 'implicitly_wait')
+    implicitly_wait = context_or_world.toolium_config.get_optional('Driver', 'implicitly_wait')
     if context_or_world.driver and implicitly_wait:
         context_or_world.driver.implicitly_wait(implicitly_wait)
 
@@ -162,7 +162,7 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
     context_or_world.utils.save_all_webdriver_logs(scenario.name)
 
     # Close browser and stop driver if it must not be reused
-    reuse_driver = context_or_world.toolium_config.getboolean_optional('Common', 'reuse_driver')
+    reuse_driver = context_or_world.toolium_config.getboolean_optional('Driver', 'reuse_driver')
     DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, status == 'passed', reuse_driver)
 
     # Save test status to be updated later

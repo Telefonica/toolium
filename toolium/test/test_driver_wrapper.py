@@ -65,14 +65,14 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
         os.environ["Config_prop_filenames"] = 'properties.cfg'
         self.driver_wrapper.configure_properties()
         assert_equal('firefox', self.driver_wrapper.config.get('Driver', 'type'))  # get last value
-        assert_equal('5', self.driver_wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
+        assert_equal('5', self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait'))  # only in properties
         assert_equal(None, self.driver_wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
     def test_configure_properties_android(self):
         os.environ["Config_prop_filenames"] = 'android-properties.cfg'
         self.driver_wrapper.configure_properties()
         assert_equal('android', self.driver_wrapper.config.get('Driver', 'type'))  # get last value
-        assert_equal(None, self.driver_wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
+        assert_equal(None, self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait'))  # only in properties
         assert_equal('http://invented_url/Demo.apk',
                      self.driver_wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
@@ -80,7 +80,7 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
         os.environ["Config_prop_filenames"] = 'properties.cfg;android-properties.cfg'
         self.driver_wrapper.configure_properties()
         assert_equal('android', self.driver_wrapper.config.get('Driver', 'type'))  # get last value
-        assert_equal('5', self.driver_wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
+        assert_equal('5', self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait'))  # only in properties
         assert_equal('http://invented_url/Demo.apk',
                      self.driver_wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
@@ -88,7 +88,7 @@ class DriverWrapperPropertiesTests(DriverWrapperCommon):
         os.environ["Config_prop_filenames"] = 'android-properties.cfg;properties.cfg'
         self.driver_wrapper.configure_properties()
         assert_equal('firefox', self.driver_wrapper.config.get('Driver', 'type'))  # get last value
-        assert_equal('5', self.driver_wrapper.config.get_optional('Common', 'implicitly_wait'))  # only in properties
+        assert_equal('5', self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait'))  # only in properties
         assert_equal('http://invented_url/Demo.apk',
                      self.driver_wrapper.config.get_optional('AppiumCapabilities', 'app'))  # only in android
 
