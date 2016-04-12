@@ -49,7 +49,7 @@ class Utils(object):
 
     def set_implicit_wait(self):
         """Read timeout from configuration properties and set the implicit wait"""
-        implicitly_wait = self.driver_wrapper.config.get_optional('Common', 'implicitly_wait')
+        implicitly_wait = self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait')
         if implicitly_wait:
             self.driver_wrapper.driver.implicitly_wait(implicitly_wait)
 
