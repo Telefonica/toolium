@@ -4,7 +4,7 @@ Toolium Changelog
 v1.0.0
 ------
 
-*In development*
+*Release date: 2016-04-12*
 
 - Refactor to rename assertScreenshot to assert_screenshot and assertFullScreenshot to assert_full_screenshot
 - Refactor to move config property 'browser' in [Browser] section to 'type' property in [Driver] section

@@ -38,7 +38,6 @@ class JiraTests(unittest.TestCase):
     def tearDown(self):
         self.logger_patch.stop()
 
-    def tearDown(self):
         # Clear jira module configuration
         jira.enabled = None
         jira.execution_url = None
