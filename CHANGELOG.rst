@@ -7,6 +7,7 @@ v1.0.0
 *Release date: 2016-04-12*
 
 DRIVER
+
 - Refactor to move config property 'browser' in [Browser] section to 'type' property in [Driver] section
 - Allow to run API tests with behave: driver type property must be empty
 - Refactor to rename 'driver_path' config properties to 'chrome_driver_path', 'explorer_driver_path',
@@ -16,19 +17,26 @@ DRIVER
 - Add new config properties 'window_width' and 'window_height' in [Driver] section to configure browser window size
 - Upload the error screenshot to Jira if the test fails
 - Allow to add extensions to firefox profile from properties file
+
    New config section [FirefoxExtensions] with extensions file paths, e.g. 'firebug = firebug-3.0.0-beta.3.xpi'
+
 - Allow to use a predefined firefox profile
+
    New config property 'profile' in [Firefox] section to configure the profile directory
+
 - Allow to set chrome arguments from properties file
-   | New config section [ChromeArguments] with chrome arguments, e.g. 'lang = es'
+
+   New config section [ChromeArguments] with chrome arguments, e.g. 'lang = es'
 
 PAGE OBJECTS
+
 - Save WebElement in PageElement to avoid searching the same element multiple times
 - Refactor to rename get_element to get_web_element in Utils class and element to web_element in PageElement class
 - Add *wait_until_first_element_is_found* method to Utils class to search a list of elements and wait until one of them
   is found
 
 BEHAVE
+
 - Allow to modify Toolium properties from behave userdata configuration, e.g.:
 
 .. code:: console
@@ -36,6 +44,7 @@ BEHAVE
     $ behave -D Driver_type=chrome
 
 VISUAL TESTING
+
 - Refactor to rename assertScreenshot to assert_screenshot and assertFullScreenshot to assert_full_screenshot
 - Add force parameter to *assert_screenshot* methods to compare the screenshot even if visual testing is disabled by
   configuration. If the assertion fails, the test fails.
@@ -77,8 +86,10 @@ v0.11.3
 
 - Fix image size in visual testing for Android and iOS web tests
 - Baseline name property allows any configuration property value to configure the visual testing baseline folder, e.g.:
+
    | {AppiumCapabilities_deviceName}-{AppiumCapabilities_platformVersion}: this baseline_name could use baselines as iPhone_6-8.3, iPhone_6-9.1, iPhone_6s-9.1, ...
    | {Browser_browser}: this baseline_name could use baselines as firefox, iexplore, ... (default value)
+
 - Fix page elements initialization when they are defined outside of a page object
 
 v0.11.2
@@ -121,10 +132,14 @@ v0.10.0
   init_page_elements()
 - Add wait_until_visible, wait_until_not_visible and assertScreenshot methods to PageElement
 - Allow to set Chrome mobile options from properties file
+
    New config section [ChromeMobileEmulation] with mobile emulation options, e.g. 'deviceName = Google Nexus 5'
+
 - Configuration system properties has been renamed
+
    | Old properties: Files_output_path, Files_log_filename, Files_properties, Files_logging
    | New properties: Output_directory, Output_log_filename, Config_directory, Config_prop_filenames, Config_log_filename
+
 - Add set_config_* and set_output_* test case methods to configure output and config files instead of using
   configuration system properties
 
@@ -134,7 +149,9 @@ v0.9.3
 *Release date: 2015-07-24*
 
 - Allow to set custom driver capabilities from properties file
+
    New config section [Capabilities] with driver capabilities
+
 - Fix set_value and app_strings errors in mobile web tests
 - Fix set_value error in iOS tests when using needle
 
@@ -165,13 +182,19 @@ v0.9.0
 - Update app_strings in Appium tests only if the driver has changed
 - Move visual properties from [Server] section to [VisualTests] section
 - With a visual assertion error, the test can fail or give an error message and continue
+
    New config property 'fail' in [VisualTests] section to fail the test when there is a visual error
+
 - Create a html report with the visual tests results
+
    New config property 'complete_report' in [VisualTests] section to include also correct visual assertions in report
+
 - Configure multiple baseline name for different browsers, languages and versions
+
    | New config property 'baseline_name' in [VisualTests] section to configure the name of the baseline folder
    | Allow {browser}, {language} and {platformVersion} variables, e.g. baseline_name = {browser}-{language}
    | The default baseline_name is {browser}.
+
 - Add assertFullScreenshot method in SeleniumTestCase
 
 v0.8.6
@@ -196,6 +219,7 @@ v0.8.4
 *Release date: 2015-03-05*
 
 - Allow to set firefox and chrome preferences from properties file
+
    | New config section [FirefoxPreferences] with firefox preferences, e.g. 'browser.download.dir = /tmp'
    | New config section [ChromePreferences] with chrome preferences, e.g. 'download.default_directory = /tmp'
 
@@ -212,6 +236,7 @@ v0.8.2
 *Release date: 2015-02-04*
 
 - Logging and properties config files can be specified with a system property: *Files_logging* and *Files_properties*
+
    *Files_properties* allows multiple files separated by ;
 
 v0.8.1
@@ -228,6 +253,7 @@ v0.8
 *Release date: 2015-01-20*
 
 - Add visual testing to SeleniumTestCase and AppiumTestCase
+
    | New config property 'visualtests_enabled' in [Server] section to enable visual testing
    | New config property 'visualtests_save' in [Server] section to overwrite baseline images with actual screenshots
    | New config property 'visualtests_engine' in [Server] section to select image engine (pil or perceptualdiff)
