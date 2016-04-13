@@ -19,14 +19,13 @@ limitations under the License.
 import unittest
 
 import mock
-from nose.tools import assert_equal, assert_is_instance, assert_is, assert_is_not_none, assert_is_none, assert_list_equal
+from nose.tools import assert_equal, assert_is_instance, assert_is
 from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.pageelements import *
+from toolium.pageelements import PageElement, PageElements
 from toolium.pageobjects.page_object import PageObject
-
 
 child_elements = ['child_element_1', 'child_element_2']
 other_child_elements = ['child_element_3', 'child_element_4']

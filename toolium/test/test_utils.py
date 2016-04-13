@@ -231,8 +231,8 @@ class UtilsTests(unittest.TestCase):
         # Configure driver mock
         web_window_size = {'width': 500, 'height': 667}
         native_window_size = {'width': 250, 'height': 450}
-        self.driver_wrapper.driver.current_context = 'NATIVE_APP'
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
+        self.driver_wrapper.driver.current_context = 'NATIVE_APP'
         self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
@@ -258,21 +258,6 @@ class UtilsTests(unittest.TestCase):
 
         self.utils.swipe(element, 50, 100)
         self.driver_wrapper.driver.swipe.assert_called_with(200, 30, 250, 130, None)
-
-    def test_swipe_android_native(self):
-        # Configure driver mock
-        web_window_size = {'width': 500, 'height': 667}
-        native_window_size = {'width': 250, 'height': 450}
-        self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
-        self.driver_wrapper.driver.current_context = 'NATIVE_APP'
-        self.driver_wrapper.config.set('Driver', 'type', 'android')
-        self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
-
-        # Create element mock
-        element = get_mock_element(x=250, y=40, height=40, width=300)
-
-        self.utils.swipe(element, 50, 100)
-        self.driver_wrapper.driver.swipe.assert_called_with(400, 60, 450, 160, None)
 
     def test_swipe_android_hybrid(self):
         # Configure driver mock

@@ -123,17 +123,8 @@ class ConfigDriver(object):
         self._add_capabilities_from_properties(capabilities)
 
         if driver_name in ('android', 'ios', 'iphone'):
-            # Add Appium server capabilities
-            for cap, cap_value in dict(self.config.items('AppiumCapabilities')).items():
-                self.logger.debug("Added Appium server capability: {0} = {1}".format(cap, cap_value))
-                if cap in number_appium_capabilities:
-                    capabilities[cap] = int(cap_value)
-                elif cap in boolean_appium_capabilities:
-                    capabilities[cap] = cap_value == 'true'
-                else:
-                    capabilities[cap] = cap_value
-
             # Create remote appium driver
+            self._add_appium_capabilities_from_properties(capabilities)
             return appiumdriver.Remote(command_executor=server_url, desired_capabilities=capabilities)
         else:
             # Create remote web driver
@@ -211,6 +202,20 @@ class ConfigDriver(object):
                 capabilities[cap] = cap_value
         except NoSectionError:
             pass
+
+    def _add_appium_capabilities_from_properties(self, capabilities):
+        """Add Appium capabilities from properties file
+
+        :param capabilities: capabilities object
+        """
+        for cap, cap_value in dict(self.config.items('AppiumCapabilities')).items():
+            self.logger.debug("Added Appium server capability: {0} = {1}".format(cap, cap_value))
+            if cap in number_appium_capabilities:
+                capabilities[cap] = int(cap_value)
+            elif cap in boolean_appium_capabilities:
+                capabilities[cap] = cap_value == 'true'
+            else:
+                capabilities[cap] = cap_value
 
     def _setup_firefox(self, capabilities):
         """Setup Firefox webdriver
@@ -293,29 +298,36 @@ class ConfigDriver(object):
         # Create Chrome options
         options = webdriver.ChromeOptions()
 
-        # Add Chrome preferences
-        prefs = dict()
+        # Add Chrome preferences, mobile emulation options and chrome arguments
+        self._add_chrome_options(options, 'prefs')
+        self._add_chrome_options(options, 'mobileEmulation')
+        self._add_chrome_arguments(options)
+
+        return options
+
+    def _add_chrome_options(self, options, option_name):
+        """Add Chrome options from properties file
+
+        :param options: chrome options object
+        :param option_name: chrome option name
+        """
+        options_conf = {'prefs': {'section': 'ChromePreferences', 'message': 'preference'},
+                        'mobileEmulation': {'section': 'ChromeMobileEmulation', 'message': 'mobile emulation option'}}
+        option_value = dict()
         try:
-            for pref, pref_value in dict(self.config.items('ChromePreferences')).items():
-                self.logger.debug("Added chrome preference: {0} = {1}".format(pref, pref_value))
-                prefs[pref] = self._convert_property_type(pref_value)
-            if len(prefs) > 0:
-                options.add_experimental_option("prefs", prefs)
+            for key, value in dict(self.config.items(options_conf[option_name]['section'])).items():
+                self.logger.debug("Added chrome {}: {} = {}".format(options_conf[option_name]['message'], key, value))
+                option_value[key] = self._convert_property_type(value)
+            if len(option_value) > 0:
+                options.add_experimental_option(option_name, option_value)
         except NoSectionError:
             pass
 
-        # Add Chrome mobile emulation options
-        prefs = dict()
-        try:
-            for pref, pref_value in dict(self.config.items('ChromeMobileEmulation')).items():
-                self.logger.debug("Added chrome mobile emulation option: {0} = {1}".format(pref, pref_value))
-                prefs[pref] = self._convert_property_type(pref_value)
-            if len(prefs) > 0:
-                options.add_experimental_option("mobileEmulation", prefs)
-        except NoSectionError:
-            pass
+    def _add_chrome_arguments(self, options):
+        """Add Chrome arguments from properties file
 
-        # Add Chrome arguments
+        :param options: chrome options object
+        """
         try:
             for pref, pref_value in dict(self.config.items('ChromeArguments')).items():
                 pref_value = '={}'.format(pref_value) if pref_value else ''
@@ -323,8 +335,6 @@ class ConfigDriver(object):
                 options.add_argument('{}{}'.format(pref, self._convert_property_type(pref_value)))
         except NoSectionError:
             pass
-
-        return options
 
     def _setup_safari(self, capabilities):
         """Setup Safari webdriver

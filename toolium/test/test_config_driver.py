@@ -408,7 +408,7 @@ class ConfigDriverTests(unittest.TestCase):
         webdriver_mock.FirefoxProfile().add_extension.assert_called_with('resources/firebug-3.0.0-beta.3.xpi')
 
     @mock.patch('toolium.config_driver.webdriver')
-    def test_create_chrome_oprions(self, webdriver_mock):
+    def test_create_chrome_options(self, webdriver_mock):
         self.config.add_section('ChromePreferences')
         self.config.set('ChromePreferences', 'download.default_directory', '/tmp')
         self.config.add_section('ChromeMobileEmulation')

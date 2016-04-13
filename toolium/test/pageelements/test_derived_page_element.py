@@ -24,7 +24,7 @@ from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.pageelements import *
+from toolium.pageelements import PageElement, Text, InputText, Button, Select, Group
 from toolium.pageelements import select_page_element
 from toolium.pageobjects.page_object import PageObject
 

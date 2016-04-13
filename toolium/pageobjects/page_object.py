@@ -32,7 +32,8 @@ class PageObject(CommonObject):
         :param driver_wrapper: driver wrapper instance
         """
         super(PageObject, self).__init__()
-        self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
+        self.driver_wrapper = driver_wrapper if driver_wrapper else \
+            DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self.app_strings = None  #: mobile application strings
         self.init_page_elements()
         self._update_page_elements()
@@ -59,8 +60,8 @@ class PageObject(CommonObject):
         from toolium.pageelements.page_elements import PageElements
         page_elements = []
         for attribute, value in list(self.__dict__.items()) + list(self.__class__.__dict__.items()):
-            if attribute != 'parent' and (isinstance(value, PageElement) or isinstance(value, PageElements)
-                                          or isinstance(value, PageObject)):
+            if attribute != 'parent' and (
+                    isinstance(value, PageElement) or isinstance(value, PageElements) or isinstance(value, PageObject)):
                 page_elements.append(value)
         return page_elements
 

@@ -38,7 +38,8 @@ class Group(PageObject, PageElement):
         self.logger = logging.getLogger(__name__)  #: logger instance
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
-        self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
+        self.driver_wrapper = driver_wrapper if driver_wrapper else \
+            DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self._web_element = None
         self.init_page_elements()
         self._update_page_elements(parent=self)
