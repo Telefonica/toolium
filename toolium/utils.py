@@ -29,7 +29,7 @@ from io import open
 
 import requests
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
@@ -124,7 +124,8 @@ class Utils(object):
         :returns: the element if it is visible
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
-        return WebDriverWait(self.driver_wrapper.driver, timeout).until(EC.visibility_of_element_located(locator))
+        return WebDriverWait(self.driver_wrapper.driver, timeout).until(
+            expected_conditions.visibility_of_element_located(locator))
 
     def wait_until_element_not_visible(self, locator, timeout=10):
         """Search element by locator and wait until it is not visible
@@ -137,7 +138,8 @@ class Utils(object):
         # Remove implicit wait
         self.driver_wrapper.driver.implicitly_wait(0)
         # Wait for invisibility
-        element = WebDriverWait(self.driver_wrapper.driver, timeout).until(EC.invisibility_of_element_located(locator))
+        element = WebDriverWait(self.driver_wrapper.driver, timeout).until(
+            expected_conditions.invisibility_of_element_located(locator))
         # Restore implicit wait from properties
         self.set_implicit_wait()
         return element

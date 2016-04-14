@@ -19,9 +19,9 @@ limitations under the License.
 import unittest
 
 import mock
-import six
 from nose.tools import assert_equal, assert_is_not_none, assert_is_none
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -30,13 +30,6 @@ from toolium.pageobjects.page_object import PageObject
 
 child_element = 'child_element'
 mock_element = None
-
-
-@mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
-def get_mock_element(WebElement):
-    web_element = WebElement.return_value
-    web_element.find_element.return_value = child_element
-    return web_element
 
 
 class RegisterPageObject(PageObject):
@@ -53,7 +46,8 @@ class TestPageElement(unittest.TestCase):
     def setUp(self):
         """Create a new mock element and a new driver before each test"""
         global mock_element
-        mock_element = get_mock_element()
+        mock_element = mock.MagicMock(spec=WebElement)
+        mock_element.find_element.return_value = child_element
 
         # Reset wrappers pool values
         DriverWrappersPool._empty_pool()
@@ -72,40 +66,40 @@ class TestPageElement(unittest.TestCase):
     def test_get_web_element(self):
         RegisterPageObject().username.web_element
 
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.XPATH, '//input[0]')])
+        self.driver_wrapper.driver.find_element.assert_called_with(By.XPATH, '//input[0]')
 
     def test_get_web_element_init_page(self):
         RegisterPageObject().language.web_element
 
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.ID, 'language')])
+        self.driver_wrapper.driver.find_element.assert_called_with(By.ID, 'language')
 
     def test_get_web_element_with_parent(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
         web_element = RegisterPageObject().password.web_element
 
         assert_equal(web_element, child_element)
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.XPATH, '//input[0]')])
-        assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'password')])
+        self.driver_wrapper.driver.find_element.assert_called_with(By.XPATH, '//input[0]')
+        mock_element.find_element.assert_called_with(By.ID, 'password')
 
     def test_get_web_element_with_parent_locator(self):
         self.driver_wrapper.driver.find_element.return_value = mock_element
         web_element = RegisterPageObject().address.web_element
 
         assert_equal(web_element, child_element)
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.ID, 'parent')])
-        assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'address')])
+        self.driver_wrapper.driver.find_element.assert_called_with(By.ID, 'parent')
+        mock_element.find_element.assert_called_with(By.ID, 'address')
 
     def test_get_web_element_with_parent_web_element(self):
         web_element = RegisterPageObject().email.web_element
 
         assert_equal(web_element, child_element)
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [])
-        assert_equal(mock_element.find_element.mock_calls, [mock.call(By.ID, 'email')])
+        self.driver_wrapper.driver.find_element.assert_not_called()
+        mock_element.find_element.assert_called_with(By.ID, 'email')
 
     def test_get_web_element_in_test(self):
         PageElement(By.XPATH, '//input[0]').web_element
 
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.XPATH, '//input[0]')])
+        self.driver_wrapper.driver.find_element.assert_called_with(By.XPATH, '//input[0]')
 
     def test_get_web_element_two_times(self):
         login_page = RegisterPageObject()
@@ -113,12 +107,7 @@ class TestPageElement(unittest.TestCase):
         login_page.username.web_element
 
         # Check that find_element is not called the second time
-        if six.PY2:
-            second_call = mock.call().__nonzero__()
-        else:
-            second_call = mock.call().__bool__()
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls,
-                     [mock.call(By.XPATH, '//input[0]'), second_call])
+        self.driver_wrapper.driver.find_element.assert_called_with(By.XPATH, '//input[0]')
 
     def test_get_web_element_two_elements(self):
         login_page = RegisterPageObject()
@@ -126,8 +115,8 @@ class TestPageElement(unittest.TestCase):
         login_page.language.web_element
 
         # Check that find_element is called two times
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls,
-                     [mock.call(By.XPATH, '//input[0]'), mock.call(By.ID, 'language')])
+        self.driver_wrapper.driver.find_element.assert_has_calls(
+            [mock.call(By.XPATH, '//input[0]'), mock.call(By.ID, 'language')])
 
     def test_get_web_element_two_objects(self):
         login_page = RegisterPageObject()
@@ -136,8 +125,8 @@ class TestPageElement(unittest.TestCase):
         second_login_page.language.web_element
 
         # Check that find_element is called two times
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls,
-                     [mock.call(By.ID, 'language'), mock.call(By.ID, 'language')])
+        self.driver_wrapper.driver.find_element.assert_has_calls(
+            [mock.call(By.ID, 'language'), mock.call(By.ID, 'language')])
 
     def test_reset_object(self):
         login_page = RegisterPageObject()

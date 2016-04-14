@@ -35,6 +35,7 @@ from toolium.visual_test import VisualTest
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.driver_wrapper import DriverWrapper
+from toolium.test.test_utils import get_mock_element
 
 
 class VisualTests(unittest.TestCase):
@@ -150,7 +151,9 @@ class VisualTests(unittest.TestCase):
             self.visual.compare_files(self._testMethodName, self.file_v1, self.file_small, 0)
 
     def test_get_html_row(self):
-        expected_row = '<tr class=diff><td>test_get_html_row</td><td><img style="width: 100%" onclick="launchModal\(this.src\)" src=".*register_v2.png"/></td></td><td><img style="width: 100%" onclick="launchModal\(this.src\)" src=".*register.png"/></td></td><td></td></tr>'
+        expected_row = '<tr class=diff><td>test_get_html_row</td><td><img style="width: 100%" onclick=' \
+                       '"launchModal\(this.src\)" src=".*register_v2.png"/></td></td><td><img style="width: 100%" ' \
+                       'onclick="launchModal\(this.src\)" src=".*register.png"/></td></td><td></td></tr>'
         row = self.visual._get_html_row('diff', self._testMethodName, self.file_v1, self.file_v2)
         assertRegex(self, row, expected_row)
 
@@ -420,11 +423,3 @@ class VisualTests(unittest.TestCase):
     def test_assert_screenshot_greater_threshold(self):
         with assert_raises(TypeError):
             self.visual.assert_screenshot(None, 'screenshot_full', threshold=2)
-
-
-@mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
-def get_mock_element(WebElement, x, y, height, width):
-    web_element = WebElement.return_value
-    web_element.location = {'x': x, 'y': y}
-    web_element.size = {'height': height, 'width': width}
-    return web_element

@@ -189,9 +189,9 @@ class ConfigDriverTests(unittest.TestCase):
         config_driver = ConfigDriver(self.config)
 
         # Firefox profile mock
-        profile_mock = lambda: None  # Create an empty object
-        setattr(profile_mock, 'encoded', 'encoded profile')
-        config_driver._create_firefox_profile = mock.MagicMock(return_value=profile_mock)
+        class ProfileMock(object):
+            encoded = 'encoded profile'
+        config_driver._create_firefox_profile = mock.MagicMock(return_value=ProfileMock())
 
         config_driver._create_remote_driver()
         capabilities = DesiredCapabilities.FIREFOX

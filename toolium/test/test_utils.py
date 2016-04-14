@@ -42,6 +42,21 @@ navigation_bar_tests = (
 )
 
 
+def get_mock_element(x, y, height, width):
+    """Create a mock element with custom location and size
+
+    :param x: x location
+    :param y: y location
+    :param height: element height
+    :param width: element width
+    :returns: mock element
+    """
+    mock_element = mock.MagicMock(spec=WebElement)
+    mock_element.location = {'x': x, 'y': y}
+    mock_element.size = {'height': height, 'width': width}
+    return mock_element
+
+
 @ddt
 class UtilsTests(unittest.TestCase):
     def setUp(self):
@@ -328,11 +343,3 @@ class UtilsTests(unittest.TestCase):
     def test_get_web_element_from_unknown(self):
         web_element = self.utils.get_web_element(dict())
         assert_is_none(web_element)
-
-
-@mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
-def get_mock_element(WebElement, x, y, height, width):
-    web_element = WebElement.return_value
-    web_element.location = {'x': x, 'y': y}
-    web_element.size = {'height': height, 'width': width}
-    return web_element
