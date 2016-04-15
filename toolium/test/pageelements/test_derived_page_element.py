@@ -21,24 +21,15 @@ import unittest
 import mock
 from nose.tools import assert_equal
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.pageelements import *
+from toolium.pageelements import PageElement, Text, InputText, Button, Select, Group
 from toolium.pageelements import select_page_element
 from toolium.pageobjects.page_object import PageObject
 
 child_element = 'child_element'
-mock_element = None
-
-
-@mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
-def get_mock_element(WebElement):
-    web_element = WebElement.return_value
-    web_element.find_element.return_value = child_element
-    web_element.text = 'text value'
-    web_element.get_attribute.return_value = 'input text value'
-    return web_element
 
 
 def get_mock_select():
@@ -71,8 +62,11 @@ class LoginPageObject(PageObject):
 class TestDerivedPageElement(unittest.TestCase):
     def setUp(self):
         """Create a new mock element and a new driver before each test"""
-        global mock_element
-        mock_element = get_mock_element()
+        # Create a mock element
+        self.mock_element = mock.MagicMock(spec=WebElement)
+        self.mock_element.find_element.return_value = child_element
+        self.mock_element.text = 'text value'
+        self.mock_element.get_attribute.return_value = 'input text value'
 
         # Reset wrappers pool values
         DriverWrappersPool._empty_pool()
@@ -97,14 +91,14 @@ class TestDerivedPageElement(unittest.TestCase):
         assert_equal(page_object.menu.logo.parent, page_object.menu)
 
     def test_get_text(self):
-        self.driver_wrapper.driver.find_element.return_value = mock_element
+        self.driver_wrapper.driver.find_element.return_value = self.mock_element
 
         title_value = LoginPageObject().title.text
 
         assert_equal(title_value, 'text value')
 
     def test_get_input_text(self):
-        self.driver_wrapper.driver.find_element.return_value = mock_element
+        self.driver_wrapper.driver.find_element.return_value = self.mock_element
 
         username_value = LoginPageObject().username.text
 
@@ -112,12 +106,12 @@ class TestDerivedPageElement(unittest.TestCase):
 
     def test_set_input_text(self):
         # Configure driver mock
-        self.driver_wrapper.driver.find_element.return_value = mock_element
+        self.driver_wrapper.driver.find_element.return_value = self.mock_element
         self.driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
 
         LoginPageObject().username.text = 'new input value'
 
-        assert_equal(mock_element.send_keys.mock_calls, [mock.call('new input value')])
+        self.mock_element.send_keys.assert_called_once_with('new input value')
 
     def test_get_selected_option(self):
         select_page_element.SeleniumSelect = get_mock_select()
@@ -127,16 +121,16 @@ class TestDerivedPageElement(unittest.TestCase):
         assert_equal(option, 'option value')
 
     def test_set_option(self):
+        self.driver_wrapper.driver.find_element.return_value = self.mock_element
         select_page_element.SeleniumSelect = get_mock_select()
 
         LoginPageObject().language.option = 'new option value'
 
-        assert_equal(len(select_page_element.SeleniumSelect.mock_calls), 1)
-        assert_equal(select_page_element.SeleniumSelect().mock_calls,
-                     [mock.call.select_by_visible_text('new option value')])
+        select_page_element.SeleniumSelect.assert_called_once_with(self.mock_element)
+        select_page_element.SeleniumSelect().select_by_visible_text.assert_called_once_with('new option value')
 
     def test_click_button(self):
-        self.driver_wrapper.driver.find_element.return_value = mock_element
+        self.driver_wrapper.driver.find_element.return_value = self.mock_element
         LoginPageObject().login.click()
 
-        assert_equal(mock_element.click.mock_calls, [mock.call()])
+        self.mock_element.click.assert_called_once_with()

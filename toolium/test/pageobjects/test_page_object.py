@@ -21,6 +21,7 @@ import unittest
 import mock
 from nose.tools import assert_equal, assert_is_not_none, assert_is_none
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -29,13 +30,6 @@ from toolium.pageobjects.page_object import PageObject
 
 child_element = 'child_element'
 mock_element = None
-
-
-@mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
-def get_mock_element(WebElement):
-    web_element = WebElement.return_value
-    web_element.find_element.return_value = child_element
-    return web_element
 
 
 class MenuPageObject(PageObject):
@@ -66,7 +60,8 @@ class TestPageObject(unittest.TestCase):
     def setUp(self):
         """Create a new mock element and a new driver before each test"""
         global mock_element
-        mock_element = get_mock_element()
+        mock_element = mock.MagicMock(spec=WebElement)
+        mock_element.find_element.return_value = child_element
 
         # Reset wrappers pool values
         DriverWrappersPool._empty_pool()

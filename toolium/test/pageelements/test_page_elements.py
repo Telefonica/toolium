@@ -19,25 +19,17 @@ limitations under the License.
 import unittest
 
 import mock
-from nose.tools import assert_equal, assert_is_instance, assert_is, assert_is_not_none, assert_is_none, assert_list_equal
+from nose.tools import assert_equal, assert_is_instance, assert_is
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.pageelements import *
+from toolium.pageelements import PageElement, PageElements
 from toolium.pageobjects.page_object import PageObject
-
 
 child_elements = ['child_element_1', 'child_element_2']
 other_child_elements = ['child_element_3', 'child_element_4']
-mock_element = None
-
-
-@mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
-def get_mock_element(WebElement):
-    web_element = WebElement.return_value
-    web_element.find_elements.return_value = child_elements
-    return web_element
 
 
 class LoginPageObject(PageObject):
@@ -49,8 +41,9 @@ class LoginPageObject(PageObject):
 class TestPageElements(unittest.TestCase):
     def setUp(self):
         """Create a new mock element and a new driver before each test"""
-        global mock_element
-        mock_element = get_mock_element()
+        # Create a mock element
+        self.mock_element = mock.MagicMock(spec=WebElement)
+        self.mock_element.find_elements.return_value = child_elements
 
         # Reset wrappers pool values
         DriverWrappersPool._empty_pool()
@@ -63,23 +56,23 @@ class TestPageElements(unittest.TestCase):
     def test_get_web_elements(self):
         LoginPageObject().inputs.web_elements
 
-        assert_equal(self.driver_wrapper.driver.find_elements.mock_calls, [mock.call(By.XPATH, '//input')])
+        self.driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
 
     def test_get_web_elements_with_parent_locator(self):
-        self.driver_wrapper.driver.find_element.return_value = mock_element
+        self.driver_wrapper.driver.find_element.return_value = self.mock_element
         web_elements = LoginPageObject().inputs_parent.web_elements
 
         assert_equal(web_elements, child_elements)
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [mock.call(By.ID, 'parent')])
-        assert_equal(mock_element.find_elements.mock_calls, [mock.call(By.XPATH, '//input')])
+        self.driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'parent')
+        self.mock_element.find_elements.assert_called_once_with(By.XPATH, '//input')
 
     def test_get_page_elements(self):
         self.driver_wrapper.driver.find_elements.return_value = child_elements
         page_elements = LoginPageObject().inputs.page_elements
 
         # Check that find_elements has been called just one time
-        assert_equal(self.driver_wrapper.driver.find_elements.mock_calls, [mock.call(By.XPATH, '//input')])
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [])
+        self.driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
+        self.driver_wrapper.driver.find_element.assert_not_called()
 
         # Check that the response is a list of 2 PageElement with the expected web element
         assert_equal(len(page_elements), 2)
@@ -95,8 +88,8 @@ class TestPageElements(unittest.TestCase):
         web_elements = inputs.web_elements
 
         # Check that find_elements has been called just one time
-        assert_equal(self.driver_wrapper.driver.find_elements.mock_calls, [mock.call(By.XPATH, '//input')])
-        assert_equal(self.driver_wrapper.driver.find_element.mock_calls, [])
+        self.driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
+        self.driver_wrapper.driver.find_element.assert_not_called()
 
         # Check that the response is a list of 2 PageElement with the expected web element
         assert_equal(len(page_elements), 2)

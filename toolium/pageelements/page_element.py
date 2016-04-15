@@ -108,7 +108,8 @@ class PageElement(CommonObject):
         :returns: page element instance
         """
         try:
-            self._web_element = self.utils.wait_until_element_not_visible(self.locator, timeout)
+            web_element = self.utils.wait_until_element_not_visible(self.locator, timeout)
+            self._web_element = web_element if web_element else None
         except TimeoutException as exception:
             msg = "Page element of type '{}' with locator {} is still visible after {} seconds".format(
                 type(self).__name__, self.locator, timeout)

@@ -26,16 +26,6 @@ from appium import webdriver as appiumdriver
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-number_appium_capabilities = ['newCommandTimeout', 'deviceReadyTimeout', 'androidDeviceReadyTimeout', 'adbPort',
-                              'avdLaunchTimeout', 'avdReadyTimeout', 'autoWebviewTimeout', 'interKeyDelay',
-                              'screenshotWaitTimeout', 'webviewConnectRetries']
-boolean_appium_capabilities = ['autoLaunch', 'autoWebview', 'noReset', 'fullReset', 'useKeystore', 'dontStopAppOnReset',
-                               'unicodeKeyboard', 'resetKeyboard', 'noSign', 'autoLaunch', 'enablePerformanceLogging',
-                               'ignoreUnimportantViews', 'disableAndroidWatchers', 'acceptSslCerts',
-                               'locationServicesEnabled', 'locationServicesAuthorized', 'autoAcceptAlerts',
-                               'autoDismissAlerts', 'nativeInstrumentsLib', 'nativeWebTap', 'safariAllowPopups',
-                               'safariIgnoreFraudWarning', 'safariOpenLinksInBackground', 'keepKeyChains', 'showIOSLog']
-
 
 def get_error_message_from_exception(exception):
     """Extract first line of exception message
@@ -120,20 +110,11 @@ class ConfigDriver(object):
             capabilities['chromeOptions'] = self._create_chrome_options().to_capabilities()["chromeOptions"]
 
         # Add custom driver capabilities
-        self._add_capabilities_from_properties(capabilities)
+        self._add_capabilities_from_properties(capabilities, 'Capabilities')
 
         if driver_name in ('android', 'ios', 'iphone'):
-            # Add Appium server capabilities
-            for cap, cap_value in dict(self.config.items('AppiumCapabilities')).items():
-                self.logger.debug("Added Appium server capability: {0} = {1}".format(cap, cap_value))
-                if cap in number_appium_capabilities:
-                    capabilities[cap] = int(cap_value)
-                elif cap in boolean_appium_capabilities:
-                    capabilities[cap] = cap_value == 'true'
-                else:
-                    capabilities[cap] = cap_value
-
             # Create remote appium driver
+            self._add_capabilities_from_properties(capabilities, 'AppiumCapabilities')
             return appiumdriver.Remote(command_executor=server_url, desired_capabilities=capabilities)
         else:
             # Create remote web driver
@@ -166,7 +147,7 @@ class ConfigDriver(object):
 
             # Get driver capabilities
             capabilities = self._get_capabilities_from_driver_type(driver_name)
-            self._add_capabilities_from_properties(capabilities)
+            self._add_capabilities_from_properties(capabilities, 'Capabilities')
 
             # Create local selenium driver
             driver = driver_setup_method(capabilities)
@@ -198,17 +179,17 @@ class ConfigDriver(object):
             return {}
         raise Exception('Unknown driver {0}'.format(driver_name))
 
-    def _add_capabilities_from_properties(self, capabilities):
+    def _add_capabilities_from_properties(self, capabilities, section):
         """Add capabilities from properties file
 
         :param capabilities: capabilities object
+        :param section: properties section
         """
+        cap_type = {'Capabilities': 'server', 'AppiumCapabilities': 'Appium server'}
         try:
-            for cap, cap_value in dict(self.config.items('Capabilities')).items():
-                self.logger.debug("Added server capability: {0} = {1}".format(cap, cap_value))
-                if cap == 'proxy':
-                    cap_value = ast.literal_eval(cap_value)
-                capabilities[cap] = cap_value
+            for cap, cap_value in dict(self.config.items(section)).items():
+                self.logger.debug("Added {} capability: {} = {}".format(cap_type[section], cap, cap_value))
+                capabilities[cap] = cap_value if cap == 'version' else self._convert_property_type(cap_value)
         except NoSectionError:
             pass
 
@@ -293,29 +274,36 @@ class ConfigDriver(object):
         # Create Chrome options
         options = webdriver.ChromeOptions()
 
-        # Add Chrome preferences
-        prefs = dict()
+        # Add Chrome preferences, mobile emulation options and chrome arguments
+        self._add_chrome_options(options, 'prefs')
+        self._add_chrome_options(options, 'mobileEmulation')
+        self._add_chrome_arguments(options)
+
+        return options
+
+    def _add_chrome_options(self, options, option_name):
+        """Add Chrome options from properties file
+
+        :param options: chrome options object
+        :param option_name: chrome option name
+        """
+        options_conf = {'prefs': {'section': 'ChromePreferences', 'message': 'preference'},
+                        'mobileEmulation': {'section': 'ChromeMobileEmulation', 'message': 'mobile emulation option'}}
+        option_value = dict()
         try:
-            for pref, pref_value in dict(self.config.items('ChromePreferences')).items():
-                self.logger.debug("Added chrome preference: {0} = {1}".format(pref, pref_value))
-                prefs[pref] = self._convert_property_type(pref_value)
-            if len(prefs) > 0:
-                options.add_experimental_option("prefs", prefs)
+            for key, value in dict(self.config.items(options_conf[option_name]['section'])).items():
+                self.logger.debug("Added chrome {}: {} = {}".format(options_conf[option_name]['message'], key, value))
+                option_value[key] = self._convert_property_type(value)
+            if len(option_value) > 0:
+                options.add_experimental_option(option_name, option_value)
         except NoSectionError:
             pass
 
-        # Add Chrome mobile emulation options
-        prefs = dict()
-        try:
-            for pref, pref_value in dict(self.config.items('ChromeMobileEmulation')).items():
-                self.logger.debug("Added chrome mobile emulation option: {0} = {1}".format(pref, pref_value))
-                prefs[pref] = self._convert_property_type(pref_value)
-            if len(prefs) > 0:
-                options.add_experimental_option("mobileEmulation", prefs)
-        except NoSectionError:
-            pass
+    def _add_chrome_arguments(self, options):
+        """Add Chrome arguments from properties file
 
-        # Add Chrome arguments
+        :param options: chrome options object
+        """
         try:
             for pref, pref_value in dict(self.config.items('ChromeArguments')).items():
                 pref_value = '={}'.format(pref_value) if pref_value else ''
@@ -323,8 +311,6 @@ class ConfigDriver(object):
                 options.add_argument('{}{}'.format(pref, self._convert_property_type(pref_value)))
         except NoSectionError:
             pass
-
-        return options
 
     def _setup_safari(self, capabilities):
         """Setup Safari webdriver

@@ -364,12 +364,11 @@ class DriverWrapperTests(DriverWrapperCommon):
         # Check that configuration has been initialized
         assert_equal('android', self.driver_wrapper.config.get('Driver', 'type'))
 
-    @mock.patch('toolium.driver_wrapper.ConfigDriver')
-    def test_connect(self, ConfigDriver):
+    @mock.patch('toolium.driver_wrapper.ConfigDriver.create_driver')
+    def test_connect(self, create_driver):
         # Mock data
         expected_driver = mock.MagicMock()
-        instance = ConfigDriver.return_value
-        instance.create_driver.return_value = expected_driver
+        create_driver.return_value = expected_driver
         self.driver_wrapper.utils = mock.MagicMock()
 
         # Connect and check the returned driver

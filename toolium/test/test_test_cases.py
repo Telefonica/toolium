@@ -65,14 +65,17 @@ class BasicTestCaseTests(unittest.TestCase):
         test = run_mock('mock_pass')
         assert_true(test._test_passed)
 
-        # Check logging message
+        # Check logging messages
+        init_message = 'Running new test: MockTestClass.mock_pass'
         expected_response = "The test 'MockTestClass.mock_pass' has passed"
-        self.logger.info.assert_called_with(expected_response)
+        self.logger.info.assert_has_calls([mock.call(init_message), mock.call(expected_response)])
 
     def test_tear_down_fail(self):
         test = run_mock('mock_fail')
         assert_false(test._test_passed)
 
-        # Check logging error message
+        # Check logging error messages
+        init_message = 'Running new test: MockTestClass.mock_fail'
         expected_response = "The test 'MockTestClass.mock_fail' has failed: test error"
-        self.logger.error.assert_called_with(expected_response)
+        self.logger.info.assert_called_once_with(init_message)
+        self.logger.error.assert_called_once_with(expected_response)

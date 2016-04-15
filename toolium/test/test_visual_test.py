@@ -35,6 +35,7 @@ from toolium.visual_test import VisualTest
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.driver_wrapper import DriverWrapper
+from toolium.test.test_utils import get_mock_element
 
 
 class VisualTests(unittest.TestCase):
@@ -150,7 +151,9 @@ class VisualTests(unittest.TestCase):
             self.visual.compare_files(self._testMethodName, self.file_v1, self.file_small, 0)
 
     def test_get_html_row(self):
-        expected_row = '<tr class=diff><td>test_get_html_row</td><td><img style="width: 100%" onclick="launchModal\(this.src\)" src=".*register_v2.png"/></td></td><td><img style="width: 100%" onclick="launchModal\(this.src\)" src=".*register.png"/></td></td><td></td></tr>'
+        expected_row = '<tr class=diff><td>test_get_html_row</td><td><img style="width: 100%" onclick=' \
+                       '"launchModal\(this.src\)" src=".*register_v2.png"/></td></td><td><img style="width: 100%" ' \
+                       'onclick="launchModal\(this.src\)" src=".*register.png"/></td></td><td></td></tr>'
         row = self.visual._get_html_row('diff', self._testMethodName, self.file_v1, self.file_v2)
         assertRegex(self, row, expected_row)
 
@@ -251,7 +254,7 @@ class VisualTests(unittest.TestCase):
         # Assert screenshot
         self.visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-        self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
+        self.driver_wrapper.driver.save_screenshot.assert_called_once_with(output_file)
 
     def test_assert_screenshot_no_enabled_force_fail(self):
         # Configure driver mock
@@ -274,7 +277,7 @@ class VisualTests(unittest.TestCase):
         with assert_raises(AssertionError):
             self.visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-        self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
+        self.driver_wrapper.driver.save_screenshot.assert_called_once_with(output_file)
 
     def test_assert_screenshot_full_and_save_baseline(self):
         # Configure driver mock
@@ -286,7 +289,7 @@ class VisualTests(unittest.TestCase):
         # Assert screenshot
         self.visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-        self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
+        self.driver_wrapper.driver.save_screenshot.assert_called_once_with(output_file)
 
         # Output image and new baseline image must be equals
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
@@ -304,7 +307,7 @@ class VisualTests(unittest.TestCase):
 
         # Assert screenshot
         self.visual.assert_screenshot(web_element, filename='screenshot_elem', file_suffix='screenshot_suffix')
-        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
+        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
         # Check cropped image
         expected_image = os.path.join(self.root_path, 'resources', 'register_cropped_element.png')
@@ -331,7 +334,7 @@ class VisualTests(unittest.TestCase):
         # Assert screenshot
         self.visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-        self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
+        self.driver_wrapper.driver.save_screenshot.assert_called_once_with(output_file)
 
     def test_assert_screenshot_element_and_compare(self):
         # Add baseline image
@@ -350,7 +353,7 @@ class VisualTests(unittest.TestCase):
 
         # Assert screenshot
         self.visual.assert_screenshot(web_element, filename='screenshot_elem', file_suffix='screenshot_suffix')
-        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
+        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
     def test_assert_screenshot_mobile_resize_and_exclude(self):
         # Create elements mock
@@ -369,7 +372,7 @@ class VisualTests(unittest.TestCase):
         # Assert screenshot
         self.visual.assert_screenshot(None, filename='screenshot_ios', file_suffix='screenshot_suffix',
                                       exclude_elements=exclude_elements)
-        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
+        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
         # Check cropped image
         expected_image = os.path.join(self.root_path, 'resources', 'ios_excluded.png')
@@ -401,7 +404,7 @@ class VisualTests(unittest.TestCase):
         # Assert screenshot
         self.visual.assert_screenshot(form_element, filename='screenshot_ios_web', file_suffix='screenshot_suffix',
                                       exclude_elements=exclude_elements)
-        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
+        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
         # Check cropped image
         expected_image = os.path.join(self.root_path, 'resources', 'ios_web_exclude.png')
@@ -420,11 +423,3 @@ class VisualTests(unittest.TestCase):
     def test_assert_screenshot_greater_threshold(self):
         with assert_raises(TypeError):
             self.visual.assert_screenshot(None, 'screenshot_full', threshold=2)
-
-
-@mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
-def get_mock_element(WebElement, x, y, height, width):
-    web_element = WebElement.return_value
-    web_element.location = {'x': x, 'y': y}
-    web_element.size = {'height': height, 'width': width}
-    return web_element

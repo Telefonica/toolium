@@ -42,6 +42,21 @@ navigation_bar_tests = (
 )
 
 
+def get_mock_element(x, y, height, width):
+    """Create a mock element with custom location and size
+
+    :param x: x location
+    :param y: y location
+    :param height: element height
+    :param width: element width
+    :returns: mock element
+    """
+    mock_element = mock.MagicMock(spec=WebElement)
+    mock_element.location = {'x': x, 'y': y}
+    mock_element.size = {'height': height, 'width': width}
+    return mock_element
+
+
 @ddt
 class UtilsTests(unittest.TestCase):
     def setUp(self):
@@ -231,8 +246,8 @@ class UtilsTests(unittest.TestCase):
         # Configure driver mock
         web_window_size = {'width': 500, 'height': 667}
         native_window_size = {'width': 250, 'height': 450}
-        self.driver_wrapper.driver.current_context = 'NATIVE_APP'
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
+        self.driver_wrapper.driver.current_context = 'NATIVE_APP'
         self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
@@ -240,7 +255,7 @@ class UtilsTests(unittest.TestCase):
         element = get_mock_element(x=250, y=40, height=40, width=300)
 
         self.utils.swipe(element, 50, 100)
-        self.driver_wrapper.driver.swipe.assert_called_with(400, 60, 450, 160, None)
+        self.driver_wrapper.driver.swipe.assert_called_once_with(400, 60, 450, 160, None)
 
     def test_swipe_android_web(self):
         # Configure driver mock
@@ -257,22 +272,7 @@ class UtilsTests(unittest.TestCase):
         element = get_mock_element(x=250, y=40, height=40, width=300)
 
         self.utils.swipe(element, 50, 100)
-        self.driver_wrapper.driver.swipe.assert_called_with(200, 30, 250, 130, None)
-
-    def test_swipe_android_native(self):
-        # Configure driver mock
-        web_window_size = {'width': 500, 'height': 667}
-        native_window_size = {'width': 250, 'height': 450}
-        self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
-        self.driver_wrapper.driver.current_context = 'NATIVE_APP'
-        self.driver_wrapper.config.set('Driver', 'type', 'android')
-        self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
-
-        # Create element mock
-        element = get_mock_element(x=250, y=40, height=40, width=300)
-
-        self.utils.swipe(element, 50, 100)
-        self.driver_wrapper.driver.swipe.assert_called_with(400, 60, 450, 160, None)
+        self.driver_wrapper.driver.swipe.assert_called_once_with(200, 30, 250, 130, None)
 
     def test_swipe_android_hybrid(self):
         # Configure driver mock
@@ -287,7 +287,7 @@ class UtilsTests(unittest.TestCase):
         element = get_mock_element(x=250, y=40, height=40, width=300)
 
         self.utils.swipe(element, 50, 100)
-        self.driver_wrapper.driver.swipe.assert_called_with(200, 30, 250, 130, None)
+        self.driver_wrapper.driver.swipe.assert_called_once_with(200, 30, 250, 130, None)
 
     def test_swipe_ios_web(self):
         # Configure driver mock
@@ -301,7 +301,7 @@ class UtilsTests(unittest.TestCase):
         element = get_mock_element(x=250, y=40, height=40, width=300)
 
         self.utils.swipe(element, 50, 100)
-        self.driver_wrapper.driver.swipe.assert_called_with(200, 94, 250, 194, None)
+        self.driver_wrapper.driver.swipe.assert_called_once_with(200, 94, 250, 194, None)
 
     def test_swipe_web(self):
         # Configure driver mock
@@ -334,7 +334,7 @@ class UtilsTests(unittest.TestCase):
         # Get element and assert response
         web_element = self.utils.get_web_element(element_locator)
         assert_equal('mock_element', web_element)
-        self.driver_wrapper.driver.find_element.assert_called_with(*element_locator)
+        self.driver_wrapper.driver.find_element.assert_called_once_with(*element_locator)
 
     def test_get_web_element_from_none(self):
         web_element = self.utils.get_web_element(None)
@@ -343,11 +343,3 @@ class UtilsTests(unittest.TestCase):
     def test_get_web_element_from_unknown(self):
         web_element = self.utils.get_web_element(dict())
         assert_is_none(web_element)
-
-
-@mock.patch('selenium.webdriver.remote.webelement.WebElement', spec=True)
-def get_mock_element(WebElement, x, y, height, width):
-    web_element = WebElement.return_value
-    web_element.location = {'x': x, 'y': y}
-    web_element.size = {'height': height, 'width': width}
-    return web_element

@@ -67,8 +67,8 @@ class VisualTest(object):
 
         # Update baseline with real platformVersion value
         if '{platformVersion}' in self.driver_wrapper.baseline_name:
-            platformVersion = self.driver_wrapper.driver.desired_capabilities['platformVersion']
-            baseline_name = self.driver_wrapper.baseline_name.replace('{platformVersion}', platformVersion)
+            platform_version = self.driver_wrapper.driver.desired_capabilities['platformVersion']
+            baseline_name = self.driver_wrapper.baseline_name.replace('{platformVersion}', platform_version)
             self.driver_wrapper.baseline_name = baseline_name
             self.driver_wrapper.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory,
                                                                          'visualtests', 'baseline', baseline_name)
@@ -127,8 +127,8 @@ class VisualTest(object):
         report_name = '{}<br>({})'.format(file_suffix, filename)
 
         # Get screenshot and modify it
-        if self.driver_wrapper.is_ios_test() or self.driver_wrapper.is_android_web_test() or (
-                    exclude_web_elements and len(exclude_web_elements) > 0) or web_element:
+        if (web_element or (exclude_web_elements and len(exclude_web_elements) > 0) or
+                self.driver_wrapper.is_ios_test() or self.driver_wrapper.is_android_web_test()):
             img = Image.open(BytesIO(self.driver_wrapper.driver.get_screenshot_as_png()))
             img = self.mobile_resize(img)
             img = self.exclude_elements(img, exclude_web_elements)
