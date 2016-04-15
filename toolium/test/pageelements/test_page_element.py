@@ -19,7 +19,8 @@ limitations under the License.
 import unittest
 
 import mock
-from nose.tools import assert_equal, assert_is_not_none, assert_is_none
+from nose.tools import assert_equal, assert_is_not_none, assert_is_none, assert_raises, assert_in
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -62,6 +63,37 @@ class TestPageElement(unittest.TestCase):
 
         assert_equal(page_object.username.locator, (By.XPATH, '//input[0]'))
         assert_equal(page_object.password.locator, (By.ID, 'password'))
+
+    def test_reset_object(self):
+        login_page = RegisterPageObject()
+        login_page.username.web_element
+        login_page.language.web_element
+
+        # Check that web elements are filled
+        assert_is_not_none(login_page.username._web_element)
+        assert_is_not_none(login_page.language._web_element)
+
+        login_page.username.reset_object()
+
+        # Check that only username is reset
+        assert_is_none(login_page.username._web_element)
+        assert_is_not_none(login_page.language._web_element)
+
+    def test_reset_object_two_page_objects(self):
+        login_page = RegisterPageObject()
+        login_page.language.web_element
+        second_login_page = RegisterPageObject()
+        second_login_page.language.web_element
+
+        # Check that web elements are filled
+        assert_is_not_none(login_page.language._web_element)
+        assert_is_not_none(second_login_page.language._web_element)
+
+        login_page.language.reset_object()
+
+        # Check that only first language is reset
+        assert_is_none(login_page.language._web_element)
+        assert_is_not_none(second_login_page.language._web_element)
 
     def test_get_web_element(self):
         RegisterPageObject().username.web_element
@@ -128,33 +160,76 @@ class TestPageElement(unittest.TestCase):
         self.driver_wrapper.driver.find_element.assert_has_calls(
             [mock.call(By.ID, 'language'), mock.call(By.ID, 'language')])
 
-    def test_reset_object(self):
-        login_page = RegisterPageObject()
-        login_page.username.web_element
-        login_page.language.web_element
+    def test_get_web_element_exception(self):
+        self.driver_wrapper.driver.find_element.side_effect = NoSuchElementException('Unknown')
 
-        # Check that web elements are filled
-        assert_is_not_none(login_page.username._web_element)
-        assert_is_not_none(login_page.language._web_element)
+        with assert_raises(NoSuchElementException) as cm:
+            RegisterPageObject().username.web_element
+        assert_in("Page element of type 'PageElement' with locator ('xpath', '//input[0]') not found",
+                  str(cm.exception))
 
-        login_page.username.reset_object()
+    def test_wait_until_visible(self):
+        self.driver_wrapper.utils.wait_until_element_visible = mock.MagicMock(return_value=mock_element)
 
-        # Check that only username is reset
-        assert_is_none(login_page.username._web_element)
-        assert_is_not_none(login_page.language._web_element)
+        page_element = RegisterPageObject().username
+        element = page_element.wait_until_visible()
 
-    def test_reset_object_two_page_objects(self):
-        login_page = RegisterPageObject()
-        login_page.language.web_element
-        second_login_page = RegisterPageObject()
-        second_login_page.language.web_element
+        assert_equal(element._web_element, mock_element)
+        assert_equal(element, page_element)
 
-        # Check that web elements are filled
-        assert_is_not_none(login_page.language._web_element)
-        assert_is_not_none(second_login_page.language._web_element)
+    def test_wait_until_visible_exception(self):
+        self.driver_wrapper.utils.wait_until_element_visible = mock.MagicMock()
+        self.driver_wrapper.utils.wait_until_element_visible.side_effect = TimeoutException('Unknown')
 
-        login_page.language.reset_object()
+        page_element = RegisterPageObject().username
+        with assert_raises(TimeoutException) as cm:
+            page_element.wait_until_visible()
+        assert_in("Page element of type 'PageElement' with locator ('xpath', '//input[0]') not found or is not "
+                  "visible after 10 seconds", str(cm.exception))
 
-        # Check that only first language is reset
-        assert_is_none(login_page.language._web_element)
-        assert_is_not_none(second_login_page.language._web_element)
+    def test_wait_until_not_visible(self):
+        self.driver_wrapper.utils.wait_until_element_not_visible = mock.MagicMock(return_value=False)
+
+        page_element = RegisterPageObject().username
+        element = page_element.wait_until_not_visible()
+
+        assert_is_none(element._web_element)
+        assert_equal(element, page_element)
+
+    def test_wait_until_not_visible_exception(self):
+        self.driver_wrapper.utils.wait_until_element_not_visible = mock.MagicMock()
+        self.driver_wrapper.utils.wait_until_element_not_visible.side_effect = TimeoutException('Unknown')
+
+        page_element = RegisterPageObject().username
+        with assert_raises(TimeoutException) as cm:
+            page_element.wait_until_not_visible()
+        assert_in("Page element of type 'PageElement' with locator ('xpath', '//input[0]') is still "
+                  "visible after 10 seconds", str(cm.exception))
+
+    @mock.patch('toolium.visual_test.VisualTest.__init__', return_value=None)
+    @mock.patch('toolium.visual_test.VisualTest.assert_screenshot')
+    def test_assert_screenshot(self, visual_assert_screenshot, visual_init):
+        self.driver_wrapper.driver.find_element.return_value = mock_element
+
+        RegisterPageObject().username.assert_screenshot('filename')
+
+        visual_init.assert_called_with(self.driver_wrapper, False)
+        visual_assert_screenshot.assert_called_with(mock_element, 'filename', 'PageElement', 0, [])
+
+    @mock.patch('toolium.visual_test.VisualTest.__init__', return_value=None)
+    @mock.patch('toolium.visual_test.VisualTest.assert_screenshot')
+    def test_assert_screenshot_options(self, visual_assert_screenshot, visual_init):
+        self.driver_wrapper.driver.find_element.return_value = mock_element
+
+        RegisterPageObject().username.assert_screenshot('filename', threshold=0.1, exclude_elements=[mock_element],
+                                                        force=True)
+
+        visual_init.assert_called_with(self.driver_wrapper, True)
+        visual_assert_screenshot.assert_called_with(mock_element, 'filename', 'PageElement', 0.1, [mock_element])
+
+    def test_get_attribute(self):
+        self.driver_wrapper.driver.find_element.return_value = mock_element
+
+        RegisterPageObject().username.get_attribute('attribute_name')
+
+        mock_element.get_attribute.assert_called_with('attribute_name')
