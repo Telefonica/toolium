@@ -254,7 +254,7 @@ class VisualTests(unittest.TestCase):
         # Assert screenshot
         self.visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-        self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
+        self.driver_wrapper.driver.save_screenshot.assert_called_once_with(output_file)
 
     def test_assert_screenshot_no_enabled_force_fail(self):
         # Configure driver mock
@@ -277,7 +277,7 @@ class VisualTests(unittest.TestCase):
         with assert_raises(AssertionError):
             self.visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-        self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
+        self.driver_wrapper.driver.save_screenshot.assert_called_once_with(output_file)
 
     def test_assert_screenshot_full_and_save_baseline(self):
         # Configure driver mock
@@ -289,7 +289,7 @@ class VisualTests(unittest.TestCase):
         # Assert screenshot
         self.visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-        self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
+        self.driver_wrapper.driver.save_screenshot.assert_called_once_with(output_file)
 
         # Output image and new baseline image must be equals
         baseline_file = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'firefox',
@@ -307,7 +307,7 @@ class VisualTests(unittest.TestCase):
 
         # Assert screenshot
         self.visual.assert_screenshot(web_element, filename='screenshot_elem', file_suffix='screenshot_suffix')
-        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
+        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
         # Check cropped image
         expected_image = os.path.join(self.root_path, 'resources', 'register_cropped_element.png')
@@ -334,7 +334,7 @@ class VisualTests(unittest.TestCase):
         # Assert screenshot
         self.visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
         output_file = os.path.join(self.visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-        self.driver_wrapper.driver.save_screenshot.assert_called_with(output_file)
+        self.driver_wrapper.driver.save_screenshot.assert_called_once_with(output_file)
 
     def test_assert_screenshot_element_and_compare(self):
         # Add baseline image
@@ -353,7 +353,7 @@ class VisualTests(unittest.TestCase):
 
         # Assert screenshot
         self.visual.assert_screenshot(web_element, filename='screenshot_elem', file_suffix='screenshot_suffix')
-        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
+        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
     def test_assert_screenshot_mobile_resize_and_exclude(self):
         # Create elements mock
@@ -372,7 +372,7 @@ class VisualTests(unittest.TestCase):
         # Assert screenshot
         self.visual.assert_screenshot(None, filename='screenshot_ios', file_suffix='screenshot_suffix',
                                       exclude_elements=exclude_elements)
-        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
+        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
         # Check cropped image
         expected_image = os.path.join(self.root_path, 'resources', 'ios_excluded.png')
@@ -404,7 +404,7 @@ class VisualTests(unittest.TestCase):
         # Assert screenshot
         self.visual.assert_screenshot(form_element, filename='screenshot_ios_web', file_suffix='screenshot_suffix',
                                       exclude_elements=exclude_elements)
-        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_with()
+        self.driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
         # Check cropped image
         expected_image = os.path.join(self.root_path, 'resources', 'ios_web_exclude.png')

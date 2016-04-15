@@ -56,22 +56,22 @@ class TestPageElements(unittest.TestCase):
     def test_get_web_elements(self):
         LoginPageObject().inputs.web_elements
 
-        self.driver_wrapper.driver.find_elements.assert_called_with(By.XPATH, '//input')
+        self.driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
 
     def test_get_web_elements_with_parent_locator(self):
         self.driver_wrapper.driver.find_element.return_value = self.mock_element
         web_elements = LoginPageObject().inputs_parent.web_elements
 
         assert_equal(web_elements, child_elements)
-        self.driver_wrapper.driver.find_element.assert_called_with(By.ID, 'parent')
-        self.mock_element.find_elements.assert_called_with(By.XPATH, '//input')
+        self.driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'parent')
+        self.mock_element.find_elements.assert_called_once_with(By.XPATH, '//input')
 
     def test_get_page_elements(self):
         self.driver_wrapper.driver.find_elements.return_value = child_elements
         page_elements = LoginPageObject().inputs.page_elements
 
         # Check that find_elements has been called just one time
-        self.driver_wrapper.driver.find_elements.assert_called_with(By.XPATH, '//input')
+        self.driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
         self.driver_wrapper.driver.find_element.assert_not_called()
 
         # Check that the response is a list of 2 PageElement with the expected web element
@@ -88,7 +88,7 @@ class TestPageElements(unittest.TestCase):
         web_elements = inputs.web_elements
 
         # Check that find_elements has been called just one time
-        self.driver_wrapper.driver.find_elements.assert_called_with(By.XPATH, '//input')
+        self.driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
         self.driver_wrapper.driver.find_element.assert_not_called()
 
         # Check that the response is a list of 2 PageElement with the expected web element

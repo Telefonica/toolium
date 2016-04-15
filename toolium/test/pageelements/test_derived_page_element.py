@@ -111,7 +111,7 @@ class TestDerivedPageElement(unittest.TestCase):
 
         LoginPageObject().username.text = 'new input value'
 
-        self.mock_element.send_keys.assert_called_with('new input value')
+        self.mock_element.send_keys.assert_called_once_with('new input value')
 
     def test_get_selected_option(self):
         select_page_element.SeleniumSelect = get_mock_select()
@@ -121,15 +121,16 @@ class TestDerivedPageElement(unittest.TestCase):
         assert_equal(option, 'option value')
 
     def test_set_option(self):
+        self.driver_wrapper.driver.find_element.return_value = self.mock_element
         select_page_element.SeleniumSelect = get_mock_select()
 
         LoginPageObject().language.option = 'new option value'
 
-        select_page_element.SeleniumSelect.assert_called()
-        select_page_element.SeleniumSelect().select_by_visible_text.assert_called_with('new option value')
+        select_page_element.SeleniumSelect.assert_called_once_with(self.mock_element)
+        select_page_element.SeleniumSelect().select_by_visible_text.assert_called_once_with('new option value')
 
     def test_click_button(self):
         self.driver_wrapper.driver.find_element.return_value = self.mock_element
         LoginPageObject().login.click()
 
-        self.mock_element.click.assert_called()
+        self.mock_element.click.assert_called_once_with()
