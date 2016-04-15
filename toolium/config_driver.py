@@ -26,16 +26,6 @@ from appium import webdriver as appiumdriver
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-number_appium_capabilities = ['newCommandTimeout', 'deviceReadyTimeout', 'androidDeviceReadyTimeout', 'adbPort',
-                              'avdLaunchTimeout', 'avdReadyTimeout', 'autoWebviewTimeout', 'interKeyDelay',
-                              'screenshotWaitTimeout', 'webviewConnectRetries']
-boolean_appium_capabilities = ['autoLaunch', 'autoWebview', 'noReset', 'fullReset', 'useKeystore', 'dontStopAppOnReset',
-                               'unicodeKeyboard', 'resetKeyboard', 'noSign', 'autoLaunch', 'enablePerformanceLogging',
-                               'ignoreUnimportantViews', 'disableAndroidWatchers', 'acceptSslCerts',
-                               'locationServicesEnabled', 'locationServicesAuthorized', 'autoAcceptAlerts',
-                               'autoDismissAlerts', 'nativeInstrumentsLib', 'nativeWebTap', 'safariAllowPopups',
-                               'safariIgnoreFraudWarning', 'safariOpenLinksInBackground', 'keepKeyChains', 'showIOSLog']
-
 
 def get_error_message_from_exception(exception):
     """Extract first line of exception message
@@ -120,11 +110,11 @@ class ConfigDriver(object):
             capabilities['chromeOptions'] = self._create_chrome_options().to_capabilities()["chromeOptions"]
 
         # Add custom driver capabilities
-        self._add_capabilities_from_properties(capabilities)
+        self._add_capabilities_from_properties(capabilities, 'Capabilities')
 
         if driver_name in ('android', 'ios', 'iphone'):
             # Create remote appium driver
-            self._add_appium_capabilities_from_properties(capabilities)
+            self._add_capabilities_from_properties(capabilities, 'AppiumCapabilities')
             return appiumdriver.Remote(command_executor=server_url, desired_capabilities=capabilities)
         else:
             # Create remote web driver
@@ -157,7 +147,7 @@ class ConfigDriver(object):
 
             # Get driver capabilities
             capabilities = self._get_capabilities_from_driver_type(driver_name)
-            self._add_capabilities_from_properties(capabilities)
+            self._add_capabilities_from_properties(capabilities, 'Capabilities')
 
             # Create local selenium driver
             driver = driver_setup_method(capabilities)
@@ -189,33 +179,19 @@ class ConfigDriver(object):
             return {}
         raise Exception('Unknown driver {0}'.format(driver_name))
 
-    def _add_capabilities_from_properties(self, capabilities):
+    def _add_capabilities_from_properties(self, capabilities, section):
         """Add capabilities from properties file
 
         :param capabilities: capabilities object
+        :param section: properties section
         """
+        cap_type = {'Capabilities': 'server', 'AppiumCapabilities': 'Appium server'}
         try:
-            for cap, cap_value in dict(self.config.items('Capabilities')).items():
-                self.logger.debug("Added server capability: {0} = {1}".format(cap, cap_value))
-                if cap == 'proxy':
-                    cap_value = ast.literal_eval(cap_value)
-                capabilities[cap] = cap_value
+            for cap, cap_value in dict(self.config.items(section)).items():
+                self.logger.debug("Added {} capability: {} = {}".format(cap_type[section], cap, cap_value))
+                capabilities[cap] = cap_value if cap == 'version' else self._convert_property_type(cap_value)
         except NoSectionError:
             pass
-
-    def _add_appium_capabilities_from_properties(self, capabilities):
-        """Add Appium capabilities from properties file
-
-        :param capabilities: capabilities object
-        """
-        for cap, cap_value in dict(self.config.items('AppiumCapabilities')).items():
-            self.logger.debug("Added Appium server capability: {0} = {1}".format(cap, cap_value))
-            if cap in number_appium_capabilities:
-                capabilities[cap] = int(cap_value)
-            elif cap in boolean_appium_capabilities:
-                capabilities[cap] = cap_value == 'true'
-            else:
-                capabilities[cap] = cap_value
 
     def _setup_firefox(self, capabilities):
         """Setup Firefox webdriver
