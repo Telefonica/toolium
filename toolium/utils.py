@@ -162,7 +162,7 @@ class Utils(object):
                     self.driver_wrapper.driver.find_element(*element)
                 element_found = element
                 break
-            except NoSuchElementException:
+            except (NoSuchElementException, TypeError):
                 pass
         return element_found
 
