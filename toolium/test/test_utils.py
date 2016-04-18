@@ -17,13 +17,15 @@ limitations under the License.
 """
 
 import os
+import time
 import unittest
 
 import mock
 import requests_mock
 from ddt import ddt, data, unpack
-from nose.tools import assert_is_none, assert_equal, assert_raises
+from nose.tools import assert_is_none, assert_equal, assert_raises, assert_in, assert_greater
 from requests.exceptions import ConnectionError
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -343,3 +345,44 @@ class UtilsTests(unittest.TestCase):
     def test_get_web_element_from_unknown(self):
         web_element = self.utils.get_web_element(dict())
         assert_is_none(web_element)
+
+    def test_wait_until_first_element_is_found_locator(self):
+        # Configure driver mock
+        self.driver_wrapper.driver.find_element.return_value = 'mock_element'
+        element_locator = (By.ID, 'element_id')
+
+        element = self.utils.wait_until_first_element_is_found([element_locator])
+
+        assert_equal(element_locator, element)
+        self.driver_wrapper.driver.find_element.assert_called_once_with(*element_locator)
+
+    def test_wait_until_first_element_is_found_page_element(self):
+        page_element = PageElement(By.ID, 'element_id')
+        page_element._web_element = 'mock_element'
+
+        element = self.utils.wait_until_first_element_is_found([page_element])
+
+        assert_equal(page_element, element)
+
+    def test_wait_until_first_element_is_found_none(self):
+        page_element = PageElement(By.ID, 'element_id')
+        page_element._web_element = 'mock_element'
+
+        element = self.utils.wait_until_first_element_is_found([None, page_element])
+
+        assert_equal(page_element, element)
+
+    def test_wait_until_first_element_is_found_timeout(self):
+        # Configure driver mock
+        self.driver_wrapper.driver.find_element.side_effect = NoSuchElementException('Unknown')
+        element_locator = (By.ID, 'element_id')
+
+        start_time = time.time()
+        with assert_raises(TimeoutException) as cm:
+            self.utils.wait_until_first_element_is_found([element_locator], timeout=10)
+        end_time = time.time()
+
+        assert_in("None of the page elements has been found after 10 seconds", str(cm.exception))
+        # find_element has been called more than one time
+        self.driver_wrapper.driver.find_element.assert_called_with(*element_locator)
+        assert_greater(end_time - start_time, 10, 'Execution time must be greater than timeout')
