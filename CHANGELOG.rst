@@ -8,6 +8,7 @@ v1.0.1
 
 - Fix wait_until_first_element_is_found error when element is None
 - Fix app_strings initialization in page objects
+- Fix swipe method to work with Appium 1.5 swipe
 
 v1.0.0
 ------

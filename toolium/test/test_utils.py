@@ -303,7 +303,7 @@ class UtilsTests(unittest.TestCase):
         element = get_mock_element(x=250, y=40, height=40, width=300)
 
         self.utils.swipe(element, 50, 100)
-        self.driver_wrapper.driver.swipe.assert_called_once_with(200, 94, 250, 194, None)
+        self.driver_wrapper.driver.swipe.assert_called_once_with(200, 94, 50, 100, None)
 
     def test_swipe_web(self):
         # Configure driver mock
