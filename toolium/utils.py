@@ -209,7 +209,7 @@ class Utils(object):
                 self.logger.debug("Test running in remote node {}".format(remote_node))
             except (ValueError, KeyError):
                 # The remote node is not a grid node or the session has been closed
-                pass
+                remote_node = host
 
         return remote_node
 
