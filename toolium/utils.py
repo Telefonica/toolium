@@ -360,14 +360,19 @@ class Utils(object):
         if not self.driver_wrapper.is_mobile_test():
             raise Exception('Swipe method is not implemented in Selenium')
 
+        # Get center coordinates of element
         center = self.get_center(element)
-        if self.driver_wrapper.is_web_test() or self.driver_wrapper.driver.current_context != 'NATIVE_APP':
-            current_context = self.driver_wrapper.driver.current_context
+        initial_context = self.driver_wrapper.driver.current_context
+        if self.driver_wrapper.is_web_test() or initial_context != 'NATIVE_APP':
             center = self.get_native_coords(center)
-            self.driver_wrapper.driver.swipe(center['x'], center['y'], center['x'] + x, center['y'] + y, duration)
-            self.driver_wrapper.driver.switch_to.context(current_context)
-        else:
-            self.driver_wrapper.driver.swipe(center['x'], center['y'], center['x'] + x, center['y'] + y, duration)
+
+        # Android needs absolute end coordinates and ios needs movement
+        end_x = x if self.driver_wrapper.is_ios_test() else center['x'] + x
+        end_y = y if self.driver_wrapper.is_ios_test() else center['y'] + y
+        self.driver_wrapper.driver.swipe(center['x'], center['y'], end_x, end_y, duration)
+
+        if self.driver_wrapper.is_web_test() or initial_context != 'NATIVE_APP':
+            self.driver_wrapper.driver.switch_to.context(initial_context)
 
     def get_web_element(self, element):
         """Return the web element from a page element or its locator

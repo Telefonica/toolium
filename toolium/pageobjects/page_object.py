@@ -34,7 +34,7 @@ class PageObject(CommonObject):
         super(PageObject, self).__init__()
         self.driver_wrapper = driver_wrapper if driver_wrapper else \
             DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
-        self.app_strings = None  #: mobile application strings
+        self.app_strings = self.driver_wrapper.app_strings  #: mobile application strings
         self.init_page_elements()
         self._update_page_elements()
 
