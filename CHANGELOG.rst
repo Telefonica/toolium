@@ -1,6 +1,14 @@
 Toolium Changelog
 =================
 
+v1.0.1
+------
+
+*In development*
+
+- Fix wait_until_first_element_is_found error when element is None
+- Fix app_strings initialization in page objects
+
 v1.0.0
 ------
 
