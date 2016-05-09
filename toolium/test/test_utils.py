@@ -108,7 +108,7 @@ class UtilsTests(unittest.TestCase):
         req_mock.get(url, text='non_json_response')
 
         # Get remote node and check result
-        assert_is_none(self.utils.get_remote_node())
+        assert_equal(self.utils.get_remote_node(), 'localhost')
         assert_equal(url, req_mock.request_history[0].url)
 
     def test_get_remote_node_local_execution(self):
