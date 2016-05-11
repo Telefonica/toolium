@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.1.0
+------
+
+*In development*
+
+- New MobilePageObject class to test Android and iOS apps with same base page object
+
 v1.0.1
 ------
 
