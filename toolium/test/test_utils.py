@@ -206,6 +206,19 @@ class UtilsTests(unittest.TestCase):
         self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
         assert_equal(self.utils.get_window_size(), window_size)
+        self.driver_wrapper.driver.get_window_size.assert_called_once_with()
+
+    def test_get_window_size_android_native_two_times(self):
+        # Configure driver mock
+        window_size = {'width': 375, 'height': 667}
+        self.driver_wrapper.driver.get_window_size.return_value = window_size
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
+        self.driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
+
+        assert_equal(self.utils.get_window_size(), window_size)
+        assert_equal(self.utils.get_window_size(), window_size)
+        # Check that window size is calculated only one time
+        self.driver_wrapper.driver.get_window_size.assert_called_once_with()
 
     def test_get_window_size_android_web(self):
         # Configure driver mock
@@ -216,15 +229,30 @@ class UtilsTests(unittest.TestCase):
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
 
         assert_equal(self.utils.get_window_size(), window_size)
+        self.driver_wrapper.driver.execute_script.assert_has_calls(
+            [mock.call('return window.innerWidth'), mock.call('return window.innerHeight')])
+
+    def test_get_window_size_android_web_two_times(self):
+        # Configure driver mock
+        window_size = {'width': 375, 'height': 667}
+        self.driver_wrapper.driver.current_context = 'WEBVIEW'
+        self.driver_wrapper.driver.execute_script.side_effect = [window_size['width'], window_size['height']]
+        self.driver_wrapper.config.set('Driver', 'type', 'android')
+        self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
+
+        assert_equal(self.utils.get_window_size(), window_size)
+        assert_equal(self.utils.get_window_size(), window_size)
+        # Check that window size is calculated only one time
+        self.driver_wrapper.driver.execute_script.assert_has_calls(
+            [mock.call('return window.innerWidth'), mock.call('return window.innerHeight')])
 
     def test_get_native_coords_android_web(self):
         # Configure driver mock
         web_window_size = {'width': 500, 'height': 667}
         native_window_size = {'width': 250, 'height': 450}
         self.driver_wrapper.driver.current_context = 'WEBVIEW'
-        self.driver_wrapper.driver.execute_script.side_effect = [web_window_size['width'], web_window_size['height'],
-                                                                 native_window_size['width'],
-                                                                 native_window_size['height']]
+        self.driver_wrapper.driver.execute_script.side_effect = [web_window_size['width'], web_window_size['height']]
+        self.driver_wrapper.driver.get_window_size.side_effect = [native_window_size]
         self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
 
@@ -264,9 +292,8 @@ class UtilsTests(unittest.TestCase):
         web_window_size = {'width': 500, 'height': 667}
         native_window_size = {'width': 250, 'height': 450}
         self.driver_wrapper.driver.current_context = 'WEBVIEW'
-        self.driver_wrapper.driver.execute_script.side_effect = [web_window_size['width'], web_window_size['height'],
-                                                                 native_window_size['width'],
-                                                                 native_window_size['height']]
+        self.driver_wrapper.driver.execute_script.side_effect = [web_window_size['width'], web_window_size['height']]
+        self.driver_wrapper.driver.get_window_size.side_effect = [native_window_size]
         self.driver_wrapper.config.set('Driver', 'type', 'android')
         self.driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
 
@@ -280,6 +307,7 @@ class UtilsTests(unittest.TestCase):
         # Configure driver mock
         web_window_size = {'width': 500, 'height': 667}
         native_window_size = {'width': 250, 'height': 450}
+        # self.driver_wrapper.utils
         self.driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
         self.driver_wrapper.driver.current_context = 'WEBVIEW'
         self.driver_wrapper.config.set('Driver', 'type', 'android')

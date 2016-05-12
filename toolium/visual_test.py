@@ -51,7 +51,7 @@ class VisualTest(object):
     report_name = 'VisualTests.html'  #: final visual report name
     driver_wrapper = None  #: driver wrapper instance
     results = {'equal': 0, 'diff': 0, 'baseline': 0}  #: dict to save visual assert results
-    force = False
+    force = False  #: if True, screenshot is compared even if visual testing is disabled by configuration
 
     def __init__(self, driver_wrapper=None, force=False):
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
@@ -172,9 +172,10 @@ class VisualTest(object):
         :returns: tuple with element coordinates
         """
         offset = self.utils.get_safari_navigation_bar_height()
-        return (int(web_element.location['x']), int(web_element.location['y'] + offset),
-                int(web_element.location['x'] + web_element.size['width']),
-                int(web_element.location['y'] + offset + web_element.size['height']))
+        location = web_element.location
+        size = web_element.size
+        return (int(location['x']), int(location['y'] + offset),
+                int(location['x'] + size['width']), int(location['y'] + offset + size['height']))
 
     def crop_element(self, img, web_element):
         """Crop image to fit element

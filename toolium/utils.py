@@ -38,6 +38,8 @@ from datetime import datetime
 
 
 class Utils(object):
+    _window_size = None  #: dict with window width and height
+
     def __init__(self, driver_wrapper=None):
         """Initialize Utils instance
 
@@ -306,8 +308,9 @@ class Utils(object):
         :returns: dict with center coordinates
         """
         web_element = self.get_web_element(element)
-        return {'x': web_element.location['x'] + (web_element.size['width'] / 2),
-                'y': web_element.location['y'] + (web_element.size['height'] / 2)}
+        location = web_element.location
+        size = web_element.size
+        return {'x': location['x'] + (size['width'] / 2), 'y': location['y'] + (size['height'] / 2)}
 
     def get_safari_navigation_bar_height(self):
         """Get the height of Safari navigation bar
@@ -323,15 +326,16 @@ class Utils(object):
     def get_window_size(self):
         """Generic method to get window size using a javascript workaround for Android web tests
 
-        :returns: dict with window size
+        :returns: dict with window width and height
         """
-        if self.driver_wrapper.is_android_web_test() and self.driver_wrapper.driver.current_context != 'NATIVE_APP':
-            window_width = self.driver_wrapper.driver.execute_script("return window.innerWidth")
-            window_height = self.driver_wrapper.driver.execute_script("return window.innerHeight")
-            window_size = {'width': window_width, 'height': window_height}
-        else:
-            window_size = self.driver_wrapper.driver.get_window_size()
-        return window_size
+        if not self._window_size:
+            if self.driver_wrapper.is_android_web_test() and self.driver_wrapper.driver.current_context != 'NATIVE_APP':
+                window_width = self.driver_wrapper.driver.execute_script("return window.innerWidth")
+                window_height = self.driver_wrapper.driver.execute_script("return window.innerHeight")
+                self._window_size = {'width': window_width, 'height': window_height}
+            else:
+                self._window_size = self.driver_wrapper.driver.get_window_size()
+        return self._window_size
 
     def get_native_coords(self, coords):
         """Convert web coords into native coords. Assumes that the initial context is WEBVIEW and switches to
@@ -342,7 +346,7 @@ class Utils(object):
         """
         web_window_size = self.get_window_size()
         self.driver_wrapper.driver.switch_to.context('NATIVE_APP')
-        native_window_size = self.get_window_size()
+        native_window_size = self.driver_wrapper.driver.get_window_size()
         scale = native_window_size['width'] / web_window_size['width']
         offset = self.get_safari_navigation_bar_height()
         native_coords = {'x': coords['x'] * scale, 'y': coords['y'] * scale + offset}
