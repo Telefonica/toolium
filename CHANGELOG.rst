@@ -7,6 +7,7 @@ v1.1.0
 *In development*
 
 - New MobilePageObject class to test Android and iOS apps with same base page object
+- Fix visual report links in Windows
 
 v1.0.1
 ------

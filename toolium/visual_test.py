@@ -294,18 +294,19 @@ class VisualTest(object):
         row += '<td>' + report_name + '</td>'
 
         # baseline column
-        baseline_col = img.format(path.relpath(baseline_file, self.output_directory)) if baseline_file else ''
+        baseline_col = img.format(
+            path.relpath(baseline_file, self.output_directory).replace('\\', '/')) if baseline_file else ''
         row += '<td>' + baseline_col + '</td>'
 
         # image column
-        image_col = img.format(path.relpath(image_file, self.output_directory)) if image_file else ''
+        image_col = img.format(path.relpath(image_file, self.output_directory).replace('\\', '/')) if image_file else ''
         row += '<td>' + image_col + '</td>'
 
         # diff column
         diff_file = image_file.replace('.png', '.diff.png')
         if os.path.exists(diff_file):
             # perceptualdiff engine
-            diff_col = img.format(path.relpath(diff_file, self.output_directory))
+            diff_col = img.format(path.relpath(diff_file, self.output_directory).replace('\\', '/'))
         elif message is None:
             diff_col = ''
         elif message == '' or 'Image dimensions do not match' in message:
