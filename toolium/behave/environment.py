@@ -23,6 +23,7 @@ from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.jira import add_jira_status, change_all_jira_status, save_jira_conf
 from toolium.visual_test import VisualTest
+import os
 
 
 def before_all(context):
@@ -39,6 +40,25 @@ def before_scenario(context, scenario):
     :param context: behave context
     :param scenario: running scenario
     """
+    # Configure reset properties from behave tags
+    if 'no_reset_app' in scenario.tags:
+        os.environ["AppiumCapabilities_noReset"] = 'true'
+        os.environ["AppiumCapabilities_fullReset"] = 'false'
+    elif 'reset_app' in scenario.tags:
+        os.environ["AppiumCapabilities_noReset"] = 'false'
+        os.environ["AppiumCapabilities_fullReset"] = 'false'
+    elif 'full_reset_app' in scenario.tags:
+        os.environ["AppiumCapabilities_noReset"] = 'false'
+        os.environ["AppiumCapabilities_fullReset"] = 'true'
+
+    # Skip android_only or ios_only scenarios
+    if 'android_only' in scenario.tags and context.driver_wrapper.is_ios_test():
+        scenario.skip('Android scenario')
+        return
+    elif 'ios_only' in scenario.tags and context.driver_wrapper.is_android_test():
+        scenario.skip('iOS scenario')
+        return
+
     bdd_common_before_scenario(context, scenario)
 
 

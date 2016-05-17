@@ -8,6 +8,8 @@ v1.1.0
 
 - New MobilePageObject class to test Android and iOS apps with same base page object
 - Fix visual report links in Windows
+- Add @no_reset_app, @reset_app and @full_reset_app behave tags to configure Appium reset capabilities for one scenario
+- Add @android_only and @ios_only behave tags to exclude one scenario from iOS or Android executions
 
 v1.0.1
 ------

@@ -119,8 +119,8 @@ class DriverWrapper(object):
             self.config = ExtendedConfigParser.get_config_from_file(prop_filenames)
             self.config_properties_filenames = prop_filenames
 
-            # Override properties with system properties
-            self.config.update_from_system_properties()
+        # Override properties with system properties
+        self.config.update_from_system_properties()
 
     def configure_visual_baseline(self):
         """Configure baseline directory"""
