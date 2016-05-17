@@ -69,9 +69,8 @@ def bdd_common_before_scenario(context_or_world, scenario):
     :param scenario: running scenario
     """
     # Initialize and connect driver wrapper
-    if not DriverWrappersPool.get_default_wrapper().driver:
-        create_and_configure_wrapper(context_or_world)
-        connect_wrapper(context_or_world)
+    create_and_configure_wrapper(context_or_world)
+    connect_wrapper(context_or_world)
 
     # Add assert screenshot methods with scenario configuration
     add_assert_screenshot_methods(context_or_world, scenario)
@@ -116,8 +115,11 @@ def connect_wrapper(context_or_world):
 
     :param context_or_world: behave context or lettuce world
     """
-    # Create driver
-    context_or_world.driver = context_or_world.driver_wrapper.connect()
+    # Create driver if it is not already created
+    if context_or_world.driver_wrapper.driver:
+        context_or_world.driver = context_or_world.driver_wrapper.driver
+    else:
+        context_or_world.driver = context_or_world.driver_wrapper.connect()
 
     # Copy app_strings object
     context_or_world.app_strings = context_or_world.driver_wrapper.app_strings
