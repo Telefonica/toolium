@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import datetime
+import logging
 import os
 
 
@@ -25,6 +26,7 @@ class DriverWrappersPool(object):
 
     :type driver_wrappers: list of toolium.driver_wrapper.DriverWrapper
     :type config_directory: str
+    :type logger: logging.Logger
     :type output_directory: str
     :type screenshots_directory: str
     :type screenshots_number: str
@@ -157,13 +159,42 @@ class DriverWrappersPool(object):
         :param tc_config_files: test case specific config files
         """
         if cls.config_directory is None:
-            # Get config and output directories
-            cls.config_directory = cls.get_configured_value('Config_directory', tc_config_files.config_directory,
-                                                            os.path.join(os.getcwd(), 'conf'))
+            # Get config directory from properties
+            config_directory = cls.get_configured_value('Config_directory', tc_config_files.config_directory, 'conf')
+            prop_filenames = cls.get_configured_value('Config_prop_filenames',
+                                                      tc_config_files.config_properties_filenames, 'properties.cfg')
+            cls.config_directory = cls._find_parent_directory(config_directory, prop_filenames.split(';')[0])
+
+            # Get output directory from properties and create it
             cls.output_directory = cls.get_configured_value('Output_directory', tc_config_files.output_directory,
-                                                            os.path.join(os.getcwd(), 'output'))
+                                                            'output')
+            if not os.path.isabs(cls.output_directory):
+                # If output directory is relative, we use the same path as config directory
+                cls.output_directory = os.path.join(os.path.dirname(cls.config_directory), cls.output_directory)
             if not os.path.exists(cls.output_directory):
                 os.makedirs(cls.output_directory)
+
+    @staticmethod
+    def _find_parent_directory(directory, filename):
+        """Find a directory in parent tree with a specific filename
+
+        :param directory: directory name to find
+        :param filename: filename to find
+        :returns: absolute directory path
+        """
+        if os.path.isabs(directory):
+            return directory
+
+        parent_directory = directory
+        absolute_directory = '.'
+        while absolute_directory != os.path.abspath(parent_directory):
+            if os.path.isfile(os.path.join(parent_directory, filename)):
+                absolute_directory = os.path.abspath(parent_directory)
+                DriverWrappersPool.get_default_wrapper().logger.debug('Config files found in ' + absolute_directory)
+                return absolute_directory
+            absolute_directory = os.path.abspath(parent_directory)
+            parent_directory = os.path.join('..', parent_directory)
+        return os.path.abspath(directory)
 
     @classmethod
     def configure_visual_directories(cls, driver_info):
