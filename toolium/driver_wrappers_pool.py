@@ -190,7 +190,6 @@ class DriverWrappersPool(object):
         while absolute_directory != os.path.abspath(parent_directory):
             if os.path.isfile(os.path.join(parent_directory, filename)):
                 absolute_directory = os.path.abspath(parent_directory)
-                DriverWrappersPool.get_default_wrapper().logger.debug('Config files found in ' + absolute_directory)
                 return absolute_directory
             absolute_directory = os.path.abspath(parent_directory)
             parent_directory = os.path.join('..', parent_directory)

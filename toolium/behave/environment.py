@@ -17,13 +17,13 @@ limitations under the License.
 """
 
 import logging
+import os
 import re
 
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.jira import add_jira_status, change_all_jira_status, save_jira_conf
 from toolium.visual_test import VisualTest
-import os
 
 
 def before_all(context):
@@ -31,6 +31,15 @@ def before_all(context):
 
     :param context: behave context
     """
+    # Get 'env' property from user input (e.g. -D env=ios)
+    env = context.config.userdata.get('env')
+    if env:
+        if not hasattr(context, 'config_files'):
+            context.config_files = ConfigFiles()
+        context.config_files.set_config_properties_filenames('properties.cfg', '{}-properties.cfg'.format(env),
+                                                             'local-{}-properties.cfg'.format(env))
+        context.config_files.set_output_log_filename('toolium_{}.log'.format(env))
+
     create_and_configure_wrapper(context)
 
 

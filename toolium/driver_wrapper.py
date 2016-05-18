@@ -108,7 +108,7 @@ class DriverWrapper(object):
         :param tc_config_prop_filenames: test case specific properties filenames
         """
         prop_filenames = DriverWrappersPool.get_configured_value('Config_prop_filenames', tc_config_prop_filenames,
-                                                                 'properties.cfg')
+                                                                 'properties.cfg;local-properties.cfg')
         prop_filenames = [os.path.join(DriverWrappersPool.config_directory, filename) for filename in
                           prop_filenames.split(';')]
         prop_filenames = ';'.join(prop_filenames)

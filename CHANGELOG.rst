@@ -10,6 +10,12 @@ v1.1.0
 - Fix visual report links in Windows
 - Add @no_reset_app, @reset_app and @full_reset_app behave tags to configure Appium reset capabilities for one scenario
 - Add @android_only and @ios_only behave tags to exclude one scenario from iOS or Android executions
+- Add 'env' behave user property to select config files, e.g., to use android-properties.cfg file:
+
+.. code:: console
+
+    $ behave -D env=android
+
 
 v1.0.1
 ------
