@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import inspect
 import logging
 import os
 import re
@@ -31,11 +32,17 @@ def before_all(context):
 
     :param context: behave context
     """
+    if not hasattr(context, 'config_files'):
+        context.config_files = ConfigFiles()
+
+    # By default config directory is located in environment path
+    if not context.config_files.config_directory:
+        environment_path = os.path.dirname(os.path.realpath(inspect.getouterframes(inspect.currentframe())[1][1]))
+        context.config_files.set_config_directory(os.path.join(environment_path, 'conf'))
+
     # Get 'env' property from user input (e.g. -D env=ios)
     env = context.config.userdata.get('env')
     if env:
-        if not hasattr(context, 'config_files'):
-            context.config_files = ConfigFiles()
         context.config_files.set_config_properties_filenames('properties.cfg', '{}-properties.cfg'.format(env),
                                                              'local-{}-properties.cfg'.format(env))
         context.config_files.set_output_log_filename('toolium_{}.log'.format(env))

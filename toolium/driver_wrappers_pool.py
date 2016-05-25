@@ -182,17 +182,17 @@ class DriverWrappersPool(object):
         :param filename: filename to find
         :returns: absolute directory path
         """
-        if os.path.isabs(directory):
-            return directory
-
         parent_directory = directory
         absolute_directory = '.'
         while absolute_directory != os.path.abspath(parent_directory):
-            if os.path.isfile(os.path.join(parent_directory, filename)):
-                absolute_directory = os.path.abspath(parent_directory)
-                return absolute_directory
             absolute_directory = os.path.abspath(parent_directory)
-            parent_directory = os.path.join('..', parent_directory)
+            if os.path.isfile(os.path.join(absolute_directory, filename)):
+                return absolute_directory
+            if os.path.isabs(parent_directory):
+                parent_directory = os.path.join(os.path.dirname(parent_directory), '..',
+                                                os.path.basename(parent_directory))
+            else:
+                parent_directory = os.path.join('..', parent_directory)
         return os.path.abspath(directory)
 
     @classmethod
