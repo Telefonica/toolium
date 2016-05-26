@@ -44,4 +44,4 @@ class MobilePageObject(PageObject):
             __class_name = cls.__name__.replace('Base', __os_name.capitalize())
             return getattr(importlib.import_module(__module_name), __class_name)(__driver_wrapper)
         else:
-            return super(MobilePageObject, cls).__new__(cls, driver_wrapper)
+            return super(MobilePageObject, cls).__new__(cls)
