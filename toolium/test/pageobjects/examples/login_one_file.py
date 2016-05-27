@@ -19,10 +19,23 @@ limitations under the License.
 from selenium.webdriver.common.by import By
 
 from toolium.pageelements import *
-from toolium.test.pageobjects.base.login import BaseLoginPageObject
+from toolium.pageobjects.mobile_page_object import MobilePageObject
 
 
-class IosLoginPageObject(BaseLoginPageObject):
+class BaseLoginOneFilePageObject(MobilePageObject):
+    def login(self, username, password):
+        self.username = username
+        self.password = password
+        self.login_button.click()
+
+
+class AndroidLoginOneFilePageObject(BaseLoginOneFilePageObject):
+    username = InputText(By.ID, 'username_id_android')
+    password = InputText(By.ID, 'password_id_android')
+    login_button = Button(By.ID, 'login_id_android')
+
+
+class IosLoginOneFilePageObject(BaseLoginOneFilePageObject):
     username = InputText(By.ID, 'username_id_ios')
     password = InputText(By.ID, 'password_id_ios')
     login_button = Button(By.ID, 'login_id_ios')

@@ -227,6 +227,9 @@ This structure for the previous login example should look like::
     toolium_examples/pageobjects/ios/login.py
         class IosLoginPageObject(BaseLoginPageObject)
 
+If page objects are simple enough, the three page objects could be defined in the same file, so the previous folder
+structure is not needed.
+
 Finally, test cases must use base page object instead of Android or iOS. During test execution, depending on the driver
 type value, the corresponding Android or iOS page object will be instantiated.
 
