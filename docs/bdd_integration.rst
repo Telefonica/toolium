@@ -6,7 +6,7 @@ BDD Integration
 Toolium can be also used with behave and lettuce tests.
 
 Behave
-------
+~~~~~~
 
 Behave tests should be developed as usual, only *environment.py* file should be modified to initialize driver and the
 rest of Toolium configuration.
@@ -43,15 +43,38 @@ After initialization, the following attributes will be available in behave conte
 - context.driver: Selenium or Appium driver instance
 - context.utils: :ref:`Utils <utils>` instance
 
-Toolium properties can be modified from behave userdata configuration. For example, to select the driver type from
-command line instead of using the driver type defined in properties.cfg:
+Behave userdata properties
+--------------------------
+
+By default, Toolium configuration is loaded from properties.cfg and local-properties.cfg files. If different properties
+files are used for different environments, they can be selected using behave user property named *env*. For example, if
+*env* value is *android*, Toolium configuration will be loaded from properties.cfg, android-properties.cfg and
+local-android-properties.cfg files:
+
+.. code:: console
+
+    $ behave -D env=android
+
+Moreover, Toolium properties can be modified from behave userdata configuration. For example, to select the driver type
+from command line instead of using the driver type defined in properties.cfg:
 
 .. code:: console
 
     $ behave -D Driver_type=chrome
 
+Behave tags
+-----------
+
+Toolium defines some scenario tags to configure Appium tests:
+
+* @no_reset_app: mobile app will not be reset before test (i.e. no-reset Appium capability is set to true)
+* @reset_app: mobile app will be reset before test (i.e. no-reset and full-reset Appium capabilities are set to false)
+* @full_reset_app: mobile app will be full reset before test (i.e. full-reset Appium capability is set to true)
+* @android_only: identifies a scenario that should only be executed in Android
+* @ios_only: identifies a scenario that should only be executed in iOS
+
 Lettuce
--------
+~~~~~~~
 
 Lettuce tests should be developed as usual, only *terrain.py* file should be modified to initialize driver and the rest
 of Toolium configuration.

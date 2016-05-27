@@ -63,3 +63,31 @@ class DriverWrappersPoolTests(unittest.TestCase):
         assert_not_equal(self.driver_wrapper, new_wrapper)
         assert_equal(DriverWrappersPool.driver_wrappers[0], self.driver_wrapper)
         assert_equal(DriverWrappersPool.driver_wrappers[1], new_wrapper)
+
+    def test_find_parent_directory_relative(self):
+        directory = 'conf'
+        filename = 'properties.cfg'
+        expected_config_directory = os.path.join(os.getcwd(), 'conf')
+
+        assert_equal(expected_config_directory, DriverWrappersPool._find_parent_directory(directory, filename))
+
+    def test_find_parent_directory_file_not_found(self):
+        directory = 'conf'
+        filename = 'unknown'
+        expected_config_directory = os.path.join(os.getcwd(), 'conf')
+
+        assert_equal(expected_config_directory, DriverWrappersPool._find_parent_directory(directory, filename))
+
+    def test_find_parent_directory_absolute(self):
+        directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'conf')
+        filename = 'properties.cfg'
+        expected_config_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'conf')
+
+        assert_equal(expected_config_directory, DriverWrappersPool._find_parent_directory(directory, filename))
+
+    def test_find_parent_directory_absolute_recursively(self):
+        directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'unknown', 'conf')
+        filename = 'properties.cfg'
+        expected_config_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'conf')
+
+        assert_equal(expected_config_directory, DriverWrappersPool._find_parent_directory(directory, filename))

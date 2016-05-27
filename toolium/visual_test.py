@@ -51,7 +51,7 @@ class VisualTest(object):
     report_name = 'VisualTests.html'  #: final visual report name
     driver_wrapper = None  #: driver wrapper instance
     results = {'equal': 0, 'diff': 0, 'baseline': 0}  #: dict to save visual assert results
-    force = False
+    force = False  #: if True, screenshot is compared even if visual testing is disabled by configuration
 
     def __init__(self, driver_wrapper=None, force=False):
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
@@ -172,9 +172,10 @@ class VisualTest(object):
         :returns: tuple with element coordinates
         """
         offset = self.utils.get_safari_navigation_bar_height()
-        return (int(web_element.location['x']), int(web_element.location['y'] + offset),
-                int(web_element.location['x'] + web_element.size['width']),
-                int(web_element.location['y'] + offset + web_element.size['height']))
+        location = web_element.location
+        size = web_element.size
+        return (int(location['x']), int(location['y'] + offset),
+                int(location['x'] + size['width']), int(location['y'] + offset + size['height']))
 
     def crop_element(self, img, web_element):
         """Crop image to fit element
@@ -293,18 +294,19 @@ class VisualTest(object):
         row += '<td>' + report_name + '</td>'
 
         # baseline column
-        baseline_col = img.format(path.relpath(baseline_file, self.output_directory)) if baseline_file else ''
+        baseline_col = img.format(
+            path.relpath(baseline_file, self.output_directory).replace('\\', '/')) if baseline_file else ''
         row += '<td>' + baseline_col + '</td>'
 
         # image column
-        image_col = img.format(path.relpath(image_file, self.output_directory)) if image_file else ''
+        image_col = img.format(path.relpath(image_file, self.output_directory).replace('\\', '/')) if image_file else ''
         row += '<td>' + image_col + '</td>'
 
         # diff column
         diff_file = image_file.replace('.png', '.diff.png')
         if os.path.exists(diff_file):
             # perceptualdiff engine
-            diff_col = img.format(path.relpath(diff_file, self.output_directory))
+            diff_col = img.format(path.relpath(diff_file, self.output_directory).replace('\\', '/'))
         elif message is None:
             diff_col = ''
         elif message == '' or 'Image dimensions do not match' in message:

@@ -16,7 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import inspect
 import logging
+import os
 import re
 
 from toolium.config_files import ConfigFiles
@@ -30,6 +32,21 @@ def before_all(context):
 
     :param context: behave context
     """
+    if not hasattr(context, 'config_files'):
+        context.config_files = ConfigFiles()
+
+    # By default config directory is located in environment path
+    if not context.config_files.config_directory:
+        environment_path = os.path.dirname(os.path.realpath(inspect.getouterframes(inspect.currentframe())[1][1]))
+        context.config_files.set_config_directory(os.path.join(environment_path, 'conf'))
+
+    # Get 'env' property from user input (e.g. -D env=ios)
+    env = context.config.userdata.get('env')
+    if env:
+        context.config_files.set_config_properties_filenames('properties.cfg', '{}-properties.cfg'.format(env),
+                                                             'local-{}-properties.cfg'.format(env))
+        context.config_files.set_output_log_filename('toolium_{}.log'.format(env))
+
     create_and_configure_wrapper(context)
 
 
@@ -39,6 +56,25 @@ def before_scenario(context, scenario):
     :param context: behave context
     :param scenario: running scenario
     """
+    # Configure reset properties from behave tags
+    if 'no_reset_app' in scenario.tags:
+        os.environ["AppiumCapabilities_noReset"] = 'true'
+        os.environ["AppiumCapabilities_fullReset"] = 'false'
+    elif 'reset_app' in scenario.tags:
+        os.environ["AppiumCapabilities_noReset"] = 'false'
+        os.environ["AppiumCapabilities_fullReset"] = 'false'
+    elif 'full_reset_app' in scenario.tags:
+        os.environ["AppiumCapabilities_noReset"] = 'false'
+        os.environ["AppiumCapabilities_fullReset"] = 'true'
+
+    # Skip android_only or ios_only scenarios
+    if 'android_only' in scenario.tags and context.driver_wrapper.is_ios_test():
+        scenario.skip('Android scenario')
+        return
+    elif 'ios_only' in scenario.tags and context.driver_wrapper.is_android_test():
+        scenario.skip('iOS scenario')
+        return
+
     bdd_common_before_scenario(context, scenario)
 
 
@@ -49,9 +85,8 @@ def bdd_common_before_scenario(context_or_world, scenario):
     :param scenario: running scenario
     """
     # Initialize and connect driver wrapper
-    if not DriverWrappersPool.get_default_wrapper().driver:
-        create_and_configure_wrapper(context_or_world)
-        connect_wrapper(context_or_world)
+    create_and_configure_wrapper(context_or_world)
+    connect_wrapper(context_or_world)
 
     # Add assert screenshot methods with scenario configuration
     add_assert_screenshot_methods(context_or_world, scenario)
@@ -96,8 +131,11 @@ def connect_wrapper(context_or_world):
 
     :param context_or_world: behave context or lettuce world
     """
-    # Create driver
-    context_or_world.driver = context_or_world.driver_wrapper.connect()
+    # Create driver if it is not already created
+    if context_or_world.driver_wrapper.driver:
+        context_or_world.driver = context_or_world.driver_wrapper.driver
+    else:
+        context_or_world.driver = context_or_world.driver_wrapper.connect()
 
     # Copy app_strings object
     context_or_world.app_strings = context_or_world.driver_wrapper.app_strings

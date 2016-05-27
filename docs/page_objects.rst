@@ -155,3 +155,88 @@ through a method called *init_page_elements*.
             self.username.text = username
             self.password.text = password
             self.login_button.click()
+
+Mobile page object
+------------------
+
+MobilePageObject class allows using the same test case in Android and iOS, because an Android or iOS page object is
+instantiated depending on driver configuration. It's useful when testing the same mobile application in Android and iOS.
+
+Three page objects must be defined: a base page object with the commons methods, derived from MobilePageObject, and an
+Android and iOS page objects with their specific locators and methods, derived from base page object.
+
+For example, a base page object for login functionality:
+
+.. code-block:: python
+
+    from toolium.pageobjects.mobile_page_object import MobilePageObject
+
+    class BaseLoginPageObject(MobilePageObject):
+        def login(self, username, password):
+            self.username.text = username
+            self.password.text = password
+            self.login_button.click()
+
+The corresponding Android page object, where page elements are defined with their specific Android locators:
+
+.. code-block:: python
+
+    from selenium.webdriver.common.by import By
+    from toolium.pageelements import InputText, Button
+    from toolium_examples.pageobjects.base.login import BaseLoginPageObject
+
+    class AndroidLoginPageObject(BaseLoginPageObject):
+        username = InputText(By.ID, 'io.appium.android.apis:id/username')
+        password = InputText(By.ID, 'io.appium.android.apis:id/password')
+        login_button = Button(By.ID, "io.appium.android.apis:id/login_button")
+
+
+And the iOS page object, where page elements are defined with their specific iOS locators:
+
+.. code-block:: python
+
+    from appium.webdriver.common.mobileby import MobileBy
+    from toolium.pageelements import InputText, Button
+    from toolium_examples.pageobjects.base.login import BaseLoginPageObject
+
+    class IosLoginPageObject(BaseLoginPageObject):
+        username = InputText(MobileBy.IOS_UIAUTOMATION, '.textFields()[0]')
+        password = InputText(MobileBy.IOS_UIAUTOMATION, '.secureTextFields()[0]')
+        login_button = Button(MobileBy.IOS_UIAUTOMATION, '.buttons()[0]')
+
+
+Base, Android and iOS page objects must be defined in different files following this structure::
+
+    FOLDER/base/MODULE_NAME.py
+        class BasePAGE_OBJECT_NAME(MobilePageObject)
+
+    FOLDER/android/MODULE_NAME.py
+        class AndroidPAGE_OBJECT_NAME(BasePAGE_OBJECT_NAME)
+
+    FOLDER/ios/MODULE_NAME.py
+        class IosPAGE_OBJECT_NAME(BasePAGE_OBJECT_NAME)
+
+This structure for the previous login example should look like::
+
+    toolium_examples/pageobjects/base/login.py
+        class BaseLoginPageObject(MobilePageObject)
+
+    toolium_examples/pageobjects/android/login.py
+        class AndroidLoginPageObject(BaseLoginPageObject)
+
+    toolium_examples/pageobjects/ios/login.py
+        class IosLoginPageObject(BaseLoginPageObject)
+
+If page objects are simple enough, the three page objects could be defined in the same file, so the previous folder
+structure is not needed.
+
+Finally, test cases must use base page object instead of Android or iOS. During test execution, depending on the driver
+type value, the corresponding Android or iOS page object will be instantiated.
+
+.. code-block:: python
+
+    from toolium_examples.pageobjects.base.login import BaseLoginPageObject
+
+    class Login(AppiumTestCase):
+        def test_login(self):
+            BaseLoginPageObject().login(username, password)

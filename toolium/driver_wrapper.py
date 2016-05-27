@@ -108,7 +108,7 @@ class DriverWrapper(object):
         :param tc_config_prop_filenames: test case specific properties filenames
         """
         prop_filenames = DriverWrappersPool.get_configured_value('Config_prop_filenames', tc_config_prop_filenames,
-                                                                 'properties.cfg')
+                                                                 'properties.cfg;local-properties.cfg')
         prop_filenames = [os.path.join(DriverWrappersPool.config_directory, filename) for filename in
                           prop_filenames.split(';')]
         prop_filenames = ';'.join(prop_filenames)
@@ -119,8 +119,8 @@ class DriverWrapper(object):
             self.config = ExtendedConfigParser.get_config_from_file(prop_filenames)
             self.config_properties_filenames = prop_filenames
 
-            # Override properties with system properties
-            self.config.update_from_system_properties()
+        # Override properties with system properties
+        self.config.update_from_system_properties()
 
     def configure_visual_baseline(self):
         """Configure baseline directory"""
