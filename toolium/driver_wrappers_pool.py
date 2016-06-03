@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import datetime
+import inspect
 import logging
 import os
 
@@ -173,6 +174,15 @@ class DriverWrappersPool(object):
                 cls.output_directory = os.path.join(os.path.dirname(cls.config_directory), cls.output_directory)
             if not os.path.exists(cls.output_directory):
                 os.makedirs(cls.output_directory)
+
+    @staticmethod
+    def get_default_config_directory():
+        """Return default config directory, based in the actual test path
+
+        :returns: default config directory
+        """
+        test_path = os.path.dirname(os.path.realpath(inspect.getouterframes(inspect.currentframe())[2][1]))
+        return os.path.join(test_path, 'conf')
 
     @staticmethod
     def _find_parent_directory(directory, filename):

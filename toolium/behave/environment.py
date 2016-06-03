@@ -16,7 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import inspect
 import logging
 import os
 import re
@@ -37,8 +36,7 @@ def before_all(context):
 
     # By default config directory is located in environment path
     if not context.config_files.config_directory:
-        environment_path = os.path.dirname(os.path.realpath(inspect.getouterframes(inspect.currentframe())[1][1]))
-        context.config_files.set_config_directory(os.path.join(environment_path, 'conf'))
+        context.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
 
     # Get 'env' property from user input (e.g. -D env=ios)
     env = context.config.userdata.get('env')
@@ -112,8 +110,6 @@ def create_and_configure_wrapper(context_or_world):
     context_or_world.utils = context_or_world.driver_wrapper.utils
 
     # Configure wrapper
-    if not hasattr(context_or_world, 'config_files'):
-        context_or_world.config_files = ConfigFiles()
     context_or_world.driver_wrapper.configure(True, context_or_world.config_files)
 
     # Override properties with behave userdata properties

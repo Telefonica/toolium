@@ -50,6 +50,10 @@ class BasicTestCase(unittest.TestCase):
     def setUp(self):
         # Configure logger and properties
         if not isinstance(self, SeleniumTestCase):
+            # By default config directory is located in test path
+            if not self.config_files.config_directory:
+                self.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
+
             self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
             self.driver_wrapper.configure(False, self.config_files)
         # Get config and logger instances
@@ -108,6 +112,10 @@ class SeleniumTestCase(BasicTestCase):
         # Get default driver wrapper
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
         if not SeleniumTestCase.driver:
+            # By default config directory is located in test path
+            if not self.config_files.config_directory:
+                self.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
+
             # Create driver
             self.driver_wrapper.configure(True, self.config_files)
             self.driver_wrapper.connect()
@@ -187,8 +195,12 @@ class AppiumTestCase(SeleniumTestCase):
         :returns: Appium driver
         :rtype: appium.webdriver.webdriver.WebDriver
         """
-        return super(AppiumTestCase, self).driver
+        return SeleniumTestCase.driver
 
     def setUp(self):
+        if not SeleniumTestCase.driver and not self.config_files.config_directory:
+            # By default config directory is located in test path
+            self.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
+
         super(AppiumTestCase, self).setUp()
         AppiumTestCase.app_strings = self.driver_wrapper.app_strings
