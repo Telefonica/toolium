@@ -394,3 +394,17 @@ class Utils(object):
         else:
             web_element = None
         return web_element
+
+    def get_first_webview_context(self):
+        """Return the first WEBVIEW context or raise an exception if it is not found
+
+        :returns: first WEBVIEW context
+        """
+        for context in self.driver_wrapper.driver.contexts:
+            if context.startswith('WEBVIEW'):
+                return context
+        raise Exception('No WEBVIEW context has been found')
+
+    def switch_to_first_webview_context(self):
+        """Switch to the first WEBVIEW context"""
+        self.driver_wrapper.driver.switch_to.context(self.get_first_webview_context())

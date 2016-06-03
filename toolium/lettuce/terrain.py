@@ -19,6 +19,8 @@ limitations under the License.
 from lettuce import world
 
 from toolium.behave.environment import bdd_common_before_scenario, bdd_common_after_scenario, bdd_common_after_all
+from toolium.config_files import ConfigFiles
+from toolium.driver_wrapper import DriverWrappersPool
 
 
 def setup_driver(scenario):
@@ -26,6 +28,13 @@ def setup_driver(scenario):
 
     :param scenario: running scenario
     """
+    if not hasattr(world, 'config_files'):
+        world.config_files = ConfigFiles()
+
+    # By default config directory is located in terrain path
+    if not world.config_files.config_directory:
+        world.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
+
     bdd_common_before_scenario(world, scenario)
 
 
