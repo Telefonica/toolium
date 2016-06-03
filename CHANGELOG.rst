@@ -4,9 +4,9 @@ Toolium Changelog
 v1.1.0
 ------
 
-*In development*
+*Release date: 2016-06-03*
 
-- New MobilePageObject class to test Android and iOS apps with the same base page object
+- New MobilePageObject class to test Android and iOS apps with the same base page objects
 - Fix visual report links in Windows
 - Add @no_reset_app, @reset_app and @full_reset_app behave tags to configure Appium reset capabilities for one scenario
 - Add @android_only and @ios_only behave tags to exclude one scenario from iOS or Android executions
@@ -15,7 +15,6 @@ v1.1.0
 .. code:: console
 
     $ behave -D env=android
-
 
 v1.0.1
 ------

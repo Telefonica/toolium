@@ -51,7 +51,6 @@ to use the library to test web, Android or iOS applications, in different scenar
     $ git clone git@github.com:Telefonica/toolium-examples.git
     $ cd toolium-examples
     $ pip install -r requirements.txt
-    $ nosetests
 
 Contributing
 ------------

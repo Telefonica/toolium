@@ -56,7 +56,7 @@ setup(
     keywords=['selenium', 'appium', 'webdriver', 'web automation', 'mobile automation', 'page object',
               'visual testing', 'bdd', 'lettuce', 'behave'],
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Intended Audience :: Other Audience',
         'License :: OSI Approved :: Apache Software License',
