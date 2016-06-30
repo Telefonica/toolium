@@ -211,6 +211,9 @@ class DriverWrapper(object):
         # Update baseline
         self.update_visual_baseline()
 
+        # Discard previous logcat logs
+        self.utils.discard_logcat_logs()
+
         return self.driver
 
     def is_android_test(self):

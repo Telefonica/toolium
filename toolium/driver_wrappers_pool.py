@@ -92,30 +92,15 @@ class DriverWrappersPool(object):
         screenshot_name = '{}_driver{}' if len(cls.driver_wrappers) > 1 else '{}'
         driver_index = 1
         for driver_wrapper in cls.driver_wrappers:
-            if driver_wrapper.driver:
-                from toolium.jira import add_attachment
-                try:
-                    add_attachment(driver_wrapper.utils.capture_screenshot(screenshot_name.format(name, driver_index)))
-                except Exception:
-                    # Capture exceptions to avoid errors in teardown method due to session timeouts
-                    pass
+            if not driver_wrapper.driver:
+                continue
+            from toolium.jira import add_attachment
+            try:
+                add_attachment(driver_wrapper.utils.capture_screenshot(screenshot_name.format(name, driver_index)))
+            except Exception:
+                # Capture exceptions to avoid errors in teardown method due to session timeouts
+                pass
             driver_index += 1
-
-    @classmethod
-    def download_video(cls, driver_wrapper, name, test_passed=True):
-        """Download saved videos if video is enabled or if test fails
-
-        :oaram driver_wrapper: driver wrapper instance
-        :param name: destination file name
-        :param test_passed: True if the test has passed
-        """
-        video_name = '{}_driver{}' if len(cls.driver_wrappers) > 1 else '{}'
-        driver_index = 1
-        if (driver_wrapper.config.getboolean_optional('Server', 'video_enabled') or
-                not test_passed) and driver_wrapper.remote_node_video_enabled:
-            video_name = video_name if test_passed else 'error_{}'.format(video_name)
-            driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
-                                                       video_name.format(name, driver_index))
 
     @classmethod
     def close_drivers_and_download_videos(cls, name, test_passed=True, maintain_default=False):
@@ -127,17 +112,45 @@ class DriverWrappersPool(object):
         """
         # Exclude first wrapper if the driver must be reused
         driver_wrappers = cls.driver_wrappers[1:] if maintain_default else cls.driver_wrappers
+        video_name = '{}_driver{}' if len(driver_wrappers) > 1 else '{}'
+        video_name = video_name if test_passed else 'error_{}'.format(video_name)
+        driver_index = 1
 
         for driver_wrapper in driver_wrappers:
-            if driver_wrapper.driver:
-                try:
-                    driver_wrapper.driver.quit()
-                    cls.download_video(driver_wrapper, name, test_passed)
-                except Exception:
-                    # Capture exceptions to avoid errors in teardown method due to session timeouts
-                    pass
+            if not driver_wrapper.driver:
+                continue
+            try:
+                # Stop driver
+                driver_wrapper.driver.quit()
+                # Download video if necessary
+                if (driver_wrapper.config.getboolean_optional('Server', 'video_enabled')
+                    or not test_passed) and driver_wrapper.remote_node_video_enabled:
+                    driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
+                                                               video_name.format(name, driver_index))
+            except Exception:
+                # Capture exceptions to avoid errors in teardown method due to session timeouts
+                pass
+            driver_index += 1
 
         cls.driver_wrappers = cls.driver_wrappers[0:1] if maintain_default else []
+
+    @classmethod
+    def save_all_webdriver_logs(cls, test_name):
+        """Get all webdriver logs of each driver and write them to log files
+
+        :param test_name: test that has generated these logs
+        """
+        log_name = '{} [driver {}]' if len(cls.driver_wrappers) > 1 else '{}'
+        driver_index = 1
+        for driver_wrapper in cls.driver_wrappers:
+            if not driver_wrapper.driver:
+                continue
+            try:
+                driver_wrapper.utils.save_webdriver_logs(log_name.format(test_name, driver_index))
+            except Exception:
+                # Capture exceptions to avoid errors in teardown method due to session timeouts
+                pass
+            driver_index += 1
 
     @staticmethod
     def get_configured_value(system_property_name, specific_value, default_value):

@@ -41,7 +41,7 @@ project, run the example test and add your own tests and configuration.
     $ git clone git@github.com:Telefonica/toolium-template.git
     $ cd toolium-template
     $ pip install -r requirements.txt
-    $ nosetests
+    $ behave
 
 You can also clone `toolium-examples <https://github.com/Telefonica/toolium-examples>`_ to get more examples about how
 to use the library to test web, Android or iOS applications, in different scenarios.
