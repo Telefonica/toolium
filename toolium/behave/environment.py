@@ -136,9 +136,6 @@ def connect_wrapper(context_or_world):
     # Copy app_strings object
     context_or_world.app_strings = context_or_world.driver_wrapper.app_strings
 
-    # Discard previous logcat logs
-    context_or_world.utils.discard_logcat_logs()
-
 
 def add_assert_screenshot_methods(context_or_world, scenario):
     """Add assert screenshot methods to behave or lettuce object
@@ -193,7 +190,7 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
         context_or_world.logger.error(test_comment)
 
     # Write Webdriver logs to files
-    context_or_world.utils.save_all_webdriver_logs(scenario.name)
+    DriverWrappersPool.save_all_webdriver_logs(scenario.name)
 
     # Close browser and stop driver if it must not be reused
     reuse_driver = context_or_world.toolium_config.getboolean_optional('Driver', 'reuse_driver')

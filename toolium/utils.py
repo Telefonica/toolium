@@ -71,8 +71,8 @@ class Utils(object):
             return filepath
         return None
 
-    def save_all_webdriver_logs(self, test_name):
-        """Get all webdriver logs and write them to log files
+    def save_webdriver_logs(self, test_name):
+        """Get webdriver logs and write them to log files
 
         :param test_name: test that has generated these logs
         """
@@ -84,12 +84,12 @@ class Utils(object):
         self.logger.debug("Reading logs from '{}' and writing them to log files".format(', '.join(log_types)))
         for log_type in log_types:
             try:
-                self.save_webdriver_logs(log_type, test_name)
+                self.save_webdriver_logs_by_type(log_type, test_name)
             except Exception:
                 # Capture exceptions to avoid errors in teardown method
                 pass
 
-    def save_webdriver_logs(self, log_type, test_name):
+    def save_webdriver_logs_by_type(self, log_type, test_name):
         """Get webdriver logs of the specified type and write them to a log file
 
         :param log_type: browser, client, driver, performance, server, syslog, crashlog or logcat

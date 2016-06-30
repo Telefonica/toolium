@@ -120,9 +120,6 @@ class SeleniumTestCase(BasicTestCase):
             self.driver_wrapper.configure(True, self.config_files)
             self.driver_wrapper.connect()
 
-            # Discard previous logcat logs
-            self.driver_wrapper.utils.discard_logcat_logs()
-
         SeleniumTestCase.driver = self.driver_wrapper.driver
         self.utils = self.driver_wrapper.utils
 

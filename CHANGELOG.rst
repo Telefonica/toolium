@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.1.1
+------
+
+*In development*
+
+- Save webdriver logs of each driver, not just the first one
+
 v1.1.0
 ------
 
