@@ -4,9 +4,9 @@ Toolium Changelog
 v1.1.1
 ------
 
-*In development*
+*Release date: 2016-06-30*
 
-- Save webdriver logs of each driver, not just the first one
+- Save webdriver logs of each driver, not just the first one, and only if test fails
 
 v1.1.0
 ------
