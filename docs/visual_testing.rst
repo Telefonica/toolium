@@ -133,6 +133,7 @@ baseline_name
 - *{Driver_type}-{Capabilities_version}-{Capabilities_platform}*: baseline_name might take one of these values: iexplore-11-WIN8, safari-9.0-YOSEMITE...
 - *{AppiumCapabilities_deviceName}-{AppiumCapabilities_platformVersion}*: baseline_name might take one of these values: iPhone_6-8.3, iPhone_6-9.1, iPhone_6s-9.1...
 - *{PlatformVersion}*: baseline_name will take the value of the mobile platform version, instead of the platformVersion configuration property
+- *{Version}*: baseline_name will take the value of version capability, although it is not configured
 - *{RemoteNode}*: baseline_name will take the value of the remote node name
 
 engine

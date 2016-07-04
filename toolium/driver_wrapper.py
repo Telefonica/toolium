@@ -146,6 +146,13 @@ class DriverWrapper(object):
             self.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory, 'visualtests',
                                                           'baseline', self.baseline_name)
 
+        # Update baseline with real version value
+        if '{Version}' in self.baseline_name:
+            version = self.driver.desired_capabilities['version']
+            self.baseline_name = self.baseline_name.replace('{Version}', str(version))
+            self.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory, 'visualtests',
+                                                          'baseline', self.baseline_name)
+
         # Update baseline with remote node value
         if '{RemoteNode}' in self.baseline_name:
             self.baseline_name = self.baseline_name.replace('{RemoteNode}', str(self.remote_node))
