@@ -152,7 +152,8 @@ class DriverWrapper(object):
         # Update baseline with real version value
         if '{Version}' in self.baseline_name:
             try:
-                version = self.driver.desired_capabilities['version']
+                splitted_version = self.driver.desired_capabilities['version'].split('.')
+                version = '.'.join(splitted_version[:2])
             except KeyError:
                 version = None
             self.baseline_name = self.baseline_name.replace('{Version}', str(version))
