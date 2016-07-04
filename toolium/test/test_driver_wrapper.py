@@ -249,6 +249,19 @@ class DriverWrapperBaselineTests(DriverWrapperCommon):
         assert_equal(self.driver_wrapper.baseline_name, 'ios_9.3')
         assert_equal(self.driver_wrapper.visual_baseline_directory, expected_baseline_directory)
 
+    def test_update_visual_baseline_version(self):
+        # Configure baseline and driver mock
+        self.driver_wrapper.config.set('VisualTests', 'baseline_name', 'chrome_{Version}')
+        self.driver_wrapper.driver = mock.MagicMock()
+        self.driver_wrapper.driver.desired_capabilities.__getitem__.return_value = '51.0.2704.103'
+
+        self.driver_wrapper.configure_visual_baseline()
+        self.driver_wrapper.update_visual_baseline()
+
+        expected_baseline_directory = os.path.join(self.root_path, 'output', 'visualtests', 'baseline', 'chrome_51.0')
+        assert_equal(self.driver_wrapper.baseline_name, 'chrome_51.0')
+        assert_equal(self.driver_wrapper.visual_baseline_directory, expected_baseline_directory)
+
     def test_update_visual_baseline_remote_node(self):
         # Configure baseline and remote node
         self.driver_wrapper.config.set('VisualTests', 'baseline_name', 'firefox_{RemoteNode}')

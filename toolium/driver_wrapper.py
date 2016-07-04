@@ -141,8 +141,22 @@ class DriverWrapper(object):
         """Configure baseline directory after driver is created"""
         # Update baseline with real platformVersion value
         if '{PlatformVersion}' in self.baseline_name:
-            platform_version = self.driver.desired_capabilities['platformVersion']
+            try:
+                platform_version = self.driver.desired_capabilities['platformVersion']
+            except KeyError:
+                platform_version = None
             self.baseline_name = self.baseline_name.replace('{PlatformVersion}', str(platform_version))
+            self.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory, 'visualtests',
+                                                          'baseline', self.baseline_name)
+
+        # Update baseline with real version value
+        if '{Version}' in self.baseline_name:
+            try:
+                splitted_version = self.driver.desired_capabilities['version'].split('.')
+                version = '.'.join(splitted_version[:2])
+            except KeyError:
+                version = None
+            self.baseline_name = self.baseline_name.replace('{Version}', str(version))
             self.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory, 'visualtests',
                                                           'baseline', self.baseline_name)
 

@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.1.2
+------
+
+*In development*
+
+- Baseline name property can contain *{Version}* to add actual version capability value to the baseline name
+
 v1.1.1
 ------
 
