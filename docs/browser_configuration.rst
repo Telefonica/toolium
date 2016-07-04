@@ -34,6 +34,22 @@ Firefox
     [Driver]
     type: firefox
 
+Firefox with Gecko driver
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Download `geckodriver-*.zip <https://github.com/mozilla/geckodriver/releases>`_
+- Unzip file and save the executable in a local folder
+- Configure driver path in *[Driver]* section in properties.cfg file ::
+
+    [Driver]
+    type: firefox
+    gecko_driver_path: C:\Drivers\geckodriver.exe
+
+- Enable Gecko/Marionette driver in *[Capabilities]* section in properties.cfg file ::
+
+    [Capabilities]
+    marionette: true
+
 Chrome
 ~~~~~~
 
