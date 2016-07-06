@@ -199,7 +199,9 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Firefox driver
         """
-        return webdriver.Firefox(firefox_profile=self._create_firefox_profile(), capabilities=capabilities)
+        gecko_driver = self.config.get('Driver', 'gecko_driver_path') if capabilities.get("marionette") else None
+        return webdriver.Firefox(firefox_profile=self._create_firefox_profile(), capabilities=capabilities,
+                                 executable_path=gecko_driver)
 
     def _create_firefox_profile(self):
         """Create and configure a firefox profile

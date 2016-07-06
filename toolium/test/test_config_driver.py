@@ -76,7 +76,22 @@ class ConfigDriverTests(unittest.TestCase):
 
         config_driver._create_local_driver()
         webdriver_mock.Firefox.assert_called_once_with(capabilities=DesiredCapabilities.FIREFOX,
-                                                       firefox_profile='firefox profile')
+                                                       firefox_profile='firefox profile', executable_path=None)
+
+    @mock.patch('toolium.config_driver.webdriver')
+    def test_create_local_driver_firefox_gecko(self, webdriver_mock):
+        self.config.set('Driver', 'type', 'firefox')
+        self.config.add_section('Capabilities')
+        self.config.set('Capabilities', 'marionette', 'true')
+        self.config.set('Driver', 'gecko_driver_path', '/tmp/driver')
+        config_driver = ConfigDriver(self.config)
+        config_driver._create_firefox_profile = lambda: 'firefox profile'
+
+        config_driver._create_local_driver()
+        expected_capabilities = DesiredCapabilities.FIREFOX
+        expected_capabilities['marionette'] = True
+        webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
+                                                       firefox_profile='firefox profile', executable_path='/tmp/driver')
 
     @mock.patch('toolium.config_driver.webdriver')
     def test_create_local_driver_chrome(self, webdriver_mock):
@@ -179,7 +194,7 @@ class ConfigDriverTests(unittest.TestCase):
         capabilities = DesiredCapabilities.FIREFOX
         capabilities['version'] = '45'
         webdriver_mock.Firefox.assert_called_once_with(capabilities=capabilities,
-                                                       firefox_profile='firefox profile')
+                                                       firefox_profile='firefox profile', executable_path=None)
 
     @mock.patch('toolium.config_driver.webdriver')
     def test_create_remote_driver_firefox(self, webdriver_mock):
