@@ -2,7 +2,7 @@ Sphinx==1.4
 behave==1.2.5
 lettuce==0.2.21
 ddt==1.0.1
-nose==1.3.7
+pytest==2.9.2
 coverage==4.1b2
 mock==2.0.0
 requests-mock==0.7.0
