@@ -88,7 +88,7 @@ def test_create_local_driver_firefox_gecko(webdriver_mock, config):
     config_driver._create_firefox_profile = lambda: 'firefox profile'
 
     config_driver._create_local_driver()
-    expected_capabilities = DesiredCapabilities.FIREFOX
+    expected_capabilities = DesiredCapabilities.FIREFOX.copy()
     expected_capabilities['marionette'] = True
     webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path='/tmp/driver')
@@ -202,7 +202,7 @@ def test_create_local_driver_capabilities(webdriver_mock, config):
     config_driver._create_firefox_profile = lambda: 'firefox profile'
 
     config_driver._create_local_driver()
-    capabilities = DesiredCapabilities.FIREFOX
+    capabilities = DesiredCapabilities.FIREFOX.copy()
     capabilities['version'] = '45'
     webdriver_mock.Firefox.assert_called_once_with(capabilities=capabilities,
                                                    firefox_profile='firefox profile', executable_path=None)
@@ -222,7 +222,7 @@ def test_create_remote_driver_firefox(webdriver_mock, config):
     config_driver._create_firefox_profile = mock.MagicMock(return_value=ProfileMock())
 
     config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.FIREFOX
+    capabilities = DesiredCapabilities.FIREFOX.copy()
     capabilities['firefox_profile'] = 'encoded profile'
     webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                   desired_capabilities=capabilities)
@@ -241,7 +241,7 @@ def test_create_remote_driver_chrome(webdriver_mock, config):
     config_driver._create_chrome_options = mock.MagicMock(return_value=chrome_options)
 
     config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.CHROME
+    capabilities = DesiredCapabilities.CHROME.copy()
     capabilities['chromeOptions'] = 'chrome options'
     webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                   desired_capabilities=capabilities)
@@ -255,9 +255,8 @@ def test_create_remote_driver_safari(webdriver_mock, config):
     config_driver = ConfigDriver(config)
 
     config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.SAFARI
     webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
-                                                  desired_capabilities=capabilities)
+                                                  desired_capabilities=DesiredCapabilities.SAFARI)
 
 
 @mock.patch('toolium.config_driver.webdriver')
@@ -283,9 +282,8 @@ def test_create_remote_driver_iexplore(webdriver_mock, config):
     config_driver = ConfigDriver(config)
 
     config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.INTERNETEXPLORER
     webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
-                                                  desired_capabilities=capabilities)
+                                                  desired_capabilities=DesiredCapabilities.INTERNETEXPLORER)
 
 
 @mock.patch('toolium.config_driver.webdriver')
@@ -296,9 +294,8 @@ def test_create_remote_driver_edge(webdriver_mock, config):
     config_driver = ConfigDriver(config)
 
     config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.EDGE
     webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
-                                                  desired_capabilities=capabilities)
+                                                  desired_capabilities=DesiredCapabilities.EDGE)
 
 
 @mock.patch('toolium.config_driver.webdriver')
@@ -309,9 +306,8 @@ def test_create_remote_driver_phantomjs(webdriver_mock, config):
     config_driver = ConfigDriver(config)
 
     config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.PHANTOMJS
     webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
-                                                  desired_capabilities=capabilities)
+                                                  desired_capabilities=DesiredCapabilities.PHANTOMJS)
 
 
 @mock.patch('toolium.config_driver.appiumdriver')
@@ -385,7 +381,7 @@ def test_create_remote_driver_version(webdriver_mock, config):
     config_driver = ConfigDriver(config)
 
     config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.INTERNETEXPLORER
+    capabilities = DesiredCapabilities.INTERNETEXPLORER.copy()
     capabilities['version'] = '11'
     webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                   desired_capabilities=capabilities)
@@ -401,7 +397,7 @@ def test_create_remote_driver_capabilities(webdriver_mock, config):
     config_driver = ConfigDriver(config)
 
     config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.INTERNETEXPLORER
+    capabilities = DesiredCapabilities.INTERNETEXPLORER.copy()
     capabilities['version'] = '11'
     webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
                                                   desired_capabilities=capabilities)
