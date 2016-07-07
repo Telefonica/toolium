@@ -139,8 +139,8 @@ class VisualTests(unittest.TestCase):
 
     def test_compare_files_size(self):
         message = self.visual.compare_files(self._testMethodName, self.file_v1, self.file_small, 0)
-        # PIL returns an empty error
-        assert_equal('', message)
+        # PIL returns an empty error, but PyTest modifies AssertionError
+        assert 'assert (1680, 388) == (1246, 388)' in message
 
     def test_compare_files_size_fail(self):
         # Update conf and create a new VisualTest instance
