@@ -16,10 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest
-
 import mock
-from nose.tools import assert_equal, assert_is_instance, assert_is
+import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -38,101 +36,108 @@ class LoginPageObject(PageObject):
     inputs_parent = PageElements(By.XPATH, '//input', (By.ID, 'parent'))
 
 
-class TestPageElements(unittest.TestCase):
-    def setUp(self):
-        """Create a new mock element and a new driver before each test"""
-        # Create a mock element
-        self.mock_element = mock.MagicMock(spec=WebElement)
-        self.mock_element.find_elements.return_value = child_elements
+@pytest.fixture
+def driver_wrapper():
+    # Reset wrappers pool values
+    DriverWrappersPool._empty_pool()
+    DriverWrapper.config_properties_filenames = None
 
-        # Reset wrappers pool values
-        DriverWrappersPool._empty_pool()
-        DriverWrapper.config_properties_filenames = None
+    # Create a new wrapper
+    driver_wrapper = DriverWrappersPool.get_default_wrapper()
+    driver_wrapper.driver = mock.MagicMock()
 
-        # Create a new wrapper
-        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
-        self.driver_wrapper.driver = mock.MagicMock()
+    return driver_wrapper
 
-    def test_get_web_elements(self):
-        LoginPageObject().inputs.web_elements
 
-        self.driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
+def test_get_web_elements(driver_wrapper):
+    LoginPageObject().inputs.web_elements
 
-    def test_get_web_elements_with_parent_locator(self):
-        self.driver_wrapper.driver.find_element.return_value = self.mock_element
-        web_elements = LoginPageObject().inputs_parent.web_elements
+    driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
 
-        assert_equal(web_elements, child_elements)
-        self.driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'parent')
-        self.mock_element.find_elements.assert_called_once_with(By.XPATH, '//input')
 
-    def test_get_page_elements(self):
-        self.driver_wrapper.driver.find_elements.return_value = child_elements
-        page_elements = LoginPageObject().inputs.page_elements
+def test_get_web_elements_with_parent_locator(driver_wrapper):
+    # Create a mock element
+    mock_element = mock.MagicMock(spec=WebElement)
+    mock_element.find_elements.return_value = child_elements
 
-        # Check that find_elements has been called just one time
-        self.driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
-        self.driver_wrapper.driver.find_element.assert_not_called()
+    driver_wrapper.driver.find_element.return_value = mock_element
+    web_elements = LoginPageObject().inputs_parent.web_elements
 
-        # Check that the response is a list of 2 PageElement with the expected web element
-        assert_equal(len(page_elements), 2)
-        assert_is_instance(page_elements[0], PageElement)
-        assert_equal(page_elements[0]._web_element, child_elements[0])
-        assert_is_instance(page_elements[1], PageElement)
-        assert_equal(page_elements[1]._web_element, child_elements[1])
+    assert web_elements == child_elements
+    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'parent')
+    mock_element.find_elements.assert_called_once_with(By.XPATH, '//input')
 
-    def test_get_page_elements_and_web_elements(self):
-        self.driver_wrapper.driver.find_elements.return_value = child_elements
-        inputs = LoginPageObject().inputs
-        page_elements = inputs.page_elements
-        web_elements = inputs.web_elements
 
-        # Check that find_elements has been called just one time
-        self.driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
-        self.driver_wrapper.driver.find_element.assert_not_called()
+def test_get_page_elements(driver_wrapper):
+    driver_wrapper.driver.find_elements.return_value = child_elements
+    page_elements = LoginPageObject().inputs.page_elements
 
-        # Check that the response is a list of 2 PageElement with the expected web element
-        assert_equal(len(page_elements), 2)
-        assert_is_instance(page_elements[0], PageElement)
-        assert_equal(page_elements[0]._web_element, child_elements[0])
-        assert_is_instance(page_elements[1], PageElement)
-        assert_equal(page_elements[1]._web_element, child_elements[1])
+    # Check that find_elements has been called just one time
+    driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
+    driver_wrapper.driver.find_element.assert_not_called()
 
-        # Check that web_elements are the same elements as page_element._web_element
-        assert_is(web_elements[0], page_elements[0]._web_element)
-        assert_is(web_elements[1], page_elements[1]._web_element)
+    # Check that the response is a list of 2 PageElement with the expected web element
+    assert len(page_elements) == 2
+    assert isinstance(page_elements[0], PageElement)
+    assert page_elements[0]._web_element == child_elements[0]
+    assert isinstance(page_elements[1], PageElement)
+    assert page_elements[1]._web_element == child_elements[1]
 
-    def test_multiple_page_elements(self):
-        self.driver_wrapper.driver.find_elements.side_effect = [child_elements, other_child_elements]
-        input_page_elements = LoginPageObject().inputs.page_elements
-        links_page_elements = LoginPageObject().links.page_elements
 
-        # Check that the response is a list of 2 PageElement with the expected web element
-        assert_equal(len(input_page_elements), 2)
-        assert_is_instance(input_page_elements[0], PageElement)
-        assert_equal(input_page_elements[0]._web_element, child_elements[0])
-        assert_is_instance(input_page_elements[1], PageElement)
-        assert_equal(input_page_elements[1]._web_element, child_elements[1])
+def test_get_page_elements_and_web_elements(driver_wrapper):
+    driver_wrapper.driver.find_elements.return_value = child_elements
+    inputs = LoginPageObject().inputs
+    page_elements = inputs.page_elements
+    web_elements = inputs.web_elements
 
-        # Check that the response is a list of 2 PageElement with the expected web element
-        assert_equal(len(links_page_elements), 2)
-        assert_is_instance(links_page_elements[0], PageElement)
-        assert_equal(links_page_elements[0]._web_element, other_child_elements[0])
-        assert_is_instance(links_page_elements[1], PageElement)
-        assert_equal(links_page_elements[1]._web_element, other_child_elements[1])
+    # Check that find_elements has been called just one time
+    driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
+    driver_wrapper.driver.find_element.assert_not_called()
 
-    def test_reset_object(self):
-        self.driver_wrapper.driver.find_elements.side_effect = [child_elements, other_child_elements]
-        login_page = LoginPageObject()
-        login_page.inputs.web_elements
-        login_page.links.web_elements
+    # Check that the response is a list of 2 PageElement with the expected web element
+    assert len(page_elements) == 2
+    assert isinstance(page_elements[0], PageElement)
+    assert page_elements[0]._web_element == child_elements[0]
+    assert isinstance(page_elements[1], PageElement)
+    assert page_elements[1]._web_element == child_elements[1]
 
-        # Check that web elements are filled
-        assert_equal(len(login_page.inputs._web_elements), 2)
-        assert_equal(len(login_page.links._web_elements), 2)
+    # Check that web_elements are the same elements as page_element._web_element
+    assert web_elements[0] is page_elements[0]._web_element
+    assert web_elements[1] is page_elements[1]._web_element
 
-        login_page.inputs.reset_object()
 
-        # Check that only username is reset
-        assert_equal(len(login_page.inputs._web_elements), 0)
-        assert_equal(len(login_page.links._web_elements), 2)
+def test_multiple_page_elements(driver_wrapper):
+    driver_wrapper.driver.find_elements.side_effect = [child_elements, other_child_elements]
+    input_page_elements = LoginPageObject().inputs.page_elements
+    links_page_elements = LoginPageObject().links.page_elements
+
+    # Check that the response is a list of 2 PageElement with the expected web element
+    assert len(input_page_elements) == 2
+    assert isinstance(input_page_elements[0], PageElement)
+    assert input_page_elements[0]._web_element == child_elements[0]
+    assert isinstance(input_page_elements[1], PageElement)
+    assert input_page_elements[1]._web_element == child_elements[1]
+
+    # Check that the response is a list of 2 PageElement with the expected web element
+    assert len(links_page_elements) == 2
+    assert isinstance(links_page_elements[0], PageElement)
+    assert links_page_elements[0]._web_element == other_child_elements[0]
+    assert isinstance(links_page_elements[1], PageElement)
+    assert links_page_elements[1]._web_element == other_child_elements[1]
+
+
+def test_reset_object(driver_wrapper):
+    driver_wrapper.driver.find_elements.side_effect = [child_elements, other_child_elements]
+    login_page = LoginPageObject()
+    login_page.inputs.web_elements
+    login_page.links.web_elements
+
+    # Check that web elements are filled
+    assert len(login_page.inputs._web_elements) == 2
+    assert len(login_page.links._web_elements) == 2
+
+    login_page.inputs.reset_object()
+
+    # Check that only username is reset
+    assert len(login_page.inputs._web_elements) == 0
+    assert len(login_page.links._web_elements) == 2

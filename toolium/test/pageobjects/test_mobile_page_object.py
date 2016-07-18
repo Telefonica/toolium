@@ -17,9 +17,8 @@ limitations under the License.
 """
 
 import os
-import unittest
 
-from nose.tools import assert_is_instance, assert_equal, assert_true
+import pytest
 
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -30,66 +29,74 @@ from toolium.test.pageobjects.examples.login_one_file import AndroidLoginOneFile
 from toolium.test.pageobjects.examples.login_one_file import BaseLoginOneFilePageObject
 
 
-class TestMobilePageObject(unittest.TestCase):
-    def setUp(self):
-        # Configure properties
-        config_files = ConfigFiles()
-        root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        config_files.set_config_directory(os.path.join(root_path, 'conf'))
-        config_files.set_config_properties_filenames('properties.cfg')
-        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
-        self.driver_wrapper.configure(tc_config_files=config_files)
+@pytest.fixture
+def driver_wrapper():
+    # Configure properties
+    config_files = ConfigFiles()
+    root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    config_files.set_config_directory(os.path.join(root_path, 'conf'))
+    config_files.set_config_properties_filenames('properties.cfg')
+    driver_wrapper = DriverWrappersPool.get_default_wrapper()
+    driver_wrapper.configure(tc_config_files=config_files)
 
-    def test_mobile_page_object_ios(self):
-        self.driver_wrapper.config.set('Driver', 'type', 'ios')
-        page_object = BaseLoginPageObject(self.driver_wrapper)
+    return driver_wrapper
 
-        # Check instance type, specific locator and common method
-        assert_is_instance(page_object, IosLoginPageObject)
-        assert_equal(page_object.username.locator[1], 'username_id_ios')
-        assert_true(hasattr(page_object, 'login'))
 
-    def test_mobile_page_object_android(self):
-        self.driver_wrapper.config.set('Driver', 'type', 'android')
-        page_object = BaseLoginPageObject(self.driver_wrapper)
+def test_mobile_page_object_ios(driver_wrapper):
+    driver_wrapper.config.set('Driver', 'type', 'ios')
+    page_object = BaseLoginPageObject(driver_wrapper)
 
-        # Check instance type, specific locator and common method
-        assert_is_instance(page_object, AndroidLoginPageObject)
-        assert_equal(page_object.username.locator[1], 'username_id_android')
-        assert_true(hasattr(page_object, 'login'))
+    # Check instance type, specific locator and common method
+    assert isinstance(page_object, IosLoginPageObject)
+    assert page_object.username.locator[1] == 'username_id_ios'
+    assert hasattr(page_object, 'login')
 
-    def test_mobile_page_object_default(self):
-        self.driver_wrapper.config.set('Driver', 'type', 'unknown')
-        page_object = BaseLoginPageObject(self.driver_wrapper)
 
-        # Check instance type, specific locator and common method
-        assert_is_instance(page_object, AndroidLoginPageObject)
-        assert_equal(page_object.username.locator[1], 'username_id_android')
-        assert_true(hasattr(page_object, 'login'))
+def test_mobile_page_object_android(driver_wrapper):
+    driver_wrapper.config.set('Driver', 'type', 'android')
+    page_object = BaseLoginPageObject(driver_wrapper)
 
-    def test_mobile_page_object_one_file_ios(self):
-        self.driver_wrapper.config.set('Driver', 'type', 'ios')
-        page_object = BaseLoginOneFilePageObject(self.driver_wrapper)
+    # Check instance type, specific locator and common method
+    assert isinstance(page_object, AndroidLoginPageObject)
+    assert page_object.username.locator[1] == 'username_id_android'
+    assert hasattr(page_object, 'login')
 
-        # Check instance type, specific locator and common method
-        assert_is_instance(page_object, IosLoginOneFilePageObject)
-        assert_equal(page_object.username.locator[1], 'username_id_ios')
-        assert_true(hasattr(page_object, 'login'))
 
-    def test_mobile_page_object_one_file_android(self):
-        self.driver_wrapper.config.set('Driver', 'type', 'android')
-        page_object = BaseLoginOneFilePageObject(self.driver_wrapper)
+def test_mobile_page_object_default(driver_wrapper):
+    driver_wrapper.config.set('Driver', 'type', 'unknown')
+    page_object = BaseLoginPageObject(driver_wrapper)
 
-        # Check instance type, specific locator and common method
-        assert_is_instance(page_object, AndroidLoginOneFilePageObject)
-        assert_equal(page_object.username.locator[1], 'username_id_android')
-        assert_true(hasattr(page_object, 'login'))
+    # Check instance type, specific locator and common method
+    assert isinstance(page_object, AndroidLoginPageObject)
+    assert page_object.username.locator[1] == 'username_id_android'
+    assert hasattr(page_object, 'login')
 
-    def test_mobile_page_object_one_file_default(self):
-        self.driver_wrapper.config.set('Driver', 'type', 'unknown')
-        page_object = BaseLoginOneFilePageObject(self.driver_wrapper)
 
-        # Check instance type, specific locator and common method
-        assert_is_instance(page_object, AndroidLoginOneFilePageObject)
-        assert_equal(page_object.username.locator[1], 'username_id_android')
-        assert_true(hasattr(page_object, 'login'))
+def test_mobile_page_object_one_file_ios(driver_wrapper):
+    driver_wrapper.config.set('Driver', 'type', 'ios')
+    page_object = BaseLoginOneFilePageObject(driver_wrapper)
+
+    # Check instance type, specific locator and common method
+    assert isinstance(page_object, IosLoginOneFilePageObject)
+    assert page_object.username.locator[1] == 'username_id_ios'
+    assert hasattr(page_object, 'login')
+
+
+def test_mobile_page_object_one_file_android(driver_wrapper):
+    driver_wrapper.config.set('Driver', 'type', 'android')
+    page_object = BaseLoginOneFilePageObject(driver_wrapper)
+
+    # Check instance type, specific locator and common method
+    assert isinstance(page_object, AndroidLoginOneFilePageObject)
+    assert page_object.username.locator[1] == 'username_id_android'
+    assert hasattr(page_object, 'login')
+
+
+def test_mobile_page_object_one_file_default(driver_wrapper):
+    driver_wrapper.config.set('Driver', 'type', 'unknown')
+    page_object = BaseLoginOneFilePageObject(driver_wrapper)
+
+    # Check instance type, specific locator and common method
+    assert isinstance(page_object, AndroidLoginOneFilePageObject)
+    assert page_object.username.locator[1] == 'username_id_android'
+    assert hasattr(page_object, 'login')

@@ -16,10 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest
-
 import mock
-from nose.tools import assert_equal
+import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -30,6 +28,7 @@ from toolium.pageelements import select_page_element
 from toolium.pageobjects.page_object import PageObject
 
 child_element = 'child_element'
+mock_element = None
 
 
 def get_mock_select():
@@ -59,78 +58,86 @@ class LoginPageObject(PageObject):
     menu = Menu(By.ID, 'menu')
 
 
-class TestDerivedPageElement(unittest.TestCase):
-    def setUp(self):
-        """Create a new mock element and a new driver before each test"""
-        # Create a mock element
-        self.mock_element = mock.MagicMock(spec=WebElement)
-        self.mock_element.find_element.return_value = child_element
-        self.mock_element.text = 'text value'
-        self.mock_element.get_attribute.return_value = 'input text value'
+@pytest.fixture
+def driver_wrapper():
+    # Create a mock element
+    global mock_element
+    mock_element = mock.MagicMock(spec=WebElement)
+    mock_element.find_element.return_value = child_element
+    mock_element.text = 'text value'
+    mock_element.get_attribute.return_value = 'input text value'
 
-        # Reset wrappers pool values
-        DriverWrappersPool._empty_pool()
-        DriverWrapper.config_properties_filenames = None
+    # Reset wrappers pool values
+    DriverWrappersPool._empty_pool()
+    DriverWrapper.config_properties_filenames = None
 
-        # Create a new wrapper
-        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
-        self.driver_wrapper.driver = mock.MagicMock()
+    # Create a new wrapper
+    driver_wrapper = DriverWrappersPool.get_default_wrapper()
+    driver_wrapper.driver = mock.MagicMock()
 
-    def test_locator(self):
-        page_object = LoginPageObject()
+    return driver_wrapper
 
-        assert_equal(page_object.title.locator, (By.ID, 'title'))
-        assert_equal(page_object.username.locator, (By.XPATH, '//input[0]'))
-        assert_equal(page_object.password.locator, (By.ID, 'password'))
-        assert_equal(page_object.language.locator, (By.ID, 'language'))
-        assert_equal(page_object.login.locator, (By.ID, 'login'))
-        assert_equal(page_object.menu.locator, (By.ID, 'menu'))
-        assert_equal(page_object.menu.logo.locator, (By.ID, 'image'))
+def test_locator(driver_wrapper):
+    page_object = LoginPageObject(driver_wrapper)
 
-        # Check that elements inside a group have the group as parent
-        assert_equal(page_object.menu.logo.parent, page_object.menu)
+    assert page_object.title.locator == (By.ID, 'title')
+    assert page_object.username.locator == (By.XPATH, '//input[0]')
+    assert page_object.password.locator == (By.ID, 'password')
+    assert page_object.language.locator == (By.ID, 'language')
+    assert page_object.login.locator == (By.ID, 'login')
+    assert page_object.menu.locator == (By.ID, 'menu')
+    assert page_object.menu.logo.locator == (By.ID, 'image')
 
-    def test_get_text(self):
-        self.driver_wrapper.driver.find_element.return_value = self.mock_element
+    # Check that elements inside a group have the group as parent
+    assert page_object.menu.logo.parent == page_object.menu
 
-        title_value = LoginPageObject().title.text
 
-        assert_equal(title_value, 'text value')
+def test_get_text(driver_wrapper):
+    driver_wrapper.driver.find_element.return_value = mock_element
 
-    def test_get_input_text(self):
-        self.driver_wrapper.driver.find_element.return_value = self.mock_element
+    title_value = LoginPageObject().title.text
 
-        username_value = LoginPageObject().username.text
+    assert title_value == 'text value'
 
-        assert_equal(username_value, 'input text value')
 
-    def test_set_input_text(self):
-        # Configure driver mock
-        self.driver_wrapper.driver.find_element.return_value = self.mock_element
-        self.driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
+def test_get_input_text(driver_wrapper):
+    driver_wrapper.driver.find_element.return_value = mock_element
 
-        LoginPageObject().username.text = 'new input value'
+    username_value = LoginPageObject().username.text
 
-        self.mock_element.send_keys.assert_called_once_with('new input value')
+    assert username_value == 'input text value'
 
-    def test_get_selected_option(self):
-        select_page_element.SeleniumSelect = get_mock_select()
 
-        option = LoginPageObject().language.option
+def test_set_input_text(driver_wrapper):
+    # Configure driver mock
+    driver_wrapper.driver.find_element.return_value = mock_element
+    driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
 
-        assert_equal(option, 'option value')
+    LoginPageObject().username.text = 'new input value'
 
-    def test_set_option(self):
-        self.driver_wrapper.driver.find_element.return_value = self.mock_element
-        select_page_element.SeleniumSelect = get_mock_select()
+    mock_element.send_keys.assert_called_once_with('new input value')
 
-        LoginPageObject().language.option = 'new option value'
 
-        select_page_element.SeleniumSelect.assert_called_once_with(self.mock_element)
-        select_page_element.SeleniumSelect().select_by_visible_text.assert_called_once_with('new option value')
+def test_get_selected_option(driver_wrapper):
+    select_page_element.SeleniumSelect = get_mock_select()
 
-    def test_click_button(self):
-        self.driver_wrapper.driver.find_element.return_value = self.mock_element
-        LoginPageObject().login.click()
+    option = LoginPageObject().language.option
 
-        self.mock_element.click.assert_called_once_with()
+    assert option == 'option value'
+
+
+def test_set_option(driver_wrapper):
+    driver_wrapper.driver.find_element.return_value = mock_element
+    select_page_element.SeleniumSelect = get_mock_select()
+
+    LoginPageObject().language.option = 'new option value'
+
+    select_page_element.SeleniumSelect.assert_called_once_with(mock_element)
+    select_page_element.SeleniumSelect().select_by_visible_text.assert_called_once_with('new option value')
+
+
+def test_click_button(driver_wrapper):
+    driver_wrapper.driver.find_element.return_value = mock_element
+    LoginPageObject().login.click()
+
+    mock_element.click.assert_called_once_with()
