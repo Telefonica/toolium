@@ -16,10 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest
-
 import mock
-from nose.tools import assert_equal, assert_is_not_none, assert_is_none
+import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -56,108 +54,113 @@ class RegisterPageObject(PageObject):
         self.menu_group = MenuGroup(By.ID, 'menu')
 
 
-class TestPageObject(unittest.TestCase):
-    def setUp(self):
-        """Create a new mock element and a new driver before each test"""
-        global mock_element
-        mock_element = mock.MagicMock(spec=WebElement)
-        mock_element.find_element.return_value = child_element
+@pytest.fixture
+def driver_wrapper():
+    """Create a new mock element and a new driver before each test"""
+    global mock_element
+    mock_element = mock.MagicMock(spec=WebElement)
+    mock_element.find_element.return_value = child_element
 
-        # Reset wrappers pool values
-        DriverWrappersPool._empty_pool()
-        DriverWrappersPool.output_directory = ''
-        DriverWrapper.config_properties_filenames = None
+    # Reset wrappers pool values
+    DriverWrappersPool._empty_pool()
+    DriverWrappersPool.output_directory = ''
+    DriverWrapper.config_properties_filenames = None
 
-        # Create a new wrapper
-        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
-        self.driver_wrapper.driver = mock.MagicMock()
+    # Create a new wrapper
+    driver_wrapper = DriverWrappersPool.get_default_wrapper()
+    driver_wrapper.driver = mock.MagicMock()
 
-    def test_driver_wrapper(self):
-        page_object = RegisterPageObject()
+    return driver_wrapper
 
-        # Check that the page object and its page elements have the same driver wrapper
-        assert_equal(page_object.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.username.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.password.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.language.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.email.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.address.driver_wrapper, self.driver_wrapper)
 
-        # Check that the child page object and its page elements have the same driver wrapper
-        assert_equal(page_object.menu.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.menu.register.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.menu.logo.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.menu_group.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.menu_group.logo.driver_wrapper, self.driver_wrapper)
+def test_driver_wrapper(driver_wrapper):
+    page_object = RegisterPageObject()
 
-    def test_two_driver_wrappers(self):
-        page_object = RegisterPageObject()
-        second_driver_wrapper = DriverWrapper()
-        second_page_object = RegisterPageObject(second_driver_wrapper)
+    # Check that the page object and its page elements have the same driver wrapper
+    assert page_object.driver_wrapper == driver_wrapper
+    assert page_object.username.driver_wrapper == driver_wrapper
+    assert page_object.password.driver_wrapper == driver_wrapper
+    assert page_object.language.driver_wrapper == driver_wrapper
+    assert page_object.email.driver_wrapper == driver_wrapper
+    assert page_object.address.driver_wrapper == driver_wrapper
 
-        # Check that the page object and its instance page elements have the same driver wrapper
-        assert_equal(page_object.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.language.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.email.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.address.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.menu.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.menu.logo.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.menu_group.driver_wrapper, self.driver_wrapper)
-        assert_equal(page_object.menu_group.logo.driver_wrapper, self.driver_wrapper)
+    # Check that the child page object and its page elements have the same driver wrapper
+    assert page_object.menu.driver_wrapper == driver_wrapper
+    assert page_object.menu.register.driver_wrapper == driver_wrapper
+    assert page_object.menu.logo.driver_wrapper == driver_wrapper
+    assert page_object.menu_group.driver_wrapper == driver_wrapper
+    assert page_object.menu_group.logo.driver_wrapper == driver_wrapper
 
-        # Check that the second page object and its instance page elements have the second driver wrapper
-        assert_equal(second_page_object.driver_wrapper, second_driver_wrapper)
-        assert_equal(second_page_object.language.driver_wrapper, second_driver_wrapper)
-        assert_equal(second_page_object.email.driver_wrapper, second_driver_wrapper)
-        assert_equal(second_page_object.address.driver_wrapper, second_driver_wrapper)
-        assert_equal(second_page_object.menu.driver_wrapper, second_driver_wrapper)
-        assert_equal(second_page_object.menu.logo.driver_wrapper, second_driver_wrapper)
-        assert_equal(second_page_object.menu_group.driver_wrapper, second_driver_wrapper)
-        assert_equal(second_page_object.menu_group.logo.driver_wrapper, second_driver_wrapper)
 
-        # Check that the class elements have the last driver wrapper
-        # This kind of elements could not be used with multiple drivers
-        assert_equal(page_object.username.driver_wrapper, second_driver_wrapper)
-        assert_equal(page_object.password.driver_wrapper, second_driver_wrapper)
-        assert_equal(page_object.menu.register.driver_wrapper, second_driver_wrapper)
-        assert_equal(second_page_object.username.driver_wrapper, second_driver_wrapper)
-        assert_equal(second_page_object.password.driver_wrapper, second_driver_wrapper)
-        assert_equal(second_page_object.menu.register.driver_wrapper, second_driver_wrapper)
+def test_two_driver_wrappers(driver_wrapper):
+    page_object = RegisterPageObject()
+    second_driver_wrapper = DriverWrapper()
+    second_page_object = RegisterPageObject(second_driver_wrapper)
 
-    def test_reset_object(self):
-        page_object = RegisterPageObject()
+    # Check that the page object and its instance page elements have the same driver wrapper
+    assert page_object.driver_wrapper == driver_wrapper
+    assert page_object.language.driver_wrapper == driver_wrapper
+    assert page_object.email.driver_wrapper == driver_wrapper
+    assert page_object.address.driver_wrapper == driver_wrapper
+    assert page_object.menu.driver_wrapper == driver_wrapper
+    assert page_object.menu.logo.driver_wrapper == driver_wrapper
+    assert page_object.menu_group.driver_wrapper == driver_wrapper
+    assert page_object.menu_group.logo.driver_wrapper == driver_wrapper
 
-        # Search page elements
-        page_object.username.web_element
-        page_object.password.web_element
-        page_object.language.web_element
-        page_object.email.web_element
-        page_object.address.web_element
-        page_object.menu.register.web_element
-        page_object.menu.logo.web_element
-        page_object.menu_group.web_element
-        page_object.menu_group.logo.web_element
+    # Check that the second page object and its instance page elements have the second driver wrapper
+    assert second_page_object.driver_wrapper == second_driver_wrapper
+    assert second_page_object.language.driver_wrapper == second_driver_wrapper
+    assert second_page_object.email.driver_wrapper == second_driver_wrapper
+    assert second_page_object.address.driver_wrapper == second_driver_wrapper
+    assert second_page_object.menu.driver_wrapper == second_driver_wrapper
+    assert second_page_object.menu.logo.driver_wrapper == second_driver_wrapper
+    assert second_page_object.menu_group.driver_wrapper == second_driver_wrapper
+    assert second_page_object.menu_group.logo.driver_wrapper == second_driver_wrapper
 
-        # Check that all page elements have a web element
-        assert_is_not_none(page_object.username._web_element)
-        assert_is_not_none(page_object.password._web_element)
-        assert_is_not_none(page_object.language._web_element)
-        assert_is_not_none(page_object.email._web_element)
-        assert_is_not_none(page_object.address._web_element)
-        assert_is_not_none(page_object.menu.register._web_element)
-        assert_is_not_none(page_object.menu.logo._web_element)
-        assert_is_not_none(page_object.menu_group._web_element)
-        assert_is_not_none(page_object.menu_group.logo._web_element)
+    # Check that the class elements have the last driver wrapper
+    # This kind of elements could not be used with multiple drivers
+    assert page_object.username.driver_wrapper == second_driver_wrapper
+    assert page_object.password.driver_wrapper == second_driver_wrapper
+    assert page_object.menu.register.driver_wrapper == second_driver_wrapper
+    assert second_page_object.username.driver_wrapper == second_driver_wrapper
+    assert second_page_object.password.driver_wrapper == second_driver_wrapper
+    assert second_page_object.menu.register.driver_wrapper == second_driver_wrapper
 
-        page_object.reset_object()
 
-        # Check that all page elements are reset
-        assert_is_none(page_object.username._web_element)
-        assert_is_none(page_object.password._web_element)
-        assert_is_none(page_object.language._web_element)
-        assert_is_none(page_object.email._web_element)
-        assert_is_none(page_object.address._web_element)
-        assert_is_none(page_object.menu.register._web_element)
-        assert_is_none(page_object.menu.logo._web_element)
-        assert_is_none(page_object.menu_group._web_element)
-        assert_is_none(page_object.menu_group.logo._web_element)
+def test_reset_object(driver_wrapper):
+    page_object = RegisterPageObject(driver_wrapper)
+
+    # Search page elements
+    page_object.username.web_element
+    page_object.password.web_element
+    page_object.language.web_element
+    page_object.email.web_element
+    page_object.address.web_element
+    page_object.menu.register.web_element
+    page_object.menu.logo.web_element
+    page_object.menu_group.web_element
+    page_object.menu_group.logo.web_element
+
+    # Check that all page elements have a web element
+    assert page_object.username._web_element is not None
+    assert page_object.password._web_element is not None
+    assert page_object.language._web_element is not None
+    assert page_object.email._web_element is not None
+    assert page_object.address._web_element is not None
+    assert page_object.menu.register._web_element is not None
+    assert page_object.menu.logo._web_element is not None
+    assert page_object.menu_group._web_element is not None
+    assert page_object.menu_group.logo._web_element is not None
+
+    page_object.reset_object()
+
+    # Check that all page elements are reset
+    assert page_object.username._web_element is None
+    assert page_object.password._web_element is None
+    assert page_object.language._web_element is None
+    assert page_object.email._web_element is None
+    assert page_object.address._web_element is None
+    assert page_object.menu.register._web_element is None
+    assert page_object.menu.logo._web_element is None
+    assert page_object.menu_group._web_element is None
+    assert page_object.menu_group.logo._web_element is None

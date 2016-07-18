@@ -20,7 +20,7 @@ import os
 import unittest
 
 import mock
-from nose.tools import assert_true, assert_false
+import pytest
 
 from toolium.test_cases import BasicTestCase
 
@@ -51,31 +51,34 @@ def run_mock(test_name):
     return test
 
 
-class BasicTestCaseTests(unittest.TestCase):
-    def setUp(self):
-        # Configure logger mock
-        self.logger = mock.MagicMock()
-        self.logger_patch = mock.patch('logging.getLogger', mock.MagicMock(return_value=self.logger))
-        self.logger_patch.start()
+@pytest.yield_fixture
+def logger():
+    # Configure logger mock
+    logger = mock.MagicMock()
+    logger_patch = mock.patch('logging.getLogger', mock.MagicMock(return_value=logger))
+    logger_patch.start()
 
-    def tearDown(self):
-        self.logger_patch.stop()
+    yield logger
 
-    def test_tear_down_pass(self):
-        test = run_mock('mock_pass')
-        assert_true(test._test_passed)
+    logger_patch.stop()
 
-        # Check logging messages
-        init_message = 'Running new test: MockTestClass.mock_pass'
-        expected_response = "The test 'MockTestClass.mock_pass' has passed"
-        self.logger.info.assert_has_calls([mock.call(init_message), mock.call(expected_response)])
 
-    def test_tear_down_fail(self):
-        test = run_mock('mock_fail')
-        assert_false(test._test_passed)
+def test_tear_down_pass(logger):
+    test = run_mock('mock_pass')
+    assert test._test_passed == True
 
-        # Check logging error messages
-        init_message = 'Running new test: MockTestClass.mock_fail'
-        expected_response = "The test 'MockTestClass.mock_fail' has failed: test error"
-        self.logger.info.assert_called_once_with(init_message)
-        self.logger.error.assert_called_once_with(expected_response)
+    # Check logging messages
+    init_message = 'Running new test: MockTestClass.mock_pass'
+    expected_response = "The test 'MockTestClass.mock_pass' has passed"
+    logger.info.assert_has_calls([mock.call(init_message), mock.call(expected_response)])
+
+
+def test_tear_down_fail(logger):
+    test = run_mock('mock_fail')
+    assert test._test_passed == False
+
+    # Check logging error messages
+    init_message = 'Running new test: MockTestClass.mock_fail'
+    expected_response = "The test 'MockTestClass.mock_fail' has failed: test error"
+    logger.info.assert_called_once_with(init_message)
+    logger.error.assert_called_once_with(expected_response)
