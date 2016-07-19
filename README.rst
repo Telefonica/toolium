@@ -66,6 +66,10 @@ Don't forget to run unit tests:
     $ cd toolium
     $ python setup.py test
 
+Finally, before accepting your contribution, we need you to sign our
+`Contributor License Agreement <https://raw.githubusercontent.com/telefonicaid/Licensing/master/ContributionPolicy.txt>`_
+and send it to ruben.gonzalezalonso@telefonica.com.
+
 Main Features
 -------------
 
