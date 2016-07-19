@@ -20,6 +20,12 @@ import logging
 import os
 import re
 
+try:
+    from behave_pytest.hook import install_pytest_asserts
+except ImportError:
+    def install_pytest_asserts():
+        pass
+
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.jira import add_jira_status, change_all_jira_status, save_jira_conf
@@ -31,6 +37,9 @@ def before_all(context):
 
     :param context: behave context
     """
+    # Use pytest asserts if behave_pytest is installed
+    install_pytest_asserts()
+
     if not hasattr(context, 'config_files'):
         context.config_files = ConfigFiles()
 
