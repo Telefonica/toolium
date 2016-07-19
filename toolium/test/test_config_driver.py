@@ -406,13 +406,13 @@ def test_create_remote_driver_capabilities(webdriver_mock, config):
 def test_convert_property_type_true(config):
     config_driver = ConfigDriver(config)
     value = 'True'
-    assert config_driver._convert_property_type(value) == True
+    assert config_driver._convert_property_type(value) is True
 
 
 def test_convert_property_type_false(config):
     config_driver = ConfigDriver(config)
     value = 'False'
-    assert config_driver._convert_property_type(value) == False
+    assert config_driver._convert_property_type(value) is False
 
 
 def test_convert_property_type_dict(config):

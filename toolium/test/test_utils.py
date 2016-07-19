@@ -172,7 +172,7 @@ def test_is_remote_video_enabled(utils):
         req_mock.get(url, json=config_response_json)
 
         # Get remote video configuration and check result
-        assert utils.is_remote_video_enabled('10.20.30.40') == True
+        assert utils.is_remote_video_enabled('10.20.30.40') is True
         assert url == req_mock.request_history[0].url
 
 
@@ -190,7 +190,7 @@ def test_is_remote_video_enabled_disabled(utils):
         req_mock.get(url, json=config_response_json)
 
         # Get remote video configuration and check result
-        assert utils.is_remote_video_enabled('10.20.30.40') == False
+        assert utils.is_remote_video_enabled('10.20.30.40') is False
         assert url == req_mock.request_history[0].url
 
 
@@ -200,7 +200,7 @@ def test_is_remote_video_enabled_non_grid_extras(req_get_mock, utils):
     req_get_mock.side_effect = ConnectionError('exception error')
 
     # Get remote video configuration and check result
-    assert utils.is_remote_video_enabled('10.20.30.40') == False
+    assert utils.is_remote_video_enabled('10.20.30.40') is False
 
 
 @pytest.mark.parametrize("driver_type, appium_app, appium_browser_name, bar_height", navigation_bar_tests)

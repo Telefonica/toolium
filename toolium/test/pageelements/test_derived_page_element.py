@@ -77,6 +77,7 @@ def driver_wrapper():
 
     return driver_wrapper
 
+
 def test_locator(driver_wrapper):
     page_object = LoginPageObject(driver_wrapper)
 

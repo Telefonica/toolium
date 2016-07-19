@@ -18,7 +18,7 @@ limitations under the License.
 
 from selenium.webdriver.common.by import By
 
-from toolium.pageelements import *
+from toolium.pageelements import InputText, Button
 from toolium.pageobjects.mobile_page_object import MobilePageObject
 
 
