@@ -4,7 +4,7 @@ Toolium Changelog
 v1.1.2
 ------
 
-*In development*
+*Release date: 2016-07-19*
 
 - Baseline name property can contain *{Version}* to add actual version capability value to the baseline name
 - New config property 'gecko_driver_path' in [Browser] section to configure the Gecko/Marionette driver location

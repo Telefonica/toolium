@@ -65,7 +65,7 @@ def logger():
 
 def test_tear_down_pass(logger):
     test = run_mock('mock_pass')
-    assert test._test_passed == True
+    assert test._test_passed is True
 
     # Check logging messages
     init_message = 'Running new test: MockTestClass.mock_pass'
@@ -75,7 +75,7 @@ def test_tear_down_pass(logger):
 
 def test_tear_down_fail(logger):
     test = run_mock('mock_fail')
-    assert test._test_passed == False
+    assert test._test_passed is False
 
     # Check logging error messages
     init_message = 'Running new test: MockTestClass.mock_fail'

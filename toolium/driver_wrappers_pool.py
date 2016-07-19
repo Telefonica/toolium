@@ -18,7 +18,6 @@ limitations under the License.
 
 import datetime
 import inspect
-import logging
 import os
 
 
@@ -123,8 +122,8 @@ class DriverWrappersPool(object):
                 # Stop driver
                 driver_wrapper.driver.quit()
                 # Download video if necessary
-                if (driver_wrapper.config.getboolean_optional('Server', 'video_enabled')
-                    or not test_passed) and driver_wrapper.remote_node_video_enabled:
+                if (driver_wrapper.config.getboolean_optional('Server', 'video_enabled') or not test_passed) \
+                        and driver_wrapper.remote_node_video_enabled:
                     driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
                                                                video_name.format(name, driver_index))
             except Exception:
