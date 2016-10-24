@@ -207,7 +207,8 @@ class Utils(object):
             url = 'http://{}:{}/grid/api/testsession?session={}'.format(host, port, session_id)
             try:
                 # Extract remote node from response
-                remote_node = urlparse(requests.get(url).json()['proxyId']).hostname
+                proxy_id = requests.get(url).json()['proxyId']
+                remote_node = urlparse(proxy_id).hostname if urlparse(proxy_id).hostname else proxy_id
                 self.logger.debug("Test running in remote node {}".format(remote_node))
             except (ValueError, KeyError):
                 # The remote node is not a grid node or the session has been closed
