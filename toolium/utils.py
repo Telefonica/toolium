@@ -291,10 +291,10 @@ class Utils(object):
         if remote_node:
             url = '{}/config'.format(self._get_remote_node_url(remote_node))
             try:
-                response = requests.get(url).json()
+                response = requests.get(url, timeout=5).json()
                 record_videos = response['config_runtime']['theConfigMap']['video_recording_options'][
                     'record_test_videos']
-            except (requests.exceptions.ConnectionError, KeyError):
+            except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout, KeyError):
                 record_videos = 'false'
             if record_videos == 'true':
                 # Wait to the video recorder start
