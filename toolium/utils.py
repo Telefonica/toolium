@@ -29,7 +29,6 @@ from io import open
 
 import requests
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
@@ -118,35 +117,46 @@ class Utils(object):
             except Exception:
                 pass
 
-    def wait_until_element_visible(self, locator, timeout=10):
-        """Search element by locator and wait until it is visible
+    def _expected_condition_find_element(self, element):
+        """Tries to find the element, but does not thrown an exception if the element is not found
 
-        :param locator: locator element
-        :param timeout: max time to wait
-        :returns: the element if it is visible
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :returns: the web element if it has been found or False
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
-        return WebDriverWait(self.driver_wrapper.driver, timeout).until(
-            expected_conditions.visibility_of_element_located(locator))
+        from toolium.pageelements.page_element import PageElement
+        web_element = False
+        try:
+            if isinstance(element, PageElement):
+                # Use _find_web_element() instead of web_element to avoid logging error message
+                element._find_web_element()
+                web_element = element._web_element
+            elif isinstance(element, tuple):
+                web_element = self.driver_wrapper.driver.find_element(*element)
+        except NoSuchElementException:
+            pass
+        return web_element
 
-    def wait_until_element_not_visible(self, locator, timeout=10):
-        """Search element by locator and wait until it is not visible
+    def _expected_condition_find_element_visible(self, element):
+        """Tries to find the element and checks that it is visible, but does not thrown an exception if the element is not found
 
-        :param locator: locator element
-        :param timeout: max time to wait
-        :returns: the element if it exists but is not visible or False
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :returns: the web element if it is visible or False
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
-        # Remove implicit wait
-        self.driver_wrapper.driver.implicitly_wait(0)
-        # Wait for invisibility
-        element = WebDriverWait(self.driver_wrapper.driver, timeout).until(
-            expected_conditions.invisibility_of_element_located(locator))
-        # Restore implicit wait from properties
-        self.set_implicit_wait()
-        return element
+        web_element = self._expected_condition_find_element(element)
+        return web_element if web_element and web_element.is_displayed() else False
 
-    def get_first_element(self, elements):
+    def _expected_condition_find_element_not_visible(self, element):
+        """Tries to find the element and checks that it is visible, but does not thrown an exception if the element is not found
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :returns: True if the web element is not found or it is not visible
+        """
+        web_element = self._expected_condition_find_element(element)
+        return True if not web_element or web_element.is_displayed() == False else False
+
+    def _expected_condition_find_first_element(self, elements):
         """Try to find sequentially the elements of the list and return the first element found
 
         :param elements: list of PageElements or element locators as a tuple (locator_type, locator_value) to be found
@@ -168,6 +178,54 @@ class Utils(object):
                 pass
         return element_found
 
+    def _wait_until(self, condition_method, condition_input, timeout=10):
+        """
+        Common method to wait until condition met
+
+        :param condition_method: method to check the condition
+        :param condition_input: parameter that will be passed to the condition method
+        :param timeout: max time to wait
+        :returns: condition method response
+        """
+        # Remove implicit wait
+        self.driver_wrapper.driver.implicitly_wait(0)
+        # Wait for condition
+        condition_response = WebDriverWait(self.driver_wrapper.driver, timeout).until(
+            lambda s: condition_method(condition_input))
+        # Restore implicit wait from properties
+        self.set_implicit_wait()
+        return condition_response
+
+    def wait_until_element_present(self, element, timeout=10):
+        """Search element and wait until it is found
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :param timeout: max time to wait
+        :returns: the web element if it is present or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        return self._wait_until(self._expected_condition_find_element, element, timeout)
+
+    def wait_until_element_visible(self, element, timeout=10):
+        """Search element and wait until it is visible
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :param timeout: max time to wait
+        :returns: the web element if it is visible or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        return self._wait_until(self._expected_condition_find_element_visible, element, timeout)
+
+    def wait_until_element_not_visible(self, element, timeout=10):
+        """Search element and wait until it is not visible
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :param timeout: max time to wait
+        :returns: the web element if it exists but is not visible or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        return self._wait_until(self._expected_condition_find_element_not_visible, element, timeout)
+
     def wait_until_first_element_is_found(self, elements, timeout=10):
         """Search list of elements and wait until one of them is found
 
@@ -177,20 +235,13 @@ class Utils(object):
         :returns: first element found
         :rtype: toolium.pageelements.PageElement or tuple
         """
-        # Remove implicit wait
-        self.driver_wrapper.driver.implicitly_wait(0)
-        # Wait for elements
         try:
-            element = WebDriverWait(self.driver_wrapper.driver, timeout).until(
-                lambda s: self.get_first_element(elements))
+            return self._wait_until(self._expected_condition_find_first_element, elements, timeout)
         except TimeoutException as exception:
             msg = "None of the page elements has been found after {} seconds".format(timeout)
             self.logger.error(msg)
             exception.msg += "\n  {}".format(msg)
             raise exception
-        # Restore implicit wait from properties
-        self.set_implicit_wait()
-        return element
 
     def get_remote_node(self):
         """Return the remote node that it's executing the actual test session
