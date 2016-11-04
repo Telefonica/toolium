@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.1.3
+------
+
+*In development*
+
+- Video download works in Selenium Grid 3
+
 v1.1.2
 ------
 

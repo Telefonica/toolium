@@ -103,6 +103,21 @@ def test_get_remote_node(driver_wrapper, utils):
         assert url == req_mock.request_history[0].url
 
 
+def test_get_remote_node_selenium3(driver_wrapper, utils):
+    # Configure mock
+    driver_wrapper.driver.session_id = '5af'
+    url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
+    grid_response_json = {'session': 'e2', 'proxyId': '10.20.30.40', 'msg': 'slot found !',
+                          'inactivityTime': 78, 'success': True, 'internalKey': '7a'}
+
+    with requests_mock.mock() as req_mock:
+        req_mock.get(url, json=grid_response_json)
+
+        # Get remote node and check result
+        assert utils.get_remote_node() == '10.20.30.40'
+        assert url == req_mock.request_history[0].url
+
+
 def test_get_remote_node_non_grid(driver_wrapper, utils):
     # Configure mock
     driver_wrapper.driver.session_id = '5af'

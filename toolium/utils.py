@@ -207,7 +207,8 @@ class Utils(object):
             url = 'http://{}:{}/grid/api/testsession?session={}'.format(host, port, session_id)
             try:
                 # Extract remote node from response
-                remote_node = urlparse(requests.get(url).json()['proxyId']).hostname
+                proxy_id = requests.get(url).json()['proxyId']
+                remote_node = urlparse(proxy_id).hostname if urlparse(proxy_id).hostname else proxy_id
                 self.logger.debug("Test running in remote node {}".format(remote_node))
             except (ValueError, KeyError):
                 # The remote node is not a grid node or the session has been closed
@@ -290,10 +291,10 @@ class Utils(object):
         if remote_node:
             url = '{}/config'.format(self._get_remote_node_url(remote_node))
             try:
-                response = requests.get(url).json()
+                response = requests.get(url, timeout=5).json()
                 record_videos = response['config_runtime']['theConfigMap']['video_recording_options'][
                     'record_test_videos']
-            except (requests.exceptions.ConnectionError, KeyError):
+            except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout, KeyError):
                 record_videos = 'false'
             if record_videos == 'true':
                 # Wait to the video recorder start
