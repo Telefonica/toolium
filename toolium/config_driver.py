@@ -25,6 +25,7 @@ from six.moves.configparser import NoSectionError
 from appium import webdriver as appiumdriver
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.firefox.options import Options
 
 
 def get_error_message_from_exception(exception):
@@ -200,8 +201,18 @@ class ConfigDriver(object):
         :returns: a new local Firefox driver
         """
         gecko_driver = self.config.get('Driver', 'gecko_driver_path') if capabilities.get("marionette") else None
+
+        # Get Firefox binary
+        firefox_binary = self.config.get_optional('Firefox', 'binary')
+        if firefox_binary:
+            self.logger.debug("Using firefox binary: {0}".format(firefox_binary))
+            firefox_options = Options()
+            firefox_options.binary = firefox_binary
+        else:
+            firefox_options = None
+
         return webdriver.Firefox(firefox_profile=self._create_firefox_profile(), capabilities=capabilities,
-                                 executable_path=gecko_driver)
+                                 executable_path=gecko_driver, firefox_options=firefox_options)
 
     def _create_firefox_profile(self):
         """Create and configure a firefox profile
@@ -209,11 +220,9 @@ class ConfigDriver(object):
         :returns: firefox profile
         """
         # Get Firefox profile
-        try:
-            profile_directory = self.config.get('Firefox', 'profile')
+        profile_directory = self.config.get_optional('Firefox', 'profile')
+        if profile_directory:
             self.logger.debug("Using firefox profile: {0}".format(profile_directory))
-        except NoSectionError:
-            profile_directory = None
 
         # Create Firefox profile
         profile = webdriver.FirefoxProfile(profile_directory=profile_directory)

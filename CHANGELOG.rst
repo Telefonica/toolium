@@ -7,6 +7,7 @@ v1.1.3
 *In development*
 
 - Video download works in Selenium Grid 3
+- New config property 'binary' in [Firefox] section to configure the firefox binary path
 
 v1.1.2
 ------

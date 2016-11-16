@@ -162,6 +162,15 @@ To use a predefined firefox profile, configure the profile directory in *[Firefo
     [Firefox]
     profile: resources/firefox-profile.default
 
+When firefox is installed in a non-default location, configure the firefox binary path in *[Firefox]* configuration
+section::
+
+    [Driver]
+    type: firefox
+
+    [Firefox]
+    binary: /usr/local/firefox_beta/firefox
+
 
 Chrome
 ~~~~~~

@@ -22,6 +22,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
+from selenium.webdriver.firefox.options import Options
 
 
 @pytest.fixture
@@ -75,7 +76,8 @@ def test_create_local_driver_firefox(webdriver_mock, config):
 
     config_driver._create_local_driver()
     webdriver_mock.Firefox.assert_called_once_with(capabilities=DesiredCapabilities.FIREFOX,
-                                                   firefox_profile='firefox profile', executable_path=None)
+                                                   firefox_profile='firefox profile', executable_path=None,
+                                                   firefox_options=None)
 
 
 @mock.patch('toolium.config_driver.webdriver')
@@ -91,7 +93,25 @@ def test_create_local_driver_firefox_gecko(webdriver_mock, config):
     expected_capabilities = DesiredCapabilities.FIREFOX.copy()
     expected_capabilities['marionette'] = True
     webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
-                                                   firefox_profile='firefox profile', executable_path='/tmp/driver')
+                                                   firefox_profile='firefox profile', executable_path='/tmp/driver',
+                                                   firefox_options=None)
+
+
+@mock.patch('toolium.config_driver.webdriver')
+def test_create_local_driver_firefox_binary(webdriver_mock, config):
+    config.set('Driver', 'type', 'firefox')
+    config.add_section('Firefox')
+    config.set('Firefox', 'binary', '/tmp/firefox')
+    config_driver = ConfigDriver(config)
+    config_driver._create_firefox_profile = lambda: 'firefox profile'
+
+    config_driver._create_local_driver()
+
+    # Check that firefox options contain the firefox binary
+    args, kwargs = webdriver_mock.Firefox.call_args
+    firefox_options = kwargs['firefox_options']
+    assert isinstance(firefox_options, Options)
+    assert firefox_options.binary == '/tmp/firefox'
 
 
 @mock.patch('toolium.config_driver.webdriver')
@@ -205,7 +225,8 @@ def test_create_local_driver_capabilities(webdriver_mock, config):
     capabilities = DesiredCapabilities.FIREFOX.copy()
     capabilities['version'] = '45'
     webdriver_mock.Firefox.assert_called_once_with(capabilities=capabilities,
-                                                   firefox_profile='firefox profile', executable_path=None)
+                                                   firefox_profile='firefox profile', executable_path=None,
+                                                   firefox_options=None)
 
 
 @mock.patch('toolium.config_driver.webdriver')
