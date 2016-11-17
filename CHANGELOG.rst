@@ -4,7 +4,7 @@ Toolium Changelog
 v1.1.3
 ------
 
-*In development*
+*Release date: 2016-11-18*
 
 - Video download works in Selenium Grid 3
 - New config property 'binary' in [Firefox] section to configure the firefox binary path
