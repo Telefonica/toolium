@@ -21,6 +21,7 @@ class ConfigFiles():
     def __init__(self):
         self.config_directory = None
         self.output_directory = None
+        self.visual_baseline_directory = None
         self.config_properties_filenames = None
         self.config_log_filename = None
         self.output_log_filename = None
@@ -38,6 +39,13 @@ class ConfigFiles():
         :param output_directory: output directory path
         """
         self.output_directory = output_directory
+
+    def set_visual_baseline_directory(self, visual_baseline_directory):
+        """Set visual baseline directory where baseline images will be saved
+
+        :param visual_baseline_directory: visual baseline directory path
+        """
+        self.visual_baseline_directory = visual_baseline_directory
 
     def set_config_properties_filenames(self, *filenames):
         """Set properties files used to configure test cases

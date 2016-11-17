@@ -32,6 +32,7 @@ class DriverWrappersPool(object):
     :type screenshots_number: str
     :type videos_directory: str
     :type videos_number: int
+    :type visual_baseline_directory: str
     :type visual_output_directory: str
     :type visual_number: int
     """
@@ -50,8 +51,9 @@ class DriverWrappersPool(object):
     videos_number = None  #: number of visual images taken until now
 
     # Visual Testing configuration
-    visual_output_directory = None  #: number of videos recorded until now
-    visual_number = None  #: folder to save visual report and images
+    visual_baseline_directory = None  #: folder to save visual baseline images
+    visual_output_directory = None  #: folder to save visual report and images
+    visual_number = None  #: number of videos recorded until now
 
     @classmethod
     def is_empty(cls):
@@ -121,7 +123,7 @@ class DriverWrappersPool(object):
             try:
                 # Delete IE cookies (Workaround of IEDriverServer bug)
                 driver_type = driver_wrapper.config.get('Driver', 'type')
-                if not maintain_default and driver_type.split('-')[0] == 'iexplore':
+                if not maintain_default and driver_type.split('-')[0] in ['iexplore', 'edge']:
                     driver_wrapper.driver.delete_all_cookies()
                 # Stop driver
                 driver_wrapper.driver.quit()
@@ -190,6 +192,16 @@ class DriverWrappersPool(object):
                 cls.output_directory = os.path.join(os.path.dirname(cls.config_directory), cls.output_directory)
             if not os.path.exists(cls.output_directory):
                 os.makedirs(cls.output_directory)
+
+            # Get visual baseline directory from properties
+            default_baseline = os.path.join(cls.output_directory, 'visualtests', 'baseline')
+            cls.visual_baseline_directory = cls.get_configured_value('Visual_baseline_directory',
+                                                                     tc_config_files.visual_baseline_directory,
+                                                                     default_baseline)
+            if not os.path.isabs(cls.visual_baseline_directory):
+                # If baseline directory is relative, we use the same path as config directory
+                cls.visual_baseline_directory = os.path.join(os.path.dirname(cls.config_directory),
+                                                             cls.visual_baseline_directory)
 
     @staticmethod
     def get_default_config_directory():

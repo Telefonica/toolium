@@ -70,8 +70,8 @@ class VisualTest(object):
             platform_version = self.driver_wrapper.driver.desired_capabilities['platformVersion']
             baseline_name = self.driver_wrapper.baseline_name.replace('{platformVersion}', platform_version)
             self.driver_wrapper.baseline_name = baseline_name
-            self.driver_wrapper.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory,
-                                                                         'visualtests', 'baseline', baseline_name)
+            self.driver_wrapper.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,
+                                                                         baseline_name)
 
         self.baseline_directory = self.driver_wrapper.visual_baseline_directory
         engine_type = self.driver_wrapper.config.get_optional('VisualTests', 'engine', 'pil')

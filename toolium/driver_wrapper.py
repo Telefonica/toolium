@@ -134,8 +134,7 @@ class DriverWrapper(object):
         # Configure baseline directory if baseline name has changed
         if self.baseline_name != baseline_name:
             self.baseline_name = baseline_name
-            self.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory, 'visualtests',
-                                                          'baseline', baseline_name)
+            self.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory, baseline_name)
 
     def update_visual_baseline(self):
         """Configure baseline directory after driver is created"""
@@ -146,8 +145,8 @@ class DriverWrapper(object):
             except KeyError:
                 platform_version = None
             self.baseline_name = self.baseline_name.replace('{PlatformVersion}', str(platform_version))
-            self.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory, 'visualtests',
-                                                          'baseline', self.baseline_name)
+            self.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,
+                                                          self.baseline_name)
 
         # Update baseline with real version value
         if '{Version}' in self.baseline_name:
@@ -157,14 +156,14 @@ class DriverWrapper(object):
             except KeyError:
                 version = None
             self.baseline_name = self.baseline_name.replace('{Version}', str(version))
-            self.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory, 'visualtests',
-                                                          'baseline', self.baseline_name)
+            self.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,
+                                                          self.baseline_name)
 
         # Update baseline with remote node value
         if '{RemoteNode}' in self.baseline_name:
             self.baseline_name = self.baseline_name.replace('{RemoteNode}', str(self.remote_node))
-            self.visual_baseline_directory = os.path.join(DriverWrappersPool.output_directory, 'visualtests',
-                                                          'baseline', self.baseline_name)
+            self.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,
+                                                          self.baseline_name)
 
     def configure(self, is_selenium_test=True, tc_config_files=ConfigFiles()):
         """Configure initial selenium instance using logging and properties files for Selenium or Appium tests
