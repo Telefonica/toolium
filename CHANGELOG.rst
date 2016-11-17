@@ -11,6 +11,7 @@ v1.1.3
 - Allow to configure visual baseline directory in ConfigFiles class (default: output/visualtests/baseline)
 - Delete IE and Edge cookies after tests
 - Fix wait_until_element_visible and wait_until_element_not_visible methods when the page element has a parent element
+- Add *imagemagick* as visual engine to have better diff images
 
 v1.1.2
 ------

@@ -138,7 +138,14 @@ baseline_name
 
 engine
 ~~~~~~
-| Needle can compare images using different libraries (or engines) underneath. Currently, it supports Pillow and PerceptualDiff.
+| Needle can compare images using different libraries (or engines) underneath. Currently, it supports Pillow, PerceptualDiff and ImageMagick.
 
 - *pil*: uses Pillow to compare images. It's the default option and it's installed as a Toolium dependency.
 - *perceptualdiff*:  uses `PerceptualDiff <http://pdiff.sourceforge.net>`_ to compare images. It is a faster library and besides generates a diff image, highlighting the differences between the baseline image and the new screenshot. It requires to be installed separately and depends on your host.
+- *imagemagick*:  uses `ImageMagick <http://www.imagemagick.org>`_ to compare images. It also generates a diff image, highlighting the differences in a more visual way than perceptualdiff. It requires to be installed separately and depends on your host.
+
+To use *imagemagick*, the master version of needle must be installed:
+
+.. code-block:: console
+
+   pip install git+https://github.com/bfirsh/needle.git@master#egg=needle

@@ -35,9 +35,9 @@ import itertools
 
 try:
     from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
-    # from needle.engines.imagemagick_engine import Engine as MagickEngine
     from needle.engines.pil_engine import Engine as PilEngine
     from PIL import Image
+    from needle.engines.imagemagick_engine import Engine as MagickEngine
 except ImportError:
     pass
 
@@ -77,8 +77,13 @@ class VisualTest(object):
         engine_type = self.driver_wrapper.config.get_optional('VisualTests', 'engine', 'pil')
         if engine_type == 'perceptualdiff':
             self.engine = PerceptualEngine()
-        # elif engine_type == 'imagemagick':
-        #    self.engine = MagickEngine()
+        elif engine_type == 'imagemagick':
+            if 'MagickEngine' not in globals():
+                self.logger.warn("Engine '{}' not found, using pil instead. It should be installed "
+                                 "the master version of needle, not the 0.3.".format(engine_type))
+                self.engine = PilEngine()
+            else:
+                self.engine = MagickEngine()
         elif engine_type == 'pil':
             self.engine = PilEngine()
         else:

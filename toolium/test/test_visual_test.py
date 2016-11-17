@@ -100,6 +100,7 @@ def test_engine_perceptual(driver_wrapper):
     assert isinstance(visual.engine, PerceptualEngine)
 
 
+# Disabled until needle 0.4 is released
 # def test_engine_magick(driver_wrapper):
 #    driver_wrapper.config.set('VisualTests', 'engine', 'imagemagick')
 #    visual = VisualTest(driver_wrapper)
