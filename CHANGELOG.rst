@@ -10,6 +10,7 @@ v1.1.3
 - New config property 'binary' in [Firefox] section to configure the firefox binary path
 - Allow to configure visual baseline directory in ConfigFiles class (default: output/visualtests/baseline)
 - Delete IE and Edge cookies after tests
+- Fix wait_until_element_visible and wait_until_element_not_visible methods when the page element has a parent element
 
 v1.1.2
 ------

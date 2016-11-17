@@ -187,7 +187,6 @@ def test_wait_until_visible(driver_wrapper):
     page_element = RegisterPageObject(driver_wrapper).username
     element = page_element.wait_until_visible()
 
-    assert element._web_element == mock_element
     assert element == page_element
 
 
