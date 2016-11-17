@@ -123,7 +123,7 @@ class DriverWrappersPool(object):
             try:
                 # Delete IE cookies (Workaround of IEDriverServer bug)
                 driver_type = driver_wrapper.config.get('Driver', 'type')
-                if not maintain_default and driver_type.split('-')[0] == 'iexplore':
+                if not maintain_default and driver_type.split('-')[0] in ['iexplore', 'edge']:
                     driver_wrapper.driver.delete_all_cookies()
                 # Stop driver
                 driver_wrapper.driver.quit()

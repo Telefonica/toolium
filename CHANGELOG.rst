@@ -8,6 +8,8 @@ v1.1.3
 
 - Video download works in Selenium Grid 3
 - New config property 'binary' in [Firefox] section to configure the firefox binary path
+- Allow to configure visual baseline directory in ConfigFiles class (default: output/visualtests/baseline)
+- Delete IE and Edge cookies after tests
 
 v1.1.2
 ------
