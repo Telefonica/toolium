@@ -32,7 +32,6 @@ REQ = requirements.txt
 
 TESTREQ = requirements_dev.txt
 
-UNIT_TEST_ARGS=--nocapture --with-xunit --xunit-file=$(ROOT)/dist/nosetest.xml
 COVERAGE_ARGS=--with-coverage --cover-erase --cover-package=$(APP) \
                --cover-branches --cover-xml \
                --cover-xml-file=$(ROOT)/dist/coverage.xml
@@ -100,7 +99,7 @@ $(VENV): $(REQ) $(TESTREQ)
 	$@/$(BIN)/pip install --upgrade -r $(TESTREQ); \
 
 unittest: init venv
-	$(VENV)/$(BIN)/nosetests $(UNIT_TEST_ARGS)
+	$(PYTHON_EXE) setup.py test
 
 coverage: init venv
 	$(VENV)/$(BIN)/nosetests $(COVERAGE_ARGS) $(UNIT_TEST_ARGS)
