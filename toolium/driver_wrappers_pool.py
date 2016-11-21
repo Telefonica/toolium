@@ -140,10 +140,11 @@ class DriverWrappersPool(object):
         cls.driver_wrappers = cls.driver_wrappers[0:1] if maintain_default else []
 
     @classmethod
-    def save_all_webdriver_logs(cls, test_name):
+    def save_all_webdriver_logs(cls, test_name, test_passed):
         """Get all webdriver logs of each driver and write them to log files
 
         :param test_name: test that has generated these logs
+        :param test_passed: True if the test has passed
         """
         log_name = '{} [driver {}]' if len(cls.driver_wrappers) > 1 else '{}'
         driver_index = 1
@@ -151,7 +152,8 @@ class DriverWrappersPool(object):
             if not driver_wrapper.driver:
                 continue
             try:
-                driver_wrapper.utils.save_webdriver_logs(log_name.format(test_name, driver_index))
+                if driver_wrapper.config.getboolean_optional('Server', 'logs_enabled') or not test_passed:
+                    driver_wrapper.utils.save_webdriver_logs(log_name.format(test_name, driver_index))
             except Exception:
                 # Capture exceptions to avoid errors in teardown method due to session timeouts
                 pass

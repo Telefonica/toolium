@@ -196,9 +196,11 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
         test_status = 'Fail'
         test_comment = "The scenario '{0}' has failed".format(scenario.name)
         context_or_world.logger.error(test_comment)
-        # Capture screenshot and save logs on error
+        # Capture screenshot on error
         DriverWrappersPool.capture_screenshots(scenario_file_name)
-        DriverWrappersPool.save_all_webdriver_logs(scenario.name)
+
+    # Save webdriver logs on error or if it is enabled
+    DriverWrappersPool.save_all_webdriver_logs(scenario.name, status == 'passed')
 
     # Close browser and stop driver if it must not be reused
     reuse_driver = context_or_world.toolium_config.getboolean_optional('Driver', 'reuse_driver')

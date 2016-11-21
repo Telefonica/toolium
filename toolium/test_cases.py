@@ -135,10 +135,12 @@ class SeleniumTestCase(BasicTestCase):
         super(SeleniumTestCase, self).tearDown()
         test_name = self.get_subclassmethod_name().replace('.', '_')
 
-        # Capture screenshot and save logs on error
+        # Capture screenshot on error
         if not self._test_passed:
             DriverWrappersPool.capture_screenshots(test_name)
-            DriverWrappersPool.save_all_webdriver_logs(self.get_subclassmethod_name())
+
+        # Save webdriver logs on error or if it is enabled
+        DriverWrappersPool.save_all_webdriver_logs(self.get_subclassmethod_name(), self._test_passed)
 
         # Close browser and stop driver if it must not be reused
         DriverWrappersPool.close_drivers_and_download_videos(test_name, self._test_passed, self.reuse_driver)
