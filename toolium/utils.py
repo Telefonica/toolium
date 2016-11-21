@@ -78,7 +78,8 @@ class Utils(object):
         try:
             log_types = self.driver_wrapper.driver.log_types
         except Exception:
-            return
+            # geckodriver does not implement log_types, but it implements get_log for client and server
+            log_types = ['client', 'server']
 
         self.logger.debug("Reading logs from '{}' and writing them to log files".format(', '.join(log_types)))
         for log_type in log_types:
@@ -107,7 +108,9 @@ class Utils(object):
                 log_file.write(
                     u"\n{} '{}' test logs with driver = {}\n\n".format(datetime.now(), test_name, driver_type))
                 for entry in logs:
-                    log_file.write(u'{}\t{}\n'.format(entry['level'], entry['message'].rstrip()))
+                    timestamp = datetime.fromtimestamp(float(entry['timestamp']) / 1000.).strftime(
+                        '%Y-%m-%d %H:%M:%S.%f')
+                    log_file.write(u'{}\t{}\t{}\n'.format(timestamp, entry['level'], entry['message'].rstrip()))
 
     def discard_logcat_logs(self):
         """Discard previous logcat logs"""

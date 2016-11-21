@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.2.0
+------
+
+*In development*
+
+- Fix error reading geckodriver logs after test failure
+
 v1.1.3
 ------
 
