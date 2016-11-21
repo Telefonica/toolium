@@ -1,6 +1,14 @@
 Toolium Changelog
 =================
 
+v1.2.0
+------
+
+*In development*
+
+- Fix error reading geckodriver logs after test failure
+- New config property 'logs_enabled' in [Server] section to download webdriver logs even if the test passes
+
 v1.1.3
 ------
 

@@ -14,6 +14,7 @@ section in properties.cfg file::
     host: SERVER_IP
     port: SERVER_PORT
     video_enabled: false
+    logs_enabled: false
 
 enabled
 ~~~~~~~
@@ -35,6 +36,11 @@ video_enabled
 
 | *true*: remote video recording is enabled, a video of the test execution will be recorded and saved locally
 | *false*: remote video recording is disabled
+
+logs_enabled
+~~~~~~~~~~~~~
+| *true*: webdriver logs are downloaded and saved to local files after test execution
+| *false*: webdriver logs are downloaded and saved to local files only if the test fails
 
 
 Remote Driver Capabilities
