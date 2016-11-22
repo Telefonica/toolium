@@ -54,6 +54,7 @@ def before_all(context):
                                                              'local-{}-properties.cfg'.format(env))
         context.config_files.set_output_log_filename('toolium_{}.log'.format(env))
 
+    context.global_status = {'test_passed': True}
     create_and_configure_wrapper(context)
 
 
@@ -203,13 +204,16 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
         DriverWrappersPool.capture_screenshots(scenario_file_name)
 
     # Save webdriver logs on error or if it is enabled
-    DriverWrappersPool.save_all_webdriver_logs(scenario.name, status == 'passed')
+    test_passed = status == 'passed'
+    DriverWrappersPool.save_all_webdriver_logs(scenario.name, test_passed)
 
     # Close browser and stop driver if it must not be reused
     reuse_driver = context_or_world.toolium_config.getboolean_optional('Driver', 'reuse_driver')
-    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, status == 'passed', reuse_driver)
+    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, test_passed, reuse_driver)
 
     # Save test status to be updated later
+    context_or_world.global_status['test_passed'] = context_or_world.global_status[
+                                                        'test_passed'] and test_passed if reuse_driver else test_passed
     add_jira_status(get_jira_key_from_scenario(scenario), test_status, test_comment)
 
 
@@ -244,7 +248,8 @@ def bdd_common_after_all(context_or_world):
     :param context_or_world: behave context or lettuce world
     """
     # Close browser and stop driver if it has been reused
-    DriverWrappersPool.close_drivers_and_download_videos('multiple_tests')
+    DriverWrappersPool.close_drivers_and_download_videos('multiple_tests',
+                                                         context_or_world.global_status['test_passed'])
 
     # Update tests status in Jira
     change_all_jira_status()
