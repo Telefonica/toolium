@@ -113,8 +113,9 @@ class PageElement(CommonObject):
         try:
             self.utils.wait_until_element_not_visible(self, timeout)
         except TimeoutException as exception:
-            msg = "Page element of type '{}' with locator {} is still visible after {} seconds".format(
-                type(self).__name__, self.locator, timeout)
+            parent_msg = " and parent locator '{}'".format(self.parent, timeout) if self.parent else ''
+            msg = "Page element of type '{}' with locator {}{} is still visible after {} seconds".format(
+                type(self).__name__, self.locator, parent_msg, timeout)
             self.logger.error(msg)
             exception.msg += "\n  {}".format(msg)
             raise exception

@@ -142,3 +142,26 @@ def test_click_button(driver_wrapper):
     LoginPageObject().login.click()
 
     mock_element.click.assert_called_once_with()
+
+
+def test_group_reset_object(driver_wrapper):
+    login_page = LoginPageObject()
+
+    # Check that web elements are empty
+    assert login_page.menu._web_element is None
+    assert login_page.menu.logo._web_element is None
+    assert login_page.menu.logo.parent._web_element is None
+
+    login_page.menu.logo.web_element
+
+    # Check that web elements are filled
+    assert login_page.menu._web_element is not None
+    assert login_page.menu.logo._web_element is not None
+    assert login_page.menu.logo.parent._web_element is not None
+
+    login_page.menu.reset_object()
+
+    # Check that web elements are empty
+    assert login_page.menu._web_element is None
+    assert login_page.menu.logo._web_element is None
+    assert login_page.menu.logo.parent._web_element is None
