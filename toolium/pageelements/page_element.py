@@ -77,7 +77,7 @@ class PageElement(CommonObject):
 
     def _find_web_element(self):
         """Find WebElement using element locator and save it in _web_element attribute"""
-        if not self._web_element:
+        if not self._web_element or not self.config.getboolean_optional('Driver', 'save_web_element'):
             if self.parent:
                 self._web_element = self.utils.get_web_element(self.parent).find_element(*self.locator)
             else:

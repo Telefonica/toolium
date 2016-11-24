@@ -31,6 +31,11 @@ class CommonObject(object):
         self.logger = logging.getLogger(__name__)  #: logger instance
         self.driver_wrapper = None  #: driver wrapper instance
 
+    def reset_object(self):
+        """Method to reset this object. This method can be overridden to define specific functionality.
+        """
+        pass
+
     @property
     def driver(self):
         """Get driver instance
