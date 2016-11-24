@@ -40,12 +40,19 @@ class Group(PageObject, PageElement):
         self.parent = parent  #: element from which to find actual elements
         self.driver_wrapper = driver_wrapper if driver_wrapper else \
             DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
-        self._web_element = None
         self.init_page_elements()
-        self._update_page_elements(parent=self)
+        self.reset_object(self.driver_wrapper)
 
-    def reset_object(self):
-        """Reset web element object in all page elements"""
+    def reset_object(self, driver_wrapper=None):
+        """Reset each page element object
+
+        :param driver_wrapper: driver wrapper instance
+        """
+        if driver_wrapper:
+            self.driver_wrapper = driver_wrapper
         self._web_element = None
         for element in self._get_page_elements():
-            element.reset_object()
+            element.reset_object(driver_wrapper)
+            if not isinstance(element, PageObject):
+                # If element is not a page object, update element parent
+                element.parent = self

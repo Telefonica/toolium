@@ -46,10 +46,15 @@ class PageElement(CommonObject):
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
-        self._web_element = None
+        self.reset_object(self.driver_wrapper)
 
-    def reset_object(self):
-        """Initialize web element object"""
+    def reset_object(self, driver_wrapper=None):
+        """Reset each page element object
+
+        :param driver_wrapper: driver wrapper instance
+        """
+        if driver_wrapper:
+            self.driver_wrapper = driver_wrapper
         self._web_element = None
 
     @property

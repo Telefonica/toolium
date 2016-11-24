@@ -31,9 +31,10 @@ other_child_elements = ['child_element_3', 'child_element_4']
 
 
 class LoginPageObject(PageObject):
-    inputs = PageElements(By.XPATH, '//input')
-    links = PageElements(By.XPATH, '//a')
-    inputs_parent = PageElements(By.XPATH, '//input', (By.ID, 'parent'))
+    def init_page_elements(self):
+        self.inputs = PageElements(By.XPATH, '//input')
+        self.links = PageElements(By.XPATH, '//a')
+        self.inputs_parent = PageElements(By.XPATH, '//input', (By.ID, 'parent'))
 
 
 @pytest.fixture
@@ -127,17 +128,34 @@ def test_multiple_page_elements(driver_wrapper):
 
 
 def test_reset_object(driver_wrapper):
-    driver_wrapper.driver.find_elements.side_effect = [child_elements, other_child_elements]
+    mock_element_11 = mock.MagicMock(spec=WebElement)
+    mock_element_12 = mock.MagicMock(spec=WebElement)
+    mock_element_21 = mock.MagicMock(spec=WebElement)
+    driver_wrapper.driver.find_elements.side_effect = [[mock_element_11, mock_element_12], [mock_element_21]]
     login_page = LoginPageObject()
-    login_page.inputs.web_elements
-    login_page.links.web_elements
+
+    login_page.inputs.page_elements
+    login_page.links.page_elements
 
     # Check that web elements are filled
     assert len(login_page.inputs._web_elements) == 2
-    assert len(login_page.links._web_elements) == 2
+    assert len(login_page.links._web_elements) == 1
+    # Check that each page element is filled
+    page_element_11 = login_page.inputs._page_elements[0]
+    page_element_12 = login_page.inputs._page_elements[1]
+    page_element_21 = login_page.links._page_elements[0]
+    assert page_element_11._web_element is not None
+    assert page_element_12._web_element is not None
+    assert page_element_21._web_element is not None
 
     login_page.inputs.reset_object()
 
-    # Check that only username is reset
+    # Check that inputs web elements are reset
     assert len(login_page.inputs._web_elements) == 0
-    assert len(login_page.links._web_elements) == 2
+    # Check that each page element is reset
+    assert page_element_11._web_element is None
+    assert page_element_12._web_element is None
+    # Check that links web elements remain filled
+    assert len(login_page.links._web_elements) == 1
+    assert login_page.links._page_elements[0]._web_element is not None
+    assert page_element_21._web_element is not None

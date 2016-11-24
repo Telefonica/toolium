@@ -55,16 +55,22 @@ class PageElements(CommonObject):
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
-        self._web_elements = []
-        self._page_elements = []
-        # update instance element class or use class element class
+        # update instance element class or use PageElement class
         if page_element_class:
             self.page_element_class = page_element_class
-
-    def reset_object(self):
-        """Initialize web and page elements objects"""
-        self._web_elements = []
         self._page_elements = []
+        self.reset_object(self.driver_wrapper)
+
+    def reset_object(self, driver_wrapper=None):
+        """Reset each page element object
+
+        :param driver_wrapper: driver wrapper instance
+        """
+        if driver_wrapper:
+            self.driver_wrapper = driver_wrapper
+        self._web_elements = []
+        for element in self._page_elements:
+            element.reset_object(driver_wrapper)
 
     @property
     def web_elements(self):
@@ -92,7 +98,7 @@ class PageElements(CommonObject):
             for web_element in self.web_elements:
                 # Create multiple PageElement with original locator
                 page_element = self.page_element_class(self.locator[0], self.locator[1], self.parent)
-                page_element.set_driver_wrapper(self.driver_wrapper)
+                page_element.reset_object(self.driver_wrapper)
                 page_element._web_element = web_element
                 self._page_elements.append(page_element)
         return self._page_elements

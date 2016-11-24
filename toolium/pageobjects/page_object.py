@@ -34,15 +34,19 @@ class PageObject(CommonObject):
         super(PageObject, self).__init__()
         self.driver_wrapper = driver_wrapper if driver_wrapper else \
             DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
-        self.app_strings = self.driver_wrapper.app_strings  #: mobile application strings
         self.init_page_elements()
-        self._update_page_elements()
+        self.reset_object(self.driver_wrapper)
 
-    def reset_object(self):
-        """Reset web element object in all page elements"""
-        self.app_strings = self.driver_wrapper.app_strings
+    def reset_object(self, driver_wrapper=None):
+        """Reset each page element object
+
+        :param driver_wrapper: driver wrapper instance
+        """
+        if driver_wrapper:
+            self.driver_wrapper = driver_wrapper
+        self.app_strings = self.driver_wrapper.app_strings  #: mobile application strings
         for element in self._get_page_elements():
-            element.reset_object()
+            element.reset_object(driver_wrapper)
 
     def init_page_elements(self):
         """Method to initialize page elements
@@ -61,20 +65,7 @@ class PageObject(CommonObject):
         page_elements = []
         for attribute, value in list(self.__dict__.items()) + list(self.__class__.__dict__.items()):
             if attribute != 'parent' and (
-                    isinstance(value, PageElement) or isinstance(value, PageElements) or isinstance(value, PageObject)):
+                            isinstance(value, PageElement) or isinstance(value, PageElements) or isinstance(value,
+                                                                                                            PageObject)):
                 page_elements.append(value)
         return page_elements
-
-    def _update_page_elements(self, parent=None):
-        """Copy driver and utils instances to all page elements of this page object
-
-        :param parent: parent element (WebElement, PageElement or locator tuple)
-        """
-        for element in self._get_page_elements():
-            element.set_driver_wrapper(self.driver_wrapper)
-            if parent and not isinstance(element, PageObject) and not element.parent:
-                # If this instance is a group and element is not a page object, update element parent
-                element.parent = parent
-            if isinstance(element, PageObject):
-                # If element is a page object, update also its page elements
-                element._update_page_elements(parent)
