@@ -8,6 +8,11 @@ v1.2.0
 
 - Fix error reading geckodriver logs after test failure
 - New config property 'logs_enabled' in [Server] section to download webdriver logs even if the test passes
+- New config property 'save_web_element' in [Driver] section
+
+   | If it's false, the WebElement is searched whenever is needed (default value)
+   | If it's true, the WebElement is saved in PageElement to avoid searching for the same element multiple times. Useful
+   |  in mobile testing when searching for an element can take a long time.
 
 v1.1.3
 ------
@@ -89,10 +94,10 @@ DRIVER
 
 PAGE OBJECTS
 
-- Save WebElement in PageElement to avoid searching the same element multiple times
+- Save WebElement in PageElement to avoid searching for the same element multiple times
 - Refactor to rename get_element to get_web_element in Utils class and element to web_element in PageElement class
-- Add *wait_until_first_element_is_found* method to Utils class to search a list of elements and wait until one of them
-  is found
+- Add *wait_until_first_element_is_found* method to Utils class to search for a list of elements and wait until one of
+  them is found
 - Add new page element types: Checkbox, InputRadio, Link, Group and PageElements
 
 BEHAVE

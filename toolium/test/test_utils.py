@@ -392,7 +392,7 @@ def test_get_web_element_from_web_element(utils):
     assert element == web_element
 
 
-def test_get_web_element_from_page_element(utils):
+def test_get_web_element_from_page_element(driver_wrapper, utils):
     element = PageElement(By.ID, 'element_id')
     element._web_element = 'mock_element'
 

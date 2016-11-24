@@ -46,10 +46,15 @@ class PageElement(CommonObject):
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
-        self._web_element = None
+        self.reset_object(self.driver_wrapper)
 
-    def reset_object(self):
-        """Initialize web element object"""
+    def reset_object(self, driver_wrapper=None):
+        """Reset each page element object
+
+        :param driver_wrapper: driver wrapper instance
+        """
+        if driver_wrapper:
+            self.driver_wrapper = driver_wrapper
         self._web_element = None
 
     @property
@@ -72,7 +77,7 @@ class PageElement(CommonObject):
 
     def _find_web_element(self):
         """Find WebElement using element locator and save it in _web_element attribute"""
-        if not self._web_element:
+        if not self._web_element or not self.config.getboolean_optional('Driver', 'save_web_element'):
             if self.parent:
                 self._web_element = self.utils.get_web_element(self.parent).find_element(*self.locator)
             else:
@@ -113,8 +118,9 @@ class PageElement(CommonObject):
         try:
             self.utils.wait_until_element_not_visible(self, timeout)
         except TimeoutException as exception:
-            msg = "Page element of type '{}' with locator {} is still visible after {} seconds".format(
-                type(self).__name__, self.locator, timeout)
+            parent_msg = " and parent locator '{}'".format(self.parent, timeout) if self.parent else ''
+            msg = "Page element of type '{}' with locator {}{} is still visible after {} seconds".format(
+                type(self).__name__, self.locator, parent_msg, timeout)
             self.logger.error(msg)
             exception.msg += "\n  {}".format(msg)
             raise exception

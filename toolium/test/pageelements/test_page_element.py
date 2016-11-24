@@ -143,13 +143,26 @@ def test_get_web_element_in_test(driver_wrapper):
     driver_wrapper.driver.find_element.assert_called_once_with(By.XPATH, '//input[0]')
 
 
-def test_get_web_element_two_times(driver_wrapper):
+def test_get_web_element_two_times_saving_enabled(driver_wrapper):
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.getboolean_optional.return_value = True
     login_page = RegisterPageObject(driver_wrapper)
     login_page.username.web_element
     login_page.username.web_element
 
     # Check that find_element is not called the second time
     driver_wrapper.driver.find_element.assert_called_once_with(By.XPATH, '//input[0]')
+
+
+def test_get_web_element_two_times_saving_disabled(driver_wrapper):
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.getboolean_optional.return_value = False
+    login_page = RegisterPageObject(driver_wrapper)
+    login_page.username.web_element
+    login_page.username.web_element
+
+    # Check that find_element is called two times
+    assert driver_wrapper.driver.find_element.call_count == 2
 
 
 def test_get_web_element_two_elements(driver_wrapper):
