@@ -40,7 +40,7 @@ class PageElements(CommonObject):
     """
     page_element_class = PageElement  #: class of page elements (PageElement, Button...)
 
-    def __init__(self, by, value, parent=None, page_element_class=None):
+    def __init__(self, by, value, parent=None, page_element_class=None, order=None):
         """Initialize the PageElements object with the given locator components.
 
         If parent is not None, find_elements will be performed over it, instead of
@@ -49,11 +49,13 @@ class PageElements(CommonObject):
         :param by: locator type
         :param value: locator value
         :param parent: parent element (WebElement, PageElement or locator tuple)
+        :param order: index value if the locator returns more than one element
         :param page_element_class: class of page elements (PageElement, Button...)
         """
         super(PageElements, self).__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
+        self.order = order  #: index value if the locator returns more than one element
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         # update instance element class or use PageElement class
         if page_element_class:
@@ -68,9 +70,10 @@ class PageElements(CommonObject):
         """
         if driver_wrapper:
             self.driver_wrapper = driver_wrapper
-        self._web_elements = []
         for element in self._page_elements:
             element.reset_object(driver_wrapper)
+        self._web_elements = []
+        self._page_elements = []
 
     @property
     def web_elements(self):
@@ -80,7 +83,7 @@ class PageElements(CommonObject):
         :rtype: list of selenium.webdriver.remote.webelement.WebElement
                 or list of appium.webdriver.webelement.WebElement
         """
-        if not self._web_elements:
+        if not self._web_elements or not self.config.getboolean_optional('Driver', 'save_web_element'):
             if self.parent:
                 self._web_elements = self.utils.get_web_element(self.parent).find_elements(*self.locator)
             else:
@@ -94,10 +97,12 @@ class PageElements(CommonObject):
         :returns: list of page element objects
         :rtype: list of toolium.pageelements.PageElement
         """
-        if not self._page_elements:
-            for web_element in self.web_elements:
-                # Create multiple PageElement with original locator
-                page_element = self.page_element_class(self.locator[0], self.locator[1], self.parent)
+        if not self._page_elements or not self.config.getboolean_optional('Driver', 'save_web_element'):
+            self._page_elements = []
+            for order, web_element in enumerate(self.web_elements):
+                # Create multiple PageElement with original locator and order
+                page_element = self.page_element_class(self.locator[0], self.locator[1], parent=self.parent,
+                                                       order=order)
                 page_element.reset_object(self.driver_wrapper)
                 page_element._web_element = web_element
                 self._page_elements.append(page_element)

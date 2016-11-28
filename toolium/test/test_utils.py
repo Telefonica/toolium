@@ -393,6 +393,9 @@ def test_get_web_element_from_web_element(utils):
 
 
 def test_get_web_element_from_page_element(driver_wrapper, utils):
+    # Mock Driver.save_web_element = True
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.getboolean_optional.return_value = True
     element = PageElement(By.ID, 'element_id')
     element._web_element = 'mock_element'
 
@@ -434,6 +437,9 @@ def test_wait_until_first_element_is_found_locator(driver_wrapper, utils):
 
 @pytest.mark.usefixtures('driver_wrapper')
 def test_wait_until_first_element_is_found_page_element(utils):
+    # Mock Driver.save_web_element = True
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.getboolean_optional.return_value = True
     page_element = PageElement(By.ID, 'element_id')
     page_element._web_element = 'mock_element'
 
@@ -444,6 +450,9 @@ def test_wait_until_first_element_is_found_page_element(utils):
 
 @pytest.mark.usefixtures('driver_wrapper')
 def test_wait_until_first_element_is_found_none(utils):
+    # Mock Driver.save_web_element = True
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.getboolean_optional.return_value = True
     page_element = PageElement(By.ID, 'element_id')
     page_element._web_element = 'mock_element'
 

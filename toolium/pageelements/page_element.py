@@ -32,7 +32,7 @@ class PageElement(CommonObject):
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     """
 
-    def __init__(self, by, value, parent=None):
+    def __init__(self, by, value, parent=None, order=None):
         """Initialize the PageElement object with the given locator components.
 
         If parent is not None, find_element will be performed over it, instead of
@@ -41,10 +41,12 @@ class PageElement(CommonObject):
         :param by: locator type
         :param value: locator value
         :param parent: parent element (WebElement, PageElement or locator tuple)
+        :param order: index value if the locator returns more than one element
         """
         super(PageElement, self).__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
+        self.order = order  #: index value if the locator returns more than one element
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self.reset_object(self.driver_wrapper)
 
@@ -78,10 +80,16 @@ class PageElement(CommonObject):
     def _find_web_element(self):
         """Find WebElement using element locator and save it in _web_element attribute"""
         if not self._web_element or not self.config.getboolean_optional('Driver', 'save_web_element'):
-            if self.parent:
-                self._web_element = self.utils.get_web_element(self.parent).find_element(*self.locator)
+            if self.order:
+                if self.parent:
+                    self._web_element = self.utils.get_web_element(self.parent).find_elements(*self.locator)[self.order]
+                else:
+                    self._web_element = self.driver.find_elements(*self.locator)[self.order]
             else:
-                self._web_element = self.driver.find_element(*self.locator)
+                if self.parent:
+                    self._web_element = self.utils.get_web_element(self.parent).find_element(*self.locator)
+                else:
+                    self._web_element = self.driver.find_element(*self.locator)
 
     def scroll_element_into_view(self):
         """Scroll element into view

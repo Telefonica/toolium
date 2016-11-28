@@ -144,6 +144,7 @@ def test_get_web_element_in_test(driver_wrapper):
 
 
 def test_get_web_element_two_times_saving_enabled(driver_wrapper):
+    # Mock Driver.save_web_element = True
     driver_wrapper.config = mock.MagicMock()
     driver_wrapper.config.getboolean_optional.return_value = True
     login_page = RegisterPageObject(driver_wrapper)
@@ -155,6 +156,7 @@ def test_get_web_element_two_times_saving_enabled(driver_wrapper):
 
 
 def test_get_web_element_two_times_saving_disabled(driver_wrapper):
+    # Mock Driver.save_web_element = False
     driver_wrapper.config = mock.MagicMock()
     driver_wrapper.config.getboolean_optional.return_value = False
     login_page = RegisterPageObject(driver_wrapper)
