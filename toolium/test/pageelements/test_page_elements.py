@@ -86,6 +86,9 @@ def test_get_page_elements(driver_wrapper):
 
 
 def test_get_page_elements_and_web_elements(driver_wrapper):
+    # Mock Driver.save_web_element = True
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.getboolean_optional.return_value = True
     driver_wrapper.driver.find_elements.return_value = child_elements
     inputs = LoginPageObject().inputs
     page_elements = inputs.page_elements
@@ -150,8 +153,9 @@ def test_reset_object(driver_wrapper):
 
     login_page.inputs.reset_object()
 
-    # Check that inputs web elements are reset
+    # Check that inputs web elements and page elements are reset
     assert len(login_page.inputs._web_elements) == 0
+    assert len(login_page.inputs._page_elements) == 0
     # Check that each page element is reset
     assert page_element_11._web_element is None
     assert page_element_12._web_element is None

@@ -13,6 +13,7 @@ v1.2.0
    | If it's false, the WebElement is searched whenever is needed (default value)
    | If it's true, the WebElement is saved in PageElement to avoid searching for the same element multiple times. Useful
    |  in mobile testing when searching for an element can take a long time.
+- Refactored reset_object method. Now it has an optional parameter with the driver_wrapper.
 
 v1.1.3
 ------
