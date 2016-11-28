@@ -102,10 +102,11 @@ class DriverWrapper(object):
             self.output_log_filename = output_log_filename
             self.logger = logging.getLogger(__name__)
 
-    def configure_properties(self, tc_config_prop_filenames=None):
+    def configure_properties(self, tc_config_prop_filenames=None, behave_properties=None):
         """Configure selenium instance properties
 
         :param tc_config_prop_filenames: test case specific properties filenames
+        :param behave_properties: dict with behave user data properties
         """
         prop_filenames = DriverWrappersPool.get_configured_value('Config_prop_filenames', tc_config_prop_filenames,
                                                                  'properties.cfg;local-properties.cfg')
@@ -121,6 +122,10 @@ class DriverWrapper(object):
 
         # Override properties with system properties
         self.config.update_from_system_properties()
+
+        # Override properties with behave userdata properties
+        if behave_properties:
+            self.config.update_from_behave_properties(behave_properties)
 
     def configure_visual_baseline(self):
         """Configure baseline directory"""
@@ -165,11 +170,12 @@ class DriverWrapper(object):
             self.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,
                                                           self.baseline_name)
 
-    def configure(self, is_selenium_test=True, tc_config_files=ConfigFiles()):
+    def configure(self, is_selenium_test=True, tc_config_files=ConfigFiles(), behave_properties=None):
         """Configure initial selenium instance using logging and properties files for Selenium or Appium tests
 
         :param is_selenium_test: true if test is a selenium or appium test case
         :param tc_config_files: test case specific config files
+        :param behave_properties: dict with behave user data properties
         """
         # Configure config and output directories
         DriverWrappersPool.configure_common_directories(tc_config_files)
@@ -178,7 +184,7 @@ class DriverWrapper(object):
         self.configure_logger(tc_config_files.config_log_filename, tc_config_files.output_log_filename)
 
         # Initialize the config object
-        self.configure_properties(tc_config_files.config_properties_filenames)
+        self.configure_properties(tc_config_files.config_properties_filenames, behave_properties)
 
         # Configure visual directories
         if is_selenium_test:

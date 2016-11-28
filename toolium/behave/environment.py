@@ -118,11 +118,14 @@ def create_and_configure_wrapper(context_or_world):
     context_or_world.driver_wrapper = DriverWrappersPool.get_default_wrapper()
     context_or_world.utils = context_or_world.driver_wrapper.utils
 
-    # Configure wrapper
-    context_or_world.driver_wrapper.configure(True, context_or_world.config_files)
+    # Get behave userdata properties to override config properties
+    try:
+        behave_properties = context_or_world.config.userdata
+    except AttributeError:
+        behave_properties = None
 
-    # Override properties with behave userdata properties
-    context_or_world.driver_wrapper.config.update_from_behave_properties(context_or_world)
+    # Configure wrapper
+    context_or_world.driver_wrapper.configure(True, context_or_world.config_files, behave_properties)
 
     # Copy config object
     context_or_world.toolium_config = context_or_world.driver_wrapper.config

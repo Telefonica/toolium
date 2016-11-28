@@ -79,17 +79,13 @@ class ExtendedConfigParser(configparser.ConfigParser):
         [self._update_property_from_dict(section, option, os.environ)
          for section in self.sections() for option in self.options(section)]
 
-    def update_from_behave_properties(self, behave_context):
+    def update_from_behave_properties(self, behave_properties):
         """Get behave userdata properties and update config properties
 
-        :param behave_context: behave context
+        :param behave_properties: behave properties
         """
-        try:
-            behave_properties = behave_context.config.userdata
-            [self._update_property_from_dict(section, option, behave_properties)
-             for section in self.sections() for option in self.options(section)]
-        except AttributeError:
-            pass
+        [self._update_property_from_dict(section, option, behave_properties)
+         for section in self.sections() for option in self.options(section)]
 
     def _update_property_from_dict(self, section, option, new_properties):
         """ Update a config property value with a new property value
