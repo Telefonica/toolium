@@ -94,8 +94,25 @@ def test_update_from_system_properties(config):
     assert orig_value == config.get(section, option)
 
     # Change system property and update config
-    os.environ[section + '_' + option] = new_value
+    os.environ['{}_{}'.format(section, option)] = new_value
     config.update_from_system_properties()
+
+    # Check the new config value
+    assert new_value == config.get(section, option)
+
+
+def test_update_from_behave_properties(config):
+    section = 'AppiumCapabilities'
+    option = 'platformName'
+    orig_value = 'Android'
+    new_value = 'iOS'
+
+    # Check previous value
+    assert orig_value == config.get(section, option)
+
+    # Change system property and update config
+    behave_properties = {'{}_{}'.format(section, option): new_value}
+    config.update_from_behave_properties(behave_properties)
 
     # Check the new config value
     assert new_value == config.get(section, option)
