@@ -30,7 +30,7 @@ from io import open
 import requests
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from datetime import datetime
@@ -132,6 +132,7 @@ class Utils(object):
         try:
             if isinstance(element, PageElement):
                 # Use _find_web_element() instead of web_element to avoid logging error message
+                element._web_element = None
                 element._find_web_element()
                 web_element = element._web_element
             elif isinstance(element, tuple):
@@ -148,7 +149,10 @@ class Utils(object):
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
         web_element = self._expected_condition_find_element(element)
-        return web_element if web_element and web_element.is_displayed() else False
+        try:
+            return web_element if web_element and web_element.is_displayed() else False
+        except StaleElementReferenceException:
+            return False
 
     def _expected_condition_find_element_not_visible(self, element):
         """Tries to find the element and checks that it is visible, but does not thrown an exception if the element is not found
@@ -157,7 +161,10 @@ class Utils(object):
         :returns: True if the web element is not found or it is not visible
         """
         web_element = self._expected_condition_find_element(element)
-        return True if not web_element or web_element.is_displayed() == False else False
+        try:
+            return True if not web_element or web_element.is_displayed() == False else False
+        except StaleElementReferenceException:
+            return False
 
     def _expected_condition_find_first_element(self, elements):
         """Try to find sequentially the elements of the list and return the first element found
@@ -172,6 +179,7 @@ class Utils(object):
         for element in elements:
             try:
                 if isinstance(element, PageElement):
+                    element._web_element = None
                     element._find_web_element()
                 else:
                     self.driver_wrapper.driver.find_element(*element)
