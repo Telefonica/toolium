@@ -80,16 +80,11 @@ class PageElement(CommonObject):
     def _find_web_element(self):
         """Find WebElement using element locator and save it in _web_element attribute"""
         if not self._web_element or not self.config.getboolean_optional('Driver', 'save_web_element'):
-            if self.order:
-                if self.parent:
-                    self._web_element = self.utils.get_web_element(self.parent).find_elements(*self.locator)[self.order]
-                else:
-                    self._web_element = self.driver.find_elements(*self.locator)[self.order]
-            else:
-                if self.parent:
-                    self._web_element = self.utils.get_web_element(self.parent).find_element(*self.locator)
-                else:
-                    self._web_element = self.driver.find_element(*self.locator)
+            # Element will be finded from parent element or from driver
+            base = self.utils.get_web_element(self.parent) if self.parent else self.driver
+            # Find elements and get the correct index or find a single element
+            self._web_element = base.find_elements(*self.locator)[self.order] if self.order else base.find_element(
+                *self.locator)
 
     def scroll_element_into_view(self):
         """Scroll element into view
