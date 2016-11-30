@@ -34,7 +34,7 @@ class LoginPageObject(PageObject):
     def init_page_elements(self):
         self.inputs = PageElements(By.XPATH, '//input')
         self.links = PageElements(By.XPATH, '//a')
-        self.inputs_parent = PageElements(By.XPATH, '//input', (By.ID, 'parent'))
+        self.inputs_with_parent = PageElements(By.XPATH, '//input', (By.ID, 'parent'))
 
 
 @pytest.fixture
@@ -62,7 +62,7 @@ def test_get_web_elements_with_parent_locator(driver_wrapper):
     mock_element.find_elements.return_value = child_elements
 
     driver_wrapper.driver.find_element.return_value = mock_element
-    web_elements = LoginPageObject().inputs_parent.web_elements
+    web_elements = LoginPageObject().inputs_with_parent.web_elements
 
     assert web_elements == child_elements
     driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'parent')
