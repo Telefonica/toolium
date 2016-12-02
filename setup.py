@@ -35,7 +35,7 @@ def get_long_description():
     # Change rst urls to ReadTheDocs html urls
     docs_url = 'http://toolium.readthedocs.org/en/latest'
     description = readme.replace('/CHANGELOG.rst', '{}/changelog.html'.format(docs_url))
-    for doc in ['driver_configuration', 'page_objects', 'bdd_integration', 'visual_testing']:
+    for doc in ['driver_configuration', 'page_objects', 'bdd_integration', 'visual_testing', 'tests_result_analysis']:
         description = description.replace('/docs/{}.rst'.format(doc), '{}/{}.html'.format(docs_url, doc))
     return description
 

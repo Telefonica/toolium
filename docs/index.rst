@@ -13,7 +13,7 @@ Main Features
 - :ref:`Page Object pattern <page_objects>`
 - :ref:`BDD integration <bdd_integration>`
 - :ref:`Visual testing solution <visual_testing>`
-- Make a screenshot in the happenning of an error
+- :ref:`Tests result analysis <tests_result_analysis>`
 
 Library Reference
 -----------------
@@ -25,6 +25,7 @@ Library Reference
    page_objects.rst
    bdd_integration.rst
    visual_testing.rst
+   tests_result_analysis.rst
    Changelog <changelog.rst>
 
 .. toctree::

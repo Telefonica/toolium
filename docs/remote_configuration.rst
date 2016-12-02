@@ -38,7 +38,7 @@ video_enabled
 | *false*: remote video recording is disabled
 
 logs_enabled
-~~~~~~~~~~~~~
+~~~~~~~~~~~~
 | *true*: webdriver logs are downloaded and saved to local files after test execution
 | *false*: webdriver logs are downloaded and saved to local files only if the test fails
 

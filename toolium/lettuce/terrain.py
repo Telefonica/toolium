@@ -35,6 +35,7 @@ def setup_driver(scenario):
     if not world.config_files.config_directory:
         world.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
 
+    world.global_status = {'test_passed': True}
     bdd_common_before_scenario(world, scenario)
 
 
