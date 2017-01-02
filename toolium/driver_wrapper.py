@@ -121,11 +121,11 @@ class DriverWrapper(object):
             self.config_properties_filenames = prop_filenames
 
         # Override properties with system properties
-        self.config.update_from_system_properties()
+        self.config.update_properties(os.environ)
 
         # Override properties with behave userdata properties
         if behave_properties:
-            self.config.update_from_behave_properties(behave_properties)
+            self.config.update_properties(behave_properties)
 
     def configure_visual_baseline(self):
         """Configure baseline directory"""
@@ -170,13 +170,16 @@ class DriverWrapper(object):
             self.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,
                                                           self.baseline_name)
 
-    def configure(self, is_selenium_test=True, tc_config_files=ConfigFiles(), behave_properties=None):
+    def configure(self, is_selenium_test=True, tc_config_files=None, behave_properties=None):
         """Configure initial selenium instance using logging and properties files for Selenium or Appium tests
 
         :param is_selenium_test: true if test is a selenium or appium test case
         :param tc_config_files: test case specific config files
         :param behave_properties: dict with behave user data properties
         """
+        # Initialize config files
+        tc_config_files = self._initialize_config_files(tc_config_files)
+
         # Configure config and output directories
         DriverWrappersPool.configure_common_directories(tc_config_files)
 
@@ -191,6 +194,37 @@ class DriverWrapper(object):
             driver_info = self.config.get('Driver', 'type').replace('-', '_')
             DriverWrappersPool.configure_visual_directories(driver_info)
             self.configure_visual_baseline()
+
+    @staticmethod
+    def _initialize_config_files(tc_config_files=None):
+        """Initialize config files and update config files names with the environment
+
+        :param tc_config_files: test case specific config files
+        :returns: initialized config files object
+        """
+        # Initialize config files
+        if tc_config_files is None:
+            tc_config_files = ConfigFiles()
+
+        # Update properties and log file names if an environment is configured
+        env = DriverWrappersPool.get_configured_value('Config_environment', None, None)
+        if env:
+            # Update config properties filenames
+            prop_filenames = tc_config_files.config_properties_filenames
+            new_prop_filenames_list = prop_filenames.split(';') if prop_filenames else ['properties.cfg']
+            base = new_prop_filenames_list[0].split('.')[0]
+            ext = new_prop_filenames_list[0].split('.')[1]
+            new_prop_filenames_list.append('{}-{}.{}'.format(env, base, ext))
+            new_prop_filenames_list.append('local-{}-{}.{}'.format(env, base, ext))
+            tc_config_files.set_config_properties_filenames(*new_prop_filenames_list)
+
+            # Update output log filename
+            output_log_filename = tc_config_files.output_log_filename
+            base = output_log_filename.split('.')[0] if output_log_filename else 'toolium'
+            ext = output_log_filename.split('.')[1] if output_log_filename else 'log'
+            tc_config_files.set_output_log_filename('{}_{}.{}'.format(base, env, ext))
+
+        return tc_config_files
 
     def connect(self, maximize=True):
         """Set up the selenium driver and connect to the server

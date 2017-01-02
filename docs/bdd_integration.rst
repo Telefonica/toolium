@@ -46,17 +46,8 @@ After initialization, the following attributes will be available in behave conte
 Behave userdata properties
 --------------------------
 
-By default, Toolium configuration is loaded from properties.cfg and local-properties.cfg files. If different properties
-files are used for different environments, they can be selected using behave user property named *env*. For example, if
-*env* value is *android*, Toolium configuration will be loaded from properties.cfg, android-properties.cfg and
-local-android-properties.cfg files:
-
-.. code:: console
-
-    $ behave -D env=android
-
-Moreover, Toolium properties can be modified from behave userdata configuration. For example, to select the driver type
-from command line instead of using the driver type defined in properties.cfg:
+Toolium properties can be modified from behave userdata configuration. For example, to select the driver type from
+command line instead of using the driver type defined in properties.cfg:
 
 .. code:: console
 
