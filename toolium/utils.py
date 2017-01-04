@@ -19,21 +19,19 @@ limitations under the License.
 # Python 2.7
 from __future__ import division
 
-# Python 2 and 3 compatibility
-from six.moves.urllib.parse import urlparse
-
 import logging
 import os
 import time
+from datetime import datetime
 from io import open
 
 import requests
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
+from six.moves.urllib.parse import urlparse  # Python 2 and 3 compatibility
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from datetime import datetime
 
 
 class Utils(object):
@@ -65,7 +63,7 @@ class Utils(object):
         if not os.path.exists(DriverWrappersPool.screenshots_directory):
             os.makedirs(DriverWrappersPool.screenshots_directory)
         if self.driver_wrapper.driver.get_screenshot_as_file(filepath):
-            self.logger.info("Screenshot saved in " + filepath)
+            self.logger.info("Screenshot saved in %s", filepath)
             DriverWrappersPool.screenshots_number += 1
             return filepath
         return None
@@ -81,7 +79,7 @@ class Utils(object):
             # geckodriver does not implement log_types, but it implements get_log for client and server
             log_types = ['client', 'server']
 
-        self.logger.debug("Reading logs from '{}' and writing them to log files".format(', '.join(log_types)))
+        self.logger.debug("Reading logs from '%s' and writing them to log files", ', '.join(log_types))
         for log_type in log_types:
             try:
                 self.save_webdriver_logs_by_type(log_type, test_name)
@@ -249,9 +247,9 @@ class Utils(object):
         try:
             return self._wait_until(self._expected_condition_find_first_element, elements, timeout)
         except TimeoutException as exception:
-            msg = "None of the page elements has been found after {} seconds".format(timeout)
-            self.logger.error(msg)
-            exception.msg += "\n  {}".format(msg)
+            msg = 'None of the page elements has been found after %s seconds'
+            self.logger.error(msg, timeout)
+            exception.msg += "\n  {}".format(msg % timeout)
             raise exception
 
     def get_remote_node(self):
@@ -271,7 +269,7 @@ class Utils(object):
                 # Extract remote node from response
                 proxy_id = requests.get(url).json()['proxyId']
                 remote_node = urlparse(proxy_id).hostname if urlparse(proxy_id).hostname else proxy_id
-                self.logger.debug("Test running in remote node {}".format(remote_node))
+                self.logger.debug("Test running in remote node %s", remote_node)
             except (ValueError, KeyError):
                 # The remote node is not a grid node or the session has been closed
                 remote_node = host
@@ -288,11 +286,11 @@ class Utils(object):
         try:
             video_url = self._get_remote_video_url(remote_node, session_id)
         except requests.exceptions.ConnectionError:
-            self.logger.warn("Remote server seems not to have video capabilities")
+            self.logger.warning("Remote server seems not to have video capabilities")
             return
 
         if not video_url:
-            self.logger.warn("Test video not found in node '{}'".format(remote_node))
+            self.logger.warning("Test video not found in node '%s'", remote_node)
             return
 
         self._download_video(video_url, video_name)
@@ -340,7 +338,7 @@ class Utils(object):
             os.makedirs(DriverWrappersPool.videos_directory)
         response = requests.get(video_url)
         open(filepath, 'wb').write(response.content)
-        self.logger.info("Video saved in '{}'".format(filepath))
+        self.logger.info("Video saved in '%s'", filepath)
         DriverWrappersPool.videos_number += 1
 
     def is_remote_video_enabled(self, remote_node):
@@ -413,7 +411,7 @@ class Utils(object):
         scale = native_window_size['width'] / web_window_size['width']
         offset = self.get_safari_navigation_bar_height()
         native_coords = {'x': coords['x'] * scale, 'y': coords['y'] * scale + offset}
-        self.logger.debug('Converted web coords {} into native coords {}'.format(coords, native_coords))
+        self.logger.debug('Converted web coords %s into native coords %s', coords, native_coords)
         return native_coords
 
     def swipe(self, element, x, y, duration=None):

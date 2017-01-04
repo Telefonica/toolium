@@ -259,7 +259,7 @@ class DriverWrapper(object):
 
         # Log window size
         window_size = self.utils.get_window_size()
-        self.logger.debug('Window size: {} x {}'.format(window_size['width'], window_size['height']))
+        self.logger.debug('Window size: %s x %s', window_size['width'], window_size['height'])
 
         # Update baseline
         self.update_visual_baseline()

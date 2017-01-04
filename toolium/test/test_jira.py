@@ -79,9 +79,8 @@ def test_change_jira_status(logger):
                             'onlyIfStatusChanges=true']:
             assert partial_url in req_mock.request_history[0].text
 
-    # Check that binary response has been decoded
-    expected_response = "The Test Case Execution 'TOOLIUM-2' has been created"
-    logger.debug.assert_called_once_with(expected_response)
+    # Check logging call
+    logger.debug.assert_called_once_with("%s", "The Test Case Execution 'TOOLIUM-2' has been created")
 
 
 def test_change_jira_status_attachments(logger):
@@ -124,9 +123,8 @@ def test_change_jira_status_attachments(logger):
                         '"attachments1"; filename="ios_web.png"']:
         assert partial_url in body
 
-    # Check that binary response has been decoded
-    expected_response = "The Test Case Execution 'TOOLIUM-2' has been created"
-    logger.debug.assert_called_once_with(expected_response)
+    # Check logging call
+    logger.debug.assert_called_once_with("%s", "The Test Case Execution 'TOOLIUM-2' has been created")
 
 
 @mock.patch('toolium.jira.requests.get')
@@ -141,8 +139,8 @@ def test_change_jira_status_empty_url(jira_get, logger):
     jira.change_jira_status('TOOLIUM-1', 'Pass', None, [])
 
     # Check logging error message
-    expected_response = "Test Case 'TOOLIUM-1' can not be updated: execution_url is not configured"
-    logger.warn.assert_called_once_with(expected_response)
+    logger.warning.assert_called_once_with("Test Case '%s' can not be updated: execution_url is not configured",
+                                           'TOOLIUM-1')
 
 
 @mock.patch('toolium.jira.requests.post')
@@ -158,8 +156,7 @@ def test_change_jira_status_exception(jira_post, logger):
     jira.change_jira_status('TOOLIUM-1', 'Pass', None, [])
 
     # Check logging error message
-    expected_response = "Error updating Test Case 'TOOLIUM-1': exception error"
-    logger.warn.assert_called_once_with(expected_response)
+    logger.warning.assert_called_once_with("Error updating Test Case '%s': %s", 'TOOLIUM-1', jira_post.side_effect)
 
 
 def test_jira_annotation_pass(logger):
