@@ -47,12 +47,12 @@ def before_all(context):
     if not context.config_files.config_directory:
         context.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
 
-    # Get 'env' property from user input (e.g. -D env=ios)
-    env = context.config.userdata.get('env')
+    # Get 'Config_environment' property from user input (e.g. -D Config_environment=ios)
+    env = context.config.userdata.get('Config_environment')
+    # Deprecated: Get 'env' property from user input (e.g. -D env=ios)
+    env = env if env else context.config.userdata.get('env')
     if env:
-        context.config_files.set_config_properties_filenames('properties.cfg', '{}-properties.cfg'.format(env),
-                                                             'local-{}-properties.cfg'.format(env))
-        context.config_files.set_output_log_filename('toolium_{}.log'.format(env))
+        os.environ['Config_environment'] = env
 
     context.global_status = {'test_passed': True}
     create_and_configure_wrapper(context)

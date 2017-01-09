@@ -63,18 +63,26 @@ def test_before_all(create_and_configure_wrapper):
     assert context.config_files.config_log_filename is None
 
 
+properties = (
+    ('env'),
+    ('Config_environment'),
+)
+
+
+@pytest.mark.parametrize("property_name", properties)
 @mock.patch('toolium.behave.environment.create_and_configure_wrapper')
-def test_before_all_env(create_and_configure_wrapper):
+def test_before_all_config_environment(create_and_configure_wrapper, property_name):
     # Create context mock
     context = mock.MagicMock()
-    context.config.userdata.get.return_value = 'os'
+    context.config.userdata.get.side_effect = lambda x: 'os' if x == property_name else None
     context.config_files = ConfigFiles()
 
     before_all(context)
 
-    # Check that configuration folder is the same as environment folder and configuration files are 'os' files
+    # Check that configuration folder is the same as environment folder and property 'Config_environment' is configured
     expected_config_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'conf')
-    expected_config_properties_filenames = 'properties.cfg;os-properties.cfg;local-os-properties.cfg'
     assert context.config_files.config_directory == expected_config_directory
-    assert context.config_files.config_properties_filenames == expected_config_properties_filenames
+    assert context.config_files.config_properties_filenames is None
     assert context.config_files.config_log_filename is None
+    assert os.environ['Config_environment'] == 'os'
+    del os.environ["Config_environment"]

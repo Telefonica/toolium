@@ -17,7 +17,6 @@ limitations under the License.
 """
 
 import logging
-import os
 
 # Python 2 and 3 compatibility
 from six.moves import configparser, StringIO
@@ -74,17 +73,13 @@ class ExtendedConfigParser(configparser.ConfigParser):
 
         return config_copy
 
-    def update_from_system_properties(self):
-        """Get defined system properties and update config properties"""
-        [self._update_property_from_dict(section, option, os.environ)
-         for section in self.sections() for option in self.options(section)]
+    def update_properties(self, new_properties):
+        """ Update config properties values
+        Property name must be equal to 'Section_option' of config property
 
-    def update_from_behave_properties(self, behave_properties):
-        """Get behave userdata properties and update config properties
-
-        :param behave_properties: behave properties
+        :param new_properties: dict with new properties values
         """
-        [self._update_property_from_dict(section, option, behave_properties)
+        [self._update_property_from_dict(section, option, new_properties)
          for section in self.sections() for option in self.options(section)]
 
     def _update_property_from_dict(self, section, option, new_properties):
@@ -98,20 +93,6 @@ class ExtendedConfigParser(configparser.ConfigParser):
         try:
             property_name = "{0}_{1}".format(section, option)
             self.set(section, option, new_properties[property_name])
-        except KeyError:
-            pass
-
-    def _update_from_behave_property(self, section, option, userdata):
-        """ Update a config property value with behave userdata property value
-        System property name must be equal to 'Section_option' of config property
-
-        :param section: config section
-        :param option: config option
-        :param userdata: behave userdata properties object
-        """
-        try:
-            property_name = "{0}_{1}".format(section, option)
-            self.set(section, option, userdata[property_name])
         except KeyError:
             pass
 
@@ -137,7 +118,7 @@ class ExtendedConfigParser(configparser.ConfigParser):
                     logger.error(message)
                     raise Exception(message)
                 else:
-                    logger.warn('Properties config file not found: {}'.format(conf_properties_file))
+                    logger.debug('Properties config file not found: {}'.format(conf_properties_file))
             else:
                 logger.debug('Reading properties from file: {}'.format(conf_properties_file))
                 found = True

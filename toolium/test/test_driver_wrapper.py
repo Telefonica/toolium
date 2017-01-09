@@ -120,10 +120,12 @@ def test_configure_no_changes(driver_wrapper):
 
 def test_configure_change_configuration_file(driver_wrapper):
     # Check previous values
-    assert driver_wrapper.config.get('Driver', 'type') == 'firefox'  # Modify wrapper
+    assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
+
+    # Modify wrapper
     driver_wrapper.config.set('Driver', 'type', 'opera')
 
-    # Change driver type and try to configure again
+    # Change properties file and try to configure again
     root_path = os.path.dirname(os.path.realpath(__file__))
     os.environ["Config_prop_filenames"] = os.path.join(root_path, 'conf', 'android-properties.cfg')
     driver_wrapper.configure()
@@ -131,6 +133,71 @@ def test_configure_change_configuration_file(driver_wrapper):
 
     # Check that configuration has been initialized
     assert driver_wrapper.config.get('Driver', 'type') == 'android'
+
+
+def test_configure_environment(driver_wrapper):
+    # Check previous values
+    assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
+
+    # Change environment and try to configure again
+    os.environ["Config_environment"] = 'android'
+    driver_wrapper.configure()
+    del os.environ["Config_environment"]
+
+    # Check that configuration has been initialized
+    assert driver_wrapper.config.get('Driver', 'type') == 'android'
+
+
+def test_initialize_config_files_new():
+    config_files = None
+
+    # Initialize config files
+    init_config_files = DriverWrapper._initialize_config_files(config_files)
+
+    # Check expected config files
+    assert init_config_files.config_properties_filenames is None
+    assert init_config_files.output_log_filename is None
+
+
+def test_initialize_config_files_new_environment():
+    config_files = None
+    os.environ["Config_environment"] = 'android'
+
+    # Initialize config files
+    init_config_files = DriverWrapper._initialize_config_files(config_files)
+    del os.environ["Config_environment"]
+
+    # Check expected config files
+    assert init_config_files.config_properties_filenames == 'properties.cfg;android-properties.cfg;local-android-properties.cfg'
+    assert init_config_files.output_log_filename == 'toolium_android.log'
+
+
+def test_initialize_config_files_configured():
+    config_files = ConfigFiles()
+    config_files.set_config_properties_filenames('test.conf', 'local-test.conf')
+    config_files.set_output_log_filename('test.log')
+
+    # Initialize config files
+    init_config_files = DriverWrapper._initialize_config_files(config_files)
+
+    # Check expected config files
+    assert init_config_files.config_properties_filenames == 'test.conf;local-test.conf'
+    assert init_config_files.output_log_filename == 'test.log'
+
+
+def test_initialize_config_files_configured_environment():
+    config_files = ConfigFiles()
+    config_files.set_config_properties_filenames('test.conf', 'local-test.conf')
+    config_files.set_output_log_filename('test.log')
+    os.environ["Config_environment"] = 'android'
+
+    # Initialize config files
+    init_config_files = DriverWrapper._initialize_config_files(config_files)
+    del os.environ["Config_environment"]
+
+    # Check expected config files
+    assert init_config_files.config_properties_filenames == 'test.conf;local-test.conf;android-test.conf;local-android-test.conf'
+    assert init_config_files.output_log_filename == 'test_android.log'
 
 
 @mock.patch('toolium.driver_wrapper.ConfigDriver.create_driver')

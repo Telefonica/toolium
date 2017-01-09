@@ -12,6 +12,19 @@ The following example shows how to choose Firefox::
     [Driver]
     type: firefox
 
+By default, Toolium configuration is loaded from properties.cfg and local-properties.cfg files. If different properties
+files are used for different environments, they can be selected using a system property named *Config_environment*. For
+example, if *Config_environment* value is *android*, Toolium configuration will be loaded from properties.cfg,
+android-properties.cfg and local-android-properties.cfg files:
+
+.. code:: console
+
+    $ Config_environment=android nosetests web/tests/test_web.py
+
+.. code:: console
+
+    $ behave -D Config_environment=android
+
 - :ref:`Browser Configuration <browser_configuration>`
 - :ref:`Mobile Configuration <mobile_configuration>`
 - :ref:`Remote Driver Configuration <remote_configuration>`

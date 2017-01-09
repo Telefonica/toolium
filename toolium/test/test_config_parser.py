@@ -84,7 +84,7 @@ def test_deepcopy(config):
     assert new_value == new_config.get(section, option)
 
 
-def test_update_from_system_properties(config):
+def test_update_properties_environ(config):
     section = 'AppiumCapabilities'
     option = 'platformName'
     orig_value = 'Android'
@@ -95,13 +95,13 @@ def test_update_from_system_properties(config):
 
     # Change system property and update config
     os.environ['{}_{}'.format(section, option)] = new_value
-    config.update_from_system_properties()
+    config.update_properties(os.environ)
 
     # Check the new config value
     assert new_value == config.get(section, option)
 
 
-def test_update_from_behave_properties(config):
+def test_update_properties_behave(config):
     section = 'AppiumCapabilities'
     option = 'platformName'
     orig_value = 'Android'
@@ -112,7 +112,7 @@ def test_update_from_behave_properties(config):
 
     # Change system property and update config
     behave_properties = {'{}_{}'.format(section, option): new_value}
-    config.update_from_behave_properties(behave_properties)
+    config.update_properties(behave_properties)
 
     # Check the new config value
     assert new_value == config.get(section, option)

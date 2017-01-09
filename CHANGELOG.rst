@@ -15,6 +15,17 @@ v1.2.0
    |  in mobile testing when searching for an element can take a long time.
 - Refactored reset_object method. Now it has an optional parameter with the driver_wrapper.
 - Fix error downloading videos after failed tests
+- System property 'Config_environment' is used to select config files, e.g., to read android-properties.cfg file:
+
+.. code:: console
+
+    $ Config_environment=android nosetests web/tests/test_web.py
+
+Behave user property 'env' is deprecated, use 'Config_environment' instead:
+
+.. code:: console
+
+    $ behave -D Config_environment=android
 
 v1.1.3
 ------
