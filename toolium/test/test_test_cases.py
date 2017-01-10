@@ -68,9 +68,8 @@ def test_tear_down_pass(logger):
     assert test._test_passed is True
 
     # Check logging messages
-    init_message = 'Running new test: MockTestClass.mock_pass'
-    expected_response = "The test 'MockTestClass.mock_pass' has passed"
-    logger.info.assert_has_calls([mock.call(init_message), mock.call(expected_response)])
+    logger.info.assert_has_calls([mock.call('Running new test: %s', 'MockTestClass.mock_pass'),
+                                  mock.call("The test '%s' has passed", 'MockTestClass.mock_pass')])
 
 
 def test_tear_down_fail(logger):
@@ -78,7 +77,5 @@ def test_tear_down_fail(logger):
     assert test._test_passed is False
 
     # Check logging error messages
-    init_message = 'Running new test: MockTestClass.mock_fail'
-    expected_response = "The test 'MockTestClass.mock_fail' has failed: test error"
-    logger.info.assert_called_once_with(init_message)
-    logger.error.assert_called_once_with(expected_response)
+    logger.info.assert_called_once_with('Running new test: %s', 'MockTestClass.mock_fail')
+    logger.error.assert_called_once_with("The test '%s' has failed: %s", 'MockTestClass.mock_fail', 'test error')

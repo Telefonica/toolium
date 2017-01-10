@@ -59,7 +59,7 @@ class BasicTestCase(unittest.TestCase):
         # Get config and logger instances
         self.config = self.driver_wrapper.config
         self.logger = logging.getLogger(__name__)
-        self.logger.info("Running new test: {0}".format(self.get_subclassmethod_name()))
+        self.logger.info("Running new test: %s", self.get_subclassmethod_name())
 
     def tearDown(self):
         # Get unit test exception
@@ -79,11 +79,11 @@ class BasicTestCase(unittest.TestCase):
 
         if not exception:
             self._test_passed = True
-            self.logger.info("The test '{0}' has passed".format(self.get_subclassmethod_name()))
+            self.logger.info("The test '%s' has passed", self.get_subclassmethod_name())
         else:
             self._test_passed = False
             error_message = get_error_message_from_exception(exception)
-            self.logger.error("The test '{0}' has failed: {1}".format(self.get_subclassmethod_name(), error_message))
+            self.logger.error("The test '%s' has failed: %s", self.get_subclassmethod_name(), error_message)
 
 
 class SeleniumTestCase(BasicTestCase):

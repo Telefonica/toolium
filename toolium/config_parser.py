@@ -18,8 +18,7 @@ limitations under the License.
 
 import logging
 
-# Python 2 and 3 compatibility
-from six.moves import configparser, StringIO
+from six.moves import configparser, StringIO  # Python 2 and 3 compatibility
 
 
 class ExtendedConfigParser(configparser.ConfigParser):
@@ -113,14 +112,14 @@ class ExtendedConfigParser(configparser.ConfigParser):
         for conf_properties_file in files_list:
             result = config.read(conf_properties_file)
             if len(result) == 0:
-                message = 'Properties config file not found: {}'.format(conf_properties_file)
+                message = 'Properties config file not found: %s'
                 if len(files_list) == 1:
-                    logger.error(message)
-                    raise Exception(message)
+                    logger.error(message, conf_properties_file)
+                    raise Exception(message % conf_properties_file)
                 else:
-                    logger.debug('Properties config file not found: {}'.format(conf_properties_file))
+                    logger.debug(message, conf_properties_file)
             else:
-                logger.debug('Reading properties from file: {}'.format(conf_properties_file))
+                logger.debug('Reading properties from file: %s', conf_properties_file)
                 found = True
         if not found:
             message = 'Any of the properties config files has been found'

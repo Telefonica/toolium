@@ -130,10 +130,10 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments):
     logger = logging.getLogger(__name__)
 
     if not execution_url:
-        logger.warn("Test Case '{}' can not be updated: execution_url is not configured".format(test_key))
+        logger.warning("Test Case '%s' can not be updated: execution_url is not configured", test_key)
         return
 
-    logger.info("Updating Test Case '{0}' in Jira with status {1}".format(test_key, test_status))
+    logger.info("Updating Test Case '%s' in Jira with status %s", test_key, test_status)
     composed_comments = comments
     if test_comment:
         composed_comments = '{}\n{}'.format(comments, test_comment) if comments else test_comment
@@ -150,14 +150,14 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments):
             files = None
         response = requests.post(execution_url, data=payload, files=files)
     except Exception as e:
-        logger.warn("Error updating Test Case '{}': {}".format(test_key, e))
+        logger.warning("Error updating Test Case '%s': %s", test_key, e)
         return
 
     if response.status_code >= 400:
-        logger.warn("Error updating Test Case '{}': [{}] {}".format(test_key, response.status_code,
-                                                                    get_error_message(response.content)))
+        logger.warning("Error updating Test Case '%s': [%s] %s", test_key, response.status_code,
+                       get_error_message(response.content))
     else:
-        logger.debug("{}".format(response.content.decode().splitlines()[0]))
+        logger.debug("%s", response.content.decode().splitlines()[0])
 
 
 def get_error_message(response_content):

@@ -70,10 +70,9 @@ class PageElement(CommonObject):
             self._find_web_element()
         except NoSuchElementException as exception:
             parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
-            msg = "Page element of type '{}' with locator {}{} not found".format(type(self).__name__, self.locator,
-                                                                                 parent_msg)
-            self.logger.error(msg)
-            exception.msg += "\n  {}".format(msg)
+            msg = "Page element of type '%s' with locator %s%s not found"
+            self.logger.error(msg, type(self).__name__, self.locator, parent_msg)
+            exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg))
             raise exception
         return self._web_element
 
@@ -104,11 +103,10 @@ class PageElement(CommonObject):
         try:
             self.utils.wait_until_element_visible(self, timeout)
         except TimeoutException as exception:
-            parent_msg = " and parent locator '{}'".format(self.parent, timeout) if self.parent else ''
-            msg = "Page element of type '{}' with locator {}{} not found or is not visible after {} seconds".format(
-                type(self).__name__, self.locator, parent_msg, timeout)
-            self.logger.error(msg)
-            exception.msg += "\n  {}".format(msg)
+            parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
+            msg = "Page element of type '%s' with locator %s%s not found or is not visible after %s seconds"
+            self.logger.error(msg, type(self).__name__, self.locator, parent_msg, timeout)
+            exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg, timeout))
             raise exception
         return self
 
@@ -121,11 +119,10 @@ class PageElement(CommonObject):
         try:
             self.utils.wait_until_element_not_visible(self, timeout)
         except TimeoutException as exception:
-            parent_msg = " and parent locator '{}'".format(self.parent, timeout) if self.parent else ''
-            msg = "Page element of type '{}' with locator {}{} is still visible after {} seconds".format(
-                type(self).__name__, self.locator, parent_msg, timeout)
-            self.logger.error(msg)
-            exception.msg += "\n  {}".format(msg)
+            parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
+            msg = "Page element of type '%s' with locator %s%s is still visible after %s seconds"
+            self.logger.error(msg, type(self).__name__, self.locator, parent_msg, timeout)
+            exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg, timeout))
             raise exception
         return self
 

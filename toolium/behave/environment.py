@@ -107,7 +107,7 @@ def bdd_common_before_scenario(context_or_world, scenario):
     if context_or_world.driver and implicitly_wait:
         context_or_world.driver.implicitly_wait(implicitly_wait)
 
-    context_or_world.logger.info("Running new scenario: {0}".format(scenario.name))
+    context_or_world.logger.info("Running new scenario: %s", scenario.name)
 
 
 def create_and_configure_wrapper(context_or_world):
@@ -195,11 +195,11 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
     elif status == 'passed':
         test_status = 'Pass'
         test_comment = None
-        context_or_world.logger.info("The scenario '{0}' has passed".format(scenario.name))
+        context_or_world.logger.info("The scenario '%s' has passed", scenario.name)
     else:
         test_status = 'Fail'
         test_comment = "The scenario '{0}' has failed".format(scenario.name)
-        context_or_world.logger.error(test_comment)
+        context_or_world.logger.error("The scenario '%s' has failed", scenario.name)
         # Capture screenshot on error
         DriverWrappersPool.capture_screenshots(scenario_file_name)
 

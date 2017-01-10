@@ -19,13 +19,11 @@ limitations under the License.
 import ast
 import logging
 
-# Python 2 and 3 compatibility
-from six.moves.configparser import NoSectionError
-
 from appium import webdriver as appiumdriver
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
+from six.moves.configparser import NoSectionError  # Python 2 and 3 compatibility
 
 
 def get_error_message_from_exception(exception):
@@ -54,15 +52,14 @@ class ConfigDriver(object):
         driver_type = self.config.get('Driver', 'type')
         try:
             if self.config.getboolean_optional('Server', 'enabled'):
-                self.logger.info("Creating remote driver (type = {0})".format(driver_type))
+                self.logger.info("Creating remote driver (type = %s)", driver_type)
                 driver = self._create_remote_driver()
             else:
-                self.logger.info("Creating local driver (type = {0})".format(driver_type))
+                self.logger.info("Creating local driver (type = %s)", driver_type)
                 driver = self._create_local_driver()
         except Exception as exc:
             error_message = get_error_message_from_exception(exc)
-            message = "{0} driver can not be launched: {1}".format(driver_type.capitalize(), error_message)
-            self.logger.error(message)
+            self.logger.error("%s driver can not be launched: %s", driver_type.capitalize(), error_message)
             raise
 
         return driver
@@ -189,7 +186,7 @@ class ConfigDriver(object):
         cap_type = {'Capabilities': 'server', 'AppiumCapabilities': 'Appium server'}
         try:
             for cap, cap_value in dict(self.config.items(section)).items():
-                self.logger.debug("Added {} capability: {} = {}".format(cap_type[section], cap, cap_value))
+                self.logger.debug("Added %s capability: %s = %s", cap_type[section], cap, cap_value)
                 capabilities[cap] = cap_value if cap == 'version' else self._convert_property_type(cap_value)
         except NoSectionError:
             pass
@@ -202,14 +199,14 @@ class ConfigDriver(object):
         """
         if capabilities.get("marionette"):
             gecko_driver = self.config.get('Driver', 'gecko_driver_path')
-            self.logger.debug("Gecko driver path given in properties: {0}".format(gecko_driver))
+            self.logger.debug("Gecko driver path given in properties: %s", gecko_driver)
         else:
             gecko_driver = None
 
         # Get Firefox binary
         firefox_binary = self.config.get_optional('Firefox', 'binary')
         if firefox_binary:
-            self.logger.debug("Using firefox binary: {0}".format(firefox_binary))
+            self.logger.debug("Using firefox binary: %s", firefox_binary)
             firefox_options = Options()
             firefox_options.binary = firefox_binary
         else:
@@ -226,7 +223,7 @@ class ConfigDriver(object):
         # Get Firefox profile
         profile_directory = self.config.get_optional('Firefox', 'profile')
         if profile_directory:
-            self.logger.debug("Using firefox profile: {0}".format(profile_directory))
+            self.logger.debug("Using firefox profile: %s", profile_directory)
 
         # Create Firefox profile
         profile = webdriver.FirefoxProfile(profile_directory=profile_directory)
@@ -235,7 +232,7 @@ class ConfigDriver(object):
         # Add Firefox preferences
         try:
             for pref, pref_value in dict(self.config.items('FirefoxPreferences')).items():
-                self.logger.debug("Added firefox preference: {0} = {1}".format(pref, pref_value))
+                self.logger.debug("Added firefox preference: %s = %s", pref, pref_value)
                 profile.set_preference(pref, self._convert_property_type(pref_value))
             profile.update_preferences()
         except NoSectionError:
@@ -244,7 +241,7 @@ class ConfigDriver(object):
         # Add Firefox extensions
         try:
             for pref, pref_value in dict(self.config.items('FirefoxExtensions')).items():
-                self.logger.debug("Added firefox extension: {0} = {1}".format(pref, pref_value))
+                self.logger.debug("Added firefox extension: %s = %s", pref, pref_value)
                 profile.add_extension(pref_value)
         except NoSectionError:
             pass
@@ -277,7 +274,7 @@ class ConfigDriver(object):
         :returns: a new local Chrome driver
         """
         chrome_driver = self.config.get('Driver', 'chrome_driver_path')
-        self.logger.debug("Chrome driver path given in properties: {0}".format(chrome_driver))
+        self.logger.debug("Chrome driver path given in properties: %s", chrome_driver)
         return webdriver.Chrome(chrome_driver, chrome_options=self._create_chrome_options(),
                                 desired_capabilities=capabilities)
 
@@ -307,7 +304,7 @@ class ConfigDriver(object):
         option_value = dict()
         try:
             for key, value in dict(self.config.items(options_conf[option_name]['section'])).items():
-                self.logger.debug("Added chrome {}: {} = {}".format(options_conf[option_name]['message'], key, value))
+                self.logger.debug("Added chrome %s: %s = %s", options_conf[option_name]['message'], key, value)
                 option_value[key] = self._convert_property_type(value)
             if len(option_value) > 0:
                 options.add_experimental_option(option_name, option_value)
@@ -322,7 +319,7 @@ class ConfigDriver(object):
         try:
             for pref, pref_value in dict(self.config.items('ChromeArguments')).items():
                 pref_value = '={}'.format(pref_value) if pref_value else ''
-                self.logger.debug("Added chrome argument: {0}{1}".format(pref, pref_value))
+                self.logger.debug("Added chrome argument: %s%s", pref, pref_value)
                 options.add_argument('{}{}'.format(pref, self._convert_property_type(pref_value)))
         except NoSectionError:
             pass
@@ -342,7 +339,7 @@ class ConfigDriver(object):
         :returns: a new local Opera driver
         """
         opera_driver = self.config.get('Driver', 'opera_driver_path')
-        self.logger.debug("Opera driver path given in properties: {0}".format(opera_driver))
+        self.logger.debug("Opera driver path given in properties: %s", opera_driver)
         return webdriver.Opera(executable_path=opera_driver, desired_capabilities=capabilities)
 
     def _setup_explorer(self, capabilities):
@@ -352,7 +349,7 @@ class ConfigDriver(object):
         :returns: a new local Internet Explorer driver
         """
         explorer_driver = self.config.get('Driver', 'explorer_driver_path')
-        self.logger.debug("Explorer driver path given in properties: {0}".format(explorer_driver))
+        self.logger.debug("Explorer driver path given in properties: %s", explorer_driver)
         return webdriver.Ie(explorer_driver, capabilities=capabilities)
 
     def _setup_edge(self, capabilities):
@@ -362,7 +359,7 @@ class ConfigDriver(object):
         :returns: a new local Edge driver
         """
         edge_driver = self.config.get('Driver', 'edge_driver_path')
-        self.logger.debug("Edge driver path given in properties: {0}".format(edge_driver))
+        self.logger.debug("Edge driver path given in properties: %s", edge_driver)
         return webdriver.Edge(edge_driver, capabilities=capabilities)
 
     def _setup_phantomjs(self, capabilities):
@@ -372,7 +369,7 @@ class ConfigDriver(object):
         :returns: a new local phantomjs driver
         """
         phantomjs_driver = self.config.get('Driver', 'phantomjs_driver_path')
-        self.logger.debug("Phantom driver path given in properties: {0}".format(phantomjs_driver))
+        self.logger.debug("Phantom driver path given in properties: %s", phantomjs_driver)
         return webdriver.PhantomJS(executable_path=phantomjs_driver, desired_capabilities=capabilities)
 
     def _setup_appium(self):

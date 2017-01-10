@@ -16,22 +16,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# Python 2.7
-from __future__ import division
+from __future__ import division  # Python 2.7
 
-# Python 2 and 3 compatibility
-from six.moves import xrange
-
+import datetime
+import itertools
 import logging
 import os
 import re
 import shutil
 from io import BytesIO
 from os import path
-import datetime
+
+from six.moves import xrange  # Python 2 and 3 compatibility
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
-import itertools
 
 try:
     from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
@@ -79,16 +77,16 @@ class VisualTest(object):
             self.engine = PerceptualEngine()
         elif engine_type == 'imagemagick':
             if 'MagickEngine' not in globals():
-                self.logger.warn("Engine '{}' not found, using pil instead. It should be installed "
-                                 "the master version of needle, not the 0.3.".format(engine_type))
+                self.logger.warning("Engine '%s' not found, using pil instead. It should be installed "
+                                    "the master version of needle, not the 0.3.", engine_type)
                 self.engine = PilEngine()
             else:
                 self.engine = MagickEngine()
         elif engine_type == 'pil':
             self.engine = PilEngine()
         else:
-            self.logger.warn(
-                "Engine '{}' not found, using pil instead. Review your properties.cfg file.".format(engine_type))
+            self.logger.warning("Engine '%s' not found, using pil instead. Review your properties.cfg file.",
+                                engine_type)
             self.engine = PilEngine()
         self.save_baseline = self.driver_wrapper.config.getboolean_optional('VisualTests', 'save')
 
@@ -152,7 +150,7 @@ class VisualTest(object):
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'complete_report'):
                 self._add_result_to_report('baseline', report_name, output_file, None, 'Screenshot added to baseline')
 
-            self.logger.debug("Visual screenshot '{}' saved in visualtests/baseline folder".format(filename))
+            self.logger.debug("Visual screenshot '%s' saved in visualtests/baseline folder", filename)
         else:
             # Compare the screenshots
             self.compare_files(report_name, output_file, baseline_file, threshold)
@@ -237,7 +235,7 @@ class VisualTest(object):
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'fail') or self.force:
                 raise exc
             else:
-                self.logger.warn('Visual error: {}'.format(str(exc)))
+                self.logger.warning('Visual error: %s', str(exc))
                 return str(exc)
 
     def _add_result_to_report(self, result, report_name, image_file, baseline_file, message=None):
