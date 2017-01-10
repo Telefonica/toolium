@@ -70,7 +70,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Toolium'
-copyright = u'2015-2016, Telefónica I+D'
+copyright = u'2015-2017, Telefónica I+D'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
