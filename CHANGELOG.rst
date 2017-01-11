@@ -26,6 +26,7 @@ Behave user property 'env' is deprecated, use 'Config_environment' instead:
 .. code:: console
 
     $ behave -D Config_environment=android
+- Fix error in visual tests when excluding elements in a scrolled page
 
 v1.1.3
 ------

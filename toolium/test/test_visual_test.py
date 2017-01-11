@@ -23,7 +23,7 @@ import shutil
 import mock
 import pytest
 from PIL import Image
-# from needle.engines.imagemagick_engine import Engine as MagickEngine
+from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
 from needle.engines.pil_engine import Engine as PilEngine
 
@@ -100,11 +100,12 @@ def test_engine_perceptual(driver_wrapper):
     assert isinstance(visual.engine, PerceptualEngine)
 
 
-# Disabled until needle 0.4 is released
-# def test_engine_magick(driver_wrapper):
-#    driver_wrapper.config.set('VisualTests', 'engine', 'imagemagick')
-#    visual = VisualTest(driver_wrapper)
-#    assert isinstance(visual.engine, MagickEngine)
+def test_engine_magick(driver_wrapper):
+    # Update conf and create a new VisualTest instance
+    driver_wrapper.config.set('VisualTests', 'engine', 'imagemagick')
+    visual = VisualTest(driver_wrapper)
+
+    assert isinstance(visual.engine, MagickEngine)
 
 
 def test_engine_empty(driver_wrapper):
@@ -182,11 +183,12 @@ def assert_image(visual, img, img_name, expected_image_filename):
 
     # Output image and expected image must be equals
     expected_image = os.path.join(root_path, 'resources', expected_image_filename + '.png')
-    PilEngine().assertSameFiles(result_file, expected_image, 0.1)
+    MagickEngine().assertSameFiles(result_file, expected_image, 0.1)
 
 
 def test_crop_element(driver_wrapper):
     # Create element mock
+    driver_wrapper.driver.execute_script.return_value = 0  # scrollX=0 and scrollY=0
     web_element = get_mock_element(x=250, y=40, height=40, width=300)
     visual = VisualTest(driver_wrapper)
 
@@ -228,6 +230,7 @@ def test_mobile_no_resize(driver_wrapper):
 
 def test_exclude_elements(driver_wrapper):
     # Create elements mock
+    driver_wrapper.driver.execute_script.return_value = 0  # scrollX=0 and scrollY=0
     visual = VisualTest(driver_wrapper)
     web_elements = [get_mock_element(x=250, y=40, height=40, width=300),
                     get_mock_element(x=250, y=90, height=20, width=100)]
@@ -241,6 +244,7 @@ def test_exclude_elements(driver_wrapper):
 def test_exclude_element_outofimage(driver_wrapper):
     # Create elements mock
     visual = VisualTest(driver_wrapper)
+    driver_wrapper.driver.execute_script.return_value = 0  # scrollX=0 and scrollY=0
     web_elements = [get_mock_element(x=250, y=40, height=40, width=1500)]
     img = Image.open(file_v1)
 
@@ -317,11 +321,12 @@ def test_assert_screenshot_full_and_save_baseline(driver_wrapper):
     # Output image and new baseline image must be equals
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                  'screenshot_full.png')
-    PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
+    MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
 
 def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
     # Create element mock
+    driver_wrapper.driver.execute_script.return_value = 0  # scrollX=0 and scrollY=0
     web_element = get_mock_element(x=250, y=40, height=40, width=300)
 
     # Configure driver mock
@@ -337,12 +342,12 @@ def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'register_cropped_element.png')
     output_file = os.path.join(visual.output_directory, '01_screenshot_elem__screenshot_suffix.png')
-    PilEngine().assertSameFiles(output_file, expected_image, 0.1)
+    MagickEngine().assertSameFiles(output_file, expected_image, 0.1)
 
     # Output image and new baseline image must be equals
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                  'screenshot_elem.png')
-    PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
+    MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
 
 def test_assert_screenshot_full_and_compare(driver_wrapper):
@@ -366,6 +371,7 @@ def test_assert_screenshot_full_and_compare(driver_wrapper):
 
 def test_assert_screenshot_element_and_compare(driver_wrapper):
     # Add baseline image
+    driver_wrapper.driver.execute_script.return_value = 0  # scrollX=0 and scrollY=0
     visual = VisualTest(driver_wrapper)
     expected_image = os.path.join(root_path, 'resources', 'register_cropped_element.png')
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox',
@@ -387,6 +393,7 @@ def test_assert_screenshot_element_and_compare(driver_wrapper):
 
 def test_assert_screenshot_mobile_resize_and_exclude(driver_wrapper):
     # Create elements mock
+    driver_wrapper.driver.execute_script.return_value = 0  # scrollX=0 and scrollY=0
     exclude_elements = [get_mock_element(x=0, y=0, height=24, width=375)]
 
     # Configure driver mock
@@ -407,16 +414,17 @@ def test_assert_screenshot_mobile_resize_and_exclude(driver_wrapper):
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'ios_excluded.png')
     output_file = os.path.join(visual.output_directory, '01_screenshot_ios__screenshot_suffix.png')
-    PilEngine().assertSameFiles(output_file, expected_image, 0.1)
+    MagickEngine().assertSameFiles(output_file, expected_image, 0.1)
 
     # Output image and new baseline image must be equals
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                  'screenshot_ios.png')
-    PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
+    MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
 
 def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
     # Create elements mock
+    driver_wrapper.driver.execute_script.return_value = 0  # scrollX=0 and scrollY=0
     form_element = get_mock_element(x=0, y=0, height=559, width=375)
     exclude_elements = [get_mock_element(x=15, y=296.515625, height=32, width=345)]
 
@@ -440,12 +448,12 @@ def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'ios_web_exclude.png')
     output_file = os.path.join(visual.output_directory, '01_screenshot_ios_web__screenshot_suffix.png')
-    PilEngine().assertSameFiles(output_file, expected_image, 0.1)
+    MagickEngine().assertSameFiles(output_file, expected_image, 0.1)
 
     # Output image and new baseline image must be equals
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox',
                                  'screenshot_ios_web.png')
-    PilEngine().assertSameFiles(output_file, baseline_file, 0.1)
+    MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
 
 def test_assert_screenshot_str_threshold(driver_wrapper):

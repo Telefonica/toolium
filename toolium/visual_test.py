@@ -75,13 +75,12 @@ class VisualTest(object):
         engine_type = self.driver_wrapper.config.get_optional('VisualTests', 'engine', 'pil')
         if engine_type == 'perceptualdiff':
             self.engine = PerceptualEngine()
+        elif engine_type == 'imagemagick' and 'MagickEngine' not in globals():
+            self.logger.warning("Engine '%s' not found, using pil instead. You need needle 0.4+ to use this engine.",
+                                engine_type)
+            self.engine = PilEngine()
         elif engine_type == 'imagemagick':
-            if 'MagickEngine' not in globals():
-                self.logger.warning("Engine '%s' not found, using pil instead. It should be installed "
-                                    "the master version of needle, not the 0.3.", engine_type)
-                self.engine = PilEngine()
-            else:
-                self.engine = MagickEngine()
+            self.engine = MagickEngine()
         elif engine_type == 'pil':
             self.engine = PilEngine()
         else:
@@ -174,11 +173,15 @@ class VisualTest(object):
         :param web_element: WebElement object
         :returns: tuple with element coordinates
         """
-        offset = self.utils.get_safari_navigation_bar_height()
+        scroll_x = self.driver_wrapper.driver.execute_script("return window.scrollX")
+        scroll_y = self.driver_wrapper.driver.execute_script("return window.scrollY")
+        offset_x = -scroll_x
+        offset_y = self.utils.get_safari_navigation_bar_height() - scroll_y
+
         location = web_element.location
         size = web_element.size
-        return (int(location['x']), int(location['y'] + offset),
-                int(location['x'] + size['width']), int(location['y'] + offset + size['height']))
+        return (int(location['x']) + offset_x, int(location['y'] + offset_y),
+                int(location['x'] + offset_x + size['width']), int(location['y'] + offset_y + size['height']))
 
     def crop_element(self, img, web_element):
         """Crop image to fit element

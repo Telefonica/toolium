@@ -19,10 +19,10 @@ limitations under the License.
 import mock
 import pytest
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.firefox.options import Options
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
-from selenium.webdriver.firefox.options import Options
 
 
 @pytest.fixture
@@ -71,11 +71,15 @@ def test_create_driver_remote(config):
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_firefox(webdriver_mock, config):
     config.set('Driver', 'type', 'firefox')
+    config.add_section('Capabilities')
+    config.set('Capabilities', 'marionette', 'false')
     config_driver = ConfigDriver(config)
     config_driver._create_firefox_profile = lambda: 'firefox profile'
 
     config_driver._create_local_driver()
-    webdriver_mock.Firefox.assert_called_once_with(capabilities=DesiredCapabilities.FIREFOX,
+    expected_capabilities = DesiredCapabilities.FIREFOX.copy()
+    expected_capabilities['marionette'] = False
+    webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path=None,
                                                    firefox_options=None)
 
@@ -100,6 +104,8 @@ def test_create_local_driver_firefox_gecko(webdriver_mock, config):
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_firefox_binary(webdriver_mock, config):
     config.set('Driver', 'type', 'firefox')
+    config.add_section('Capabilities')
+    config.set('Capabilities', 'marionette', 'false')
     config.add_section('Firefox')
     config.set('Firefox', 'binary', '/tmp/firefox')
     config_driver = ConfigDriver(config)
@@ -111,7 +117,10 @@ def test_create_local_driver_firefox_binary(webdriver_mock, config):
     args, kwargs = webdriver_mock.Firefox.call_args
     firefox_options = kwargs['firefox_options']
     assert isinstance(firefox_options, Options)
-    assert firefox_options.binary == '/tmp/firefox'
+    if isinstance(firefox_options.binary, str):
+        assert firefox_options.binary == '/tmp/firefox'  # Selenium 2
+    else:
+        assert firefox_options.binary._start_cmd == '/tmp/firefox'  # Selenium 3
 
 
 @mock.patch('toolium.config_driver.webdriver')
@@ -217,14 +226,16 @@ def test_create_local_driver_unknown_driver(config):
 def test_create_local_driver_capabilities(webdriver_mock, config):
     config.set('Driver', 'type', 'firefox')
     config.add_section('Capabilities')
+    config.set('Capabilities', 'marionette', 'false')
     config.set('Capabilities', 'version', '45')
     config_driver = ConfigDriver(config)
     config_driver._create_firefox_profile = lambda: 'firefox profile'
 
     config_driver._create_local_driver()
-    capabilities = DesiredCapabilities.FIREFOX.copy()
-    capabilities['version'] = '45'
-    webdriver_mock.Firefox.assert_called_once_with(capabilities=capabilities,
+    expected_capabilities = DesiredCapabilities.FIREFOX.copy()
+    expected_capabilities['marionette'] = False
+    expected_capabilities['version'] = '45'
+    webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path=None,
                                                    firefox_options=None)
 

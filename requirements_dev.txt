@@ -1,10 +1,10 @@
-Sphinx==1.4
+Sphinx==1.5.1
 behave==1.2.5
-lettuce==0.2.21
+lettuce==0.2.23
 pytest==2.9.2
-coverage==4.1b2
+coverage==4.3.1
 mock==2.0.0
-requests-mock==0.7.0
+requests-mock==1.2.0
 coveralls==1.1
-needle==0.3
-Pillow==3.2.0  # 3.3.0 version has an installation issue
+needle==0.4.1
+Pillow==3.2.0 ; python_version < '3'
