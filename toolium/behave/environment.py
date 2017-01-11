@@ -209,7 +209,9 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
 
     # Close browser and stop driver if it must not be reused
     reuse_driver = context_or_world.toolium_config.getboolean_optional('Driver', 'reuse_driver')
-    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, test_passed, reuse_driver)
+    restart_driver_fail = context_or_world.toolium_config.getboolean_optional('Driver', 'restart_driver_fail')
+    maintain_default = reuse_driver and (test_passed or not restart_driver_fail)
+    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, test_passed, maintain_default)
 
     # Save test status to be updated later
     context_or_world.global_status['test_passed'] = context_or_world.global_status[

@@ -143,8 +143,10 @@ class SeleniumTestCase(BasicTestCase):
         DriverWrappersPool.save_all_webdriver_logs(self.get_subclassmethod_name(), self._test_passed)
 
         # Close browser and stop driver if it must not be reused
-        DriverWrappersPool.close_drivers_and_download_videos(test_name, self._test_passed, self.reuse_driver)
-        if not self.reuse_driver:
+        restart_driver_fail = self.driver_wrapper.config.getboolean_optional('Driver', 'restart_driver_fail')
+        maintain_default = self.reuse_driver and (self._test_passed or not restart_driver_fail)
+        DriverWrappersPool.close_drivers_and_download_videos(test_name, self._test_passed, maintain_default)
+        if not maintain_default:
             SeleniumTestCase.driver = None
 
     def assert_screenshot(self, element, filename, threshold=0, exclude_elements=[], driver_wrapper=None, force=False):
