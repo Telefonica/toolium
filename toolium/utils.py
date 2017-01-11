@@ -409,8 +409,8 @@ class Utils(object):
         self.driver_wrapper.driver.switch_to.context('NATIVE_APP')
         native_window_size = self.driver_wrapper.driver.get_window_size()
         scale = native_window_size['width'] / web_window_size['width']
-        offset = self.get_safari_navigation_bar_height()
-        native_coords = {'x': coords['x'] * scale, 'y': coords['y'] * scale + offset}
+        offset_y = self.get_safari_navigation_bar_height()
+        native_coords = {'x': coords['x'] * scale, 'y': coords['y'] * scale + offset_y}
         self.logger.debug('Converted web coords %s into native coords %s', coords, native_coords)
         return native_coords
 

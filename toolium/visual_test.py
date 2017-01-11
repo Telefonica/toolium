@@ -174,11 +174,15 @@ class VisualTest(object):
         :param web_element: WebElement object
         :returns: tuple with element coordinates
         """
-        offset = self.utils.get_safari_navigation_bar_height()
+        scroll_x = self.driver_wrapper.driver.execute_script("return window.scrollX")
+        scroll_y = self.driver_wrapper.driver.execute_script("return window.scrollY")
+        offset_x = -scroll_x
+        offset_y = self.utils.get_safari_navigation_bar_height() - scroll_y
+
         location = web_element.location
         size = web_element.size
-        return (int(location['x']), int(location['y'] + offset),
-                int(location['x'] + size['width']), int(location['y'] + offset + size['height']))
+        return (int(location['x']) + offset_x, int(location['y'] + offset_y),
+                int(location['x'] + offset_x + size['width']), int(location['y'] + offset_y + size['height']))
 
     def crop_element(self, img, web_element):
         """Crop image to fit element

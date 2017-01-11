@@ -228,6 +228,7 @@ def test_mobile_no_resize(driver_wrapper):
 
 def test_exclude_elements(driver_wrapper):
     # Create elements mock
+    driver_wrapper.driver.execute_script.side_effect = [0, 0]  # scrollX=0 and scrollY=0
     visual = VisualTest(driver_wrapper)
     web_elements = [get_mock_element(x=250, y=40, height=40, width=300),
                     get_mock_element(x=250, y=90, height=20, width=100)]
@@ -241,6 +242,7 @@ def test_exclude_elements(driver_wrapper):
 def test_exclude_element_outofimage(driver_wrapper):
     # Create elements mock
     visual = VisualTest(driver_wrapper)
+    driver_wrapper.driver.execute_script.side_effect = [0, 0]  # scrollX=0 and scrollY=0
     web_elements = [get_mock_element(x=250, y=40, height=40, width=1500)]
     img = Image.open(file_v1)
 
