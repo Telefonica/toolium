@@ -75,13 +75,12 @@ class VisualTest(object):
         engine_type = self.driver_wrapper.config.get_optional('VisualTests', 'engine', 'pil')
         if engine_type == 'perceptualdiff':
             self.engine = PerceptualEngine()
+        elif engine_type == 'imagemagick' and 'MagickEngine' not in globals():
+            self.logger.warning("Engine '%s' not found, using pil instead. You need needle 0.4+ to use this engine.",
+                                engine_type)
+            self.engine = PilEngine()
         elif engine_type == 'imagemagick':
-            if 'MagickEngine' not in globals():
-                self.logger.warning("Engine '%s' not found, using pil instead. It should be installed "
-                                    "the master version of needle, not the 0.3.", engine_type)
-                self.engine = PilEngine()
-            else:
-                self.engine = MagickEngine()
+            self.engine = MagickEngine()
         elif engine_type == 'pil':
             self.engine = PilEngine()
         else:
