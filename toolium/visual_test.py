@@ -173,8 +173,10 @@ class VisualTest(object):
         :param web_element: WebElement object
         :returns: tuple with element coordinates
         """
-        scroll_x = self.driver_wrapper.driver.execute_script("return window.scrollX")
-        scroll_y = self.driver_wrapper.driver.execute_script("return window.scrollY")
+        scroll_x = self.driver_wrapper.driver.execute_script("return window.pageXOffset")
+        scroll_x = scroll_x if scroll_x else 0
+        scroll_y = self.driver_wrapper.driver.execute_script("return window.pageYOffset")
+        scroll_y = scroll_y if scroll_y else 0
         offset_x = -scroll_x
         offset_y = self.utils.get_safari_navigation_bar_height() - scroll_y
 
