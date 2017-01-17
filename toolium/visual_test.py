@@ -129,9 +129,13 @@ class VisualTest(object):
         report_name = '{}<br>({})'.format(file_suffix, filename)
 
         # Get screenshot and modify it
-        if (web_element or (exclude_web_elements and len(exclude_web_elements) > 0) or
+        scrolls_size = self.get_scrolls_size()
+        if (scrolls_size['x'] > 0 or scrolls_size['y'] > 0 or web_element or
+                (exclude_web_elements and len(exclude_web_elements) > 0) or
+                    self.driver_wrapper.config.get('Driver', 'type').split('-')[0] == 'iexplore' or
                 self.driver_wrapper.is_ios_test() or self.driver_wrapper.is_android_web_test()):
             img = Image.open(BytesIO(self.driver_wrapper.driver.get_screenshot_as_png()))
+            img = self.remove_scrolls(img, scrolls_size)
             img = self.mobile_resize(img)
             img = self.exclude_elements(img, exclude_web_elements)
             img = self.crop_element(img, web_element)
@@ -154,6 +158,39 @@ class VisualTest(object):
             # Compare the screenshots
             self.compare_files(report_name, output_file, baseline_file, threshold)
 
+    def get_scrolls_size(self):
+        """Return Chrome and Explorer scrolls sizes if they are visible
+        Firefox screenshots don't contain scrolls
+
+        :returns: dict with horizontal and vertical scrolls sizes
+        """
+        scroll_x = 0
+        scroll_y = 0
+        if (self.driver_wrapper.config.get('Driver', 'type').split('-')[0] in ['chrome', 'iexplore'] and
+                not self.driver_wrapper.is_mobile_test()):
+            scroll_height = self.driver_wrapper.driver.execute_script("return document.body.scrollHeight")
+            scroll_width = self.driver_wrapper.driver.execute_script("return document.body.scrollWidth")
+            window_height = self.driver_wrapper.driver.execute_script("return window.innerHeight")
+            window_width = self.driver_wrapper.driver.execute_script("return window.innerWidth")
+            scroll_size = 21 if self.driver_wrapper.config.get('Driver', 'type').split('-')[0] == 'iexplore' else 17
+            scroll_x = scroll_size if scroll_width > window_width else 0
+            scroll_y = scroll_size if scroll_height > window_height else 0
+        return {'x': scroll_x, 'y': scroll_y}
+
+    @staticmethod
+    def remove_scrolls(img, scrolls_size):
+        """Remove browser scrolls from image if they are visible
+
+        :param img: image object
+        :param scrolls_size: dict with horizontal and vertical scrolls sizes
+        :returns: modified image object
+        """
+        if scrolls_size['x'] > 0 or scrolls_size['y'] > 0:
+            new_image_width = img.size[0] - scrolls_size['y']
+            new_image_height = img.size[1] - scrolls_size['x']
+            img = img.crop((0, 0, new_image_width, new_image_height))
+        return img
+
     def mobile_resize(self, img):
         """Resize image in iOS (native and web) and Android (web) to fit window size
 
@@ -173,8 +210,10 @@ class VisualTest(object):
         :param web_element: WebElement object
         :returns: tuple with element coordinates
         """
-        scroll_x = self.driver_wrapper.driver.execute_script("return window.scrollX")
-        scroll_y = self.driver_wrapper.driver.execute_script("return window.scrollY")
+        scroll_x = self.driver_wrapper.driver.execute_script("return window.pageXOffset")
+        scroll_x = scroll_x if scroll_x else 0
+        scroll_y = self.driver_wrapper.driver.execute_script("return window.pageYOffset")
+        scroll_y = scroll_y if scroll_y else 0
         offset_x = -scroll_x
         offset_y = self.utils.get_safari_navigation_bar_height() - scroll_y
 
@@ -191,7 +230,12 @@ class VisualTest(object):
         :returns: modified image object
         """
         if web_element:
-            img = img.crop(self.get_element_box(web_element))
+            element_box = self.get_element_box(web_element)
+            # Reduce element box if it is greater than image size
+            element_max_x = img.size[0] if element_box[2] > img.size[0] else element_box[2]
+            element_max_y = img.size[1] if element_box[3] > img.size[1] else element_box[3]
+            element_box = (element_box[0], element_box[1], element_max_x, element_max_y)
+            img = img.crop(element_box)
         return img
 
     def exclude_elements(self, img, web_elements):
