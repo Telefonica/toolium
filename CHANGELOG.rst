@@ -4,17 +4,20 @@ Toolium Changelog
 v1.2.0
 ------
 
-*In development*
+*Release date: 2017-01-17*
 
+- Refactored reset_object method. Now it has an optional parameter with the driver_wrapper.
 - Fix error reading geckodriver logs after test failure
+- Fix error downloading videos after failed tests
+- Fix error in visual tests when excluding elements in a scrolled page
 - New config property 'logs_enabled' in [Server] section to download webdriver logs even if the test passes
 - New config property 'save_web_element' in [Driver] section
 
    | If it's false, the WebElement is searched whenever is needed (default value)
    | If it's true, the WebElement is saved in PageElement to avoid searching for the same element multiple times. Useful
    | in mobile testing when searching for an element can take a long time.
-- Refactored reset_object method. Now it has an optional parameter with the driver_wrapper.
-- Fix error downloading videos after failed tests
+- New config property 'restart_driver_fail' in [Driver] section to restart the driver when the test fails even though
+  the value of *reuse_driver* property is *true*
 - System property 'Config_environment' is used to select config files, e.g., to read android-properties.cfg file:
 
 .. code:: console
@@ -26,9 +29,6 @@ v1.2.0
 .. code:: console
 
     $ behave -D Config_environment=android
-- Fix error in visual tests when excluding elements in a scrolled page
-- New config property 'restart_driver_fail' in [Driver] section to restart the driver when the test fails even though
-  the value of *reuse_driver* property is *true*
 
 v1.1.3
 ------
