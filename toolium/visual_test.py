@@ -132,7 +132,7 @@ class VisualTest(object):
         scrolls_size = self.get_scrolls_size()
         if (scrolls_size['x'] > 0 or scrolls_size['y'] > 0 or web_element or
                 (exclude_web_elements and len(exclude_web_elements) > 0) or
-                self.driver_wrapper.config.get('Driver', 'type').split('-')[0] == 'iexplore' or
+                    self.driver_wrapper.config.get('Driver', 'type').split('-')[0] == 'iexplore' or
                 self.driver_wrapper.is_ios_test() or self.driver_wrapper.is_android_web_test()):
             img = Image.open(BytesIO(self.driver_wrapper.driver.get_screenshot_as_png()))
             img = self.remove_scrolls(img, scrolls_size)
@@ -230,7 +230,12 @@ class VisualTest(object):
         :returns: modified image object
         """
         if web_element:
-            img = img.crop(self.get_element_box(web_element))
+            element_box = self.get_element_box(web_element)
+            # Reduce element box if it is greater than image size
+            element_max_x = img.size[0] if element_box[2] > img.size[0] else element_box[2]
+            element_max_y = img.size[1] if element_box[3] > img.size[1] else element_box[3]
+            element_box = (element_box[0], element_box[1], element_max_x, element_max_y)
+            img = img.crop(element_box)
         return img
 
     def exclude_elements(self, img, web_elements):

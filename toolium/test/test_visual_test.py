@@ -201,6 +201,21 @@ def test_crop_element(driver_wrapper):
     assert_image(visual, img, 'report_name', 'register_cropped_element')
 
 
+def test_crop_element_oversize(driver_wrapper):
+    # Create element mock
+    driver_wrapper.driver.execute_script.return_value = 0  # scrollX=0 and scrollY=0
+    web_element = get_mock_element(x=250, y=200, height=400, width=300)
+    # y + width > img.size[1] --> 600 > 388
+    visual = VisualTest(driver_wrapper)
+
+    # Resize image
+    img = Image.open(file_v1)
+    img = visual.crop_element(img, web_element)
+
+    # Assert output image
+    assert_image(visual, img, 'report_name', 'register_cropped_element_oversize')
+
+
 def test_get_scrolls_size(driver_wrapper):
     # Update conf and create a new VisualTest instance
     # Mock scrollHeight, scrollWidth, innerHeight, innerWidth
