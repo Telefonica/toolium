@@ -38,6 +38,7 @@ root_path = os.path.dirname(os.path.realpath(__file__))
 file_v1 = os.path.join(root_path, 'resources', 'register.png')
 file_v2 = os.path.join(root_path, 'resources', 'register_v2.png')
 file_small = os.path.join(root_path, 'resources', 'register_small.png')
+file_scroll = os.path.join(root_path, 'resources', 'register_chrome_scroll.png')
 file_ios = os.path.join(root_path, 'resources', 'ios.png')
 
 
@@ -198,6 +199,83 @@ def test_crop_element(driver_wrapper):
 
     # Assert output image
     assert_image(visual, img, 'report_name', 'register_cropped_element')
+
+
+def test_get_scrolls_size(driver_wrapper):
+    # Update conf and create a new VisualTest instance
+    # Mock scrollHeight, scrollWidth, innerHeight, innerWidth
+    driver_wrapper.driver.execute_script.side_effect = [600, 1200, 400, 900]
+    driver_wrapper.config.set('Driver', 'type', 'chrome')
+    visual = VisualTest(driver_wrapper)
+
+    # Check chrome scrolls
+    assert visual.get_scrolls_size() == {'x': 17, 'y': 17}
+
+
+def test_get_scrolls_size_y(driver_wrapper):
+    # Update conf and create a new VisualTest instance
+    # Mock scrollHeight, scrollWidth, innerHeight, innerWidth
+    driver_wrapper.driver.execute_script.side_effect = [600, 1200, 400, 1200]
+    driver_wrapper.config.set('Driver', 'type', 'chrome')
+    visual = VisualTest(driver_wrapper)
+
+    # Check chrome scrolls
+    assert visual.get_scrolls_size() == {'x': 0, 'y': 17}
+
+
+def test_get_scrolls_size_without_scrolls(driver_wrapper):
+    # Update conf and create a new VisualTest instance
+    # Mock scrollHeight, scrollWidth, innerHeight, innerWidth
+    driver_wrapper.driver.execute_script.side_effect = [600, 1200, 600, 1200]
+    driver_wrapper.config.set('Driver', 'type', 'chrome')
+    visual = VisualTest(driver_wrapper)
+
+    # Check chrome scrolls
+    assert visual.get_scrolls_size() == {'x': 0, 'y': 0}
+
+
+def test_get_scrolls_size_iexplore(driver_wrapper):
+    # Update conf and create a new VisualTest instance
+    # Mock scrollHeight, scrollWidth, innerHeight, innerWidth
+    driver_wrapper.driver.execute_script.side_effect = [600, 1200, 400, 900]
+    driver_wrapper.config.set('Driver', 'type', 'iexplore')
+    visual = VisualTest(driver_wrapper)
+
+    # Check chrome scrolls
+    assert visual.get_scrolls_size() == {'x': 21, 'y': 21}
+
+
+def test_get_scrolls_size_firefox(driver_wrapper):
+    # Update conf and create a new VisualTest instance
+    driver_wrapper.config.set('Driver', 'type', 'firefox')
+    visual = VisualTest(driver_wrapper)
+
+    # Check chrome scrolls
+    assert visual.get_scrolls_size() == {'x': 0, 'y': 0}
+
+
+def test_remove_scrolls(driver_wrapper):
+    # Create a new VisualTest instance
+    visual = VisualTest(driver_wrapper)
+
+    # Remove scroll
+    img = Image.open(file_scroll)
+    img = visual.remove_scrolls(img, {'x': 0, 'y': 17})
+
+    # Assert output image
+    assert_image(visual, img, 'report_name', 'register_chrome_scroll_removed')
+
+
+def test_remove_scrolls_without_scroll(driver_wrapper):
+    # Create a new VisualTest instance
+    visual = VisualTest(driver_wrapper)
+
+    # Remove scroll
+    img = Image.open(file_scroll)
+    img = visual.remove_scrolls(img, {'x': 0, 'y': 0})
+
+    # Assert output image
+    assert_image(visual, img, 'report_name', 'register_chrome_scroll')
 
 
 def test_mobile_resize(driver_wrapper):
