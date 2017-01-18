@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.2.1
+------
+
+*Release date: 2017-01-18*
+
+- Fix error installing Toolium when setuptools version is too old
+
 v1.2.0
 ------
 
