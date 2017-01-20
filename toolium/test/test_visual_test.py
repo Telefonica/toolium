@@ -163,9 +163,8 @@ def test_compare_files_size_fail(driver_wrapper):
 
 
 def test_get_html_row(driver_wrapper):
-    expected_row = '<tr class=diff><td>report_name</td><td><img style="width: 100%" onclick=' \
-                   '"launchModal\(this.src\)" src=".*register_v2.png"/></td></td><td><img style="width: 100%" ' \
-                   'onclick="launchModal\(this.src\)" src=".*register.png"/></td></td><td></td></tr>'
+    expected_row = '<tr class=diff><td>report_name</td><td><img src=".*register_v2.png"/></td></td><td><img ' \
+                   'src=".*register.png"/></td></td><td></td></tr>'
     visual = VisualTest(driver_wrapper)
     row = visual._get_html_row('diff', 'report_name', file_v1, file_v2)
     assert re.compile(expected_row).match(row) is not None

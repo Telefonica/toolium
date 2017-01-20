@@ -46,6 +46,8 @@ class VisualTest(object):
     :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
     """
     template_name = 'VisualTestsTemplate.html'  #: name of the report template
+    javascript_name = 'VisualTests.js'  #: name of the javascript file
+    css_name = 'VisualTests.css'  #: name of the css file
     report_name = 'VisualTests.html'  #: final visual report name
     driver_wrapper = None  #: driver wrapper instance
     results = {'equal': 0, 'diff': 0, 'baseline': 0}  #: dict to save visual assert results
@@ -95,11 +97,18 @@ class VisualTest(object):
         if not os.path.exists(self.output_directory):
             os.makedirs(self.output_directory)
 
-        # Copy html template to output directory
-        orig_template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources', self.template_name)
+        # Copy js, css and html template to output directory
         dst_template_path = os.path.join(self.output_directory, self.report_name)
         if not os.path.exists(dst_template_path):
+            resources_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
+            orig_template_path = os.path.join(resources_path, self.template_name)
+            orig_javascript_path = os.path.join(resources_path, self.javascript_name)
+            dst_javascript_path = os.path.join(self.output_directory, self.javascript_name)
+            orig_css_path = os.path.join(resources_path, self.css_name)
+            dst_css_path = os.path.join(self.output_directory, self.css_name)
             shutil.copyfile(orig_template_path, dst_template_path)
+            shutil.copyfile(orig_javascript_path, dst_javascript_path)
+            shutil.copyfile(orig_css_path, dst_css_path)
             self._add_summary_to_report()
 
     def assert_screenshot(self, element, filename, file_suffix=None, threshold=0, exclude_elements=[]):
@@ -343,7 +352,7 @@ class VisualTest(object):
         :param message: error message
         :returns: str with the html row
         """
-        img = '<img style="width: 100%" onclick="launchModal(this.src)" src="{}"/></td>'
+        img = '<img src="{}"/></td>'
         row = '<tr class=' + result + '>'
         row += '<td>' + report_name + '</td>'
 
