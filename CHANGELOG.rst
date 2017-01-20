@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.2.2
+------
+
+*In development*
+
+- Fix error comparing screenshots in mobile tests
+
 v1.2.1
 ------
 
