@@ -74,21 +74,7 @@ class VisualTest(object):
                                                                          baseline_name)
 
         self.baseline_directory = self.driver_wrapper.visual_baseline_directory
-        engine_type = self.driver_wrapper.config.get_optional('VisualTests', 'engine', 'pil')
-        if engine_type == 'perceptualdiff':
-            self.engine = PerceptualEngine()
-        elif engine_type == 'imagemagick' and 'MagickEngine' not in globals():
-            self.logger.warning("Engine '%s' not found, using pil instead. You need needle 0.4+ to use this engine.",
-                                engine_type)
-            self.engine = PilEngine()
-        elif engine_type == 'imagemagick':
-            self.engine = MagickEngine()
-        elif engine_type == 'pil':
-            self.engine = PilEngine()
-        else:
-            self.logger.warning("Engine '%s' not found, using pil instead. Review your properties.cfg file.",
-                                engine_type)
-            self.engine = PilEngine()
+        self.engine = self._get_engine()
         self.save_baseline = self.driver_wrapper.config.getboolean_optional('VisualTests', 'save')
 
         # Create folders
@@ -110,6 +96,28 @@ class VisualTest(object):
             shutil.copyfile(orig_javascript_path, dst_javascript_path)
             shutil.copyfile(orig_css_path, dst_css_path)
             self._add_summary_to_report()
+
+    def _get_engine(self):
+        """Get configured or default visual engine
+
+        :returns: engine instance
+        """
+        engine_type = self.driver_wrapper.config.get_optional('VisualTests', 'engine', 'pil')
+        if engine_type == 'perceptualdiff':
+            engine = PerceptualEngine()
+        elif engine_type == 'imagemagick' and 'MagickEngine' not in globals():
+            self.logger.warning("Engine '%s' not found, using pil instead. You need needle 0.4+ to use this engine.",
+                                engine_type)
+            engine = PilEngine()
+        elif engine_type == 'imagemagick':
+            engine = MagickEngine()
+        elif engine_type == 'pil':
+            engine = PilEngine()
+        else:
+            self.logger.warning("Engine '%s' not found, using pil instead. Review your properties.cfg file.",
+                                engine_type)
+            engine = PilEngine()
+        return engine
 
     def assert_screenshot(self, element, filename, file_suffix=None, threshold=0, exclude_elements=[]):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold
@@ -138,20 +146,12 @@ class VisualTest(object):
         report_name = '{}<br>({})'.format(file_suffix, filename)
 
         # Get screenshot and modify it
-        scrolls_size = self.get_scrolls_size()
-        if (scrolls_size['x'] > 0 or scrolls_size['y'] > 0 or web_element or
-                (exclude_web_elements and len(exclude_web_elements) > 0) or
-                    self.driver_wrapper.config.get('Driver', 'type').split('-')[0] == 'iexplore' or
-                self.driver_wrapper.is_ios_test() or self.driver_wrapper.is_android_web_test()):
-            img = Image.open(BytesIO(self.driver_wrapper.driver.get_screenshot_as_png()))
-            img = self.remove_scrolls(img, scrolls_size)
-            img = self.mobile_resize(img)
-            img = self.exclude_elements(img, exclude_web_elements)
-            img = self.crop_element(img, web_element)
-            img.save(output_file)
-        else:
-            # Faster method if the screenshot must not be modified
-            self.driver_wrapper.driver.save_screenshot(output_file)
+        img = Image.open(BytesIO(self.driver_wrapper.driver.get_screenshot_as_png()))
+        img = self.remove_scrolls(img)
+        img = self.mobile_resize(img)
+        img = self.exclude_elements(img, exclude_web_elements)
+        img = self.crop_element(img, web_element)
+        img.save(output_file)
         DriverWrappersPool.visual_number += 1
 
         # Determine whether we should save the baseline image
@@ -186,14 +186,13 @@ class VisualTest(object):
             scroll_y = scroll_size if scroll_height > window_height else 0
         return {'x': scroll_x, 'y': scroll_y}
 
-    @staticmethod
-    def remove_scrolls(img, scrolls_size):
+    def remove_scrolls(self, img):
         """Remove browser scrolls from image if they are visible
 
         :param img: image object
-        :param scrolls_size: dict with horizontal and vertical scrolls sizes
         :returns: modified image object
         """
+        scrolls_size = self.get_scrolls_size()
         if scrolls_size['x'] > 0 or scrolls_size['y'] > 0:
             new_image_width = img.size[0] - scrolls_size['y']
             new_image_height = img.size[1] - scrolls_size['x']

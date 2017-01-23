@@ -271,10 +271,11 @@ def test_get_scrolls_size_firefox(driver_wrapper):
 def test_remove_scrolls(driver_wrapper):
     # Create a new VisualTest instance
     visual = VisualTest(driver_wrapper)
+    visual.get_scrolls_size = lambda: {'x': 0, 'y': 17}
 
     # Remove scroll
     img = Image.open(file_scroll)
-    img = visual.remove_scrolls(img, {'x': 0, 'y': 17})
+    img = visual.remove_scrolls(img)
 
     # Assert output image
     assert_image(visual, img, 'report_name', 'register_chrome_scroll_removed')
@@ -283,10 +284,11 @@ def test_remove_scrolls(driver_wrapper):
 def test_remove_scrolls_without_scroll(driver_wrapper):
     # Create a new VisualTest instance
     visual = VisualTest(driver_wrapper)
+    visual.get_scrolls_size = lambda: {'x': 0, 'y': 0}
 
     # Remove scroll
     img = Image.open(file_scroll)
-    img = visual.remove_scrolls(img, {'x': 0, 'y': 0})
+    img = visual.remove_scrolls(img)
 
     # Assert output image
     assert_image(visual, img, 'report_name', 'register_chrome_scroll')
@@ -359,10 +361,9 @@ def test_exclude_no_elements(driver_wrapper):
 
 def test_assert_screenshot_no_enabled_force(driver_wrapper):
     # Configure driver mock
-    def copy_file_side_effect(output_file):
-        shutil.copyfile(file_v1, output_file)
-
-    driver_wrapper.driver.save_screenshot.side_effect = copy_file_side_effect
+    with open(file_v1, "rb") as f:
+        image_data = f.read()
+    driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
 
     # Update conf and create a new VisualTest instance
     driver_wrapper.config.set('VisualTests', 'enabled', 'false')
@@ -370,16 +371,14 @@ def test_assert_screenshot_no_enabled_force(driver_wrapper):
 
     # Assert screenshot
     visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
-    output_file = os.path.join(visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-    driver_wrapper.driver.save_screenshot.assert_called_once_with(output_file)
+    driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
 
 def test_assert_screenshot_no_enabled_force_fail(driver_wrapper):
     # Configure driver mock
-    def copy_file_side_effect(output_file):
-        shutil.copyfile(file_v1, output_file)
-
-    driver_wrapper.driver.save_screenshot.side_effect = copy_file_side_effect
+    with open(file_v1, "rb") as f:
+        image_data = f.read()
+    driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
 
     # Update conf and create a new VisualTest instance
     driver_wrapper.config.set('VisualTests', 'fail', 'false')
@@ -393,22 +392,20 @@ def test_assert_screenshot_no_enabled_force_fail(driver_wrapper):
     # Assert screenshot
     with pytest.raises(AssertionError):
         visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
-    output_file = os.path.join(visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-    driver_wrapper.driver.save_screenshot.assert_called_once_with(output_file)
+    driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
 
 def test_assert_screenshot_full_and_save_baseline(driver_wrapper):
     # Configure driver mock
-    def copy_file_side_effect(output_file):
-        shutil.copyfile(file_v1, output_file)
-
-    driver_wrapper.driver.save_screenshot.side_effect = copy_file_side_effect
+    with open(file_v1, "rb") as f:
+        image_data = f.read()
+    driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
     visual = VisualTest(driver_wrapper)
 
     # Assert screenshot
     visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
     output_file = os.path.join(visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-    driver_wrapper.driver.save_screenshot.assert_called_once_with(output_file)
+    driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
     # Output image and new baseline image must be equals
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox',
@@ -444,10 +441,9 @@ def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
 
 def test_assert_screenshot_full_and_compare(driver_wrapper):
     # Configure driver mock
-    def copy_file_side_effect(output_file):
-        shutil.copyfile(file_v1, output_file)
-
-    driver_wrapper.driver.save_screenshot.side_effect = copy_file_side_effect
+    with open(file_v1, "rb") as f:
+        image_data = f.read()
+    driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
     visual = VisualTest(driver_wrapper)
 
     # Add baseline image
@@ -457,8 +453,7 @@ def test_assert_screenshot_full_and_compare(driver_wrapper):
 
     # Assert screenshot
     visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
-    output_file = os.path.join(visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
-    driver_wrapper.driver.save_screenshot.assert_called_once_with(output_file)
+    driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
 
 def test_assert_screenshot_element_and_compare(driver_wrapper):
