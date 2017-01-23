@@ -2,6 +2,7 @@ doc-warnings: true
 test-warnings: true
 strictness: veryhigh
 max-line-length: 120
+python-targets: [2, 3]
 pep8:
     full: true
 pyflakes:

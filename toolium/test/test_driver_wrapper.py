@@ -168,7 +168,8 @@ def test_initialize_config_files_new_environment():
     del os.environ["Config_environment"]
 
     # Check expected config files
-    assert init_config_files.config_properties_filenames == 'properties.cfg;android-properties.cfg;local-android-properties.cfg'
+    expected_properties_filenames = 'properties.cfg;android-properties.cfg;local-android-properties.cfg'
+    assert init_config_files.config_properties_filenames == expected_properties_filenames
     assert init_config_files.output_log_filename == 'toolium_android.log'
 
 
@@ -196,7 +197,8 @@ def test_initialize_config_files_configured_environment():
     del os.environ["Config_environment"]
 
     # Check expected config files
-    assert init_config_files.config_properties_filenames == 'test.conf;local-test.conf;android-test.conf;local-android-test.conf'
+    expected_properties_filenames = 'test.conf;local-test.conf;android-test.conf;local-android-test.conf'
+    assert init_config_files.config_properties_filenames == expected_properties_filenames
     assert init_config_files.output_log_filename == 'test_android.log'
 
 

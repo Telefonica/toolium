@@ -220,8 +220,8 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
     DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, test_passed, maintain_default)
 
     # Save test status to be updated later
-    context_or_world.global_status['test_passed'] = context_or_world.global_status[
-                                                        'test_passed'] and test_passed if reuse_driver else test_passed
+    previous_status = context_or_world.global_status['test_passed'] if reuse_driver else True
+    context_or_world.global_status['test_passed'] = previous_status and test_passed
     add_jira_status(get_jira_key_from_scenario(scenario), test_status, test_comment)
 
 
