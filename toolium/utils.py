@@ -160,7 +160,7 @@ class Utils(object):
         """
         web_element = self._expected_condition_find_element(element)
         try:
-            return True if not web_element or web_element.is_displayed() == False else False
+            return True if not web_element or not web_element.is_displayed() else False
         except StaleElementReferenceException:
             return False
 

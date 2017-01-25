@@ -24,6 +24,7 @@ from toolium.config_driver import get_error_message_from_exception
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.jira import change_all_jira_status
+from toolium.pageelements import PageElement
 from toolium.visual_test import VisualTest
 
 
@@ -122,6 +123,15 @@ class SeleniumTestCase(BasicTestCase):
 
         SeleniumTestCase.driver = self.driver_wrapper.driver
         self.utils = self.driver_wrapper.utils
+
+        # Monkey patching assert_screenshot method in PageElement to use the correct test name
+        file_suffix = self.get_method_name()
+
+        def assert_screenshot_page_element(self, filename, threshold=0, exclude_elements=[], force=False):
+            VisualTest(self.driver_wrapper, force).assert_screenshot(self.web_element, filename, file_suffix,
+                                                                     threshold, exclude_elements)
+
+        PageElement.assert_screenshot = assert_screenshot_page_element
 
         # Get common configuration of reusing driver
         self.reuse_driver = self.driver_wrapper.config.getboolean_optional('Driver', 'reuse_driver')

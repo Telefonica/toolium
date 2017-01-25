@@ -64,8 +64,6 @@ class PageObject(CommonObject):
         from toolium.pageelements.page_elements import PageElements
         page_elements = []
         for attribute, value in list(self.__dict__.items()) + list(self.__class__.__dict__.items()):
-            if attribute != 'parent' and (
-                            isinstance(value, PageElement) or isinstance(value, PageElements) or isinstance(value,
-                                                                                                            PageObject)):
+            if attribute != 'parent' and isinstance(value, (PageElement, PageElements, PageObject)):
                 page_elements.append(value)
         return page_elements

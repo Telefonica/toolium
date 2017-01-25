@@ -30,6 +30,7 @@ from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.jira import add_jira_status, change_all_jira_status, save_jira_conf
 from toolium.visual_test import VisualTest
+from toolium.pageelements import PageElement
 
 
 def before_all(context):
@@ -156,19 +157,24 @@ def add_assert_screenshot_methods(context_or_world, scenario):
     :param context_or_world: behave context or lettuce world
     :param scenario: running scenario
     """
+    file_suffix = scenario.name.replace(' ', '_')
 
     def assert_screenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None,
                           force=False):
-        file_suffix = scenario.name.replace(' ', '_')
         VisualTest(driver_wrapper, force).assert_screenshot(element_or_selector, filename, file_suffix, threshold,
                                                             exclude_elements)
 
     def assert_full_screenshot(filename, threshold=0, exclude_elements=[], driver_wrapper=None, force=False):
-        file_suffix = scenario.name.replace(' ', '_')
         VisualTest(driver_wrapper, force).assert_screenshot(None, filename, file_suffix, threshold, exclude_elements)
+
+    # Monkey patching assert_screenshot method in PageElement to use the correct test name
+    def assert_screenshot_page_element(self, filename, threshold=0, exclude_elements=[], force=False):
+        VisualTest(self.driver_wrapper, force).assert_screenshot(self.web_element, filename, file_suffix, threshold,
+                                                                 exclude_elements)
 
     context_or_world.assert_screenshot = assert_screenshot
     context_or_world.assert_full_screenshot = assert_full_screenshot
+    PageElement.assert_screenshot = assert_screenshot_page_element
 
 
 def after_scenario(context, scenario):
@@ -214,8 +220,8 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
     DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, test_passed, maintain_default)
 
     # Save test status to be updated later
-    context_or_world.global_status['test_passed'] = context_or_world.global_status[
-                                                        'test_passed'] and test_passed if reuse_driver else test_passed
+    previous_status = context_or_world.global_status['test_passed'] if reuse_driver else True
+    context_or_world.global_status['test_passed'] = previous_status and test_passed
     add_jira_status(get_jira_key_from_scenario(scenario), test_status, test_comment)
 
 
