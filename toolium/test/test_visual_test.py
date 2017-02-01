@@ -125,7 +125,7 @@ def test_engine_unknown(driver_wrapper):
     assert isinstance(visual.engine, PilEngine)
 
 
-def test_compare_files_equals(driver_wrapper):
+def test_compare_files_equal(driver_wrapper):
     visual = VisualTest(driver_wrapper)
     message = visual.compare_files('report_name', file_v1, file_v1, 0)
     assert message is None
@@ -134,7 +134,7 @@ def test_compare_files_equals(driver_wrapper):
 def test_compare_files_diff(driver_wrapper):
     visual = VisualTest(driver_wrapper)
     message = visual.compare_files('report_name', file_v1, file_v2, 0)
-    assert 'by a distance of 522.65' in message
+    assert 'Distance of 0.00080181' in message
 
 
 def test_compare_files_diff_fail(driver_wrapper):
@@ -162,12 +162,65 @@ def test_compare_files_size_fail(driver_wrapper):
         visual.compare_files('report_name', file_v1, file_small, 0)
 
 
+def test_get_img_element(driver_wrapper):
+    expected_img = '<img src=".*register_v2.png" title="Baseline image"/>'
+    visual = VisualTest(driver_wrapper)
+    img = visual._get_img_element('register_v2.png', 'Baseline image')
+    assert re.compile(expected_img).match(img) is not None
+
+
 def test_get_html_row(driver_wrapper):
-    expected_row = '<tr class=diff><td>report_name</td><td><img src=".*register_v2.png"/></td></td><td><img ' \
-                   'src=".*register.png"/></td></td><td></td></tr>'
+    expected_row = '<tr class=diff><td>report_name</td><td><img src=".*register_v2.png" title="Baseline image"/>' \
+                   '</td><td><img src=".*register.png" title="Screenshot image"/></td><td></td></tr>'
     visual = VisualTest(driver_wrapper)
     row = visual._get_html_row('diff', 'report_name', file_v1, file_v2)
     assert re.compile(expected_row).match(row) is not None
+
+
+def test_diff_message_equal():
+    message = None
+    expected_message = ''
+    assert expected_message == VisualTest._get_diff_message(message, 1000000)
+
+
+def test_diff_message_size_pil():
+    message = ''
+    expected_message = 'Image dimensions do not match'
+    assert expected_message == VisualTest._get_diff_message(message, 1000000)
+
+
+def test_diff_message_size_perceptualdiff():
+    message = """The new screenshot 'C:\\...\\01_login_form__test_login.png' did not match the baseline 'C:\\...\\login_form.png':
+        FAIL: Image dimensions do not match"""
+    expected_message = 'Image dimensions do not match'
+    assert expected_message == VisualTest._get_diff_message(message, 1000000)
+
+
+def test_diff_message_size_imagemagick():
+    message = 'Image dimensions do not match'
+    expected_message = 'Image dimensions do not match'
+    assert expected_message == VisualTest._get_diff_message(message, 1000000)
+
+
+def test_diff_message_diff_pil():
+    message = "The new screenshot 'C:\\...\\01_login_form__test_login.png' did not match the baseline 'C:\\...\\login_form.png' (by a distance of 14794.11)"
+    expected_message = 'Distance of 0.01479411'
+    assert expected_message == VisualTest._get_diff_message(message, 1000000)
+
+
+def test_diff_message_diff_perceptualdiff():
+    message = """The new screenshot 'C:\\...\\01_login_form__test_login.png' did not match the baseline 'C:\\...\\login_form.png' (See C:\\...\\01_login_form__test_login.diff.png):
+        FAIL: Images are visibly different
+        15040 pixels are different
+    """
+    expected_message = 'Distance of 0.01504000'
+    assert expected_message == VisualTest._get_diff_message(message, 1000000)
+
+
+def test_diff_message_diff_imagemagick():
+    message = "The new screenshot 'C:\\...\\01_login_form__test_login.png' did not match the baseline 'C:\\...\\login_form.png' (See C:\\...\\01_login_form__test_login.diff.png):\n5443.77 (0.0830666) @ 0,0"
+    expected_message = 'Distance of 0.08306660'
+    assert expected_message == VisualTest._get_diff_message(message, 1000000)
 
 
 def assert_image(visual, img, img_name, expected_image_filename):
@@ -181,7 +234,7 @@ def assert_image(visual, img, img_name, expected_image_filename):
     result_file = os.path.join(visual.output_directory, img_name + '.png')
     img.save(result_file)
 
-    # Output image and expected image must be equals
+    # Output image and expected image must be equal
     expected_image = os.path.join(root_path, 'resources', expected_image_filename + '.png')
     MagickEngine().assertSameFiles(result_file, expected_image, 0.1)
 
@@ -407,9 +460,8 @@ def test_assert_screenshot_full_and_save_baseline(driver_wrapper):
     output_file = os.path.join(visual.output_directory, '01_screenshot_full__screenshot_suffix.png')
     driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
-    # Output image and new baseline image must be equals
-    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox',
-                                 'screenshot_full.png')
+    # Output image and new baseline image must be equal
+    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_full.png')
     MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
 
@@ -433,9 +485,8 @@ def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
     output_file = os.path.join(visual.output_directory, '01_screenshot_elem__screenshot_suffix.png')
     MagickEngine().assertSameFiles(output_file, expected_image, 0.1)
 
-    # Output image and new baseline image must be equals
-    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox',
-                                 'screenshot_elem.png')
+    # Output image and new baseline image must be equal
+    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_elem.png')
     MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
 
@@ -447,8 +498,7 @@ def test_assert_screenshot_full_and_compare(driver_wrapper):
     visual = VisualTest(driver_wrapper)
 
     # Add baseline image
-    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox',
-                                 'screenshot_full.png')
+    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_full.png')
     shutil.copyfile(file_v1, baseline_file)
 
     # Assert screenshot
@@ -461,8 +511,7 @@ def test_assert_screenshot_element_and_compare(driver_wrapper):
     driver_wrapper.driver.execute_script.return_value = 0  # scrollX=0 and scrollY=0
     visual = VisualTest(driver_wrapper)
     expected_image = os.path.join(root_path, 'resources', 'register_cropped_element.png')
-    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox',
-                                 'screenshot_elem.png')
+    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_elem.png')
     shutil.copyfile(expected_image, baseline_file)
 
     # Create element mock
@@ -503,9 +552,8 @@ def test_assert_screenshot_mobile_resize_and_exclude(driver_wrapper):
     output_file = os.path.join(visual.output_directory, '01_screenshot_ios__screenshot_suffix.png')
     MagickEngine().assertSameFiles(output_file, expected_image, 0.1)
 
-    # Output image and new baseline image must be equals
-    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox',
-                                 'screenshot_ios.png')
+    # Output image and new baseline image must be equal
+    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_ios.png')
     MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
 
@@ -537,9 +585,8 @@ def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
     output_file = os.path.join(visual.output_directory, '01_screenshot_ios_web__screenshot_suffix.png')
     MagickEngine().assertSameFiles(output_file, expected_image, 0.1)
 
-    # Output image and new baseline image must be equals
-    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox',
-                                 'screenshot_ios_web.png')
+    # Output image and new baseline image must be equal
+    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_ios_web.png')
     MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
 
 
