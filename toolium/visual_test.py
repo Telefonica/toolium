@@ -27,6 +27,7 @@ import shutil
 from io import BytesIO
 from os import path
 
+from selenium.common.exceptions import NoSuchElementException
 from six.moves import xrange  # Python 2 and 3 compatibility
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -137,7 +138,12 @@ class VisualTest(object):
 
         # Search elements
         web_element = self.utils.get_web_element(element)
-        exclude_web_elements = [self.utils.get_web_element(exclude_element) for exclude_element in exclude_elements]
+        exclude_web_elements = []
+        for exclude_element in exclude_elements:
+            try:
+                exclude_web_elements.append(self.utils.get_web_element(exclude_element))
+            except NoSuchElementException as e:
+                self.logger.warning("Element to be excluded not found: %s", str(e))
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
@@ -280,24 +286,29 @@ class VisualTest(object):
         :param threshold: percentage threshold
         :returns: error message
         """
+        width, height = Image.open(image_file).size
         if isinstance(self.engine, PilEngine):
             # Pil needs a pixel number threshold instead of a percentage threshold
-            width, height = Image.open(image_file).size
             threshold = int(width * height * threshold)
         try:
+            if isinstance(self.engine, MagickEngine):
+                # Workaround: ImageMagick hangs when images are not equal
+                assert (width, height) == Image.open(baseline_file).size, 'Image dimensions do not match'
             self.engine.assertSameFiles(image_file, baseline_file, threshold)
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'complete_report'):
                 self._add_result_to_report('equal', report_name, image_file, baseline_file)
             return None
         except AssertionError as exc:
-            self._add_result_to_report('diff', report_name, image_file, baseline_file, str(exc))
+            diff_message = self._get_diff_message(str(exc), width * height)
+            self._add_result_to_report('diff', report_name, image_file, baseline_file, diff_message)
+            self.logger.warning("Visual error in '%s': %s", os.path.splitext(os.path.basename(baseline_file))[0],
+                                diff_message)
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'fail') or self.force:
                 raise exc
             else:
-                self.logger.warning('Visual error: %s', str(exc))
-                return str(exc)
+                return diff_message
 
-    def _add_result_to_report(self, result, report_name, image_file, baseline_file, message=None):
+    def _add_result_to_report(self, result, report_name, image_file, baseline_file, message=''):
         """Add the result of a visual test to the html report
 
         :param result: comparation result (equal, diff, baseline)
@@ -341,7 +352,7 @@ class VisualTest(object):
                                                                          self.results['diff'])
         self._add_data_to_report_before_tag(summary, '</div>')
 
-    def _get_html_row(self, result, report_name, image_file, baseline_file, message=None):
+    def _get_html_row(self, result, report_name, image_file, baseline_file, message=''):
         """Create the html row with the result of a visual test
 
         :param result: comparation result (equal, diff, baseline)
@@ -351,40 +362,66 @@ class VisualTest(object):
         :param message: error message
         :returns: str with the html row
         """
-        img = '<img src="{}"/></td>'
         row = '<tr class=' + result + '>'
         row += '<td>' + report_name + '</td>'
 
-        # baseline column
-        baseline_col = img.format(
-            path.relpath(baseline_file, self.output_directory).replace('\\', '/')) if baseline_file else ''
+        # Create baseline column
+        baseline_col = self._get_img_element(baseline_file, 'Baseline image')
         row += '<td>' + baseline_col + '</td>'
 
-        # image column
-        image_col = img.format(path.relpath(image_file, self.output_directory).replace('\\', '/')) if image_file else ''
+        # Create image column
+        image_col = self._get_img_element(image_file, 'Screenshot image')
         row += '<td>' + image_col + '</td>'
 
-        # diff column
+        # Create diff column
         diff_file = image_file.replace('.png', '.diff.png')
-        if os.path.exists(diff_file):
-            # perceptualdiff engine
-            diff_col = img.format(path.relpath(diff_file, self.output_directory).replace('\\', '/'))
-        elif message is None:
-            diff_col = ''
-        elif message == '' or 'Image dimensions do not match' in message:
-            # pil or perceptualdiff engine
-            diff_col = 'Image dimensions do not match'
-        elif 'by a distance of' in message:
-            # pil engine
-            m = re.search('\(by a distance of (.*)\)', message)
-            diff_col = m.group(1) + ' pixels are different'
-        elif 'pixels are different' in message:
-            # perceptualdiff engine without diff image
-            m = re.search('([0-9]*) pixels are different', message)
-            diff_col = m.group(1) + ' pixels are different'
-        else:
-            diff_col = message
-        row += '<td>' + diff_col + '</td>'
+        diff_col = self._get_img_element(diff_file, message) if os.path.exists(diff_file) else message
 
+        row += '<td>' + diff_col + '</td>'
         row += '</tr>'
         return row
+
+    def _get_img_element(self, image_file, image_title):
+        """Create an img html element
+
+        :param image_file: filename of the image
+        :param image_title: image title
+        :returns: str with the img element
+        """
+        if not image_file:
+            return ''
+        image_file_path = path.relpath(image_file, self.output_directory).replace('\\', '/')
+        return '<img src="{}" title="{}"/>'.format(image_file_path, image_title)
+
+    @staticmethod
+    def _get_diff_message(message, image_size):
+        """
+        Get formatted message with the distance between images
+
+        :param message: original engine message
+        :param image_size: number of pixels to convert absolute distances
+        :returns: formatted message
+        """
+        if message is None:
+            # Images are equal
+            return ''
+        elif message == '' or 'Image dimensions do not match' in message:
+            # Different sizes in pil (''), perceptualdiff or imagemagick engines
+            return 'Image dimensions do not match'
+
+        # Check pil engine message
+        m = re.search('\(by a distance of (.*)\)', message)
+        if m:
+            return 'Distance of %0.8f' % (float(m.group(1)) / image_size)
+
+        # Check perceptualdiff engine message
+        m = re.search('([0-9]*) pixels are different', message)
+        if m:
+            return 'Distance of %0.8f' % (float(m.group(1)) / image_size)
+
+        # Check imagemagick engine message
+        m = re.search(':[\r\n](\d*\.?\d*) \((\d*\.?\d*)\) @', message)
+        if m:
+            return 'Distance of %0.8f' % float(m.group(2))
+
+        return message
