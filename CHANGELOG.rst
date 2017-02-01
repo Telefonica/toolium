@@ -4,7 +4,7 @@ Toolium Changelog
 v1.2.2
 ------
 
-*In development*
+*Release date: 2017-02-01*
 
 - Fix error comparing screenshots in mobile tests
 - Fix image size when enlarging a vertical image in visual testing reports
