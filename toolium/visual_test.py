@@ -27,6 +27,7 @@ import shutil
 from io import BytesIO
 from os import path
 
+from selenium.common.exceptions import NoSuchElementException
 from six.moves import xrange  # Python 2 and 3 compatibility
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -137,7 +138,12 @@ class VisualTest(object):
 
         # Search elements
         web_element = self.utils.get_web_element(element)
-        exclude_web_elements = [self.utils.get_web_element(exclude_element) for exclude_element in exclude_elements]
+        exclude_web_elements = []
+        for exclude_element in exclude_elements:
+            try:
+                exclude_web_elements.append(self.utils.get_web_element(exclude_element))
+            except NoSuchElementException as e:
+                self.logger.warning("Element to be excluded not found: %s", str(e))
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename

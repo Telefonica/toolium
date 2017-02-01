@@ -26,6 +26,8 @@ from PIL import Image
 from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
 from needle.engines.pil_engine import Engine as PilEngine
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
 
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
