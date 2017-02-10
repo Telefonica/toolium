@@ -18,12 +18,15 @@ limitations under the License.
 
 import ast
 import logging
+import os
 
 from appium import webdriver as appiumdriver
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 from six.moves.configparser import NoSectionError  # Python 2 and 3 compatibility
+
+from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
 def get_error_message_from_exception(exception):
@@ -212,8 +215,9 @@ class ConfigDriver(object):
         else:
             firefox_options = None
 
+        log_path = os.path.join(DriverWrappersPool.output_directory, 'geckodriver.log')
         return webdriver.Firefox(firefox_profile=self._create_firefox_profile(), capabilities=capabilities,
-                                 executable_path=gecko_driver, firefox_options=firefox_options)
+                                 executable_path=gecko_driver, firefox_options=firefox_options, log_path=log_path)
 
     def _create_firefox_profile(self):
         """Create and configure a firefox profile

@@ -6,6 +6,9 @@ v1.2.3
 
 *In development*
 
+- Save *geckodriver.log* file in output folder
+- Fix MagickEngine name error when using an old version of needle
+
 v1.2.2
 ------
 
