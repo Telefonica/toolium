@@ -8,6 +8,8 @@ v1.2.3
 
 - Save *geckodriver.log* file in output folder
 - Fix MagickEngine name error when using an old version of needle
+- Add *wait_until_clickable* method to Utils and PageElement classes to search for an element and wait until it is
+  clickable
 
 v1.2.2
 ------

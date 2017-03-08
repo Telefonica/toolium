@@ -14,7 +14,7 @@ To achieve this goal, this tool follows these steps:
 - It takes a screenshot of the current web page or mobile screen (a full screenshot or a single element).
 - Then, if exists a previous capture with the same name, it compares both of them and shows their differences.
 - If not, it saves the screenshot to be used as a base in later executions. Probably these images might be reviewed
-manually to assure that can be used as expected result.
+  manually to assure that can be used as expected result.
 
 As web pages and mobile applications look different when using different browsers, mobile devices, resolutions, etc.
 Toolium provides you with a way of storing different base images, called baselines, through a configuration property

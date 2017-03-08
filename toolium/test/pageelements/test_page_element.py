@@ -237,6 +237,26 @@ def test_wait_until_not_visible_exception(driver_wrapper):
            "visible after 10 seconds" in str(excinfo.value)
 
 
+def test_wait_until_clickable(driver_wrapper):
+    driver_wrapper.utils.wait_until_element_clickable = mock.MagicMock(return_value=mock_element)
+
+    page_element = RegisterPageObject(driver_wrapper).username
+    element = page_element.wait_until_clickable()
+
+    assert element == page_element
+
+
+def test_wait_until_clickable_exception(driver_wrapper):
+    driver_wrapper.utils.wait_until_element_clickable = mock.MagicMock()
+    driver_wrapper.utils.wait_until_element_clickable.side_effect = TimeoutException('Unknown')
+
+    page_element = RegisterPageObject(driver_wrapper).username
+    with pytest.raises(TimeoutException) as excinfo:
+        page_element.wait_until_clickable()
+    assert "Page element of type 'PageElement' with locator ('xpath', '//input[0]') not found or is not " \
+           "clickable after 10 seconds" in str(excinfo.value)
+
+
 @mock.patch('toolium.visual_test.VisualTest.__init__', return_value=None)
 @mock.patch('toolium.visual_test.VisualTest.assert_screenshot')
 def test_assert_screenshot(visual_assert_screenshot, visual_init, driver_wrapper):

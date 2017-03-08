@@ -140,7 +140,8 @@ class Utils(object):
         return web_element
 
     def _expected_condition_find_element_visible(self, element):
-        """Tries to find the element and checks that it is visible, but does not thrown an exception if the element is not found
+        """Tries to find the element and checks that it is visible, but does not thrown an exception if the element is
+            not found
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :returns: the web element if it is visible or False
@@ -153,7 +154,8 @@ class Utils(object):
             return False
 
     def _expected_condition_find_element_not_visible(self, element):
-        """Tries to find the element and checks that it is visible, but does not thrown an exception if the element is not found
+        """Tries to find the element and checks that it is visible, but does not thrown an exception if the element is
+            not found
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :returns: True if the web element is not found or it is not visible
@@ -186,6 +188,20 @@ class Utils(object):
             except (NoSuchElementException, TypeError):
                 pass
         return element_found
+
+    def _expected_condition_find_element_clickable(self, element):
+        """Tries to find the element and checks that it is clickable, but does not thrown an exception if the element
+            is not found
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :returns: the web element if it is clickable or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        web_element = self._expected_condition_find_element_visible(element)
+        try:
+            return web_element if web_element and web_element.is_enabled() else False
+        except StaleElementReferenceException:
+            return False
 
     def _wait_until(self, condition_method, condition_input, timeout=10):
         """
@@ -251,6 +267,16 @@ class Utils(object):
             self.logger.error(msg, timeout)
             exception.msg += "\n  {}".format(msg % timeout)
             raise exception
+
+    def wait_until_element_clickable(self, element, timeout=10):
+        """Search element and wait until it is clickable
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :param timeout: max time to wait
+        :returns: the web element if it is clickable or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        return self._wait_until(self._expected_condition_find_element_clickable, element, timeout)
 
     def get_remote_node(self):
         """Return the remote node that it's executing the actual test session
