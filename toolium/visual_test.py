@@ -291,7 +291,7 @@ class VisualTest(object):
             # Pil needs a pixel number threshold instead of a percentage threshold
             threshold = int(width * height * threshold)
         try:
-            if isinstance(self.engine, MagickEngine):
+            if 'MagickEngine' in globals() and isinstance(self.engine, MagickEngine):
                 # Workaround: ImageMagick hangs when images are not equal
                 assert (width, height) == Image.open(baseline_file).size, 'Image dimensions do not match'
             self.engine.assertSameFiles(image_file, baseline_file, threshold)

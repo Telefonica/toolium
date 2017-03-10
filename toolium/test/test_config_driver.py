@@ -23,6 +23,7 @@ from selenium.webdriver.firefox.options import Options
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
+from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
 @pytest.fixture
@@ -75,13 +76,14 @@ def test_create_local_driver_firefox(webdriver_mock, config):
     config.set('Capabilities', 'marionette', 'false')
     config_driver = ConfigDriver(config)
     config_driver._create_firefox_profile = lambda: 'firefox profile'
+    DriverWrappersPool.output_directory = ''
 
     config_driver._create_local_driver()
     expected_capabilities = DesiredCapabilities.FIREFOX.copy()
     expected_capabilities['marionette'] = False
     webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path=None,
-                                                   firefox_options=None)
+                                                   firefox_options=None, log_path='geckodriver.log')
 
 
 @mock.patch('toolium.config_driver.webdriver')
@@ -92,13 +94,14 @@ def test_create_local_driver_firefox_gecko(webdriver_mock, config):
     config.set('Driver', 'gecko_driver_path', '/tmp/driver')
     config_driver = ConfigDriver(config)
     config_driver._create_firefox_profile = lambda: 'firefox profile'
+    DriverWrappersPool.output_directory = ''
 
     config_driver._create_local_driver()
     expected_capabilities = DesiredCapabilities.FIREFOX.copy()
     expected_capabilities['marionette'] = True
     webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path='/tmp/driver',
-                                                   firefox_options=None)
+                                                   firefox_options=None, log_path='geckodriver.log')
 
 
 @mock.patch('toolium.config_driver.webdriver')
@@ -110,6 +113,7 @@ def test_create_local_driver_firefox_binary(webdriver_mock, config):
     config.set('Firefox', 'binary', '/tmp/firefox')
     config_driver = ConfigDriver(config)
     config_driver._create_firefox_profile = lambda: 'firefox profile'
+    DriverWrappersPool.output_directory = ''
 
     config_driver._create_local_driver()
 
@@ -230,6 +234,7 @@ def test_create_local_driver_capabilities(webdriver_mock, config):
     config.set('Capabilities', 'version', '45')
     config_driver = ConfigDriver(config)
     config_driver._create_firefox_profile = lambda: 'firefox profile'
+    DriverWrappersPool.output_directory = ''
 
     config_driver._create_local_driver()
     expected_capabilities = DesiredCapabilities.FIREFOX.copy()
@@ -237,7 +242,7 @@ def test_create_local_driver_capabilities(webdriver_mock, config):
     expected_capabilities['version'] = '45'
     webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path=None,
-                                                   firefox_options=None)
+                                                   firefox_options=None, log_path='geckodriver.log')
 
 
 @mock.patch('toolium.config_driver.webdriver')

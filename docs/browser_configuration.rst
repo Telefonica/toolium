@@ -186,8 +186,8 @@ section::
 Chrome
 ~~~~~~
 
-To configure Chrome preferences, create a *[ChromePreferences]* configuration section and add every preference that
-you want to configure with its value.
+To configure `Chrome preferences <https://cs.chromium.org/chromium/src/chrome/common/pref_names.cc>`_, create a
+*[ChromePreferences]* configuration section and add every preference that you want to configure with its value.
 
 For example, the following configuration allows to download files without asking user::
 
@@ -197,18 +197,19 @@ For example, the following configuration allows to download files without asking
     [ChromePreferences]
     download.default_directory: C:\tmp
 
-To configure Chrome arguments, create a *[ChromeArguments]* configuration section and add every argument that you want
-to configure with its value.
+To configure `Chrome arguments <https://cs.chromium.org/chromium/src/chrome/common/chrome_switches.cc>`_, create a
+*[ChromeArguments]* configuration section and add every argument that you want to configure with its value.
 
-For example, to change the browser language::
+For example, to use a predefined chrome profile:
 
     [Driver]
     type: chrome
 
     [ChromeArguments]
-    lang: es
+    user-data-dir: C:\Users\USERNAME\AppData\Local\Google\Chrome\User Data
 
-Another examples showing how to use Chrome Device Mode in two different ways::
+Another examples showing how to use
+`Chrome Device Mode <https://sites.google.com/a/chromium.org/chromedriver/mobile-emulation>`_ in two different ways::
 
     [Driver]
     type: chrome
