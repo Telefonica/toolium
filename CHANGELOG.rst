@@ -4,7 +4,7 @@ Toolium Changelog
 v1.2.3
 ------
 
-*In development*
+*Release date: 2017-03-10*
 
 - Save *geckodriver.log* file in output folder
 - Fix MagickEngine name error when using an old version of needle
