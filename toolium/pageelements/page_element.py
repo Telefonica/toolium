@@ -126,6 +126,22 @@ class PageElement(CommonObject):
             raise exception
         return self
 
+    def wait_until_clickable(self, timeout=10):
+        """Search element and wait until it is clickable
+
+        :param timeout: max time to wait
+        :returns: page element instance
+        """
+        try:
+            self.utils.wait_until_element_clickable(self, timeout)
+        except TimeoutException as exception:
+            parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
+            msg = "Page element of type '%s' with locator %s%s not found or is not clickable after %s seconds"
+            self.logger.error(msg, type(self).__name__, self.locator, parent_msg, timeout)
+            exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg, timeout))
+            raise exception
+        return self
+
     def assert_screenshot(self, filename, threshold=0, exclude_elements=[], force=False):
         """Assert that a screenshot of the element is the same as a screenshot on disk, within a given threshold.
 

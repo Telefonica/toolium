@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from selenium.common.exceptions import StaleElementReferenceException
 from toolium.pageelements.page_element import PageElement
 
 
@@ -26,12 +27,20 @@ class Button(PageElement):
 
         :returns: element text value
         """
-        return self.web_element.text
+        try:
+            return self.web_element.text
+        except StaleElementReferenceException:
+            # Retry if element has changed
+            return self.web_element.text
 
     def click(self):
         """Click the element
 
         :returns: page element instance
         """
-        self.web_element.click()
+        try:
+            self.wait_until_clickable().web_element.click()
+        except StaleElementReferenceException:
+            # Retry if element has changed
+            self.web_element.click()
         return self
