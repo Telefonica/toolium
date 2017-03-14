@@ -26,12 +26,14 @@ class PageObject(CommonObject):
     :type app_strings: str
     """
 
-    def __init__(self, driver_wrapper=None):
+    def __init__(self, driver_wrapper=None, wait=False):
         """Initialize page object properties and update their page elements
 
         :param driver_wrapper: driver wrapper instance
+        :param wait: True if the page object must be loaded in wait_until_loaded method of the container page object
         """
         super(PageObject, self).__init__()
+        self.wait = wait  #: True if it must be loaded in wait_until_loaded method of the container page object
         self.driver_wrapper = driver_wrapper if driver_wrapper else \
             DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self.init_page_elements()
@@ -65,3 +67,21 @@ class PageObject(CommonObject):
             if attribute != 'parent' and isinstance(value, CommonObject):
                 page_elements.append(value)
         return page_elements
+
+    def wait_until_loaded(self, timeout=10):
+        """Wait until page object is loaded
+        Search all page elements configured with wait=True
+
+        :param timeout: max time to wait
+        :returns: this page object instance
+        """
+        for element in self._get_page_elements():
+            if element.wait:
+                from toolium.pageelements.page_element import PageElement
+                if isinstance(element, PageElement):
+                    # Pageelement and Group
+                    element.wait_until_visible(timeout)
+                if isinstance(element, PageObject):
+                    # PageObject and Group
+                    element.wait_until_loaded(timeout)
+        return self

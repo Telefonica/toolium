@@ -204,7 +204,7 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
         context_or_world.logger.info("The scenario '%s' has passed", scenario.name)
     else:
         test_status = 'Fail'
-        test_comment = "The scenario '{0}' has failed".format(scenario.name)
+        test_comment = "The scenario '%s' has failed" % scenario.name
         context_or_world.logger.error("The scenario '%s' has failed", scenario.name)
         # Capture screenshot on error
         DriverWrappersPool.capture_screenshots(scenario_file_name)

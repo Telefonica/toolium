@@ -32,7 +32,7 @@ class PageElement(CommonObject):
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     """
 
-    def __init__(self, by, value, parent=None, order=None):
+    def __init__(self, by, value, parent=None, order=None, wait=False):
         """Initialize the PageElement object with the given locator components.
 
         If parent is not None, find_element will be performed over it, instead of
@@ -42,11 +42,13 @@ class PageElement(CommonObject):
         :param value: locator value
         :param parent: parent element (WebElement, PageElement or locator tuple)
         :param order: index value if the locator returns more than one element
+        :param wait: True if the page element must be loaded in wait_until_loaded method of the container page object
         """
         super(PageElement, self).__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.order = order  #: index value if the locator returns more than one element
+        self.wait = wait  #: True if it must be loaded in wait_until_loaded method of the container page object
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self.reset_object(self.driver_wrapper)
 

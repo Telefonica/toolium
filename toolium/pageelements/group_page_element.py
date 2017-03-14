@@ -24,7 +24,7 @@ from toolium.pageobjects.page_object import PageObject
 
 
 class Group(PageObject, PageElement):
-    def __init__(self, by, value, parent=None, driver_wrapper=None, order=None):
+    def __init__(self, by, value, parent=None, driver_wrapper=None, order=None, wait=False):
         """Initialize the Group object with the given locator components.
 
         If parent is not None, find_elements will be performed over it, instead of
@@ -33,13 +33,15 @@ class Group(PageObject, PageElement):
         :param by: locator type
         :param value: locator value
         :param parent: parent element (WebElement, PageElement or locator tuple)
-        :param order: index value if the locator returns more than one element
         :param driver_wrapper: driver wrapper instance
+        :param order: index value if the locator returns more than one element
+        :param wait: True if the page element must be loaded in wait_until_loaded method of the container page object
         """
         self.logger = logging.getLogger(__name__)  #: logger instance
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.order = order  #: index value if the locator returns more than one element
+        self.wait = wait  #: True if it must be loaded in wait_until_loaded method of the container page object
         self.driver_wrapper = driver_wrapper if driver_wrapper else \
             DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self.init_page_elements()
