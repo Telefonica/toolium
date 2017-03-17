@@ -50,11 +50,12 @@ class Group(PageObject, PageElement):
 
         :param driver_wrapper: driver wrapper instance
         """
+        from toolium.pageelements.page_elements import PageElements
         if driver_wrapper:
             self.driver_wrapper = driver_wrapper
         self._web_element = None
         for element in self._get_page_elements():
             element.reset_object(driver_wrapper)
-            if not isinstance(element, PageObject):
+            if isinstance(element, (PageElement, PageElements)):
                 # If element is not a page object, update element parent
                 element.parent = self

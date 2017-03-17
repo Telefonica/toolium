@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.2.4
+------
+
+*Release date: 2017-03-17*
+
+- Fix NoSuchElementException error finding elements in nested groups
+
 v1.2.3
 ------
 
