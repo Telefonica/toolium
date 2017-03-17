@@ -150,18 +150,18 @@ def test_group_reset_object(driver_wrapper):
     # Check that web elements are empty
     assert login_page.menu._web_element is None
     assert login_page.menu.logo._web_element is None
-    assert login_page.menu.logo.parent._web_element is None
+    assert login_page.menu.logo.parent == login_page.menu
 
     login_page.menu.logo.web_element
 
     # Check that web elements are filled
     assert login_page.menu._web_element is not None
     assert login_page.menu.logo._web_element is not None
-    assert login_page.menu.logo.parent._web_element is not None
+    assert login_page.menu.logo.parent == login_page.menu
 
     login_page.menu.reset_object()
 
     # Check that web elements are empty
     assert login_page.menu._web_element is None
     assert login_page.menu.logo._web_element is None
-    assert login_page.menu.logo.parent._web_element is None
+    assert login_page.menu.logo.parent == login_page.menu

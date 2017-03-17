@@ -60,10 +60,8 @@ class PageObject(CommonObject):
 
         :returns: list of page elements and page objects
         """
-        from toolium.pageelements.page_element import PageElement
-        from toolium.pageelements.page_elements import PageElements
         page_elements = []
         for attribute, value in list(self.__dict__.items()) + list(self.__class__.__dict__.items()):
-            if attribute != 'parent' and isinstance(value, (PageElement, PageElements, PageObject)):
+            if attribute != 'parent' and isinstance(value, CommonObject):
                 page_elements.append(value)
         return page_elements
