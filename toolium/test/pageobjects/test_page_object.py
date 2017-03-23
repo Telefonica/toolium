@@ -23,7 +23,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.pageelements import PageElement, Group
+from toolium.pageelements import PageElement, Group, PageElements
 from toolium.pageobjects.page_object import PageObject
 
 child_element = 'child_element'
@@ -51,6 +51,7 @@ class RegisterPageObject(PageObject):
         self.language = PageElement(By.ID, 'language')
         self.email = PageElement(By.ID, 'email', mock_element)
         self.address = PageElement(By.ID, 'address', (By.ID, 'parent'))
+        self.inputs = PageElements(By.XPATH, '//input')
         self.menu = MenuPageObject(wait=True)
         self.menu_group = MenuGroup(By.ID, 'menu', wait=True)
 
@@ -84,6 +85,7 @@ def test_driver_wrapper(driver_wrapper):
     assert page_object.language.driver_wrapper == driver_wrapper
     assert page_object.email.driver_wrapper == driver_wrapper
     assert page_object.address.driver_wrapper == driver_wrapper
+    assert page_object.inputs.driver_wrapper == driver_wrapper
 
     # Check that the child page object and its page elements have the same driver wrapper
     assert page_object.menu.driver_wrapper == driver_wrapper
@@ -91,6 +93,7 @@ def test_driver_wrapper(driver_wrapper):
     assert page_object.menu.logo.driver_wrapper == driver_wrapper
     assert page_object.menu_group.driver_wrapper == driver_wrapper
     assert page_object.menu_group.logo.driver_wrapper == driver_wrapper
+    assert page_object.menu_group.logo_wait.driver_wrapper == driver_wrapper
 
 
 def test_two_driver_wrappers(driver_wrapper):
@@ -103,20 +106,24 @@ def test_two_driver_wrappers(driver_wrapper):
     assert page_object.language.driver_wrapper == driver_wrapper
     assert page_object.email.driver_wrapper == driver_wrapper
     assert page_object.address.driver_wrapper == driver_wrapper
+    assert page_object.inputs.driver_wrapper == driver_wrapper
     assert page_object.menu.driver_wrapper == driver_wrapper
     assert page_object.menu.logo.driver_wrapper == driver_wrapper
     assert page_object.menu_group.driver_wrapper == driver_wrapper
     assert page_object.menu_group.logo.driver_wrapper == driver_wrapper
+    assert page_object.menu_group.logo_wait.driver_wrapper == driver_wrapper
 
     # Check that the second page object and its instance page elements have the second driver wrapper
     assert second_page_object.driver_wrapper == second_driver_wrapper
     assert second_page_object.language.driver_wrapper == second_driver_wrapper
     assert second_page_object.email.driver_wrapper == second_driver_wrapper
     assert second_page_object.address.driver_wrapper == second_driver_wrapper
+    assert second_page_object.inputs.driver_wrapper == second_driver_wrapper
     assert second_page_object.menu.driver_wrapper == second_driver_wrapper
     assert second_page_object.menu.logo.driver_wrapper == second_driver_wrapper
     assert second_page_object.menu_group.driver_wrapper == second_driver_wrapper
     assert second_page_object.menu_group.logo.driver_wrapper == second_driver_wrapper
+    assert second_page_object.menu_group.logo_wait.driver_wrapper == second_driver_wrapper
 
     # Check that the class elements have the last driver wrapper
     # This kind of elements could not be used with multiple drivers
@@ -129,6 +136,10 @@ def test_two_driver_wrappers(driver_wrapper):
 
 
 def test_reset_object(driver_wrapper):
+    mock_element_11 = mock.MagicMock(spec=WebElement)
+    mock_element_12 = mock.MagicMock(spec=WebElement)
+    driver_wrapper.driver.find_elements.side_effect = [[mock_element_11, mock_element_12]]
+
     page_object = RegisterPageObject(driver_wrapper)
 
     # Search page elements
@@ -137,10 +148,12 @@ def test_reset_object(driver_wrapper):
     page_object.language.web_element
     page_object.email.web_element
     page_object.address.web_element
+    page_object.inputs.web_elements
     page_object.menu.register.web_element
     page_object.menu.logo.web_element
     page_object.menu_group.web_element
     page_object.menu_group.logo.web_element
+    page_object.menu_group.logo_wait.web_element
 
     # Check that all page elements have a web element
     assert page_object.username._web_element is not None
@@ -148,10 +161,12 @@ def test_reset_object(driver_wrapper):
     assert page_object.language._web_element is not None
     assert page_object.email._web_element is not None
     assert page_object.address._web_element is not None
+    assert len(page_object.inputs._web_elements) == 2
     assert page_object.menu.register._web_element is not None
     assert page_object.menu.logo._web_element is not None
     assert page_object.menu_group._web_element is not None
     assert page_object.menu_group.logo._web_element is not None
+    assert page_object.menu_group.logo_wait._web_element is not None
 
     page_object.reset_object()
 
@@ -161,10 +176,12 @@ def test_reset_object(driver_wrapper):
     assert page_object.language._web_element is None
     assert page_object.email._web_element is None
     assert page_object.address._web_element is None
+    assert len(page_object.inputs._web_elements) == 0
     assert page_object.menu.register._web_element is None
     assert page_object.menu.logo._web_element is None
     assert page_object.menu_group._web_element is None
     assert page_object.menu_group.logo._web_element is None
+    assert page_object.menu_group.logo_wait._web_element is None
 
 
 def test_wait_until_loaded(driver_wrapper):
@@ -183,3 +200,6 @@ def test_wait_until_loaded(driver_wrapper):
     assert page_object.address._web_element is None
     assert page_object.menu.register._web_element is None
     assert page_object.menu_group.logo._web_element is None
+
+    # Check that pageelements have no web elements
+    assert len(page_object.inputs._web_elements) == 0

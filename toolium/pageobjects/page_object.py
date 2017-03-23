@@ -76,7 +76,7 @@ class PageObject(CommonObject):
         :returns: this page object instance
         """
         for element in self._get_page_elements():
-            if element.wait:
+            if hasattr(element, 'wait') and element.wait:
                 from toolium.pageelements.page_element import PageElement
                 if isinstance(element, PageElement):
                     # Pageelement and Group
