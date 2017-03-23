@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.2.5
+------
+
+*In development*
+
+- Fix firefox initialization error using Selenium 2.X
+
 v1.2.4
 ------
 

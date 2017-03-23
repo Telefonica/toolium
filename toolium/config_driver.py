@@ -216,8 +216,14 @@ class ConfigDriver(object):
             firefox_options = None
 
         log_path = os.path.join(DriverWrappersPool.output_directory, 'geckodriver.log')
-        return webdriver.Firefox(firefox_profile=self._create_firefox_profile(), capabilities=capabilities,
-                                 executable_path=gecko_driver, firefox_options=firefox_options, log_path=log_path)
+        try:
+            # Selenium 3
+            return webdriver.Firefox(firefox_profile=self._create_firefox_profile(), capabilities=capabilities,
+                                     executable_path=gecko_driver, firefox_options=firefox_options, log_path=log_path)
+        except TypeError:
+            # Selenium 2
+            return webdriver.Firefox(firefox_profile=self._create_firefox_profile(), capabilities=capabilities,
+                                     executable_path=gecko_driver, firefox_options=firefox_options)
 
     def _create_firefox_profile(self):
         """Create and configure a firefox profile
