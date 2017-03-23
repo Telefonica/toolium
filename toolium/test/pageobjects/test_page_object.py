@@ -34,24 +34,25 @@ class MenuPageObject(PageObject):
     register = PageElement(By.ID, 'register')
 
     def init_page_elements(self):
-        self.logo = PageElement(By.ID, 'image')
+        self.logo = PageElement(By.ID, 'image', wait=True)
 
 
 class MenuGroup(Group):
     def init_page_elements(self):
         self.logo = PageElement(By.ID, 'image')
+        self.logo_wait = PageElement(By.ID, 'image2', wait=True)
 
 
 class RegisterPageObject(PageObject):
-    username = PageElement(By.XPATH, '//input[0]')
+    username = PageElement(By.XPATH, '//input[0]', wait=True)
     password = PageElement(By.ID, 'password', username)
 
     def init_page_elements(self):
         self.language = PageElement(By.ID, 'language')
         self.email = PageElement(By.ID, 'email', mock_element)
         self.address = PageElement(By.ID, 'address', (By.ID, 'parent'))
-        self.menu = MenuPageObject()
-        self.menu_group = MenuGroup(By.ID, 'menu')
+        self.menu = MenuPageObject(wait=True)
+        self.menu_group = MenuGroup(By.ID, 'menu', wait=True)
 
 
 @pytest.fixture
@@ -163,4 +164,22 @@ def test_reset_object(driver_wrapper):
     assert page_object.menu.register._web_element is None
     assert page_object.menu.logo._web_element is None
     assert page_object.menu_group._web_element is None
+    assert page_object.menu_group.logo._web_element is None
+
+
+def test_wait_until_loaded(driver_wrapper):
+    page_object = RegisterPageObject(driver_wrapper).wait_until_loaded()
+
+    # Check that all page elements with wait=True have a web element
+    assert page_object.username._web_element is not None
+    assert page_object.menu.logo._web_element is not None
+    assert page_object.menu_group._web_element is not None
+    assert page_object.menu_group.logo_wait._web_element is not None
+
+    # Check that all page elements with wait=False have no web element value
+    assert page_object.password._web_element is None
+    assert page_object.language._web_element is None
+    assert page_object.email._web_element is None
+    assert page_object.address._web_element is None
+    assert page_object.menu.register._web_element is None
     assert page_object.menu_group.logo._web_element is None
