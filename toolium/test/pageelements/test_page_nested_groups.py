@@ -23,7 +23,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.pageelements import PageElements, Group, InputText, Link
+from toolium.pageelements import Group, InputText
 from toolium.pageobjects.page_object import PageObject
 
 

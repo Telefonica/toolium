@@ -26,8 +26,6 @@ from PIL import Image
 from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
 from needle.engines.pil_engine import Engine as PilEngine
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.by import By
 
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
@@ -205,13 +203,15 @@ def test_diff_message_size_imagemagick():
 
 
 def test_diff_message_diff_pil():
-    message = "The new screenshot 'C:\\...\\01_login_form__test_login.png' did not match the baseline 'C:\\...\\login_form.png' (by a distance of 14794.11)"
+    message = ("The new screenshot 'C:\\...\\01_login_form__test_login.png' did not match the baseline "
+               "'C:\\...\\login_form.png' (by a distance of 14794.11)")
     expected_message = 'Distance of 0.01479411'
     assert expected_message == VisualTest._get_diff_message(message, 1000000)
 
 
 def test_diff_message_diff_perceptualdiff():
-    message = """The new screenshot 'C:\\...\\01_login_form__test_login.png' did not match the baseline 'C:\\...\\login_form.png' (See C:\\...\\01_login_form__test_login.diff.png):
+    message = "The new screenshot 'C:\\...\\01_login_form__test_login.png' did not match the baseline "
+    message += """'C:\\...\\login_form.png' (See C:\\...\\01_login_form__test_login.diff.png):
         FAIL: Images are visibly different
         15040 pixels are different
     """
@@ -220,7 +220,9 @@ def test_diff_message_diff_perceptualdiff():
 
 
 def test_diff_message_diff_imagemagick():
-    message = "The new screenshot 'C:\\...\\01_login_form__test_login.png' did not match the baseline 'C:\\...\\login_form.png' (See C:\\...\\01_login_form__test_login.diff.png):\n5443.77 (0.0830666) @ 0,0"
+    message = ("The new screenshot 'C:\\...\\01_login_form__test_login.png' did not match the baseline "
+               "'C:\\...\\login_form.png' (See C:\\...\\01_login_form__test_login.diff.png):\n"
+               "5443.77 (0.0830666) @ 0,0")
     expected_message = 'Distance of 0.08306660'
     assert expected_message == VisualTest._get_diff_message(message, 1000000)
 
