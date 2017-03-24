@@ -4,7 +4,7 @@ Toolium Changelog
 v1.2.5
 ------
 
-*In development*
+*Release date: 2017-03-24*
 
 - Fix firefox initialization error using Selenium 2.X
 - Add *wait_until_loaded* method to PageObject class to wait until all page elements with wait=True are visible
