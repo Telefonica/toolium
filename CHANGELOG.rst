@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.2.6
+------
+
+*Release date: In development*
+
+- Fix visual screenshot filename error when behave feature name contains :
+
 v1.2.5
 ------
 
