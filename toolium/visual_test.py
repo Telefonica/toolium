@@ -149,7 +149,7 @@ class VisualTest(object):
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
         unique_name = '{0:0=2d}_{1}.png'.format(DriverWrappersPool.visual_number, filename_with_suffix)
         output_file = os.path.join(self.output_directory, unique_name)
-        report_name = '{}<br>({})'.format(file_suffix, filename)
+        report_name = '{}<br>({})'.format(file_suffix, filename) if file_suffix else '-<br>({})'.format(filename)
 
         # Get screenshot and modify it
         img = Image.open(BytesIO(self.driver_wrapper.driver.get_screenshot_as_png()))

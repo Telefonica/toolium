@@ -157,7 +157,7 @@ def add_assert_screenshot_methods(context_or_world, scenario):
     :param context_or_world: behave context or lettuce world
     :param scenario: running scenario
     """
-    file_suffix = scenario.name.replace(' ', '_')
+    file_suffix = scenario.name.replace(' ', '_').replace(':', '_')
 
     def assert_screenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None,
                           force=False):
