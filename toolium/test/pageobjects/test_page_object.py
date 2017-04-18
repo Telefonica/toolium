@@ -18,6 +18,7 @@ limitations under the License.
 
 import mock
 import pytest
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -203,3 +204,25 @@ def test_wait_until_loaded(driver_wrapper):
 
     # Check that pageelements have no web elements
     assert len(page_object.inputs._web_elements) == 0
+
+
+def test_wait_until_loaded_exception(driver_wrapper):
+    driver_wrapper.utils.wait_until_element_visible = mock.MagicMock()
+    driver_wrapper.utils.wait_until_element_visible.side_effect = TimeoutException('Unknown')
+
+    page_object = MenuPageObject(driver_wrapper)
+    with pytest.raises(TimeoutException) as excinfo:
+        page_object.wait_until_loaded()
+    assert "Page element of type 'PageElement' with locator ('id', 'image') not found or is not " \
+           "visible after 10 seconds" in str(excinfo.value)
+
+
+def test_wait_until_loaded_exception_custom_timeout(driver_wrapper):
+    driver_wrapper.utils.wait_until_element_visible = mock.MagicMock()
+    driver_wrapper.utils.wait_until_element_visible.side_effect = TimeoutException('Unknown')
+
+    page_object = MenuPageObject(driver_wrapper)
+    with pytest.raises(TimeoutException) as excinfo:
+        page_object.wait_until_loaded(timeout=15)
+    assert "Page element of type 'PageElement' with locator ('id', 'image') not found or is not " \
+           "visible after 15 seconds" in str(excinfo.value)

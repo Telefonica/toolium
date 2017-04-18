@@ -96,7 +96,7 @@ class PageElement(CommonObject):
         self.driver.execute_script('window.scrollTo(0, {0})'.format(y))
         return self
 
-    def wait_until_visible(self, timeout=10):
+    def wait_until_visible(self, timeout=None):
         """Search element and wait until it is visible
 
         :param timeout: max time to wait
@@ -107,12 +107,13 @@ class PageElement(CommonObject):
         except TimeoutException as exception:
             parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
             msg = "Page element of type '%s' with locator %s%s not found or is not visible after %s seconds"
+            timeout = timeout if timeout else self.utils.get_explicitly_wait()
             self.logger.error(msg, type(self).__name__, self.locator, parent_msg, timeout)
             exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg, timeout))
             raise exception
         return self
 
-    def wait_until_not_visible(self, timeout=10):
+    def wait_until_not_visible(self, timeout=None):
         """Search element and wait until it is not visible
 
         :param timeout: max time to wait
@@ -123,12 +124,13 @@ class PageElement(CommonObject):
         except TimeoutException as exception:
             parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
             msg = "Page element of type '%s' with locator %s%s is still visible after %s seconds"
+            timeout = timeout if timeout else self.utils.get_explicitly_wait()
             self.logger.error(msg, type(self).__name__, self.locator, parent_msg, timeout)
             exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg, timeout))
             raise exception
         return self
 
-    def wait_until_clickable(self, timeout=10):
+    def wait_until_clickable(self, timeout=None):
         """Search element and wait until it is clickable
 
         :param timeout: max time to wait
@@ -139,6 +141,7 @@ class PageElement(CommonObject):
         except TimeoutException as exception:
             parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
             msg = "Page element of type '%s' with locator %s%s not found or is not clickable after %s seconds"
+            timeout = timeout if timeout else self.utils.get_explicitly_wait()
             self.logger.error(msg, type(self).__name__, self.locator, parent_msg, timeout)
             exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg, timeout))
             raise exception
