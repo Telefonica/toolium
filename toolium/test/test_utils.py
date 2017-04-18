@@ -468,7 +468,7 @@ def test_wait_until_first_element_is_found_timeout(driver_wrapper, utils):
 
     start_time = time.time()
     with pytest.raises(TimeoutException) as excinfo:
-        utils.wait_until_first_element_is_found([element_locator], timeout=10)
+        utils.wait_until_first_element_is_found([element_locator])
     end_time = time.time()
 
     assert 'None of the page elements has been found after 10 seconds' in str(excinfo.value)
@@ -476,3 +476,20 @@ def test_wait_until_first_element_is_found_timeout(driver_wrapper, utils):
     driver_wrapper.driver.find_element.assert_called_with(*element_locator)
     # Execution time must be greater than timeout
     assert end_time - start_time > 10
+
+
+def test_wait_until_first_element_is_found_custom_timeout(driver_wrapper, utils):
+    # Configure driver mock
+    driver_wrapper.driver.find_element.side_effect = NoSuchElementException('Unknown')
+    element_locator = (By.ID, 'element_id')
+
+    start_time = time.time()
+    with pytest.raises(TimeoutException) as excinfo:
+        utils.wait_until_first_element_is_found([element_locator], timeout=15)
+    end_time = time.time()
+
+    assert 'None of the page elements has been found after 15 seconds' in str(excinfo.value)
+    # find_element has been called more than one time
+    driver_wrapper.driver.find_element.assert_called_with(*element_locator)
+    # Execution time must be greater than timeout
+    assert end_time - start_time > 15

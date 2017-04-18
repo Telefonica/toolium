@@ -103,10 +103,9 @@ def bdd_common_before_scenario(context_or_world, scenario):
     # Configure Jira properties
     save_jira_conf()
 
-    # Add implicitly wait
-    implicitly_wait = context_or_world.toolium_config.get_optional('Driver', 'implicitly_wait')
-    if context_or_world.driver and implicitly_wait:
-        context_or_world.driver.implicitly_wait(implicitly_wait)
+    # Set implicitly wait timeout in web and mobile tests
+    if context_or_world.driver:
+        context_or_world.utils.set_implicitly_wait()
 
     context_or_world.logger.info("Running new scenario: %s", scenario.name)
 

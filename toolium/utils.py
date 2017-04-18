@@ -46,11 +46,18 @@ class Utils(object):
         # Configure logger
         self.logger = logging.getLogger(__name__)
 
-    def set_implicit_wait(self):
-        """Read timeout from configuration properties and set the implicit wait"""
+    def set_implicitly_wait(self):
+        """Read implicitly timeout from configuration properties and configure driver implicitly wait"""
         implicitly_wait = self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait')
         if implicitly_wait:
             self.driver_wrapper.driver.implicitly_wait(implicitly_wait)
+
+    def get_explicitly_wait(self):
+        """Read explicitly timeout from configuration properties
+
+        :returns: configured explicitly timeout (default timeout 10 seconds)
+        """
+        return int(self.driver_wrapper.config.get_optional('Driver', 'explicitly_wait', '10'))
 
     def capture_screenshot(self, name):
         """Capture screenshot and save it in screenshots folder
@@ -203,7 +210,7 @@ class Utils(object):
         except StaleElementReferenceException:
             return False
 
-    def _wait_until(self, condition_method, condition_input, timeout=10):
+    def _wait_until(self, condition_method, condition_input, timeout=None):
         """
         Common method to wait until condition met
 
@@ -212,16 +219,18 @@ class Utils(object):
         :param timeout: max time to wait
         :returns: condition method response
         """
-        # Remove implicit wait
+        # Remove implicitly wait timeout
         self.driver_wrapper.driver.implicitly_wait(0)
+        # Get explicitly wait timeout
+        timeout = timeout if timeout else self.get_explicitly_wait()
         # Wait for condition
         condition_response = WebDriverWait(self.driver_wrapper.driver, timeout).until(
             lambda s: condition_method(condition_input))
-        # Restore implicit wait from properties
-        self.set_implicit_wait()
+        # Restore implicitly wait timeout from properties
+        self.set_implicitly_wait()
         return condition_response
 
-    def wait_until_element_present(self, element, timeout=10):
+    def wait_until_element_present(self, element, timeout=None):
         """Search element and wait until it is found
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
@@ -231,7 +240,7 @@ class Utils(object):
         """
         return self._wait_until(self._expected_condition_find_element, element, timeout)
 
-    def wait_until_element_visible(self, element, timeout=10):
+    def wait_until_element_visible(self, element, timeout=None):
         """Search element and wait until it is visible
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
@@ -241,7 +250,7 @@ class Utils(object):
         """
         return self._wait_until(self._expected_condition_find_element_visible, element, timeout)
 
-    def wait_until_element_not_visible(self, element, timeout=10):
+    def wait_until_element_not_visible(self, element, timeout=None):
         """Search element and wait until it is not visible
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
@@ -251,7 +260,7 @@ class Utils(object):
         """
         return self._wait_until(self._expected_condition_find_element_not_visible, element, timeout)
 
-    def wait_until_first_element_is_found(self, elements, timeout=10):
+    def wait_until_first_element_is_found(self, elements, timeout=None):
         """Search list of elements and wait until one of them is found
 
         :param elements: list of PageElements or element locators as a tuple (locator_type, locator_value) to be found
@@ -264,11 +273,12 @@ class Utils(object):
             return self._wait_until(self._expected_condition_find_first_element, elements, timeout)
         except TimeoutException as exception:
             msg = 'None of the page elements has been found after %s seconds'
+            timeout = timeout if timeout else self.get_explicitly_wait()
             self.logger.error(msg, timeout)
             exception.msg += "\n  {}".format(msg % timeout)
             raise exception
 
-    def wait_until_element_clickable(self, element, timeout=10):
+    def wait_until_element_clickable(self, element, timeout=None):
         """Search element and wait until it is clickable
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found

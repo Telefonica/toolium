@@ -68,7 +68,7 @@ class PageObject(CommonObject):
                 page_elements.append(value)
         return page_elements
 
-    def wait_until_loaded(self, timeout=10):
+    def wait_until_loaded(self, timeout=None):
         """Wait until page object is loaded
         Search all page elements configured with wait=True
 
