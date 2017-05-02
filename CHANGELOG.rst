@@ -9,6 +9,7 @@ v1.2.6
 - Fix visual screenshot filename error when behave feature name contains :
 - Add a config property 'explicitly_wait' in [Driver] section to set the default timeout used in *wait_until* methods
 - Drivers will be closed after each behave feature, even if reuse_driver is true
+- Add @reset_driver tag to restart driver before the scenario, even if reuse_driver is true
 
 v1.2.5
 ------

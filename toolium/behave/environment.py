@@ -85,6 +85,10 @@ def before_scenario(context, scenario):
         os.environ["AppiumCapabilities_noReset"] = 'false'
         os.environ["AppiumCapabilities_fullReset"] = 'true'
 
+    # Force to reset driver before each scenario if it has @reset_driver tag
+    if 'reset_driver' in scenario.tags and context.toolium_config.getboolean_optional('Driver', 'reuse_driver'):
+        stop_reused_driver()
+
     # Skip android_only or ios_only scenarios
     if 'android_only' in scenario.tags and context.driver_wrapper.is_ios_test():
         scenario.skip('Android scenario')
