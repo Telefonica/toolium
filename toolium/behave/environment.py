@@ -59,6 +59,15 @@ def before_all(context):
     create_and_configure_wrapper(context)
 
 
+def before_feature(context, feature):
+    """Feature initialization
+
+    :param context: behave context
+    :param feature: running feature
+    """
+    context.global_status = {'test_passed': True}
+
+
 def before_scenario(context, scenario):
     """Scenario initialization
 
@@ -218,6 +227,10 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
     maintain_default = reuse_driver and (test_passed or not restart_driver_fail)
     DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, test_passed, maintain_default)
 
+    # Start driver if it has been closed due to a failed test
+    if reuse_driver and not test_passed and restart_driver_fail:
+        start_driver(context_or_world)
+
     # Save test status to be updated later
     previous_status = context_or_world.global_status['test_passed'] if reuse_driver else True
     context_or_world.global_status['test_passed'] = previous_status and test_passed
@@ -241,6 +254,16 @@ def get_jira_key_from_scenario(scenario):
     return None
 
 
+def after_feature(context, feature):
+    """Clean method that will be executed after each feature
+
+    :param context: behave context
+    :param feature: running feature
+    """
+    # Stop driver if it has been reused
+    stop_reused_driver(context, video_name=feature.name.replace(' ', '_'))
+
+
 def after_all(context):
     """Clean method that will be executed after all features are finished
 
@@ -254,9 +277,37 @@ def bdd_common_after_all(context_or_world):
 
     :param context_or_world: behave context or lettuce world
     """
-    # Close browser and stop driver if it has been reused
-    DriverWrappersPool.close_drivers_and_download_videos('multiple_tests',
-                                                         context_or_world.global_status['test_passed'])
+    # Stop driver if it has been reused
+    stop_reused_driver(context_or_world)
 
     # Update tests status in Jira
     change_all_jira_status()
+
+
+def stop_reused_driver(context, video_name='multiple_tests'):
+    """Close browser and stop driver if it has been reused
+
+    :param context: behave context
+    :param video_name: downloaded video name
+    """
+    DriverWrappersPool.close_drivers_and_download_videos(video_name, context.global_status['test_passed'])
+    context.global_status['test_passed'] = {'test_passed': True}
+
+
+def start_driver(context):
+    """Start driver with configured values
+
+    :param context: behave context
+    """
+    create_and_configure_wrapper(context)
+    connect_wrapper(context)
+
+
+def restart_reused_driver(context, video_name='multiple_tests'):
+    """Restart driver if it has been reused
+
+    :param context: behave context
+    :param video_name: downloaded video name
+    """
+    stop_reused_driver(context, video_name)
+    start_driver(context)
