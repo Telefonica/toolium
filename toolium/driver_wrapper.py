@@ -267,6 +267,9 @@ class DriverWrapper(object):
         # Discard previous logcat logs
         self.utils.discard_logcat_logs()
 
+        # Set implicitly wait timeout
+        self.utils.set_implicitly_wait()
+
         return self.driver
 
     def is_android_test(self):

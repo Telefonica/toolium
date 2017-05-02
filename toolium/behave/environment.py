@@ -67,6 +67,10 @@ def before_feature(context, feature):
     """
     context.global_status = {'test_passed': True}
 
+    # Start driver if it should be reused in feature
+    if context.toolium_config.getboolean_optional('Driver', 'reuse_driver') or 'reuse_driver' in feature.tags:
+        start_driver(context)
+
 
 def before_scenario(context, scenario):
     """Scenario initialization
@@ -85,8 +89,12 @@ def before_scenario(context, scenario):
         os.environ["AppiumCapabilities_noReset"] = 'false'
         os.environ["AppiumCapabilities_fullReset"] = 'true'
 
+    # If driver is already started or reuse_driver is configured, then driver should be reused
+    context.reuse_driver = (context.toolium_config.getboolean_optional('Driver', 'reuse_driver')
+                            or ('driver' in context and context.driver is not None))
+
     # Force to reset driver before each scenario if it has @reset_driver tag
-    if 'reset_driver' in scenario.tags and context.toolium_config.getboolean_optional('Driver', 'reuse_driver'):
+    if 'reset_driver' in scenario.tags and context.reuse_driver:
         stop_reused_driver()
 
     # Skip android_only or ios_only scenarios
@@ -107,18 +115,13 @@ def bdd_common_before_scenario(context_or_world, scenario):
     :param scenario: running scenario
     """
     # Initialize and connect driver wrapper
-    create_and_configure_wrapper(context_or_world)
-    connect_wrapper(context_or_world)
+    start_driver(context_or_world)
 
     # Add assert screenshot methods with scenario configuration
     add_assert_screenshot_methods(context_or_world, scenario)
 
     # Configure Jira properties
     save_jira_conf()
-
-    # Set implicitly wait timeout in web and mobile tests
-    if context_or_world.driver:
-        context_or_world.utils.set_implicitly_wait()
 
     context_or_world.logger.info("Running new scenario: %s", scenario.name)
 
@@ -226,17 +229,16 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
     DriverWrappersPool.save_all_webdriver_logs(scenario.name, test_passed)
 
     # Close browser and stop driver if it must not be reused
-    reuse_driver = context_or_world.toolium_config.getboolean_optional('Driver', 'reuse_driver')
     restart_driver_fail = context_or_world.toolium_config.getboolean_optional('Driver', 'restart_driver_fail')
-    maintain_default = reuse_driver and (test_passed or not restart_driver_fail)
+    maintain_default = context_or_world.reuse_driver and (test_passed or not restart_driver_fail)
     DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, test_passed, maintain_default)
 
     # Start driver if it has been closed due to a failed test
-    if reuse_driver and not test_passed and restart_driver_fail:
+    if context_or_world.reuse_driver and not test_passed and restart_driver_fail:
         start_driver(context_or_world)
 
     # Save test status to be updated later
-    previous_status = context_or_world.global_status['test_passed'] if reuse_driver else True
+    previous_status = context_or_world.global_status['test_passed'] if context_or_world.reuse_driver else True
     context_or_world.global_status['test_passed'] = previous_status and test_passed
     add_jira_status(get_jira_key_from_scenario(scenario), test_status, test_comment)
 
@@ -305,13 +307,3 @@ def start_driver(context):
     """
     create_and_configure_wrapper(context)
     connect_wrapper(context)
-
-
-def restart_reused_driver(context, video_name='multiple_tests'):
-    """Restart driver if it has been reused
-
-    :param context: behave context
-    :param video_name: downloaded video name
-    """
-    stop_reused_driver(context, video_name)
-    start_driver(context)

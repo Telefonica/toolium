@@ -37,6 +37,7 @@ def setup_driver(scenario):
 
     world.global_status = {'test_passed': True}
     bdd_common_before_scenario(world, scenario)
+    world.reuse_driver = world.toolium_config.getboolean_optional('Driver', 'reuse_driver')
 
 
 def teardown_driver(scenario):

@@ -135,8 +135,6 @@ class SeleniumTestCase(BasicTestCase):
 
         # Get common configuration of reusing driver
         self.reuse_driver = self.driver_wrapper.config.getboolean_optional('Driver', 'reuse_driver')
-        # Set implicitly wait timeout
-        self.utils.set_implicitly_wait()
         # Call BasicTestCase setUp
         super(SeleniumTestCase, self).setUp()
 
