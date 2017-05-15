@@ -1,7 +1,7 @@
 Toolium Changelog
 =================
 
-v1.2.6
+v1.3.0
 ------
 
 *Release date: In development*
@@ -12,6 +12,7 @@ v1.2.6
   method
 - Add @reuse_driver feature tag to reuse driver in a behave feature, even if reuse_driver is false
 - Add @reset_driver scenario tag to restart driver before a behave scenario, even if reuse_driver is true
+- Add *is_present* and *is_visible* methods to PageElement classes to know if an element is present or visible
 
 v1.2.5
 ------
