@@ -196,6 +196,38 @@ def test_get_web_element_exception(driver_wrapper):
     assert "Page element of type 'PageElement' with locator ('xpath', '//input[0]') not found" in str(excinfo.value)
 
 
+def test_is_present(driver_wrapper):
+    driver_wrapper.driver.find_element.return_value = mock_element
+
+    assert RegisterPageObject(driver_wrapper).username.is_present() is True
+
+
+def test_is_present_not_found(driver_wrapper):
+    driver_wrapper.driver.find_element.side_effect = NoSuchElementException('Unknown')
+
+    assert RegisterPageObject(driver_wrapper).username.is_present() is False
+
+
+def test_is_visible(driver_wrapper):
+    mock_element.is_displayed.return_value = True
+    driver_wrapper.driver.find_element.return_value = mock_element
+
+    assert RegisterPageObject(driver_wrapper).username.is_visible() is True
+
+
+def test_is_visible_not_visible(driver_wrapper):
+    mock_element.is_displayed.return_value = False
+    driver_wrapper.driver.find_element.return_value = mock_element
+
+    assert RegisterPageObject(driver_wrapper).username.is_visible() is False
+
+
+def test_is_visible_not_found(driver_wrapper):
+    driver_wrapper.driver.find_element.side_effect = NoSuchElementException('Unknown')
+
+    assert RegisterPageObject(driver_wrapper).username.is_visible() is False
+
+
 def test_wait_until_visible(driver_wrapper):
     driver_wrapper.utils.wait_until_element_visible = mock.MagicMock(return_value=mock_element)
 

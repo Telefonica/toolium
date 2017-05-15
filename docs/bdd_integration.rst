@@ -56,7 +56,13 @@ command line instead of using the driver type defined in properties.cfg:
 Behave tags
 -----------
 
-Toolium defines some scenario tags to configure Appium tests:
+Toolium defines two tags to configure driver:
+
+* @reuse_driver: feature tag to indicate that all scenarios in this feature should share the driver. The browser will
+not be closed between tests.
+* @reset_driver: identifies a scenario that should not reuse the driver. The browser will be closed before this test.
+
+And other scenario tags to configure Appium tests:
 
 * @no_reset_app: mobile app will not be reset before test (i.e. no-reset Appium capability is set to true)
 * @reset_app: mobile app will be reset before test (i.e. no-reset and full-reset Appium capabilities are set to false)

@@ -96,6 +96,26 @@ class PageElement(CommonObject):
         self.driver.execute_script('window.scrollTo(0, {0})'.format(y))
         return self
 
+    def is_present(self):
+        """Find element and return True if it is present
+
+        :returns: True if element is located
+        """
+        try:
+            # Use _find_web_element() instead of web_element to avoid logging error message
+            self._web_element = None
+            self._find_web_element()
+            return True
+        except NoSuchElementException:
+            return False
+
+    def is_visible(self):
+        """Find element and return True if it is visible
+
+        :returns: True if element is visible
+        """
+        return self.is_present() and self.web_element.is_displayed()
+
     def wait_until_visible(self, timeout=None):
         """Search element and wait until it is visible
 
