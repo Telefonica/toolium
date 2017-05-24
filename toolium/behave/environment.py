@@ -95,7 +95,7 @@ def before_scenario(context, scenario):
 
     # Force to reset driver before each scenario if it has @reset_driver tag
     if 'reset_driver' in scenario.tags and context.reuse_driver:
-        stop_reused_driver()
+        stop_reused_driver(context)
 
     # Skip android_only or ios_only scenarios
     if 'android_only' in scenario.tags and context.driver_wrapper.is_ios_test():
