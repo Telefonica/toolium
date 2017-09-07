@@ -70,6 +70,55 @@ And other scenario tags to configure Appium tests:
 * @android_only: identifies a scenario that should only be executed in Android
 * @ios_only: identifies a scenario that should only be executed in iOS
 
+Behave - Dynamic Environment
+----------------------------
+
+Optionally, some actions (labels) are defined in the Feature description as:
+•	Actions Before the Feature:
+•	Actions Before each scenario:
+•	Actions after each scenario:
+•	Actions after the Feature:
+
+With a steps list executed in each moment identified with the label as the environment.py file. These steps are defined similar to others one.
+Each step block is separated by a blank line.
+Behave keywords are supported  (Given, When, Then, And, But, Check, Setup).
+
+Example::
+
+        Feature: Tests with the dynamic environment
+          As a behave operator using multiples scenarios
+          I want to append actions before the feature, before each scenario, after each scenario and after the feature.
+
+          Actions Before the Feature:
+            Given wait 3 seconds
+            And waitrty 3 seconds
+            And wait 3 seconds
+            And step with a table
+              | parameter     | value       |
+              | sub_fields_1  | sub_value 1 |
+              | sub_fields_2  | sub_value 2 |
+
+          Actions Before each Scenario:
+            Given the user navigates to the "www.google.es" url
+            When the user logs in with username and password
+            And wait 1 seconds
+            And wait 1 seconds
+
+          Actions After each Scenario:
+            And wait 2 seconds
+            And wait 2 seconds
+
+          Actions After the Feature:
+            And wait 4 seconds
+            And step with another step executed dynamically
+            And wait 4 seconds
+
+All steps type are allowed:
+   - with tables
+   - executing another step internally
+And in case that a step has failed a exception is threw... Ex: waitrty 3 seconds step
+
+
 Lettuce
 ~~~~~~~
 

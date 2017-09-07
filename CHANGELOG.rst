@@ -6,6 +6,7 @@ v1.3.0
 
 *Release date: In development*
 
+- Add the dynamic environment.
 - Fix visual screenshot filename error when behave feature name contains :
 - Add a config property 'explicitly_wait' in [Driver] section to set the default timeout used in *wait_until* methods
 - When reuse_driver is true using behave, driver is initialized in *before_feature* method and closed in *after_feature*
