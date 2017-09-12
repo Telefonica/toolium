@@ -74,13 +74,17 @@ Behave - Dynamic Environment
 ----------------------------
 
 Optionally, some actions (labels) are defined in the Feature description as:
-•	Actions Before the Feature:
-•	Actions Before each scenario:
-•	Actions after each scenario:
-•	Actions after the Feature:
 
-With a steps list executed in each moment identified with the label as the environment.py file. These steps are defined similar to others one.
+* Actions Before the Feature:
+* Actions Before each scenario:
+* Actions after each scenario:
+* Actions after the Feature:
+
+With a steps list executed in each moment identified with the label as the environment.py file. These steps are defined
+similar to others one.
+
 Each step block is separated by a blank line.
+
 Behave keywords are supported  (Given, When, Then, And, But, Check, Setup).
 
 Example::
@@ -113,11 +117,12 @@ Example::
             And step with another step executed dynamically
             And wait 4 seconds
 
+
 All steps type are allowed:
    - with tables
    - executing another step internally
-And in case that a step has failed a exception is threw... Ex: waitrty 3 seconds step
 
+And in case that a step has failed a exception is threw, i.e. 'waitrty 3 seconds' step
 
 Lettuce
 ~~~~~~~
