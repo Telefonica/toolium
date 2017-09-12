@@ -31,6 +31,7 @@ from toolium.driver_wrapper import DriverWrappersPool
 from toolium.jira import add_jira_status, change_all_jira_status, save_jira_conf
 from toolium.visual_test import VisualTest
 from toolium.pageelements import PageElement
+from toolium.behave.env_utils import DynamicEnvironment
 
 
 def before_all(context):
@@ -58,6 +59,9 @@ def before_all(context):
     context.global_status = {'test_passed': True}
     create_and_configure_wrapper(context)
 
+    # dynamic environment
+    context.dyn_env = DynamicEnvironment(logger=context.logger)
+
 
 def before_feature(context, feature):
     """Feature initialization
@@ -70,6 +74,10 @@ def before_feature(context, feature):
     # Start driver if it should be reused in feature
     if context.toolium_config.getboolean_optional('Driver', 'reuse_driver') or 'reuse_driver' in feature.tags:
         start_driver(context)
+
+    # dynamic environment
+    context.dyn_env.get_steps_from_feature_description(feature.description)
+    context.dyn_env.execute_before_feature_steps(context)
 
 
 def before_scenario(context, scenario):
@@ -106,6 +114,9 @@ def before_scenario(context, scenario):
         return
 
     bdd_common_before_scenario(context, scenario)
+
+    # dynamic environment
+    context.dyn_env.execute_before_scenario_steps(context)
 
 
 def bdd_common_before_scenario(context_or_world, scenario):
@@ -224,6 +235,9 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
         # Capture screenshot on error
         DriverWrappersPool.capture_screenshots(scenario_file_name)
 
+    # dynamic environment
+    context_or_world.dyn_env.execute_after_scenario_steps(context_or_world)
+
     # Save webdriver logs on error or if it is enabled
     test_passed = status == 'passed'
     DriverWrappersPool.save_all_webdriver_logs(scenario.name, test_passed)
@@ -266,6 +280,9 @@ def after_feature(context, feature):
     :param context: behave context
     :param feature: running feature
     """
+    # dynamic environment
+    context.dyn_env.execute_after_feature_steps(context)
+
     # Stop driver if it has been reused
     stop_reused_driver(context, video_name=feature.name.replace(' ', '_'))
 
