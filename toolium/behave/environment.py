@@ -59,7 +59,7 @@ def before_all(context):
     context.global_status = {'test_passed': True}
     create_and_configure_wrapper(context)
 
-    # dynamic environment
+    # Behave dynamic environment
     context.dyn_env = DynamicEnvironment(logger=context.logger)
 
 
@@ -75,7 +75,7 @@ def before_feature(context, feature):
     if context.toolium_config.getboolean_optional('Driver', 'reuse_driver') or 'reuse_driver' in feature.tags:
         start_driver(context)
 
-    # dynamic environment
+    # Behave dynamic environment
     context.dyn_env.get_steps_from_feature_description(feature.description)
     context.dyn_env.execute_before_feature_steps(context)
 
@@ -115,7 +115,7 @@ def before_scenario(context, scenario):
 
     bdd_common_before_scenario(context, scenario)
 
-    # dynamic environment
+    # Behave dynamic environment
     context.dyn_env.execute_before_scenario_steps(context)
 
 
@@ -235,8 +235,9 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
         # Capture screenshot on error
         DriverWrappersPool.capture_screenshots(scenario_file_name)
 
-    # dynamic environment
-    context_or_world.dyn_env.execute_after_scenario_steps(context_or_world)
+    # Behave dynamic environment (ignored in lettuce)
+    if hasattr(context_or_world, 'dyn_env'):
+        context_or_world.dyn_env.execute_after_scenario_steps(context_or_world)
 
     # Save webdriver logs on error or if it is enabled
     test_passed = status == 'passed'
@@ -280,7 +281,7 @@ def after_feature(context, feature):
     :param context: behave context
     :param feature: running feature
     """
-    # dynamic environment
+    # Behave dynamic environment
     context.dyn_env.execute_after_feature_steps(context)
 
     # Stop driver if it has been reused
