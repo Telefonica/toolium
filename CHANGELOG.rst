@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.4.0
+------
+
+*Release date: In development*
+
+- Add pytest fixtures to start and stop drivers
+
 v1.3.0
 ------
 

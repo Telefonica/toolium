@@ -72,7 +72,8 @@ def before_feature(context, feature):
     context.global_status = {'test_passed': True}
 
     # Start driver if it should be reused in feature
-    if context.toolium_config.getboolean_optional('Driver', 'reuse_driver') or 'reuse_driver' in feature.tags:
+    context.reuse_driver_from_tags = 'reuse_driver' in feature.tags
+    if context.toolium_config.getboolean_optional('Driver', 'reuse_driver') or context.reuse_driver_from_tags:
         start_driver(context)
 
     # Behave dynamic environment
@@ -97,13 +98,10 @@ def before_scenario(context, scenario):
         os.environ["AppiumCapabilities_noReset"] = 'false'
         os.environ["AppiumCapabilities_fullReset"] = 'true'
 
-    # If driver is already started or reuse_driver is configured, then driver should be reused
-    context.reuse_driver = (context.toolium_config.getboolean_optional('Driver', 'reuse_driver')
-                            or ('driver' in context and context.driver is not None))
-
     # Force to reset driver before each scenario if it has @reset_driver tag
-    if 'reset_driver' in scenario.tags and context.reuse_driver:
-        stop_reused_driver(context)
+    if 'reset_driver' in scenario.tags:
+        DriverWrappersPool.close_drivers_and_download_videos('multiple tests', context.global_status['test_passed'])
+        context.global_status['test_passed'] = True
 
     # Skip android_only or ios_only scenarios
     if 'android_only' in scenario.tags and context.driver_wrapper.is_ios_test():
@@ -220,9 +218,6 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
     :param scenario: running scenario
     :param status: scenario status (passed, failed or skipped)
     """
-    # Get scenario name without spaces and behave data separator
-    scenario_file_name = scenario.name.replace(' -- @', '_').replace(' ', '_')
-
     if status == 'skipped':
         return
     elif status == 'passed':
@@ -233,29 +228,13 @@ def bdd_common_after_scenario(context_or_world, scenario, status):
         test_status = 'Fail'
         test_comment = "The scenario '%s' has failed" % scenario.name
         context_or_world.logger.error("The scenario '%s' has failed", scenario.name)
-        # Capture screenshot on error
-        DriverWrappersPool.capture_screenshots(scenario_file_name)
+        context_or_world.global_status['test_passed'] = False
 
-    # Behave dynamic environment (ignored in lettuce)
-    if hasattr(context_or_world, 'dyn_env'):
-        context_or_world.dyn_env.execute_after_scenario_steps(context_or_world)
-
-    # Save webdriver logs on error or if it is enabled
-    test_passed = status == 'passed'
-    DriverWrappersPool.save_all_webdriver_logs(scenario.name, test_passed)
-
-    # Close browser and stop driver if it must not be reused
-    restart_driver_fail = context_or_world.toolium_config.getboolean_optional('Driver', 'restart_driver_fail')
-    maintain_default = context_or_world.reuse_driver and (test_passed or not restart_driver_fail)
-    DriverWrappersPool.close_drivers_and_download_videos(scenario_file_name, test_passed, maintain_default)
-
-    # Start driver if it has been closed due to a failed test
-    if context_or_world.reuse_driver and not test_passed and restart_driver_fail:
-        start_driver(context_or_world)
+    # Close drivers
+    DriverWrappersPool.close_drivers(scope='function', test_name=scenario.name, test_passed=status == 'passed',
+                                     context=context_or_world)
 
     # Save test status to be updated later
-    previous_status = context_or_world.global_status['test_passed'] if context_or_world.reuse_driver else True
-    context_or_world.global_status['test_passed'] = previous_status and test_passed
     add_jira_status(get_jira_key_from_scenario(scenario), test_status, test_comment)
 
 
@@ -285,8 +264,9 @@ def after_feature(context, feature):
     # Behave dynamic environment
     context.dyn_env.execute_after_feature_steps(context)
 
-    # Stop driver if it has been reused
-    stop_reused_driver(context, video_name=feature.name.replace(' ', '_'))
+    # Close drivers
+    DriverWrappersPool.close_drivers(scope='module', test_name=feature.name,
+                                     test_passed=context.global_status['test_passed'])
 
 
 def after_all(context):
@@ -302,21 +282,12 @@ def bdd_common_after_all(context_or_world):
 
     :param context_or_world: behave context or lettuce world
     """
-    # Stop driver if it has been reused
-    stop_reused_driver(context_or_world)
+    # Close drivers
+    DriverWrappersPool.close_drivers(scope='session', test_name='multiple_tests',
+                                     test_passed=context_or_world.global_status['test_passed'])
 
     # Update tests status in Jira
     change_all_jira_status()
-
-
-def stop_reused_driver(context, video_name='multiple_tests'):
-    """Close browser and stop driver if it has been reused
-
-    :param context: behave context
-    :param video_name: downloaded video name
-    """
-    DriverWrappersPool.close_drivers_and_download_videos(video_name, context.global_status['test_passed'])
-    context.global_status['test_passed'] = {'test_passed': True}
 
 
 def start_driver(context):

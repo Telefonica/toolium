@@ -104,23 +104,16 @@ class SeleniumTestCase(BasicTestCase):
     def tearDownClass(cls):
         # Call BasicTestCase tearDownClass
         super(SeleniumTestCase, cls).tearDownClass()
-
-        # Close browser and stop driver if it has been reused
-        DriverWrappersPool.close_drivers_and_download_videos(cls.get_subclass_name())
-        SeleniumTestCase.driver = None
+        # Close drivers
+        DriverWrappersPool.close_drivers(scope='class', test_name=cls.get_subclass_name())
 
     def setUp(self):
-        # Get default driver wrapper
-        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
-        if not SeleniumTestCase.driver:
-            # By default config directory is located in test path
-            if not self.config_files.config_directory:
-                self.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
+        # By default config directory is located in test path
+        if not self.config_files.config_directory:
+            self.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
 
-            # Create driver
-            self.driver_wrapper.configure(True, self.config_files)
-            self.driver_wrapper.connect()
-
+        # Get default driver wrapper and connect it
+        self.driver_wrapper = DriverWrappersPool.connect_default_driver_wrapper(config_files=self.config_files)
         SeleniumTestCase.driver = self.driver_wrapper.driver
         self.utils = self.driver_wrapper.utils
 
@@ -133,29 +126,16 @@ class SeleniumTestCase(BasicTestCase):
 
         PageElement.assert_screenshot = assert_screenshot_page_element
 
-        # Get common configuration of reusing driver
-        self.reuse_driver = self.driver_wrapper.config.getboolean_optional('Driver', 'reuse_driver')
         # Call BasicTestCase setUp
         super(SeleniumTestCase, self).setUp()
 
     def tearDown(self):
         # Call BasicTestCase tearDown
         super(SeleniumTestCase, self).tearDown()
-        test_name = self.get_subclassmethod_name().replace('.', '_')
-
-        # Capture screenshot on error
-        if not self._test_passed:
-            DriverWrappersPool.capture_screenshots(test_name)
-
-        # Save webdriver logs on error or if it is enabled
-        DriverWrappersPool.save_all_webdriver_logs(self.get_subclassmethod_name(), self._test_passed)
-
-        # Close browser and stop driver if it must not be reused
-        restart_driver_fail = self.driver_wrapper.config.getboolean_optional('Driver', 'restart_driver_fail')
-        maintain_default = self.reuse_driver and (self._test_passed or not restart_driver_fail)
-        DriverWrappersPool.close_drivers_and_download_videos(test_name, self._test_passed, maintain_default)
-        if not maintain_default:
-            SeleniumTestCase.driver = None
+        # Close drivers
+        DriverWrappersPool.close_drivers(scope='function',
+                                         test_name=self.get_subclassmethod_name(),
+                                         test_passed=self._test_passed)
 
     def assert_screenshot(self, element, filename, threshold=0, exclude_elements=[], driver_wrapper=None, force=False):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
@@ -205,7 +185,8 @@ class AppiumTestCase(SeleniumTestCase):
         return SeleniumTestCase.driver
 
     def setUp(self):
-        if not SeleniumTestCase.driver and not self.config_files.config_directory:
+        self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
+        if not self.driver_wrapper.driver and not self.config_files.config_directory:
             # By default config directory is located in test path
             self.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
 
