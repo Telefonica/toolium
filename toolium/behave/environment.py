@@ -126,7 +126,8 @@ def bdd_common_before_scenario(context_or_world, scenario):
     :param scenario: running scenario
     """
     # Initialize and connect driver wrapper
-    start_driver(context_or_world)
+    if 'no_browser' not in scenario.tags and 'no_browser' not in scenario.feature.tags:
+        start_driver(context_or_world)
 
     # Add assert screenshot methods with scenario configuration
     add_assert_screenshot_methods(context_or_world, scenario)

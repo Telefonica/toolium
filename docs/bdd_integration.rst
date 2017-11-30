@@ -61,6 +61,7 @@ Toolium defines two tags to configure driver:
 * @reuse_driver: feature tag to indicate that all scenarios in this feature should share the driver. The browser will
 not be closed between tests.
 * @reset_driver: identifies a scenario that should not reuse the driver. The browser will be closed before this test.
+* @no_browser: identifies a scenario or feature that should not start the driver.
 
 And other scenario tags to configure Appium tests:
 
