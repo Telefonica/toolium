@@ -7,6 +7,9 @@ v1.4.0
 *Release date: In development*
 
 - Add pytest fixtures to start and stop drivers
+- New config property 'reuse_driver_session' in [Driver] section to use the same driver in all tests
+- Rename config property 'restart_driver_fail' in [Driver] section to 'restart_driver_after_failure'
+- Add @no_browser feature or scenario tag to do not start the driver in these tests
 
 v1.3.0
 ------

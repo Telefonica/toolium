@@ -333,7 +333,10 @@ class DriverWrapper(object):
         :returns: True if the driver should be reused
         """
         reuse_driver = self.config.getboolean_optional('Driver', 'reuse_driver')
-        restart_driver_fail = self.config.getboolean_optional('Driver', 'restart_driver_fail')
+        reuse_driver_session = self.config.getboolean_optional('Driver', 'reuse_driver_session')
+        restart_driver_after_failure = (self.config.getboolean_optional('Driver', 'restart_driver_after_failure') or
+                                        self.config.getboolean_optional('Driver', 'restart_driver_fail'))
         if context and scope == 'function':
             reuse_driver = reuse_driver or context.reuse_driver_from_tags
-        return (reuse_driver and scope == 'function') and (test_passed or not restart_driver_fail)
+        return (((reuse_driver and scope == 'function') or (reuse_driver_session and scope != 'session'))
+                and (test_passed or not restart_driver_after_failure))
