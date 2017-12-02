@@ -218,7 +218,28 @@ def test_connect(create_driver, driver_wrapper):
     assert logging.getLevelName(logger.level) == 'DEBUG'
 
 
-def test_connect_api(driver_wrapper):
+api_tests = (
+    '',
+    'api',
+    'no_browser',
+)
+
+
+@pytest.mark.parametrize("driver_type", api_tests)
+def test_connect_api(driver_type, driver_wrapper):
+    # Mock data
+    expected_driver = None
+    driver_wrapper.config.set('Driver', 'type', driver_type)
+
+    # Connect and check that the returned driver is None
+    assert driver_wrapper.connect(maximize=False) == expected_driver  # Check that the wrapper has been configured
+    assert driver_wrapper.config.get('Driver', 'type') == driver_type
+    assert driver_wrapper.config.get('Jira', 'enabled') == 'false'
+    logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
+    assert logging.getLevelName(logger.level) == 'DEBUG'
+
+
+def test_connect_api_from_file(driver_wrapper):
     # Mock data
     expected_driver = None
 

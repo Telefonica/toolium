@@ -93,9 +93,9 @@ def test_connect_default_driver_wrapper_already_connected(driver_wrapper):
 
 
 close_drivers_scopes = (
-    ('function',),
-    ('module',),
-    ('session',),
+    'function',
+    'module',
+    'session',
 )
 
 
