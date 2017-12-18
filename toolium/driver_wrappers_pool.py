@@ -274,18 +274,19 @@ class DriverWrappersPool(object):
     def configure_visual_directories(cls, driver_info):
         """Configure screenshots, videos and visual directories
 
-        :param driver_info: driver property value to rename folders
+        :param driver_info: driver property value to name folders
         """
         if cls.screenshots_directory is None:
             # Unique screenshots and videos directories
             date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
-            cls.screenshots_directory = os.path.join(cls.output_directory, 'screenshots', date + '_' + driver_info)
+            folder_name = '%s_%s' % (date, driver_info) if driver_info else date
+            cls.screenshots_directory = os.path.join(cls.output_directory, 'screenshots', folder_name)
             cls.screenshots_number = 1
-            cls.videos_directory = os.path.join(cls.output_directory, 'videos', date + '_' + driver_info)
+            cls.videos_directory = os.path.join(cls.output_directory, 'videos', folder_name)
             cls.videos_number = 1
 
             # Unique visualtests directories
-            cls.visual_output_directory = os.path.join(cls.output_directory, 'visualtests', date + '_' + driver_info)
+            cls.visual_output_directory = os.path.join(cls.output_directory, 'visualtests', folder_name)
             cls.visual_number = 1
 
     @classmethod

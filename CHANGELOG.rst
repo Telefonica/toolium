@@ -10,6 +10,7 @@ v1.4.0
 - New config property 'reuse_driver_session' in [Driver] section to use the same driver in all tests
 - Rename config property 'restart_driver_fail' in [Driver] section to 'restart_driver_after_failure'
 - Add @no_browser feature or scenario tag to do not start the driver in these tests
+- Fix output folder names when driver type is empty
 
 v1.3.0
 ------
