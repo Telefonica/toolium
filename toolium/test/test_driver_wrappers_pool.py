@@ -18,6 +18,7 @@ limitations under the License.
 
 import os
 
+import mock
 import pytest
 
 from toolium.config_files import ConfigFiles
@@ -66,6 +67,51 @@ def test_multiple(driver_wrapper):
     assert driver_wrapper != new_wrapper
     assert DriverWrappersPool.driver_wrappers[0] == driver_wrapper
     assert DriverWrappersPool.driver_wrappers[1] == new_wrapper
+
+
+def test_connect_default_driver_wrapper(driver_wrapper):
+    driver_wrapper.connect = mock.MagicMock()
+
+    # Connect default driver wrapper
+    new_wrapper = DriverWrappersPool.connect_default_driver_wrapper()
+
+    # Check that both wrappers are the same object and connect has been called
+    assert new_wrapper == driver_wrapper
+    driver_wrapper.connect.assert_called_once_with()
+
+
+def test_connect_default_driver_wrapper_already_connected(driver_wrapper):
+    driver_wrapper.connect = mock.MagicMock()
+    driver_wrapper.driver = 'fake'
+
+    # Connect default driver wrapper
+    new_wrapper = DriverWrappersPool.connect_default_driver_wrapper()
+
+    # Check that both wrappers are the same object and connect has not been called
+    assert new_wrapper == driver_wrapper
+    driver_wrapper.connect.assert_not_called()
+
+
+close_drivers_scopes = (
+    ('function',),
+    ('module',),
+    ('session',),
+)
+
+
+@pytest.mark.parametrize("scope", close_drivers_scopes)
+def test_close_drivers_function(scope, driver_wrapper):
+    DriverWrappersPool.save_all_webdriver_logs = mock.MagicMock()
+
+    # Close drivers
+    DriverWrappersPool.close_drivers(scope, 'test_name')
+
+    if scope == 'function':
+        # Check that save_all_webdriver_logs has been called
+        DriverWrappersPool.save_all_webdriver_logs.assert_called_once_with('test_name', True)
+    else:
+        # Check that save_all_webdriver_logs has not been called
+        DriverWrappersPool.save_all_webdriver_logs.assert_not_called()
 
 
 def test_find_parent_directory_relative():

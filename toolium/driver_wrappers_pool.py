@@ -104,6 +104,45 @@ class DriverWrappersPool(object):
             driver_index += 1
 
     @classmethod
+    def connect_default_driver_wrapper(cls, config_files=None):
+        """Get default driver wrapper, configure it and connect driver
+
+        :param config_files: driver wrapper specific config files
+        :returns: default driver wrapper
+        :rtype: toolium.driver_wrapper.DriverWrapper
+        """
+        driver_wrapper = cls.get_default_wrapper()
+        if not driver_wrapper.driver:
+            driver_wrapper.configure(tc_config_files=config_files)
+            driver_wrapper.connect()
+        return driver_wrapper
+
+    @classmethod
+    def close_drivers(cls, scope, test_name, test_passed=True, context=None):
+        """Stop all drivers, capture screenshots, copy webdriver logs and download saved videos
+
+        :param scope: execution scope (function, module, class or session)
+        :param test_name: executed test name
+        :param test_passed: True if the test has passed
+        :param context: behave context
+        """
+        file_test_name = test_name.replace(' -- @', '_').replace(' ', '_').replace('.', '_')
+
+        if scope == 'function':
+            # Capture screenshot on error
+            if not test_passed:
+                cls.capture_screenshots(file_test_name)
+            # Execute behave dynamic environment
+            if context and hasattr(context, 'dyn_env'):
+                context.dyn_env.execute_after_scenario_steps(context)
+            # Save webdriver logs on error or if it is enabled
+            cls.save_all_webdriver_logs(test_name, test_passed)
+
+        # Close browser and stop driver if it must not be reused
+        reuse_driver = cls.get_default_wrapper().should_reuse_driver(scope, test_passed, context)
+        cls.close_drivers_and_download_videos(file_test_name, test_passed, reuse_driver)
+
+    @classmethod
     def close_drivers_and_download_videos(cls, name, test_passed=True, maintain_default=False):
         """Stop all drivers and download saved videos if video is enabled or if test fails
 

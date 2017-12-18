@@ -200,7 +200,7 @@ For example, the following configuration allows to download files without asking
 To configure `Chrome arguments <https://cs.chromium.org/chromium/src/chrome/common/chrome_switches.cc>`_, create a
 *[ChromeArguments]* configuration section and add every argument that you want to configure with its value.
 
-For example, to use a predefined chrome profile:
+For example, to use a predefined chrome profile::
 
     [Driver]
     type: chrome

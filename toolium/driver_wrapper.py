@@ -275,7 +275,7 @@ class DriverWrapper(object):
     def is_android_test(self):
         """Check if actual test must be executed in an Android mobile
 
-        :returns: true if test must be executed in an Android mobile
+        :returns: True if test must be executed in an Android mobile
         """
         driver_name = self.config.get('Driver', 'type').split('-')[0]
         return driver_name == 'android'
@@ -283,7 +283,7 @@ class DriverWrapper(object):
     def is_ios_test(self):
         """Check if actual test must be executed in an iOS mobile
 
-        :returns: true if test must be executed in an iOS mobile
+        :returns: True if test must be executed in an iOS mobile
         """
         driver_name = self.config.get('Driver', 'type').split('-')[0]
         return driver_name in ('ios', 'iphone')
@@ -291,14 +291,14 @@ class DriverWrapper(object):
     def is_mobile_test(self):
         """Check if actual test must be executed in a mobile
 
-        :returns: true if test must be executed in a mobile
+        :returns: True if test must be executed in a mobile
         """
         return self.is_android_test() or self.is_ios_test()
 
     def is_web_test(self):
         """Check if actual test must be executed in a browser
 
-        :returns: true if test must be executed in a browser
+        :returns: True if test must be executed in a browser
         """
         appium_browser_name = self.config.get_optional('AppiumCapabilities', 'browserName')
         return not self.is_mobile_test() or appium_browser_name not in (None, '')
@@ -306,20 +306,37 @@ class DriverWrapper(object):
     def is_android_web_test(self):
         """Check if actual test must be executed in a browser of an Android mobile
 
-        :returns: true if test must be executed in a browser of an Android mobile
+        :returns: True if test must be executed in a browser of an Android mobile
         """
         return self.is_android_test() and self.is_web_test()
 
     def is_ios_web_test(self):
         """Check if actual test must be executed in a browser of an iOS mobile
 
-        :returns: true if test must be executed in a browser of an iOS mobile
+        :returns: True if test must be executed in a browser of an iOS mobile
         """
         return self.is_ios_test() and self.is_web_test()
 
     def is_maximizable(self):
         """Check if the browser is maximizable
 
-        :returns: true if the browser is maximizable
+        :returns: True if the browser is maximizable
         """
         return not self.is_mobile_test()
+
+    def should_reuse_driver(self, scope, test_passed, context=None):
+        """Check if the driver should be reused
+
+        :param scope: execution scope (function, module, class or session)
+        :param test_passed: True if the test has passed
+        :param context: behave context
+        :returns: True if the driver should be reused
+        """
+        reuse_driver = self.config.getboolean_optional('Driver', 'reuse_driver')
+        reuse_driver_session = self.config.getboolean_optional('Driver', 'reuse_driver_session')
+        restart_driver_after_failure = (self.config.getboolean_optional('Driver', 'restart_driver_after_failure') or
+                                        self.config.getboolean_optional('Driver', 'restart_driver_fail'))
+        if context and scope == 'function':
+            reuse_driver = reuse_driver or context.reuse_driver_from_tags
+        return (((reuse_driver and scope == 'function') or (reuse_driver_session and scope != 'session'))
+                and (test_passed or not restart_driver_after_failure))
