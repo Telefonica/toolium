@@ -260,3 +260,50 @@ def test_is_web_test(driver_type, appium_app, appium_browser_name, is_web, is_an
 def test_is_maximizable(driver_type, is_maximizable, driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', driver_type)
     assert driver_wrapper.is_maximizable() == is_maximizable
+
+
+# (reuse_driver, reuse_driver_session, restart_driver_after_failure, restart_driver_fail,
+#  reuse_driver_from_tags, scope, test_passed, expected_should_reuse_driver)
+should_be_reused = (
+    ('true', 'true', 'true', 'true', True, 'function', True, True),  # all = true
+    # reuse_driver
+    ('true', 'false', 'false', 'false', False, 'function', True, True),  # reuse = true, function
+    ('true', 'false', 'false', 'false', False, 'module', True, False),  # reuse = true, module
+    ('true', 'false', 'false', 'false', False, 'session', True, False),  # reuse = true, session
+    ('false', 'false', 'false', 'false', False, 'function', True, False),  # reuse = false
+    # restart_driver_after_failure
+    ('true', 'false', 'false', 'false', False, 'function', True, True),  # restart = false, test passed
+    ('true', 'false', 'true', 'false', False, 'function', True, True),  # restart = true, test passed
+    ('true', 'false', 'false', 'false', False, 'function', False, True),  # restart = false, test failed
+    ('true', 'false', 'true', 'false', False, 'function', False, False),  # restart = true, test failed
+    # restart_driver_fail (deprecated)
+    ('true', 'false', 'false', 'false', False, 'function', True, True),  # restart = false, test passed
+    ('true', 'false', 'false', 'true', False, 'function', True, True),  # restart = true, test passed
+    ('true', 'false', 'false', 'false', False, 'function', False, True),  # restart = false, test failed
+    ('true', 'false', 'false', 'true', False, 'function', False, False),  # restart = true, test failed
+    # reuse_driver_session
+    ('false', 'true', 'false', 'false', False, 'function', True, True),  # reuse = true, function
+    ('false', 'true', 'false', 'false', False, 'module', True, True),  # reuse = true, module
+    ('false', 'true', 'false', 'false', False, 'session', True, False),  # reuse = true, session
+    # reuse_driver_from_tags
+    ('false', 'false', 'false', 'false', True, 'function', True, True),  # reuse = true, function
+    ('false', 'false', 'false', 'false', True, 'module', True, False),  # reuse = true, module
+    ('false', 'false', 'false', 'false', True, 'session', True, False),  # reuse = true, session
+)
+
+
+@pytest.mark.parametrize("reuse_driver, reuse_driver_session, restart_driver_after_failure, restart_driver_fail, "
+                         "reuse_driver_from_tags, scope, test_passed, expected_should_reuse_driver", should_be_reused)
+def test_should_reuse_driver(reuse_driver, reuse_driver_session, restart_driver_after_failure, restart_driver_fail,
+                             reuse_driver_from_tags, scope, test_passed, expected_should_reuse_driver, driver_wrapper):
+    # Set config properties
+    driver_wrapper.config.set('Driver', 'reuse_driver', reuse_driver)
+    driver_wrapper.config.set('Driver', 'reuse_driver_session', reuse_driver_session)
+    driver_wrapper.config.set('Driver', 'restart_driver_after_failure', restart_driver_after_failure)
+    driver_wrapper.config.set('Driver', 'restart_driver_fail', restart_driver_fail)
+
+    # Create context mock
+    context = mock.MagicMock()
+    context.reuse_driver_from_tags = reuse_driver_from_tags
+
+    assert driver_wrapper.should_reuse_driver(scope, test_passed, context) == expected_should_reuse_driver
