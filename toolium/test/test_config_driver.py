@@ -274,6 +274,25 @@ def test_create_remote_driver_chrome(webdriver_mock, config):
 
     # Chrome options mock
     chrome_options = mock.MagicMock()
+    chrome_options.to_capabilities.return_value = {'goog:chromeOptions': 'chrome options'}
+    config_driver._create_chrome_options = mock.MagicMock(return_value=chrome_options)
+
+    config_driver._create_remote_driver()
+    capabilities = DesiredCapabilities.CHROME.copy()
+    capabilities['goog:chromeOptions'] = 'chrome options'
+    webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+                                                  desired_capabilities=capabilities)
+
+
+@mock.patch('toolium.config_driver.webdriver')
+def test_create_remote_driver_chrome_old_selenium(webdriver_mock, config):
+    config.set('Server', 'host', '10.20.30.40')
+    config.set('Server', 'port', '5555')
+    config.set('Driver', 'type', 'chrome')
+    config_driver = ConfigDriver(config)
+
+    # Chrome options mock
+    chrome_options = mock.MagicMock()
     chrome_options.to_capabilities.return_value = {'chromeOptions': 'chrome options'}
     config_driver._create_chrome_options = mock.MagicMock(return_value=chrome_options)
 
