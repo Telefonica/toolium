@@ -108,7 +108,12 @@ class ConfigDriver(object):
         elif driver_name == 'firefox':
             capabilities['firefox_profile'] = self._create_firefox_profile().encoded
         elif driver_name == 'chrome':
-            capabilities['chromeOptions'] = self._create_chrome_options().to_capabilities()["chromeOptions"]
+            chrome_capabilities = self._create_chrome_options().to_capabilities()
+            try:
+                capabilities['goog:chromeOptions'] = chrome_capabilities["goog:chromeOptions"]
+            except KeyError:
+                # Selenium 3.5.3 and older
+                capabilities['chromeOptions'] = chrome_capabilities["chromeOptions"]
 
         # Add custom driver capabilities
         self._add_capabilities_from_properties(capabilities, 'Capabilities')
