@@ -38,10 +38,10 @@ example:
 
 After initialization, the following attributes will be available in behave context:
 
-- context.toolium_config: dictionary with Toolium configuration, readed from properties.cfg
-- context.driver_wrapper: :ref:`DriverWrapper <driver_wrapper>` instance
-- context.driver: Selenium or Appium driver instance
-- context.utils: :ref:`Utils <utils>` instance
+- :code:`context.toolium_config`: dictionary with Toolium configuration, readed from properties.cfg
+- :code:`context.driver_wrapper`: :ref:`DriverWrapper <driver_wrapper>` instance
+- :code:`context.driver`: Selenium or Appium driver instance
+- :code:`context.utils`: :ref:`Utils <utils>` instance
 
 Behave userdata properties
 --------------------------
@@ -58,18 +58,17 @@ Behave tags
 
 Toolium defines two tags to configure driver:
 
-* @reuse_driver: feature tag to indicate that all scenarios in this feature should share the driver. The browser will
-not be closed between tests.
-* @reset_driver: identifies a scenario that should not reuse the driver. The browser will be closed before this test.
-* @no_browser: identifies a scenario or feature that should not start the driver.
+* :code:`@reuse_driver`: feature tag to indicate that all scenarios in this feature should share the driver. The browser will not be closed between tests.
+* :code:`@reset_driver`: identifies a scenario that should not reuse the driver. The browser will be closed and reopen before this test.
+* :code:`@no_browser`: identifies a scenario or feature that should not start the driver.
 
 And other scenario tags to configure Appium tests:
 
-* @no_reset_app: mobile app will not be reset before test (i.e. no-reset Appium capability is set to true)
-* @reset_app: mobile app will be reset before test (i.e. no-reset and full-reset Appium capabilities are set to false)
-* @full_reset_app: mobile app will be full reset before test (i.e. full-reset Appium capability is set to true)
-* @android_only: identifies a scenario that should only be executed in Android
-* @ios_only: identifies a scenario that should only be executed in iOS
+* :code:`@no_reset_app`: mobile app will not be reset before test (i.e. no-reset Appium capability is set to true)
+* :code:`@reset_app`: mobile app will be reset before test (i.e. no-reset and full-reset Appium capabilities are set to false)
+* :code:`@full_reset_app`: mobile app will be full reset before test (i.e. full-reset Appium capability is set to true)
+* :code:`@android_only`: identifies a scenario that should only be executed in Android
+* :code:`@ios_only`: identifies a scenario that should only be executed in iOS
 
 Behave - Dynamic Environment
 ----------------------------
@@ -120,8 +119,9 @@ Example::
 
 
 All steps type are allowed:
-   - with tables
-   - executing another step internally
+
+- with tables
+- executing another step internally
 
 And in case that a step has failed a exception is threw, i.e. 'waitrty 3 seconds' step
 
@@ -157,7 +157,7 @@ Terrain methods should call to the corresponding Toolium terrain methods, as can
 
 After initialization, the following attributes will be available in world object:
 
-- world.toolium_config: dictionary with Toolium configuration, readed from properties.cfg
-- world.driver_wrapper: :ref:`DriverWrapper <driver_wrapper>` instance
-- world.driver: Selenium or Appium driver instance
-- world.utils: :ref:`Utils <utils>` instance
+- :code:`world.toolium_config`: dictionary with Toolium configuration, readed from properties.cfg
+- :code:`world.driver_wrapper`: :ref:`DriverWrapper <driver_wrapper>` instance
+- :code:`world.driver`: Selenium or Appium driver instance
+- :code:`world.utils`: :ref:`Utils <utils>` instance
