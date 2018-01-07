@@ -4,7 +4,7 @@ Toolium Changelog
 v1.4.0
 ------
 
-*Release date: In development*
+*Release date: 2018-02-04*
 
 - Add pytest fixtures to start and stop drivers
 - New config property 'reuse_driver_session' in [Driver] section to use the same driver in all tests
