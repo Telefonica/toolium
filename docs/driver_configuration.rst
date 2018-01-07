@@ -29,6 +29,7 @@ android-properties.cfg and local-android-properties.cfg files:
 - :ref:`Mobile Configuration <mobile_configuration>`
 - :ref:`Remote Driver Configuration <remote_configuration>`
 - :ref:`Multiple Simultaneous Drivers <multiple_drivers>`
+- :ref:`Reuse Driver <reuse_driver>`
 
 .. toctree::
    :hidden:
@@ -37,3 +38,4 @@ android-properties.cfg and local-android-properties.cfg files:
    Mobile Configuration <mobile_configuration.rst>
    Remote Driver Configuration <remote_configuration.rst>
    Multiple Simultaneous Drivers <multiple_drivers.rst>
+   Reuse Driver <reuse_driver.rst>

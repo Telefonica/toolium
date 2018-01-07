@@ -33,6 +33,8 @@ The main dependencies are:
   in Android or iOS devices/emulators.
 - `requests <http://docs.python-requests.org>`_: to test APIs
 
+**Using toolium-template**
+
 The easiest way of getting started is to clone `toolium-template <https://github.com/Telefonica/toolium-template>`_
 project, run the example test and add your own tests and configuration.
 
@@ -41,7 +43,11 @@ project, run the example test and add your own tests and configuration.
     $ git clone git@github.com:Telefonica/toolium-template.git
     $ cd toolium-template
     $ pip install -r requirements.txt
-    $ behave
+
+Now, just follow the instructions `here <https://github.com/Telefonica/toolium-template#running-tests>`_ to know how to start
+your testing project.
+
+**Running toolium-examples**
 
 You can also clone `toolium-examples <https://github.com/Telefonica/toolium-examples>`_ to get more examples about how
 to use the library to test web, Android or iOS applications, in different scenarios.
@@ -51,6 +57,9 @@ to use the library to test web, Android or iOS applications, in different scenar
     $ git clone git@github.com:Telefonica/toolium-examples.git
     $ cd toolium-examples
     $ pip install -r requirements.txt
+
+Now, just follow the instructions `here <https://github.com/Telefonica/toolium-examples#running-tests>`_ to run the examples
+of the tests.
 
 Contributing
 ------------
