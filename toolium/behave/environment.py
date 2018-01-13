@@ -44,6 +44,7 @@ def before_all(context):
 
     if not hasattr(context, 'config_files'):
         context.config_files = ConfigFiles()
+    context.config_files = DriverWrappersPool.initialize_config_files(context.config_files)
 
     # By default config directory is located in environment path
     if not context.config_files.config_directory:
@@ -158,7 +159,7 @@ def create_and_configure_wrapper(context_or_world):
         behave_properties = None
 
     # Configure wrapper
-    context_or_world.driver_wrapper.configure(True, context_or_world.config_files, behave_properties)
+    context_or_world.driver_wrapper.configure(context_or_world.config_files, behave_properties=behave_properties)
 
     # Copy config object
     context_or_world.toolium_config = context_or_world.driver_wrapper.config

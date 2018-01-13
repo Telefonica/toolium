@@ -39,7 +39,7 @@ def driver_wrapper():
     root_path = os.path.dirname(os.path.realpath(__file__))
     config_files.set_config_directory(os.path.join(root_path, 'conf'))
     config_files.set_output_directory(os.path.join(root_path, 'output'))
-    driver_wrapper.configure(tc_config_files=config_files)
+    driver_wrapper.configure(config_files)
 
     return driver_wrapper
 
@@ -144,3 +144,73 @@ def test_find_parent_directory_absolute_recursively():
     expected_config_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'conf')
 
     assert expected_config_directory == DriverWrappersPool._find_parent_directory(directory, filename)
+
+
+def test_initialize_config_files_new():
+    config_files = None
+
+    # Initialize config files
+    init_config_files = DriverWrappersPool.initialize_config_files(config_files)
+
+    # Check expected config files
+    assert init_config_files.config_properties_filenames is None
+    assert init_config_files.output_log_filename is None
+
+
+def test_initialize_config_files_new_environment():
+    config_files = None
+    os.environ["Config_environment"] = 'android'
+
+    # Initialize config files
+    config_files = DriverWrappersPool.initialize_config_files(config_files)
+    del os.environ["Config_environment"]
+
+    # Check expected config files
+    expected_properties_filenames = 'properties.cfg;android-properties.cfg;local-android-properties.cfg'
+    assert config_files.config_properties_filenames == expected_properties_filenames
+    assert config_files.output_log_filename == 'toolium_android.log'
+
+
+def test_initialize_config_files_configured():
+    config_files = ConfigFiles()
+    config_files.set_config_properties_filenames('test.conf', 'local-test.conf')
+    config_files.set_output_log_filename('test.log')
+
+    # Initialize config files
+    config_files = DriverWrappersPool.initialize_config_files(config_files)
+
+    # Check expected config files
+    assert config_files.config_properties_filenames == 'test.conf;local-test.conf'
+    assert config_files.output_log_filename == 'test.log'
+
+
+def test_initialize_config_files_configured_environment():
+    config_files = ConfigFiles()
+    config_files.set_config_properties_filenames('test.conf', 'local-test.conf')
+    config_files.set_output_log_filename('test.log')
+    os.environ["Config_environment"] = 'android'
+
+    # Initialize config files
+    config_files = DriverWrappersPool.initialize_config_files(config_files)
+    del os.environ["Config_environment"]
+
+    # Check expected config files
+    expected_properties_filenames = 'test.conf;local-test.conf;android-test.conf;local-android-test.conf'
+    assert config_files.config_properties_filenames == expected_properties_filenames
+    assert config_files.output_log_filename == 'test_android.log'
+
+
+def test_initialize_config_files_configured_environment_with_points():
+    config_files = ConfigFiles()
+    config_files.set_config_properties_filenames('test.new.conf', 'local-test.new.conf')
+    config_files.set_output_log_filename('test.new.log')
+    os.environ["Config_environment"] = 'ios'
+
+    # Initialize config files
+    config_files = DriverWrappersPool.initialize_config_files(config_files)
+    del os.environ["Config_environment"]
+
+    # Check expected config files
+    expected_properties_filenames = 'test.new.conf;local-test.new.conf;ios-test.new.conf;local-ios-test.new.conf'
+    assert config_files.config_properties_filenames == expected_properties_filenames
+    assert config_files.output_log_filename == 'test.new_ios.log'

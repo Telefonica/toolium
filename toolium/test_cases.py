@@ -56,7 +56,8 @@ class BasicTestCase(unittest.TestCase):
                 self.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
 
             self.driver_wrapper = DriverWrappersPool.get_default_wrapper()
-            self.driver_wrapper.configure(False, self.config_files)
+            self.config_files = DriverWrappersPool.initialize_config_files(self.config_files)
+            self.driver_wrapper.configure(self.config_files, is_selenium_test=False)
         # Get config and logger instances
         self.config = self.driver_wrapper.config
         self.logger = logging.getLogger(__name__)
