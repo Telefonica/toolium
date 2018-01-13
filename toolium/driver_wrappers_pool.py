@@ -19,6 +19,7 @@ limitations under the License.
 import datetime
 import inspect
 import os
+from toolium.config_files import ConfigFiles
 
 
 class DriverWrappersPool(object):
@@ -113,7 +114,8 @@ class DriverWrappersPool(object):
         """
         driver_wrapper = cls.get_default_wrapper()
         if not driver_wrapper.driver:
-            driver_wrapper.configure(tc_config_files=config_files)
+            config_files = DriverWrappersPool.initialize_config_files(config_files)
+            driver_wrapper.configure(config_files)
             driver_wrapper.connect()
         return driver_wrapper
 
@@ -288,6 +290,35 @@ class DriverWrappersPool(object):
             # Unique visualtests directories
             cls.visual_output_directory = os.path.join(cls.output_directory, 'visualtests', folder_name)
             cls.visual_number = 1
+
+    @staticmethod
+    def initialize_config_files(tc_config_files=None):
+        """Initialize config files and update config files names with the environment
+
+        :param tc_config_files: test case specific config files
+        :returns: initialized config files object
+        """
+        # Initialize config files
+        if tc_config_files is None:
+            tc_config_files = ConfigFiles()
+
+        # Update properties and log file names if an environment is configured
+        env = DriverWrappersPool.get_configured_value('Config_environment', None, None)
+        if env:
+            # Update config properties filenames
+            prop_filenames = tc_config_files.config_properties_filenames
+            new_prop_filenames_list = prop_filenames.split(';') if prop_filenames else ['properties.cfg']
+            base, ext = os.path.splitext(new_prop_filenames_list[0])
+            new_prop_filenames_list.append('{}-{}{}'.format(env, base, ext))
+            new_prop_filenames_list.append('local-{}-{}{}'.format(env, base, ext))
+            tc_config_files.set_config_properties_filenames(*new_prop_filenames_list)
+
+            # Update output log filename
+            output_log_filename = tc_config_files.output_log_filename
+            base, ext = os.path.splitext(output_log_filename) if output_log_filename else ('toolium', '.log')
+            tc_config_files.set_output_log_filename('{}_{}{}'.format(base, env, ext))
+
+        return tc_config_files
 
     @classmethod
     def _empty_pool(cls):

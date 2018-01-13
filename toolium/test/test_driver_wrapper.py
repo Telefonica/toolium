@@ -83,8 +83,7 @@ def driver_wrapper():
     config_files.set_config_directory(os.path.join(root_path, 'conf'))
     config_files.set_output_directory(os.path.join(root_path, 'output'))
     config_files.set_config_log_filename('logging.conf')
-    DriverWrappersPool.configure_common_directories(config_files)
-    new_driver_wrapper.configure()
+    new_driver_wrapper.configure(config_files)
 
     return new_driver_wrapper
 
@@ -112,7 +111,7 @@ def test_configure_no_changes(driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', 'opera')
 
     # Trying to configure again
-    driver_wrapper.configure()
+    driver_wrapper.configure(ConfigFiles())
 
     # Configuration has not been initialized
     assert driver_wrapper.config.get('Driver', 'type') == 'opera'
@@ -128,7 +127,7 @@ def test_configure_change_configuration_file(driver_wrapper):
     # Change properties file and try to configure again
     root_path = os.path.dirname(os.path.realpath(__file__))
     os.environ["Config_prop_filenames"] = os.path.join(root_path, 'conf', 'android-properties.cfg')
-    driver_wrapper.configure()
+    driver_wrapper.configure(ConfigFiles())
     del os.environ["Config_prop_filenames"]
 
     # Check that configuration has been initialized
@@ -141,65 +140,12 @@ def test_configure_environment(driver_wrapper):
 
     # Change environment and try to configure again
     os.environ["Config_environment"] = 'android'
-    driver_wrapper.configure()
+    config_files = DriverWrappersPool.initialize_config_files(ConfigFiles())
+    driver_wrapper.configure(config_files)
     del os.environ["Config_environment"]
 
     # Check that configuration has been initialized
     assert driver_wrapper.config.get('Driver', 'type') == 'android'
-
-
-def test_initialize_config_files_new():
-    config_files = None
-
-    # Initialize config files
-    init_config_files = DriverWrapper._initialize_config_files(config_files)
-
-    # Check expected config files
-    assert init_config_files.config_properties_filenames is None
-    assert init_config_files.output_log_filename is None
-
-
-def test_initialize_config_files_new_environment():
-    config_files = None
-    os.environ["Config_environment"] = 'android'
-
-    # Initialize config files
-    init_config_files = DriverWrapper._initialize_config_files(config_files)
-    del os.environ["Config_environment"]
-
-    # Check expected config files
-    expected_properties_filenames = 'properties.cfg;android-properties.cfg;local-android-properties.cfg'
-    assert init_config_files.config_properties_filenames == expected_properties_filenames
-    assert init_config_files.output_log_filename == 'toolium_android.log'
-
-
-def test_initialize_config_files_configured():
-    config_files = ConfigFiles()
-    config_files.set_config_properties_filenames('test.conf', 'local-test.conf')
-    config_files.set_output_log_filename('test.log')
-
-    # Initialize config files
-    init_config_files = DriverWrapper._initialize_config_files(config_files)
-
-    # Check expected config files
-    assert init_config_files.config_properties_filenames == 'test.conf;local-test.conf'
-    assert init_config_files.output_log_filename == 'test.log'
-
-
-def test_initialize_config_files_configured_environment():
-    config_files = ConfigFiles()
-    config_files.set_config_properties_filenames('test.conf', 'local-test.conf')
-    config_files.set_output_log_filename('test.log')
-    os.environ["Config_environment"] = 'android'
-
-    # Initialize config files
-    init_config_files = DriverWrapper._initialize_config_files(config_files)
-    del os.environ["Config_environment"]
-
-    # Check expected config files
-    expected_properties_filenames = 'test.conf;local-test.conf;android-test.conf;local-android-test.conf'
-    assert init_config_files.config_properties_filenames == expected_properties_filenames
-    assert init_config_files.output_log_filename == 'test_android.log'
 
 
 @mock.patch('toolium.driver_wrapper.ConfigDriver.create_driver')
@@ -246,7 +192,7 @@ def test_connect_api_from_file(driver_wrapper):
     # Change driver type to api and configure again
     root_path = os.path.dirname(os.path.realpath(__file__))
     os.environ["Config_prop_filenames"] = os.path.join(root_path, 'conf', 'api-properties.cfg')
-    driver_wrapper.configure()
+    driver_wrapper.configure(ConfigFiles())
     del os.environ["Config_prop_filenames"]
 
     # Connect and check that the returned driver is None

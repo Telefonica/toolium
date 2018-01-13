@@ -64,7 +64,7 @@ def driver_wrapper():
     config_files.set_config_directory(os.path.join(root_path, 'conf'))
     config_files.set_config_properties_filenames('properties.cfg')
     config_files.set_output_directory(os.path.join(root_path, 'output'))
-    driver_wrapper.configure(tc_config_files=config_files)
+    driver_wrapper.configure(config_files)
     driver_wrapper.config.set('VisualTests', 'enabled', 'true')
 
     yield driver_wrapper

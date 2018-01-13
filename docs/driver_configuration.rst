@@ -13,7 +13,7 @@ The following example shows how to choose Firefox::
     [Driver]
     type: firefox
 
-If driver is not needed, typically in API tests, disable it using an empty string, :code:`api` or code:`no_driver`::
+If driver is not needed, typically in API tests, disable it using an empty string, :code:`api` or :code:`no_driver`::
 
     [Driver]
     type: api
@@ -24,9 +24,19 @@ different properties files are used for different environments, they can be sele
 will be loaded from :code:`conf/properties.cfg`, :code:`conf/android-properties.cfg` and
 :code:`local-android-properties.cfg` files:
 
+Nose:
+
 .. code:: console
 
     $ Config_environment=android nosetests web/tests/test_web.py
+
+Py.test:
+
+.. code:: console
+
+    $ Config_environment=android py.test web_pytest/tests/test_web_pytest.py
+
+Behave:
 
 .. code:: console
 
