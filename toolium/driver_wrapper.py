@@ -232,7 +232,7 @@ class DriverWrapper(object):
         :param maximize: True if the driver should be maximized
         :returns: selenium driver
         """
-        if not self.config.get('Driver', 'type') or self.config.get('Driver', 'type') in ['api', 'no_browser']:
+        if not self.config.get('Driver', 'type') or self.config.get('Driver', 'type') in ['api', 'no_driver']:
             return None
 
         self.driver = ConfigDriver(self.config).create_driver()
