@@ -4,18 +4,25 @@ Driver Configuration
 ====================
 
 Toolium allows to run tests on web browsers (using Selenium) or on mobile devices (using Appium). To choose the browser
-or the mobile OS, configure *type* property in *[Driver]* section in properties.cfg file with one of these values:
-firefox, chrome, iexplore, edge, safari, opera, phantomjs, ios or android.
+or the mobile OS, configure :code:`type` property in :code:`[Driver]` section in :code:`conf/properties.cfg` file with
+one of these values: :code:`firefox`, :code:`chrome`, :code:`iexplore`, :code:`edge`, :code:`safari`, :code:`opera`,
+:code:`phantomjs`, :code:`ios` or :code:`android`.
 
 The following example shows how to choose Firefox::
 
     [Driver]
     type: firefox
 
-By default, Toolium configuration is loaded from properties.cfg and local-properties.cfg files. If different properties
-files are used for different environments, they can be selected using a system property named *Config_environment*. For
-example, if *Config_environment* value is *android*, Toolium configuration will be loaded from properties.cfg,
-android-properties.cfg and local-android-properties.cfg files:
+If driver is not needed, typically in API tests, disable it using an empty string, :code:`api` or code:`no_driver`::
+
+    [Driver]
+    type: api
+
+By default, Toolium configuration is loaded from :code:`conf/properties.cfg` and :code:`conf/local-properties.cfg` files. If
+different properties files are used for different environments, they can be selected using a system property named
+:code:`Config_environment`. For example, if :code:`Config_environment` value is :code:`android`, Toolium configuration
+will be loaded from :code:`conf/properties.cfg`, :code:`conf/android-properties.cfg` and
+:code:`local-android-properties.cfg` files:
 
 .. code:: console
 

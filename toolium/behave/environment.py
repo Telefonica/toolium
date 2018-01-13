@@ -71,10 +71,13 @@ def before_feature(context, feature):
     """
     context.global_status = {'test_passed': True}
 
+    # Read @no_driver tag
+    no_driver = 'no_driver' in feature.tags
+
     # Start driver if it should be reused in feature
     context.reuse_driver_from_tags = 'reuse_driver' in feature.tags
     if context.toolium_config.getboolean_optional('Driver', 'reuse_driver') or context.reuse_driver_from_tags:
-        start_driver(context)
+        start_driver(context, no_driver)
 
     # Behave dynamic environment
     context.dyn_env.get_steps_from_feature_description(feature.description)
@@ -111,21 +114,24 @@ def before_scenario(context, scenario):
         scenario.skip('iOS scenario')
         return
 
-    bdd_common_before_scenario(context, scenario)
+    # Read @no_driver tag
+    no_driver = 'no_driver' in scenario.tags or 'no_driver' in scenario.feature.tags
+
+    bdd_common_before_scenario(context, scenario, no_driver)
 
     # Behave dynamic environment
     context.dyn_env.execute_before_scenario_steps(context)
 
 
-def bdd_common_before_scenario(context_or_world, scenario):
+def bdd_common_before_scenario(context_or_world, scenario, no_driver=False):
     """Common scenario initialization in behave or lettuce
 
     :param context_or_world: behave context or lettuce world
     :param scenario: running scenario
+    :param no_driver: True if this is an api test and driver should not be started
     """
     # Initialize and connect driver wrapper
-    if 'no_browser' not in scenario.tags and 'no_browser' not in scenario.feature.tags:
-        start_driver(context_or_world)
+    start_driver(context_or_world, no_driver)
 
     # Add assert screenshot methods with scenario configuration
     add_assert_screenshot_methods(context_or_world, scenario)
@@ -290,10 +296,12 @@ def bdd_common_after_all(context_or_world):
     change_all_jira_status()
 
 
-def start_driver(context):
+def start_driver(context, no_driver):
     """Start driver with configured values
 
     :param context: behave context
+    :param no_driver: True if this is an api test and driver should not be started
     """
     create_and_configure_wrapper(context)
-    connect_wrapper(context)
+    if not no_driver:
+        connect_wrapper(context)

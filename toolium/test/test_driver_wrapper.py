@@ -221,7 +221,7 @@ def test_connect(create_driver, driver_wrapper):
 api_tests = (
     '',
     'api',
-    'no_browser',
+    'no_driver',
 )
 
 
