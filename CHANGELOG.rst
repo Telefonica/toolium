@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.4.1
+------
+
+*In development*
+
+- Fix README.rst format to be compatible with pypi
+
 v1.4.0
 ------
 
