@@ -40,6 +40,7 @@ classes
 nbproject
 nbactions.xml
 cobertura.ser
+*.iml
 
 # Numerous always-ignore extensions
 *.pyc

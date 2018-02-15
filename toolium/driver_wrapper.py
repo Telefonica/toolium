@@ -19,8 +19,9 @@ limitations under the License.
 import logging.config
 import os
 
+import screeninfo
+
 from toolium.config_driver import ConfigDriver
-from toolium.config_files import ConfigFiles
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils import Utils
@@ -212,6 +213,20 @@ class DriverWrapper(object):
         if self.is_mobile_test() and not self.is_web_test() and self.config.getboolean_optional('Driver',
                                                                                                 'appium_app_strings'):
             self.app_strings = self.driver.app_strings()
+
+        # Bounds and screen
+        bounds_x = int(self.config.get_optional('Driver', 'bounds_x') or 0)
+        bounds_y = int(self.config.get_optional('Driver', 'bounds_y') or 0)
+
+        monitor_index = int(self.config.get_optional('Driver', 'monitor') or -1)
+        if monitor_index > -1:
+            monitor = screeninfo.get_monitors()[monitor_index]
+            bounds_x += monitor.x
+            bounds_y += monitor.y
+
+        self.driver.set_window_position(bounds_x, bounds_y)
+
+        self.logger.debug('Window bounds: %s x %s', bounds_x, bounds_y)
 
         # Maximize browser
         if maximize and self.is_maximizable():
