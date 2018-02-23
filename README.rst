@@ -44,8 +44,8 @@ project, run the example test and add your own tests and configuration.
     $ cd toolium-template
     $ pip install -r requirements.txt
 
-Now, just follow the instructions `here <https://github.com/Telefonica/toolium-template#running-tests>`_ to know how to start
-your testing project.
+Now, just follow `toolium-template instructions <https://github.com/Telefonica/toolium-template#running-tests>`_ to know
+how to start your testing project.
 
 **Running toolium-examples**
 
@@ -58,8 +58,8 @@ to use the library to test web, Android or iOS applications, in different scenar
     $ cd toolium-examples
     $ pip install -r requirements.txt
 
-Now, just follow the instructions `here <https://github.com/Telefonica/toolium-examples#running-tests>`_ to run the examples
-of the tests.
+Now, just follow `toolium-examples instructions <https://github.com/Telefonica/toolium-examples#running-tests>`_ to run
+the examples of the tests.
 
 Contributing
 ------------

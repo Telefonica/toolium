@@ -54,8 +54,7 @@ setup(
     url='https://github.com/telefonica/toolium',
     description='Wrapper tool of Selenium and Appium libraries to test web and mobile applications in a single project',
     long_description=get_long_description(),
-    keywords=['selenium', 'appium', 'webdriver', 'web automation', 'mobile automation', 'page object',
-              'visual testing', 'bdd', 'lettuce', 'behave'],
+    keywords='selenium appium webdriver web_automation mobile_automation page_object visual_testing bdd lettuce behave pytest',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
