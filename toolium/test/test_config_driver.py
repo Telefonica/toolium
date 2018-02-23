@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import mock
+import os
 import pytest
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
@@ -69,8 +70,9 @@ def test_create_driver_remote(config):
     assert driver == 'remote driver mock'
 
 
+@mock.patch('toolium.config_driver.Options')
 @mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_firefox(webdriver_mock, config):
+def test_create_local_driver_firefox(webdriver_mock, options, config):
     config.set('Driver', 'type', 'firefox')
     config.add_section('Capabilities')
     config.set('Capabilities', 'marionette', 'false')
@@ -83,11 +85,12 @@ def test_create_local_driver_firefox(webdriver_mock, config):
     expected_capabilities['marionette'] = False
     webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path=None,
-                                                   firefox_options=None, log_path='geckodriver.log')
+                                                   firefox_options=options(), log_path='geckodriver.log')
 
 
+@mock.patch('toolium.config_driver.Options')
 @mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_firefox_gecko(webdriver_mock, config):
+def test_create_local_driver_firefox_gecko(webdriver_mock, options, config):
     config.set('Driver', 'type', 'firefox')
     config.add_section('Capabilities')
     config.set('Capabilities', 'marionette', 'true')
@@ -101,7 +104,7 @@ def test_create_local_driver_firefox_gecko(webdriver_mock, config):
     expected_capabilities['marionette'] = True
     webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path='/tmp/driver',
-                                                   firefox_options=None, log_path='geckodriver.log')
+                                                   firefox_options=options(), log_path='geckodriver.log')
 
 
 @mock.patch('toolium.config_driver.webdriver')
@@ -226,8 +229,9 @@ def test_create_local_driver_unknown_driver(config):
     assert 'Unknown driver unknown' == str(excinfo.value)
 
 
+@mock.patch('toolium.config_driver.Options')
 @mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_capabilities(webdriver_mock, config):
+def test_create_local_driver_capabilities(webdriver_mock, options, config):
     config.set('Driver', 'type', 'firefox')
     config.add_section('Capabilities')
     config.set('Capabilities', 'marionette', 'false')
@@ -242,7 +246,7 @@ def test_create_local_driver_capabilities(webdriver_mock, config):
     expected_capabilities['version'] = '45'
     webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path=None,
-                                                   firefox_options=None, log_path='geckodriver.log')
+                                                   firefox_options=options(), log_path='geckodriver.log')
 
 
 @mock.patch('toolium.config_driver.webdriver')
@@ -506,6 +510,16 @@ def test_create_firefox_profile(webdriver_mock, config):
     webdriver_mock.FirefoxProfile().add_extension.assert_called_once_with('resources/firebug-3.0.0-beta.3.xpi')
 
 
+def test_add_firefox_arguments(config):
+    config.add_section('FirefoxArguments')
+    config.set('FirefoxArguments', '-private', '')
+    config_driver = ConfigDriver(config)
+    firefox_options = Options()
+
+    config_driver._add_firefox_arguments(firefox_options)
+    assert firefox_options.arguments == ['-private']
+
+
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_chrome_options(webdriver_mock, config):
     config.add_section('ChromePreferences')
@@ -520,5 +534,20 @@ def test_create_chrome_options(webdriver_mock, config):
     webdriver_mock.ChromeOptions.assert_called_once_with()
     webdriver_mock.ChromeOptions().add_experimental_option.assert_has_calls(
         [mock.call('prefs', {'download.default_directory': '/tmp'}),
-         mock.call('mobileEmulation', {'deviceName': 'Google Nexus 5'})])
+         mock.call('mobileEmulation', {'deviceName': 'Google Nexus 5'})]
+    )
     webdriver_mock.ChromeOptions().add_argument.assert_called_once_with('lang=es')
+
+
+@mock.patch('toolium.config_driver.webdriver')
+def test_create_chrome_options_headless(webdriver_mock, config):
+    config.set('Driver', 'headless', 'true')
+    config_driver = ConfigDriver(config)
+
+    config_driver._create_chrome_options()
+    webdriver_mock.ChromeOptions.assert_called_once_with()
+    if os.name == 'nt':
+        webdriver_mock.ChromeOptions().add_argument.assert_has_calls([mock.call('--headless'),
+                                                                      mock.call('--disable-gpu')])
+    else:
+        webdriver_mock.ChromeOptions().add_argument.assert_called_once_with('--headless')

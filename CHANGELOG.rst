@@ -9,6 +9,8 @@ v1.4.1
 - Fix README.rst format to be compatible with pypi
 - Fix `after_scenario` error when toolium `before_feature` is not used
 - Read `Config_environment` before properties initialization to read right properties file
+- New config section [FirefoxArguments] to set firefox arguments from properties file, e.g. '-private'
+- Add a config property `headless` in [Driver] section to enable headless mode in firefox and chrome
 
 v1.4.0
 ------
