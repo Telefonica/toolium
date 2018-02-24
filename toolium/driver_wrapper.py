@@ -303,6 +303,7 @@ class DriverWrapper(object):
         restart_driver_after_failure = (self.config.getboolean_optional('Driver', 'restart_driver_after_failure') or
                                         self.config.getboolean_optional('Driver', 'restart_driver_fail'))
         if context and scope == 'function':
-            reuse_driver = reuse_driver or context.reuse_driver_from_tags
+            reuse_driver = reuse_driver or (hasattr(context, 'reuse_driver_from_tags')
+                                            and context.reuse_driver_from_tags)
         return (((reuse_driver and scope == 'function') or (reuse_driver_session and scope != 'session'))
                 and (test_passed or not restart_driver_after_failure))

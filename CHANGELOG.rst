@@ -7,6 +7,7 @@ v1.4.1
 *In development*
 
 - Fix README.rst format to be compatible with pypi
+- Fix `after_scenario` error when toolium `before_feature` is not used
 
 v1.4.0
 ------
@@ -14,8 +15,8 @@ v1.4.0
 *Release date: 2018-02-04*
 
 - Add pytest fixtures to start and stop drivers
-- New config property 'reuse_driver_session' in [Driver] section to use the same driver in all tests
-- Rename config property 'restart_driver_fail' in [Driver] section to 'restart_driver_after_failure'
+- New config property `reuse_driver_session` in [Driver] section to use the same driver in all tests
+- Rename config property `restart_driver_fail` in [Driver] section to `restart_driver_after_failure`
 - Add @no_driver feature or scenario tag to do not start the driver in these tests
 - Fix output folder names when driver type is empty
 - Fix output log name when `Config_environment` is used
