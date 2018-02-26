@@ -82,7 +82,7 @@ def test_before_all_config_environment(create_and_configure_wrapper, property_na
     # Check that configuration folder is the same as environment folder and property 'Config_environment' is configured
     expected_config_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'conf')
     assert context.config_files.config_directory == expected_config_directory
-    assert context.config_files.config_properties_filenames is None
+    assert context.config_files.config_properties_filenames == 'properties.cfg;os-properties.cfg;local-os-properties.cfg'
     assert context.config_files.config_log_filename is None
     assert os.environ['Config_environment'] == 'os'
     del os.environ["Config_environment"]
