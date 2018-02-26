@@ -19,8 +19,9 @@ limitations under the License.
 import logging.config
 import os
 
+import screeninfo
+
 from toolium.config_driver import ConfigDriver
-from toolium.config_files import ConfigFiles
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils import Utils
@@ -213,19 +214,25 @@ class DriverWrapper(object):
                                                                                                 'appium_app_strings'):
             self.app_strings = self.driver.app_strings()
 
-        # Maximize browser
-        if maximize and self.is_maximizable():
-            # Set window size or maximize
-            window_width = self.config.get_optional('Driver', 'window_width')
-            window_height = self.config.get_optional('Driver', 'window_height')
-            if window_width and window_height:
-                self.driver.set_window_size(window_width, window_height)
-            else:
-                self.driver.maximize_window()
+        if self.is_maximizable():
+            # Bounds and screen
+            bounds_x, bounds_y = self.get_config_window_bounds()
+            self.driver.set_window_position(bounds_x, bounds_y)
+            self.logger.debug('Window bounds: %s x %s', bounds_x, bounds_y)
 
-        # Log window size
-        window_size = self.utils.get_window_size()
-        self.logger.debug('Window size: %s x %s', window_size['width'], window_size['height'])
+            # Maximize browser
+            if maximize:
+                # Set window size or maximize
+                window_width = self.config.get_optional('Driver', 'window_width')
+                window_height = self.config.get_optional('Driver', 'window_height')
+                if window_width and window_height:
+                    self.driver.set_window_size(window_width, window_height)
+                else:
+                    self.driver.maximize_window()
+
+            # Log window size
+            window_size = self.utils.get_window_size()
+            self.logger.debug('Window size: %s x %s', window_size['width'], window_size['height'])
 
         # Update baseline
         self.update_visual_baseline()
@@ -237,6 +244,25 @@ class DriverWrapper(object):
         self.utils.set_implicitly_wait()
 
         return self.driver
+
+    def get_config_window_bounds(self):
+        """Reads bounds from config and, if monitor is specified, modify the values to match with the specified monitor
+
+        :return: coords X and Y where set the browser window.
+        """
+        bounds_x = int(self.config.get_optional('Driver', 'bounds_x') or 0)
+        bounds_y = int(self.config.get_optional('Driver', 'bounds_y') or 0)
+
+        monitor_index = int(self.config.get_optional('Driver', 'monitor') or -1)
+        if monitor_index > -1:
+            try:
+                monitor = screeninfo.get_monitors()[monitor_index]
+                bounds_x += monitor.x
+                bounds_y += monitor.y
+            except NotImplementedError:
+                self.logger.warn('Current environment doesn\'t support get_monitors')
+
+        return bounds_x, bounds_y
 
     def is_android_test(self):
         """Check if actual test must be executed in an Android mobile
