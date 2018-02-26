@@ -31,6 +31,7 @@ from selenium.common.exceptions import NoSuchElementException
 from six.moves import xrange  # Python 2 and 3 compatibility
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
+from toolium.format_utils import get_valid_filename
 
 try:
     from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
@@ -72,7 +73,7 @@ class VisualTest(object):
             baseline_name = self.driver_wrapper.baseline_name.replace('{platformVersion}', platform_version)
             self.driver_wrapper.baseline_name = baseline_name
             self.driver_wrapper.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,
-                                                                         baseline_name)
+                                                                         get_valid_filename(baseline_name))
 
         self.baseline_directory = self.driver_wrapper.visual_baseline_directory
         self.engine = self._get_engine()
@@ -126,7 +127,7 @@ class VisualTest(object):
         :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value).
                         If None, a full screenshot is taken.
         :param filename: the filename for the screenshot, which will be appended with ``.png``
-        :param file_suffix: a string to be appended to the output filename
+        :param file_suffix: a string to be appended to the output filename with extra info about the test.
         :param threshold: percentage threshold for triggering a test failure (value between 0 and 1)
         :param exclude_elements: list of WebElements, PageElements or element locators as a tuple (locator_type,
                                  locator_value) that must be excluded from the assertion
@@ -147,7 +148,8 @@ class VisualTest(object):
 
         baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
-        unique_name = '{0:0=2d}_{1}.png'.format(DriverWrappersPool.visual_number, filename_with_suffix)
+        unique_name = '{0:0=2d}_{1}'.format(DriverWrappersPool.visual_number, filename_with_suffix)
+        unique_name = '{}.png'.format(get_valid_filename(unique_name))
         output_file = os.path.join(self.output_directory, unique_name)
         report_name = '{}<br>({})'.format(file_suffix, filename) if file_suffix else '-<br>({})'.format(filename)
 

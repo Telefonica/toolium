@@ -25,6 +25,7 @@ from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils import Utils
+from toolium.format_utils import get_valid_filename
 
 
 class DriverWrapper(object):
@@ -134,13 +135,14 @@ class DriverWrapper(object):
         baseline_name = self.config.get_optional('VisualTests', 'baseline_name', '{Driver_type}')
         for section in self.config.sections():
             for option in self.config.options(section):
-                option_value = self.config.get(section, option).replace('-', '_').replace(' ', '_')
+                option_value = self.config.get(section, option)
                 baseline_name = baseline_name.replace('{{{0}_{1}}}'.format(section, option), option_value)
 
         # Configure baseline directory if baseline name has changed
         if self.baseline_name != baseline_name:
             self.baseline_name = baseline_name
-            self.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory, baseline_name)
+            self.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,
+                                                          get_valid_filename(baseline_name))
 
     def update_visual_baseline(self):
         """Configure baseline directory after driver is created"""
@@ -189,7 +191,7 @@ class DriverWrapper(object):
 
         # Configure visual directories
         if is_selenium_test:
-            driver_info = self.config.get('Driver', 'type').replace('-', '_')
+            driver_info = self.config.get('Driver', 'type')
             DriverWrappersPool.configure_visual_directories(driver_info)
             self.configure_visual_baseline()
 

@@ -20,6 +20,7 @@ import datetime
 import inspect
 import os
 from toolium.config_files import ConfigFiles
+from toolium.format_utils import get_valid_filename
 
 
 class DriverWrappersPool(object):
@@ -128,12 +129,10 @@ class DriverWrappersPool(object):
         :param test_passed: True if the test has passed
         :param context: behave context
         """
-        file_test_name = test_name.replace(' -- @', '_').replace(' ', '_').replace('.', '_')
-
         if scope == 'function':
             # Capture screenshot on error
             if not test_passed:
-                cls.capture_screenshots(file_test_name)
+                cls.capture_screenshots(test_name)
             # Execute behave dynamic environment
             if context and hasattr(context, 'dyn_env'):
                 context.dyn_env.execute_after_scenario_steps(context)
@@ -142,7 +141,7 @@ class DriverWrappersPool(object):
 
         # Close browser and stop driver if it must not be reused
         reuse_driver = cls.get_default_wrapper().should_reuse_driver(scope, test_passed, context)
-        cls.close_drivers_and_download_videos(file_test_name, test_passed, reuse_driver)
+        cls.close_drivers_and_download_videos(test_name, test_passed, reuse_driver)
 
     @classmethod
     def close_drivers_and_download_videos(cls, name, test_passed=True, maintain_default=False):
@@ -282,6 +281,7 @@ class DriverWrappersPool(object):
             # Unique screenshots and videos directories
             date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
             folder_name = '%s_%s' % (date, driver_info) if driver_info else date
+            folder_name = get_valid_filename(folder_name)
             cls.screenshots_directory = os.path.join(cls.output_directory, 'screenshots', folder_name)
             cls.screenshots_number = 1
             cls.videos_directory = os.path.join(cls.output_directory, 'videos', folder_name)
