@@ -78,6 +78,7 @@ tmp
 output
 .eggs
 .tox
+.env
 
 # Database
 *.sqlite3

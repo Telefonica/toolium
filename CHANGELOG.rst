@@ -4,13 +4,15 @@ Toolium Changelog
 v1.4.1
 ------
 
-*In development*
+*Release date: 2018-02-26*
 
 - Fix README.rst format to be compatible with pypi
 - Fix `after_scenario` error when toolium `before_feature` is not used
 - Read `Config_environment` before properties initialization to read right properties file
 - New config section [FirefoxArguments] to set firefox arguments from properties file, e.g. '-private'
 - Add a config property `headless` in [Driver] section to enable headless mode in firefox and chrome
+- New config properties 'monitor', 'bounds_x' and 'bounds_y' in [Driver] section to configure browser bounds and monitor
+- Normalize filenames to avoid errors with invalid characters
 
 v1.4.0
 ------

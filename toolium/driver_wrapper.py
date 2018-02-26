@@ -232,9 +232,9 @@ class DriverWrapper(object):
                 else:
                     self.driver.maximize_window()
 
-            # Log window size
-            window_size = self.utils.get_window_size()
-            self.logger.debug('Window size: %s x %s', window_size['width'], window_size['height'])
+        # Log window size
+        window_size = self.utils.get_window_size()
+        self.logger.debug('Window size: %s x %s', window_size['width'], window_size['height'])
 
         # Update baseline
         self.update_visual_baseline()
