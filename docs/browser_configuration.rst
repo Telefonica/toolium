@@ -191,7 +191,7 @@ For example, to open firefox in a private browsing mode::
     type: firefox
 
     [FirefoxArguments]
-    -private
+    -private:
 
 Chrome
 ~~~~~~
