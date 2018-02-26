@@ -213,12 +213,16 @@ class ConfigDriver(object):
 
         # Get Firefox binary
         firefox_binary = self.config.get_optional('Firefox', 'binary')
-        if firefox_binary:
-            self.logger.debug("Using firefox binary: %s", firefox_binary)
-            firefox_options = Options()
-            firefox_options.binary = firefox_binary
-        else:
-            firefox_options = None
+
+        firefox_options = Options()
+
+        if self.config.getboolean_optional('Driver', 'headless'):
+            self.logger.debug("Running Firefox in headless mode")
+            firefox_options.add_argument('-headless')
+
+        self._add_firefox_arguments(firefox_options)
+
+        firefox_options.binary = firefox_binary
 
         log_path = os.path.join(DriverWrappersPool.output_directory, 'geckodriver.log')
         try:
@@ -229,6 +233,19 @@ class ConfigDriver(object):
             # Selenium 2
             return webdriver.Firefox(firefox_profile=self._create_firefox_profile(), capabilities=capabilities,
                                      executable_path=gecko_driver, firefox_options=firefox_options)
+
+    def _add_firefox_arguments(self, options):
+        """Add Firefox arguments from properties file
+
+        :param options: Firefox options object
+        """
+        try:
+            for pref, pref_value in dict(self.config.items('FirefoxArguments')).items():
+                pref_value = '={}'.format(pref_value) if pref_value else ''
+                self.logger.debug("Added Firefox argument: %s%s", pref, pref_value)
+                options.add_argument('{}{}'.format(pref, self._convert_property_type(pref_value)))
+        except NoSectionError:
+            pass
 
     def _create_firefox_profile(self):
         """Create and configure a firefox profile
@@ -300,6 +317,12 @@ class ConfigDriver(object):
         """
         # Create Chrome options
         options = webdriver.ChromeOptions()
+
+        if self.config.getboolean_optional('Driver', 'headless'):
+            self.logger.debug("Running Chrome in headless mode")
+            options.add_argument('--headless')
+            if os.name == 'nt':  # Temporarily needed if running on Windows.
+                options.add_argument('--disable-gpu')
 
         # Add Chrome preferences, mobile emulation options and chrome arguments
         self._add_chrome_options(options, 'prefs')
