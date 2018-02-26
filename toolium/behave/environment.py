@@ -42,6 +42,13 @@ def before_all(context):
     # Use pytest asserts if behave_pytest is installed
     install_pytest_asserts()
 
+    # Get 'Config_environment' property from user input (e.g. -D Config_environment=ios)
+    env = context.config.userdata.get('Config_environment')
+    # Deprecated: Get 'env' property from user input (e.g. -D env=ios)
+    env = env if env else context.config.userdata.get('env')
+    if env:
+        os.environ['Config_environment'] = env
+
     if not hasattr(context, 'config_files'):
         context.config_files = ConfigFiles()
     context.config_files = DriverWrappersPool.initialize_config_files(context.config_files)
@@ -49,13 +56,6 @@ def before_all(context):
     # By default config directory is located in environment path
     if not context.config_files.config_directory:
         context.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
-
-    # Get 'Config_environment' property from user input (e.g. -D Config_environment=ios)
-    env = context.config.userdata.get('Config_environment')
-    # Deprecated: Get 'env' property from user input (e.g. -D env=ios)
-    env = env if env else context.config.userdata.get('env')
-    if env:
-        os.environ['Config_environment'] = env
 
     context.global_status = {'test_passed': True}
     create_and_configure_wrapper(context)

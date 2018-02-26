@@ -8,6 +8,7 @@ v1.4.1
 
 - Fix README.rst format to be compatible with pypi
 - Fix `after_scenario` error when toolium `before_feature` is not used
+- Read `Config_environment` before properties initialization to read right properties file
 
 v1.4.0
 ------
