@@ -222,7 +222,8 @@ class ConfigDriver(object):
 
         self._add_firefox_arguments(firefox_options)
 
-        firefox_options.binary = firefox_binary
+        if firefox_binary:
+            firefox_options.binary = firefox_binary
 
         log_path = os.path.join(DriverWrappersPool.output_directory, 'geckodriver.log')
         try:

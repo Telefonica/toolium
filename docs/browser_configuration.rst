@@ -182,6 +182,16 @@ section::
     [Firefox]
     binary: /usr/local/firefox_beta/firefox
 
+To configure `Firefox arguments <https://developer.mozilla.org/en-US/docs/Mozilla/Command_Line_Options#Browser>`_, create a
+*[FirefoxArguments]* configuration section and add every argument that you want to configure with its value.
+
+For example, to open firefox in a private browsing mode::
+
+    [Driver]
+    type: firefox
+
+    [FirefoxArguments]
+    -private
 
 Chrome
 ~~~~~~
