@@ -87,8 +87,8 @@ Optionally, some actions (labels) are defined in the Feature description as:
 
 * Actions Before the Feature:
 * Actions Before each scenario:
-* Actions after each scenario:
-* Actions after the Feature:
+* Actions After each scenario:
+* Actions After the Feature:
 
 With a steps list executed in each moment identified with the label as the environment.py file. These steps are defined
 similar to others one.
@@ -97,8 +97,14 @@ Each step block is separated by a blank line.
 
 Behave keywords are supported  (Given, When, Then, And, But, Check, Setup).
 
+.. note:: When using Drivers, **Actions Before the Feature** and **Actions After the Feature** directives
+          (in the "dynamic environment" of a Feature) are only available if the execution for that Feature
+          has been configured to **reuse the driver**. Otherwise, unexpected exceptions can be raised and
+          execution may not finish successfully.
+
 Example::
 
+        @reuse_driver
         Feature: Tests with the dynamic environment
           As a behave operator using multiples scenarios
           I want to append actions before the feature, before each scenario, after each scenario and after the feature.
@@ -128,12 +134,12 @@ Example::
             And wait 4 seconds
 
 
-All steps type are allowed:
+All kind of steps are allowed:
 
 - with tables
 - executing another step internally
 
-And in case that a step has failed a exception is threw, i.e. 'waitrty 3 seconds' step
+In case that a step fails, an exception is thrown, i.e. 'waitrty 3 seconds' step
 
 Lettuce
 ~~~~~~~
