@@ -26,9 +26,8 @@ ACTIONS_BEFORE_FEATURE = u'actions before the feature'
 ACTIONS_BEFORE_SCENARIO = u'actions before each scenario'
 ACTIONS_AFTER_SCENARIO = u'actions after each scenario'
 ACTIONS_AFTER_FEATURE = u'actions after the feature'
-KEYWORDS = ["Setup", "Check", "Given", "When", "Then", "And", "But"]  # prefix in steps to actions
+KEYWORDS = [u'Setup', u'Check', u'Given', u'When', u'Then', u'And', u'But']  # prefix in steps to actions
 GIVEN_PREFIX = u'Given'
-SEPARATOR = u' '
 TABLE_SEPARATOR = u'|'
 EMPTY = u''
 
@@ -147,6 +146,18 @@ class DynamicEnvironment:
                 if row.lower().find(action_label) >= 0:
                     label_exists = action_label
 
+    def __remove_prefix(self, step):
+        """
+        remove the step prefix to will be replaced by Given
+        :param step: step text
+        """
+        step_length = len(step)
+        for k in KEYWORDS:
+            step = step.lstrip(k)
+            if len(step) < step_length:
+                break
+        return step
+
     def __execute_steps_by_action(self, context, action):
         """
         execute a steps set by action
@@ -162,9 +173,9 @@ class DynamicEnvironment:
                 self.logger.by_console('  %s:' % action)
             for item in self.actions[action]:
                 try:
-                    self.logger.by_console('    %s' % item)
-                    context.execute_steps(u'''%s ''' % item.replace(item.split(SEPARATOR)[0], GIVEN_PREFIX))
-                    self.logger.debug("step defined in pre-actions: %s" % item)
+                    self.logger.by_console(u'    %s' % repr(item).replace("u'", "").replace("'", ""))
+                    context.execute_steps(u'''%s%s''' % (GIVEN_PREFIX, self.__remove_prefix(item)))
+                    self.logger.debug(u'step defined in pre-actions: %s' % repr(item))
                 except Exception as exc:
                     self.logger.warn(exc)
 

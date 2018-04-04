@@ -92,8 +92,9 @@ class PageElement(CommonObject):
 
         :returns: page element instance
         """
+        x = self.web_element.location['x']
         y = self.web_element.location['y']
-        self.driver.execute_script('window.scrollTo(0, {0})'.format(y))
+        self.driver.execute_script('window.scrollTo({0}, {1})'.format(x, y))
         return self
 
     def is_present(self):
