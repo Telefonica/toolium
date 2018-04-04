@@ -14,5 +14,6 @@ matrix:
 install:
     - pip install tox
     - pip install setuptools==32.3.1
+    - pip install setuptools_scm
 script:
     - tox -e $TOX_ENV
