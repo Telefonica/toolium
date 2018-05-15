@@ -158,6 +158,15 @@ class DynamicEnvironment:
                 break
         return step
 
+    def __print_step_by_console(self, step):
+        """
+        print the step by console if the show variable is enabled
+        :param step: step text
+        """
+        step_list = step.split(u'\n')
+        for s in step_list:
+            self.logger.by_console(u'    %s' % repr(s).replace("u'", "").replace("'", ""))
+
     def __execute_steps_by_action(self, context, action):
         """
         execute a steps set by action
@@ -173,7 +182,7 @@ class DynamicEnvironment:
                 self.logger.by_console('  %s:' % action)
             for item in self.actions[action]:
                 try:
-                    self.logger.by_console(u'    %s' % repr(item).replace("u'", "").replace("'", ""))
+                    self.__print_step_by_console(item)
                     context.execute_steps(u'''%s%s''' % (GIVEN_PREFIX, self.__remove_prefix(item)))
                     self.logger.debug(u'step defined in pre-actions: %s' % repr(item))
                 except Exception as exc:

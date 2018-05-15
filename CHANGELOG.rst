@@ -12,6 +12,7 @@ v1.4.2
 
      - chars no utf-8 are accepted
      - no replace behave prefixes into a step
+     - pretty print by console, in Steps multi lines
 
 v1.4.1
 ------
