@@ -99,7 +99,7 @@ $(VENV): $(REQ) $(TESTREQ)
 	$@/$(BIN)/pip install --upgrade -r $(TESTREQ); \
 
 unittest: init venv
-	$(VENV)/$(BIN)/py.test toolium/test
+	$(VENV)/$(BIN)/pytest toolium/test
 
 coverage: init venv
 	$(VENV)/$(BIN)/nosetests $(COVERAGE_ARGS) $(UNIT_TEST_ARGS)
