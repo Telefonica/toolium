@@ -25,6 +25,7 @@ from toolium.config_files import ConfigFiles
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.jira import change_all_jira_status
 from toolium.pageelements import PageElement
+from toolium.spec_files_loader.config_spec_files_loader import ConfigSpecFilesLoader
 from toolium.visual_test import VisualTest
 
 
@@ -130,6 +131,10 @@ class SeleniumTestCase(BasicTestCase):
         # Call BasicTestCase setUp
         super(SeleniumTestCase, self).setUp()
 
+        # Load PageObject Specification Files
+        self.pageobject_spec_loader = ConfigSpecFilesLoader(self.config)
+        self.pageobject_spec_loader.load_page_object_definition()
+
     def tearDown(self):
         # Call BasicTestCase tearDown
         super(SeleniumTestCase, self).tearDown()
@@ -165,6 +170,17 @@ class SeleniumTestCase(BasicTestCase):
         """
         file_suffix = self.get_method_name()
         VisualTest(driver_wrapper, force).assert_screenshot(None, filename, file_suffix, threshold, exclude_elements)
+
+    def get_pageobject(self, pageobject_name):
+        """
+        Creates a new PageObject based on the Specification Files previously loaded.
+        :param pageobject_name: Name of the PageObject to be created (defined as part of the Spec Files)
+        :return: PageObject properly created with all its PageElements defined in the Specification File
+        """
+        pageobject = self.pageobject_spec_loader.init_page_object(pageobject_name)
+        pageobject.wait_until_loaded()
+
+        return pageobject
 
 
 class AppiumTestCase(SeleniumTestCase):

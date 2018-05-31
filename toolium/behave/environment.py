@@ -32,6 +32,7 @@ from toolium.jira import add_jira_status, change_all_jira_status, save_jira_conf
 from toolium.visual_test import VisualTest
 from toolium.pageelements import PageElement
 from toolium.behave.env_utils import DynamicEnvironment
+from toolium.spec_files_loader.config_spec_files_loader import ConfigSpecFilesLoader
 
 
 def before_all(context):
@@ -166,6 +167,23 @@ def create_and_configure_wrapper(context_or_world):
 
     # Configure logger
     context_or_world.logger = logging.getLogger(__name__)
+
+    # Load PageObject Specification Files
+    context_or_world.pageobject_spec_loader = ConfigSpecFilesLoader(context_or_world.toolium_config)
+    context_or_world.pageobject_spec_loader.load_page_object_definition()
+
+    def get_pageobject(pageobject_name):
+        """
+        Create a new PageObject based on the Specification Files previously loaded.
+        :param pageobject_name: Name of the PageObject to be created (defined as part of the Spec Files)
+        :return: PageObject properly created with all its PageElements defined in the Specification File
+        """
+        pageobject = context_or_world.pageobject_spec_loader.init_page_object(pageobject_name)
+        pageobject.wait_until_loaded()
+
+        return pageobject
+
+    context_or_world.get_pageobject = get_pageobject
 
 
 def connect_wrapper(context_or_world):

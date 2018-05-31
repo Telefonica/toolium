@@ -1,0 +1,6 @@
+Login3 :
+  - Text        :
+      Name            : form
+      Locator-Type    : ID
+      Locator-Value   : d0f81d3c-d8b0-476b-bcd5-d22ab0153cad
+      Wait-For-Loaded : True

@@ -1,0 +1,30 @@
+Login :
+  - Text        :
+      Name            : form
+      Locator-Type    : ID
+      Locator-Value   : d0f81d3c-d8b0-476b-bcd5-d22ab0153cad
+      Wait-For-Loaded : True
+  - InputText   :
+      Name            : username
+      Locator-Type    : ID
+      Locator-Value   : username
+      Wait-For-Loaded : True
+  - InputText   :
+      Name            : password
+      Locator-Type    : ID
+      Locator-Value   : password
+      Wait-For-Loaded : True
+
+Dashboard:
+  - Button      :
+      Name            : logout
+      Locator-Type    : ID
+      Locator-Value   : Logout
+      Wait-For-Loaded : True
+
+Profile :
+  - InputText   :
+      Name            : name
+      Locator-Type    : ID
+      Locator-Value   : name
+      Wait-For-Loaded : True

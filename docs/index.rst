@@ -14,6 +14,7 @@ Main Features
 - :ref:`BDD integration <bdd_integration>`
 - :ref:`Visual testing solution <visual_testing>`
 - :ref:`Tests result analysis <tests_result_analysis>`
+- :ref:`Page Object Specification Files <pageobjects_specification_files>`
 
 Library Reference
 -----------------

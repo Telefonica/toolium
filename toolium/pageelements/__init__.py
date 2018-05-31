@@ -28,5 +28,9 @@ from toolium.pageelements.page_elements import Texts, InputTexts, Selects, Butto
 from toolium.pageelements.select_page_element import Select
 from toolium.pageelements.text_page_element import Text
 
-__all__ = ['PageElement', 'Text', 'InputText', 'Select', 'Button', 'Link', 'Checkbox', 'InputRadio', 'Group',
-           'PageElements', 'Texts', 'InputTexts', 'Selects', 'Buttons', 'Links', 'Checkboxes', 'InputRadios', 'Groups']
+AVAILABLE_PAGEELEMENT_LIST = ['PageElement', 'Text', 'InputText', 'Select', 'Button', 'Link', 'Checkbox', 'InputRadio',
+                              'Group']
+AVAILABLE_PAGEELEMENTS_LIST = ['PageElements', 'Texts', 'InputTexts', 'Selects', 'Buttons', 'Links', 'Checkboxes',
+                               'InputRadios', 'Groups']
+
+__all__ = AVAILABLE_PAGEELEMENT_LIST + AVAILABLE_PAGEELEMENTS_LIST
