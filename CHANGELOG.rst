@@ -1,18 +1,19 @@
 Toolium Changelog
 =================
 
-
 v1.4.2
 ------
 
 *Release date: In development*
 
 - Add movement in X axis in *scroll_element_into_view* method
-- Fix bugs in  the Dynamic Environment feature:
+- Fix bugs in the Dynamic Environment feature:
 
-     - chars no utf-8 are accepted
-     - no replace behave prefixes into a step
-     - pretty print by console, in Steps multi lines
+   | chars no utf-8 are accepted
+   | no replace behave prefixes into a step
+   | pretty print by console, in Steps multi lines
+
+- Add support for python 3.7
 
 v1.4.1
 ------
