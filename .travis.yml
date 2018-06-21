@@ -27,3 +27,4 @@ install:
     - pip install setuptools_scm
 script:
     - tox -e $TOX_ENV
+
