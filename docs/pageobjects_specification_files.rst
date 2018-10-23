@@ -25,6 +25,7 @@ To enable and configure this feature, it is needed to properly set the following
     custom_page_elements_module_path: common/pageelements
 
 * :code:`enabled`: To enable the loading of PageObjects from Specification Files.
+* :code:`spec_files_path`: Path where PageObject Specification Files are located.
 * :code:`custom_page_object_module_path`: Path (directory) where custom PageObjects are implemented in your project
 * :code:`custom_page_elements_module_path`: Path (directory) where custom PageElements are implemented in your project
 

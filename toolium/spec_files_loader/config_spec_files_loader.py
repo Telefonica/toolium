@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 u"""
-Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
+Copyright 2018 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,7 +58,6 @@ class ConfigSpecFilesLoader(object):
         """
 
         if not self.config.getboolean_optional("PageObjectSpecFiles", "enabled", False):
-            self.logger.warn("PageObject Specification Files loader is disabled by Toolium configuration")
             return None
 
         self.logger.info("Loading PageObjects from YAML Specification Files")
