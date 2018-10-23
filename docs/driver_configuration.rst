@@ -30,11 +30,11 @@ Nose:
 
     $ Config_environment=android nosetests web/tests/test_web.py
 
-Py.test:
+Pytest:
 
 .. code:: console
 
-    $ Config_environment=android py.test web_pytest/tests/test_web_pytest.py
+    $ Config_environment=android pytest web_pytest/tests/test_web_pytest.py
 
 Behave:
 

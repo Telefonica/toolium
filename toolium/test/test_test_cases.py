@@ -22,21 +22,6 @@ import unittest
 import mock
 import pytest
 
-from toolium.test_cases import BasicTestCase
-
-
-class MockTestClass(BasicTestCase):
-    def setUp(self):
-        root_path = os.path.dirname(os.path.realpath(__file__))
-        self.config_files.set_config_directory(os.path.join(root_path, 'conf'))
-        super(MockTestClass, self).setUp()
-
-    def mock_pass(self):
-        pass
-
-    def mock_fail(self):
-        raise AssertionError('test error')
-
 
 def run_mock(test_name):
     """Run a unit test from mock class
@@ -44,6 +29,21 @@ def run_mock(test_name):
     :param test_name: test name that must be executed
     :returns: test instance
     """
+    # BasicTestCase import should be inside method to avoid collecting tests error in behave with python 3.7
+    from toolium.test_cases import BasicTestCase
+
+    class MockTestClass(BasicTestCase):
+        def setUp(self):
+            root_path = os.path.dirname(os.path.realpath(__file__))
+            self.config_files.set_config_directory(os.path.join(root_path, 'conf'))
+            super(MockTestClass, self).setUp()
+
+        def mock_pass(self):
+            pass
+
+        def mock_fail(self):
+            raise AssertionError('test error')
+
     suite = unittest.TestSuite()
     test = MockTestClass(test_name)
     suite.addTest(test)
