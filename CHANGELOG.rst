@@ -8,11 +8,13 @@ v1.4.2
 *Release date: In development*
 
 - Add movement in X axis in *scroll_element_into_view* method
-- Fix bugs in  the Dynamic Environment feature:
+- Fix bugs and new features in the Dynamic Environment library:
 
      - chars no utf-8 are accepted
      - no replace behave prefixes into a step
      - pretty print by console, in Steps multi lines
+     - raise an exception in error case
+     - allow comments in the steps
 
 v1.4.1
 ------
