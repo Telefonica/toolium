@@ -46,7 +46,7 @@ class Logger:
 
     def warn(self, exc):
         """
-        log an error message:
+        log a warning message:
         :param exc: exception message
         """
         msg = 'trying to execute a step in the environment: \n' \
@@ -54,6 +54,17 @@ class Logger:
         if self.logger is not None:
             self.logger.warn(msg)
         self.by_console('      WARN - %s' % msg)
+
+    def error(self, exc):
+        """
+        log an error message:
+        :param exc: exception message
+        """
+        msg = 'trying to execute a step in the environment: \n' \
+              '           - Exception: %s' % exc
+        if self.logger is not None:
+            self.logger.error(msg)
+        raise Exception('      ERROR - %s' % msg)
 
     def debug(self, value):
         """
@@ -119,6 +130,8 @@ class DynamicEnvironment:
         self.logger = Logger(logger_class, self.show)
         self.init_actions()
         self.scenario_counter = 0
+        self.feature_error = False
+        self.scenario_error = False
 
     def init_actions(self):
         """clear actions lists"""
@@ -136,6 +149,10 @@ class DynamicEnvironment:
         label_exists = EMPTY
         for row in description:
             if label_exists != EMPTY:
+                # in case of a line with a comment, it is removed
+                if "#" in row:
+                    row = row[0:row.find("#")].strip()
+
                 if any(row.startswith(x) for x in KEYWORDS):
                     self.actions[label_exists].append(row)
                 elif row.find(TABLE_SEPARATOR) >= 0:
@@ -181,12 +198,17 @@ class DynamicEnvironment:
                     self.logger.by_console("  ------------------ Scenario Nº: %d ------------------" % self.scenario_counter)
                 self.logger.by_console('  %s:' % action)
             for item in self.actions[action]:
+                self.scenario_error = False
                 try:
                     self.__print_step_by_console(item)
                     context.execute_steps(u'''%s%s''' % (GIVEN_PREFIX, self.__remove_prefix(item)))
                     self.logger.debug(u'step defined in pre-actions: %s' % repr(item))
                 except Exception as exc:
-                    self.logger.warn(exc)
+                    if action in [ACTIONS_BEFORE_FEATURE]:
+                        self.feature_error = True
+                    elif action in [ACTIONS_BEFORE_SCENARIO]:
+                        self.scenario_error = True
+                    self.logger.error(exc)
 
     def execute_before_feature_steps(self, context):
         """
@@ -200,18 +222,21 @@ class DynamicEnvironment:
         actions before each scenario
         :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
         """
-        self.__execute_steps_by_action(context, ACTIONS_BEFORE_SCENARIO)
+        if not self.feature_error:
+            self.__execute_steps_by_action(context, ACTIONS_BEFORE_SCENARIO)
 
     def execute_after_scenario_steps(self, context):
         """
         actions after each scenario
         :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
         """
-        self.__execute_steps_by_action(context, ACTIONS_AFTER_SCENARIO)
+        if not self.feature_error and not self.scenario_error:
+            self.__execute_steps_by_action(context, ACTIONS_AFTER_SCENARIO)
 
     def execute_after_feature_steps(self, context):
         """
         actions after the feature
         :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
         """
-        self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)
+        if not self.feature_error:
+            self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)
