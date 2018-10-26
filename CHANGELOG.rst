@@ -4,7 +4,7 @@ Toolium Changelog
 v1.4.2
 ------
 
-*Release date: In development*
+*Release date: 2018-10-26*
 
 - Add movement in X axis in *scroll_element_into_view* method
 - Fix bugs and new features in the Dynamic Environment library:
