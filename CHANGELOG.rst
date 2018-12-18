@@ -4,7 +4,9 @@ Toolium Changelog
 v1.4.3
 ------
 
-*Release date: In development*
+*Release date: 2018-12-18*
+
+- Fix Appium version to 0.31 or minor
 
 v1.4.2
 ------
