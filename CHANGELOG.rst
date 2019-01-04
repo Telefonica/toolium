@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.5.0
+------
+
+*Release date: WIP*
+
+- Add `username` and `password` config properties in [Server] section to enable basic authentication in Selenium Grid (required by GGR)
+
 v1.4.3
 ------
 

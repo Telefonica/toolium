@@ -13,6 +13,8 @@ section in properties.cfg file::
     enabled: true
     host: SERVER_IP
     port: SERVER_PORT
+    username: SERVER_USERNAME
+    password: SERVER_PASSWORD
     video_enabled: false
     logs_enabled: false
 
@@ -28,6 +30,14 @@ host
 port
 ~~~~
 | Port number where server is listening
+
+username
+~~~~~~~~
+| Username that is passed to Selenium Grid hub when it requires basic authentication, like in GGR
+
+password
+~~~~~~~~
+| Password that is passed to Selenium Grid hub when it requires basic authentication, like in GGR
 
 video_enabled
 ~~~~~~~~~~~~~
