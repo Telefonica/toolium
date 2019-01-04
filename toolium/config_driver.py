@@ -76,7 +76,10 @@ class ConfigDriver(object):
         # Get server url
         server_host = self.config.get('Server', 'host')
         server_port = self.config.get('Server', 'port')
-        server_url = 'http://{0}:{1}/wd/hub'.format(server_host, server_port)
+        server_username = self.config.get_optional('Server', 'username')
+        server_password = self.config.get_optional('Server', 'password')
+        server_auth = '{}:{}@'.format(server_username, server_password) if server_username and server_password else ''
+        server_url = 'http://{}{}:{}/wd/hub'.format(server_auth, server_host, server_port)
 
         # Get driver capabilities
         driver_type = self.config.get('Driver', 'type')
