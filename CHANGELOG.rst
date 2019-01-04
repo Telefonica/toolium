@@ -7,6 +7,7 @@ v1.5.0
 *Release date: WIP*
 
 - Add `username` and `password` config properties in [Server] section to enable basic authentication in Selenium Grid (required by GGR)
+- Latest version of Appium can be used
 
 v1.4.3
 ------
@@ -30,7 +31,6 @@ v1.4.2
    | allow comments in the steps
 
 - Add support for python 3.7
-
 
 v1.4.1
 ------
