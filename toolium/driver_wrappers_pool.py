@@ -33,6 +33,7 @@ class DriverWrappersPool(object):
     :type screenshots_directory: str
     :type screenshots_number: str
     :type videos_directory: str
+    :type logs_directory: str
     :type videos_number: int
     :type visual_baseline_directory: str
     :type visual_output_directory: str
@@ -50,6 +51,7 @@ class DriverWrappersPool(object):
 
     # Videos configuration
     videos_directory = None  #: folder to save videos
+    logs_directory = None  #: folder to save logs
     videos_number = None  #: number of visual images taken until now
 
     # Visual Testing configuration
@@ -285,6 +287,7 @@ class DriverWrappersPool(object):
             cls.screenshots_directory = os.path.join(cls.output_directory, 'screenshots', folder_name)
             cls.screenshots_number = 1
             cls.videos_directory = os.path.join(cls.output_directory, 'videos', folder_name)
+            cls.logs_directory = os.path.join(cls.output_directory, 'logs', folder_name)
             cls.videos_number = 1
 
             # Unique visualtests directories
@@ -328,6 +331,7 @@ class DriverWrappersPool(object):
         cls.screenshots_directory = None
         cls.screenshots_number = None
         cls.videos_directory = None
+        cls.logs_directory = None
         cls.videos_number = None
         cls.visual_output_directory = None
         cls.visual_number = None
