@@ -21,6 +21,7 @@ import inspect
 import os
 from toolium.config_files import ConfigFiles
 from toolium.format_utils import get_valid_filename
+from toolium.selenoid import Selenoid
 
 
 class DriverWrappersPool(object):
@@ -166,13 +167,18 @@ class DriverWrappersPool(object):
                 # Stop driver
                 driver_wrapper.driver.quit()
                 # Download video if necessary
-                if (driver_wrapper.config.getboolean_optional('Server', 'video_enabled') or not test_passed) \
-                        and driver_wrapper.remote_node_video_enabled:
-                    driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
-                                                               video_name.format(name, driver_index))
-            except Exception:
-                # Capture exceptions to avoid errors in teardown method due to session timeouts
-                pass
+                if not test_passed and driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False):
+                    if driver_wrapper.remote_node_video_enabled:
+                        # Download video using Selenium
+                        driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
+                                                                   video_name.format(name, driver_index))
+                    elif driver_wrapper.config.getboolean_optional('Server', 'selenoid', False):
+                        # Download video and log session using Selenoid
+                        s = Selenoid(driver_wrapper, videos_dir=cls.videos_directory, logs_dir=cls.logs_directory)
+                        s.download_video_if_the_scenario_fails(video_name.format(name, driver_index))
+                        s.download_session_log()
+            except Exception as e:
+                driver_wrapper.logger.warn("Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s" % e)
             driver_index += 1
 
         cls.driver_wrappers = cls.driver_wrappers[0:1] if maintain_default else []
