@@ -166,17 +166,20 @@ class DriverWrappersPool(object):
             try:
                 # Stop driver
                 driver_wrapper.driver.quit()
-                # Download video if necessary
-                if not test_passed and driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False):
-                    if driver_wrapper.remote_node_video_enabled:
-                        # Download video using Selenium
-                        driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
-                                                                   video_name.format(name, driver_index))
-                    elif driver_wrapper.config.getboolean_optional('Server', 'selenoid', False):
-                        # Download video and log session using Selenoid
-                        s = Selenoid(driver_wrapper, videos_dir=cls.videos_directory, logs_dir=cls.logs_directory)
-                        s.download_video_if_the_scenario_fails(video_name.format(name, driver_index))
-                        s.download_session_log()
+                # Download video if necessary (error case or enabled video) and log (in Selenoid)
+                if driver_wrapper.config.getboolean_optional('Server', 'selenoid', False):
+                    # Download video and log session using Selenoid
+                    s = Selenoid(driver_wrapper, videos_dir=cls.videos_directory, logs_dir=cls.logs_directory)
+                    name = get_valid_filename(video_name.format(name, driver_index))
+                    if not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False):
+                        s.download_session_video(name)
+                    if driver_wrapper.config.getboolean_optional('Server', 'logs_enabled', False):
+                        s.download_session_log(name)
+                elif (not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False)) \
+                        and driver_wrapper.remote_node_video_enabled:
+                    # Download video using Selenium
+                    driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
+                                                               video_name.format(name, driver_index))
             except Exception as e:
                 driver_wrapper.logger.warn("Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s" % e)
             driver_index += 1

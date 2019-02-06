@@ -20,8 +20,6 @@ import os
 import time
 import requests
 
-from toolium.format_utils import get_valid_filename
-
 # constants
 STATUS_OK = 200
 DOWNLOADS_PATH = u'downloads'
@@ -31,8 +29,8 @@ LOG_EXTENSION = u'log'
 
 class Selenoid(object):
     """
-    toolium.cfg or local.toolium.cfg properties files:
-    --------------------------------------------------
+    properties.cfg or local-properties.cfg files:
+    ---------------------------------------------
     [Capabilities]
     # capabilities to selenoid
     enableVideo: true        --> MANDATORY
@@ -138,18 +136,17 @@ class Selenoid(object):
             return response.json()
         return None
 
-    def download_video_if_the_scenario_fails(self, scenario_name, timeout=10):
+    def download_session_video(self, scenario_name, timeout=10):
         """
-        download the execution video file if the scenario fails, renaming the file to scenario name from remote selenoid and
-        removing the session file in the server.
+        download the execution video file if the scenario fails or the video is enabled,
+        renaming the file to scenario name and removing the video file in the server.
              GGR request: http://<username>:<password>@<ggr_host>:<ggr_port>/video/<session_id>
         selenoid request: http://<username>:<password>@<ggr_host>:<ggr_port>/video/<session_id>.mp4
         :param scenario_name: scenario name
         :param timeout: threshold until the video file is downloaded
         """
         if self.selenoid_flag:
-            name = get_valid_filename(scenario_name)
-            path_file = os.path.join(self.videos_directory, '%s.%s' % (name, MP4_EXTENSION))
+            path_file = os.path.join(self.videos_directory, '%s.%s' % (scenario_name, MP4_EXTENSION))
             if not self.hub:
                 filename = "%s.%s" % (self.session_id, MP4_EXTENSION)
             else:
@@ -162,15 +159,17 @@ class Selenoid(object):
             # remove the video file if it does exist
             self.__remove_file(server_url)
 
-    def download_session_log(self, timeout=10):
+    def download_session_log(self, scenario_name, timeout=10):
         """
-        download the session log file from remote selenoid and removing the file in the server.
+        download the session log file from remote selenoid,
+        renaming the file to scenario name and removing the video file in the server.
              GGR request: http://<username>:<password>@<ggr_host>:<ggr_port>/logs/<ggr_session_id>
         selenoid request: http://<username>:<password>@<ggr_host>:<ggr_port>/logs/<ggr_session_id>.log
+        :param scenario_name: scenario name
         :param timeout: threshold until the video file is downloaded
         """
         if self.selenoid_flag:
-            path_file = os.path.join(self.logs_directory, '%s.%s' % (self.session_id, LOG_EXTENSION))
+            path_file = os.path.join(self.logs_directory, '%s.%s' % (scenario_name, LOG_EXTENSION))
             if not self.hub:
                 filename = "%s.%s" % (self.session_id, LOG_EXTENSION)
             else:
