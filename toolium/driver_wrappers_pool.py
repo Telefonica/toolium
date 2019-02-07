@@ -21,6 +21,7 @@ import inspect
 import os
 from toolium.config_files import ConfigFiles
 from toolium.format_utils import get_valid_filename
+from toolium.selenoid import Selenoid
 
 
 class DriverWrappersPool(object):
@@ -33,6 +34,7 @@ class DriverWrappersPool(object):
     :type screenshots_directory: str
     :type screenshots_number: str
     :type videos_directory: str
+    :type logs_directory: str
     :type videos_number: int
     :type visual_baseline_directory: str
     :type visual_output_directory: str
@@ -50,6 +52,7 @@ class DriverWrappersPool(object):
 
     # Videos configuration
     videos_directory = None  #: folder to save videos
+    logs_directory = None  #: folder to save logs
     videos_number = None  #: number of visual images taken until now
 
     # Visual Testing configuration
@@ -163,14 +166,22 @@ class DriverWrappersPool(object):
             try:
                 # Stop driver
                 driver_wrapper.driver.quit()
-                # Download video if necessary
-                if (driver_wrapper.config.getboolean_optional('Server', 'video_enabled') or not test_passed) \
+                # Download video if necessary (error case or enabled video) and log (in Selenoid)
+                if driver_wrapper.config.getboolean_optional('Server', 'selenoid', False):
+                    # Download video and log session using Selenoid
+                    s = Selenoid(driver_wrapper, videos_dir=cls.videos_directory, logs_dir=cls.logs_directory)
+                    name = get_valid_filename(video_name.format(name, driver_index))
+                    if not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False):
+                        s.download_session_video(name)
+                    if driver_wrapper.config.getboolean_optional('Server', 'logs_enabled', False):
+                        s.download_session_log(name)
+                elif (not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False)) \
                         and driver_wrapper.remote_node_video_enabled:
+                    # Download video using Selenium
                     driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
                                                                video_name.format(name, driver_index))
-            except Exception:
-                # Capture exceptions to avoid errors in teardown method due to session timeouts
-                pass
+            except Exception as e:
+                driver_wrapper.logger.warn("Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s" % e)
             driver_index += 1
 
         cls.driver_wrappers = cls.driver_wrappers[0:1] if maintain_default else []
@@ -285,6 +296,7 @@ class DriverWrappersPool(object):
             cls.screenshots_directory = os.path.join(cls.output_directory, 'screenshots', folder_name)
             cls.screenshots_number = 1
             cls.videos_directory = os.path.join(cls.output_directory, 'videos', folder_name)
+            cls.logs_directory = os.path.join(cls.output_directory, 'logs', folder_name)
             cls.videos_number = 1
 
             # Unique visualtests directories
@@ -328,6 +340,7 @@ class DriverWrappersPool(object):
         cls.screenshots_directory = None
         cls.screenshots_number = None
         cls.videos_directory = None
+        cls.logs_directory = None
         cls.videos_number = None
         cls.visual_output_directory = None
         cls.visual_number = None

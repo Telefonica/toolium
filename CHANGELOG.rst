@@ -8,6 +8,9 @@ v1.5.0
 
 - Add `username` and `password` config properties in [Server] section to enable basic authentication in Selenium Grid (required by GGR)
 - Latest version of Appium can be used
+- Add logs path in the _output folder into driver_wrapper_pool class (used in Selenoid)
+- Add download the video if the test fails and logs session using Selenoid into driver_wrapper_pool
+- Append a new class (selenoid.py) to download the session log, session video in failed case and downloaded files using Selenoid or GGR
 
 v1.4.3
 ------
