@@ -16,9 +16,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import datetime
 import inspect
 import os
+
+import datetime
+
 from toolium.config_files import ConfigFiles
 from toolium.format_utils import get_valid_filename
 from toolium.selenoid import Selenoid
@@ -125,7 +127,7 @@ class DriverWrappersPool(object):
 
     @classmethod
     def close_drivers(cls, scope, test_name, test_passed=True, context=None):
-        """Stop all drivers, capture screenshots, copy webdriver logs and download saved videos
+        """Stop all drivers, capture screenshots, copy webdriver and GGR logs and download saved videos
 
         :param scope: execution scope (function, module, class or session)
         :param test_name: executed test name
@@ -144,11 +146,31 @@ class DriverWrappersPool(object):
 
         # Close browser and stop driver if it must not be reused
         reuse_driver = cls.get_default_wrapper().should_reuse_driver(scope, test_passed, context)
-        cls.close_drivers_and_download_videos(test_name, test_passed, reuse_driver)
+        cls.stop_drivers(reuse_driver)
+        cls.download_videos(test_name, test_passed, reuse_driver)
+        cls.save_all_ggr_logs(test_name, test_passed)
+        cls.remove_drivers(reuse_driver)
 
     @classmethod
-    def close_drivers_and_download_videos(cls, name, test_passed=True, maintain_default=False):
-        """Stop all drivers and download saved videos if video is enabled or if test fails
+    def stop_drivers(cls, maintain_default=False):
+        """Stop all drivers except default if it should be reused
+
+        :param maintain_default: True if the default driver should not be closed
+        """
+        # Exclude first wrapper if the driver must be reused
+        driver_wrappers = cls.driver_wrappers[1:] if maintain_default else cls.driver_wrappers
+
+        for driver_wrapper in driver_wrappers:
+            if not driver_wrapper.driver:
+                continue
+            try:
+                driver_wrapper.driver.quit()
+            except Exception as e:
+                driver_wrapper.logger.warn("Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s" % e)
+
+    @classmethod
+    def download_videos(cls, name, test_passed=True, maintain_default=False):
+        """Download saved videos if video is enabled or if test fails
 
         :param name: destination file name
         :param test_passed: True if the test has passed
@@ -164,26 +186,29 @@ class DriverWrappersPool(object):
             if not driver_wrapper.driver:
                 continue
             try:
-                # Stop driver
-                driver_wrapper.driver.quit()
-                # Download video if necessary (error case or enabled video) and log (in Selenoid)
-                if driver_wrapper.config.getboolean_optional('Server', 'selenoid', False):
-                    # Download video and log session using Selenoid
-                    s = Selenoid(driver_wrapper, videos_dir=cls.videos_directory, logs_dir=cls.logs_directory)
-                    name = get_valid_filename(video_name.format(name, driver_index))
-                    if not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False):
-                        s.download_session_video(name)
-                    if driver_wrapper.config.getboolean_optional('Server', 'logs_enabled', False):
-                        s.download_session_log(name)
-                elif (not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False)) \
+                # Download video if necessary (error case or enabled video)
+                if (not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False)) \
                         and driver_wrapper.remote_node_video_enabled:
-                    # Download video using Selenium
-                    driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
+                    if driver_wrapper.server_type == 'ggr':
+                        # Download video from GGR
+                        selenoid = Selenoid(driver_wrapper, videos_dir=cls.videos_directory,
+                                            logs_dir=cls.logs_directory)
+                        name = get_valid_filename(video_name.format(name, driver_index))
+                        selenoid.download_session_video(name)
+                    elif driver_wrapper.server_type == 'grid':
+                        # Download video from Grid Extras
+                        driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
                                                                video_name.format(name, driver_index))
             except Exception as e:
                 driver_wrapper.logger.warn("Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s" % e)
             driver_index += 1
 
+    @classmethod
+    def remove_drivers(cls, maintain_default=False):
+        """Clean drivers list except default if it should be reused. Drivers must be closed before.
+
+        :param maintain_default: True if the default driver should not be removed
+        """
         cls.driver_wrappers = cls.driver_wrappers[0:1] if maintain_default else []
 
     @classmethod
@@ -198,9 +223,31 @@ class DriverWrappersPool(object):
         for driver_wrapper in cls.driver_wrappers:
             if not driver_wrapper.driver:
                 continue
+            if driver_wrapper.config.getboolean_optional('Server', 'logs_enabled') or not test_passed:
+                try:
+                    driver_wrapper.utils.save_webdriver_logs(log_name.format(test_name, driver_index))
+                except Exception:
+                    # Capture exceptions to avoid errors in teardown method due to session timeouts
+                    pass
+            driver_index += 1
+
+    @classmethod
+    def save_all_ggr_logs(cls, test_name, test_passed):
+        """Get all GGR logs of each driver and write them to log files
+
+        :param test_name: test that has generated these logs
+        :param test_passed: True if the test has passed
+        """
+        log_name = '{} [driver {}]' if len(cls.driver_wrappers) > 1 else '{}'
+        driver_index = 1
+        for driver_wrapper in cls.driver_wrappers:
+            if not driver_wrapper.driver or driver_wrapper.server_type != 'ggr':
+                continue
             try:
                 if driver_wrapper.config.getboolean_optional('Server', 'logs_enabled') or not test_passed:
-                    driver_wrapper.utils.save_webdriver_logs(log_name.format(test_name, driver_index))
+                    selenoid = Selenoid(driver_wrapper, videos_dir=cls.videos_directory, logs_dir=cls.logs_directory)
+                    name = get_valid_filename(log_name.format(test_name, driver_index))
+                    selenoid.download_session_log(name)
             except Exception:
                 # Capture exceptions to avoid errors in teardown method due to session timeouts
                 pass

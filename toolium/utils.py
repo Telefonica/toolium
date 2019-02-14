@@ -22,10 +22,10 @@ from __future__ import division
 import logging
 import os
 import time
-from datetime import datetime
 from io import open
 
 import requests
+from datetime import datetime
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
@@ -108,8 +108,8 @@ class Utils(object):
             return
 
         if len(logs) > 0:
-            log_file_ext = os.path.splitext(self.driver_wrapper.output_log_filename)
-            log_file_name = '{}_{}{}'.format(log_file_ext[0], log_type, log_file_ext[1])
+            log_file_name = '{}_{}.txt'.format(get_valid_filename(test_name), log_type)
+            log_file_name = os.path.join(DriverWrappersPool.logs_directory, log_file_name)
             with open(log_file_name, 'a+', encoding='utf-8') as log_file:
                 driver_type = self.driver_wrapper.config.get('Driver', 'type')
                 log_file.write(
@@ -293,26 +293,48 @@ class Utils(object):
     def get_remote_node(self):
         """Return the remote node that it's executing the actual test session
 
-        :returns: remote node name
+        :returns: tuple with server type (local, grid, ggr, selenium) and remote node name
         """
         logging.getLogger("requests").setLevel(logging.WARNING)
         remote_node = None
+        server_type = 'local'
         if self.driver_wrapper.config.getboolean_optional('Server', 'enabled'):
             # Request session info from grid hub
-            host = self.driver_wrapper.config.get('Server', 'host')
-            port = self.driver_wrapper.config.get('Server', 'port')
             session_id = self.driver_wrapper.driver.session_id
-            url = 'http://{}:{}/grid/api/testsession?session={}'.format(host, port, session_id)
             try:
-                # Extract remote node from response
+                # Request session info from grid hub and extract remote node
+                url = '{}/grid/api/testsession?session={}'.format(self.get_server_url(),
+                                                                  session_id)
                 proxy_id = requests.get(url).json()['proxyId']
                 remote_node = urlparse(proxy_id).hostname if urlparse(proxy_id).hostname else proxy_id
+                server_type = 'grid'
                 self.logger.debug("Test running in remote node %s", remote_node)
             except (ValueError, KeyError):
-                # The remote node is not a grid node or the session has been closed
-                remote_node = host
+                try:
+                    # Request session info from GGR and extract remote node
+                    from toolium.selenoid import Selenoid
+                    remote_node = Selenoid(self.driver_wrapper).get_selenoid_info()['Name']
+                    server_type = 'ggr'
+                    self.logger.debug("Test running in a GGR remote node %s", remote_node)
+                except Exception:
+                    # The remote node is not a grid node or the session has been closed
+                    remote_node = self.driver_wrapper.config.get('Server', 'host')
+                    server_type = 'selenium'
 
-        return remote_node
+        return server_type, remote_node
+
+    def get_server_url(self):
+        """Return the configured server url
+
+        :returns: server url
+        """
+        server_host = self.driver_wrapper.config.get('Server', 'host')
+        server_port = self.driver_wrapper.config.get('Server', 'port')
+        server_username = self.driver_wrapper.config.get_optional('Server', 'username')
+        server_password = self.driver_wrapper.config.get_optional('Server', 'password')
+        server_auth = '{}:{}@'.format(server_username, server_password) if server_username and server_password else ''
+        server_url = 'http://{}{}:{}'.format(server_auth, server_host, server_port)
+        return server_url
 
     def download_remote_video(self, remote_node, session_id, video_name):
         """Download the video recorded in the remote node during the specified test session and save it in videos folder

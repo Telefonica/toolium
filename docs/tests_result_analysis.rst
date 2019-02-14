@@ -40,9 +40,8 @@ Videos
 
 When a test fails, Toolium downloads a video of the test execution into the folder *output/videos/DATE_DRIVER_TYPE*.
 This feature only works when the test has been executed in a
-`Selenium Grid Extras <https://github.com/groupon/Selenium-Grid-Extras>`_ grid node. Selenium Grid Extras is a
-Selenium Grid manager that, among other features, allows recording videos of test executions.
-
+`Selenium Grid Extras <https://github.com/groupon/Selenium-Grid-Extras>`_ or `GGR <https://github.com/aerokube/ggr>`_
+grid node. Both grids allow recording videos of test executions.
 
 In order to download the execution video even if the test passes, configure the property *video_enabled* in *[Server]*
 section in properties.cfg file ::
@@ -70,5 +69,5 @@ properties.cfg file ::
 
 logs_enabled
 ~~~~~~~~~~~~
-| *true*: webdriver logs are downloaded and saved to local files after test execution
-| *false*: webdriver logs are downloaded and saved to local files only if the test fails
+| *true*: webdriver and GGR logs are downloaded and saved to local files after test execution
+| *false*: webdriver and GGR logs are downloaded and saved to local files only if the test fails

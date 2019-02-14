@@ -18,6 +18,7 @@ limitations under the License.
 
 import os
 import time
+
 import requests
 
 # constants
@@ -44,11 +45,11 @@ class Selenoid(object):
     password: <string>       --> MANDATORY
     video_enabled: true      --> MANDATORY
     logs_enabled: true       --> MANDATORY
-    selenoid: true           --> MANDATORY
 
     Comments:
        the files are always removed in the selenoid server
     """
+
     def __init__(self, driver_wrapper, hub=True, **kwargs):
         """
         get data from properties file and session
@@ -66,11 +67,10 @@ class Selenoid(object):
         self.output_directory = kwargs.get("output_dir", "")
 
         driver_wrapper.logger.info("Selenoid download is beginning, using GGR as hub: {}...".format(self.hub))
-        self.selenoid_flag = driver_wrapper.config.getboolean_optional('Server', 'selenoid', False)
         self.browser_remote = driver_wrapper.config.getboolean_optional('Server', 'enabled', False)
         self.enabled_logs = driver_wrapper.config.getboolean_optional('Server', 'logs_enabled', False)
 
-        if self.selenoid_flag and self.browser_remote:
+        if self.browser_remote:
             try:
                 self.session_id = driver_wrapper.driver.session_id
                 self.username = driver_wrapper.config.get('Server', 'username')
@@ -78,7 +78,8 @@ class Selenoid(object):
                 self.ggr_host = driver_wrapper.config.get('Server', 'host')
                 self.ggr_port = driver_wrapper.config.get('Server', 'port')
             except Exception as e:
-                driver_wrapper.logger.warn("verify 'username' and 'password', 'host' and 'port' properties below 'Server' in the toolium.cfg: \n  %s" % e)
+                driver_wrapper.logger.warn("verify 'username' and 'password', 'host' and 'port' properties below"
+                                           " 'Server' in the toolium.cfg: \n  %s" % e)
             driver_wrapper.logger.info("Selenoid host info: \n %s" % self.get_selenoid_info())
 
     def __download_file(self, url, path_file, timeout):
@@ -95,7 +96,7 @@ class Selenoid(object):
         while status_code != STATUS_OK and time.time() - init_time < float(timeout):
             body = requests.get(url)
             status_code = body.status_code
-        took = time.time() - init_time    # time used to download the file
+        took = time.time() - init_time  # time used to download the file
         # create the folders and store the file downloaded
         if status_code == STATUS_OK:
             path, name = os.path.split(path_file)
@@ -105,12 +106,14 @@ class Selenoid(object):
                 fp = open(path_file, 'wb')
                 fp.write(body.content)
                 fp.close()
-                self.driver_wrapper.logger.info('the %s file has been downloaded successfully and took %d seconds' % (path_file, took))
+                self.driver_wrapper.logger.info(
+                    'the %s file has been downloaded successfully and took %d seconds' % (path_file, took))
                 return True
             except IOError as e:
                 self.driver_wrapper.logger.warn('the %s file has a problem; \n %s' % (path_file, e))
         else:
-            self.driver_wrapper.logger.warn('the file to download does not exist in the server after %s s (timeout).' % timeout)
+            self.driver_wrapper.logger.warn(
+                'the file to download does not exist in the server after %s s (timeout).' % timeout)
         return False
 
     def __remove_file(self, url):
@@ -126,7 +129,7 @@ class Selenoid(object):
         :return: dict
         """
         if self.hub:
-            url = 'http://{0}:{1}@{2}:{3}/host/{4}'.\
+            url = 'http://{0}:{1}@{2}:{3}/host/{4}'. \
                 format(self.username, self.password, self.ggr_host, self.ggr_port, self.session_id)
             try:
                 response = requests.get(url)
@@ -145,19 +148,18 @@ class Selenoid(object):
         :param scenario_name: scenario name
         :param timeout: threshold until the video file is downloaded
         """
-        if self.selenoid_flag:
-            path_file = os.path.join(self.videos_directory, '%s.%s' % (scenario_name, MP4_EXTENSION))
-            if not self.hub:
-                filename = "%s.%s" % (self.session_id, MP4_EXTENSION)
-            else:
-                filename = self.session_id
-            server_url = 'http://{}:{}@{}:{}/video/{}'.\
-                format(self.username, self.password, self.ggr_host, self.ggr_port, filename)
-            # download the execution video file if the scenario is failed
-            if self.browser_remote:
-                self.__download_file(server_url, path_file, timeout)
-            # remove the video file if it does exist
-            self.__remove_file(server_url)
+        path_file = os.path.join(self.videos_directory, '%s.%s' % (scenario_name, MP4_EXTENSION))
+        if not self.hub:
+            filename = "%s.%s" % (self.session_id, MP4_EXTENSION)
+        else:
+            filename = self.session_id
+        server_url = 'http://{}:{}@{}:{}/video/{}'.format(self.username, self.password, self.ggr_host, self.ggr_port,
+                                                          filename)
+        # download the execution video file if the scenario is failed
+        if self.browser_remote:
+            self.__download_file(server_url, path_file, timeout)
+        # remove the video file if it does exist
+        self.__remove_file(server_url)
 
     def download_session_log(self, scenario_name, timeout=10):
         """
@@ -168,19 +170,18 @@ class Selenoid(object):
         :param scenario_name: scenario name
         :param timeout: threshold until the video file is downloaded
         """
-        if self.selenoid_flag:
-            path_file = os.path.join(self.logs_directory, '%s.%s' % (scenario_name, LOG_EXTENSION))
-            if not self.hub:
-                filename = "%s.%s" % (self.session_id, LOG_EXTENSION)
-            else:
-                filename = self.session_id
-            server_url = 'http://{}:{}@{}:{}/logs/{}'.\
-                format(self.username, self.password, self.ggr_host, self.ggr_port, filename)
-            # download the session log file
-            if self.enabled_logs and self.browser_remote:
-                self.__download_file(server_url, path_file, timeout)
-            # remove the video file if it does exist
-            self.__remove_file(server_url)
+        path_file = os.path.join(self.logs_directory, '%s_ggr.%s' % (scenario_name, LOG_EXTENSION))
+        if not self.hub:
+            filename = "%s.%s" % (self.session_id, LOG_EXTENSION)
+        else:
+            filename = self.session_id
+        server_url = 'http://{}:{}@{}:{}/logs/{}'.format(self.username, self.password, self.ggr_host, self.ggr_port,
+                                                         filename)
+        # download the session log file
+        if self.enabled_logs and self.browser_remote:
+            self.__download_file(server_url, path_file, timeout)
+        # remove the log file if it does exist
+        self.__remove_file(server_url)
 
     def download_file(self, filename, timeout=10):
         """
@@ -189,10 +190,9 @@ class Selenoid(object):
         :param filename: file name with extension to download
         :param timeout: threshold until the video file is downloaded
         """
-        if self.selenoid_flag:
-            path_file = os.path.join(self.output_directory, DOWNLOADS_PATH, self.session_id[-8:], filename)
-            server_url = 'http://{}:{}@{}:{}/download/{}/{}'.\
-                format(self.username, self.password, self.ggr_host, self.ggr_port, self.session_id, filename)
-            # download the session log file
-            if self.browser_remote:
-                self.__download_file(server_url, path_file, timeout)
+        path_file = os.path.join(self.output_directory, DOWNLOADS_PATH, self.session_id[-8:], filename)
+        server_url = 'http://{}:{}@{}:{}/download/{}/{}'.format(self.username, self.password, self.ggr_host,
+                                                                self.ggr_port, self.session_id, filename)
+        # download the session log file
+        if self.browser_remote:
+            self.__download_file(server_url, path_file, timeout)

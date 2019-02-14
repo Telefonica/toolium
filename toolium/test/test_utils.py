@@ -99,7 +99,7 @@ def test_get_remote_node(driver_wrapper, utils):
         req_mock.get(url, json=grid_response_json)
 
         # Get remote node and check result
-        assert utils.get_remote_node() == '10.20.30.40'
+        assert utils.get_remote_node() == ('grid', '10.20.30.40')
         assert url == req_mock.request_history[0].url
 
 
@@ -114,7 +114,7 @@ def test_get_remote_node_selenium3(driver_wrapper, utils):
         req_mock.get(url, json=grid_response_json)
 
         # Get remote node and check result
-        assert utils.get_remote_node() == '10.20.30.40'
+        assert utils.get_remote_node() == ('grid', '10.20.30.40')
         assert url == req_mock.request_history[0].url
 
 
@@ -127,13 +127,13 @@ def test_get_remote_node_non_grid(driver_wrapper, utils):
         req_mock.get(url, text='non_json_response')
 
         # Get remote node and check result
-        assert utils.get_remote_node() == 'localhost'
+        assert utils.get_remote_node() == ('selenium', 'localhost')
         assert url == req_mock.request_history[0].url
 
 
 def test_get_remote_node_local_execution(driver_wrapper, utils):
     driver_wrapper.config.set('Server', 'enabled', 'false')
-    assert utils.get_remote_node() is None
+    assert utils.get_remote_node() == ('local', None)
 
 
 def test_get_remote_video_url(utils):

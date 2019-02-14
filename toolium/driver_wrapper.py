@@ -50,6 +50,7 @@ class DriverWrapper(object):
     utils = None  #: test utils instance
     app_strings = None  #: mobile application strings
     session_id = None  #: remote webdriver session id
+    server_type = None  #: remote server type
     remote_node = None  #: remote grid node
     remote_node_video_enabled = False  #: True if the remote grid node has the video recorder enabled
     logger = None  #: logger instance
@@ -204,14 +205,17 @@ class DriverWrapper(object):
         if not self.config.get('Driver', 'type') or self.config.get('Driver', 'type') in ['api', 'no_driver']:
             return None
 
-        self.driver = ConfigDriver(self.config).create_driver()
+        self.driver = ConfigDriver(self.config, self.utils).create_driver()
 
         # Save session id and remote node to download video after the test execution
         self.session_id = self.driver.session_id
-        self.remote_node = self.utils.get_remote_node()
-        self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.remote_node)
+        self.server_type, self.remote_node = self.utils.get_remote_node()
+        if self.server_type == 'grid':
+            self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.remote_node)
+        else:
+            self.remote_node_video_enabled = True if self.server_type == 'ggr' else False
 
-        # Save app_strings in mobile tests
+            # Save app_strings in mobile tests
         if self.is_mobile_test() and not self.is_web_test() and self.config.getboolean_optional('Driver',
                                                                                                 'appium_app_strings'):
             self.app_strings = self.driver.app_strings()
