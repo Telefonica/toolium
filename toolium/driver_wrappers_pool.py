@@ -191,10 +191,8 @@ class DriverWrappersPool(object):
                         and driver_wrapper.remote_node_video_enabled:
                     if driver_wrapper.server_type == 'ggr':
                         # Download video from GGR
-                        selenoid = Selenoid(driver_wrapper, videos_dir=cls.videos_directory,
-                                            logs_dir=cls.logs_directory)
                         name = get_valid_filename(video_name.format(name, driver_index))
-                        selenoid.download_session_video(name)
+                        Selenoid(driver_wrapper).download_session_video(name)
                     elif driver_wrapper.server_type == 'grid':
                         # Download video from Grid Extras
                         driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
@@ -245,9 +243,8 @@ class DriverWrappersPool(object):
                 continue
             try:
                 if driver_wrapper.config.getboolean_optional('Server', 'logs_enabled') or not test_passed:
-                    selenoid = Selenoid(driver_wrapper, videos_dir=cls.videos_directory, logs_dir=cls.logs_directory)
                     name = get_valid_filename(log_name.format(test_name, driver_index))
-                    selenoid.download_session_log(name)
+                    Selenoid(driver_wrapper).download_session_log(name)
             except Exception:
                 # Capture exceptions to avoid errors in teardown method due to session timeouts
                 pass
