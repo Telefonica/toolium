@@ -7,10 +7,10 @@ v1.5.0
 *Release date: WIP*
 
 - Latest version of Appium can be used
+- Make Toolium compatible with GGR and Selenoid
+- Download execution video and session logs if the test fails using GGR and Selenoid
+- Add logs path in the `_output` folder to download GGR logs
 - Add `username` and `password` config properties in [Server] section to enable basic authentication in Selenium Grid (required by GGR)
-- Download the video and the session logs if the test fails using GGR and Selenoid
-- Add logs path in the _output folder to download GGR logs
-- Append a new class (selenoid.py) to download the session log, session video in failed case and downloaded files using Selenoid or GGR
 
 v1.4.3
 ------

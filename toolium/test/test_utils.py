@@ -118,17 +118,38 @@ def test_get_remote_node_selenium3(driver_wrapper, utils):
         assert url == req_mock.request_history[0].url
 
 
+def test_get_remote_node_ggr(driver_wrapper, utils):
+    # Configure mock
+    driver_wrapper.driver.session_id = '5af'
+    grid_url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
+    ggr_url = 'http://{}:{}/host/{}'.format('localhost', 4444, '5af')
+    ggr_response_json = {u'Count': 3, u'Username': u'', u'Scheme': u'', u'VNC': u'', u'Name': u'host_name',
+                          u'Password': u'', u'Port': 4500}
+
+    with requests_mock.mock() as req_mock:
+        req_mock.get(grid_url, text='non_json_response')
+        req_mock.get(ggr_url, json=ggr_response_json)
+
+        # Get remote node and check result
+        assert utils.get_remote_node() == ('ggr', 'host_name')
+        assert grid_url == req_mock.request_history[0].url
+        assert ggr_url == req_mock.request_history[1].url
+
+
 def test_get_remote_node_non_grid(driver_wrapper, utils):
     # Configure mock
     driver_wrapper.driver.session_id = '5af'
-    url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
+    grid_url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
+    ggr_url = 'http://{}:{}/host/{}'.format('localhost', 4444, '5af')
 
     with requests_mock.mock() as req_mock:
-        req_mock.get(url, text='non_json_response')
+        req_mock.get(grid_url, text='non_json_response')
+        req_mock.get(ggr_url, json={})
 
         # Get remote node and check result
         assert utils.get_remote_node() == ('selenium', 'localhost')
-        assert url == req_mock.request_history[0].url
+        assert grid_url == req_mock.request_history[0].url
+        assert ggr_url == req_mock.request_history[1].url
 
 
 def test_get_remote_node_local_execution(driver_wrapper, utils):
