@@ -21,10 +21,10 @@ import toolium.format_utils as format_utils
 
 filename_tests = (
     ('hola_pepito', 'hola_pepito'),
-    (' hola:pep /ito* ', 'hola_pep__ito_'),
+    (' hola:pep /ito* ', 'hola_pep__ito'),
     ('successful login -- @1.1 john.doe', 'successful_login_1_1_john_doe'),
     ('successful login -- @1.2 Mark options: {Length=10 Mark=mark File=file_name.jpg}',
-     'successful_login_1_2_Mark_options___Length_10_Mark_mark_File_file_name_jpg_'),
+     'successful_login_1_2_Mark_options___Length_10_Mark_mark_File_file_name_jpg'),
 )
 
 

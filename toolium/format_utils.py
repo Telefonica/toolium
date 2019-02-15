@@ -31,4 +31,5 @@ def get_valid_filename(s, max_length=FILENAME_MAX_LENGTH):
     @see https://github.com/django/django/blob/master/django/utils/text.py
     """
     s = str(s).strip().replace(' -- @', '_')
-    return re.sub(r'(?u)[^-\w]', '_', s)[:max_length]
+    s = re.sub(r'(?u)[^-\w]', '_', s).strip('_')
+    return s[:max_length]
