@@ -211,6 +211,60 @@ class Utils(object):
             return web_element if web_element and web_element.is_enabled() else False
         except StaleElementReferenceException:
             return False
+        
+    def _expected_condition_find_element_stopped(self, element_times):
+        """Tries to find the element and checks that it has stopped moving, but does not thrown an exception if the element
+            is not found
+
+        :param element_times: Tuple with 2 items where:
+            [0] element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+            [1] times: number of iterations checking the element's location that must be the same for all of them
+            in order to considering the element has stopped
+        :returns: the web element if it is clickable or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        element, times = element_times
+        web_element = self._expected_condition_find_element(element)
+        try:
+            locations_list = [tuple(web_element.location.values()) for i in range(int(times))]
+            return web_element if set(locations_list) == set(locations_list[-1:]) else False
+        except StaleElementReferenceException:
+            return False
+
+    def _expected_condition_find_element_containing_text(self, element_text_pair):
+        """Tries to find the element and checks that it contains the specified text, but does not thrown an exception if the element is
+            not found
+
+        :param element_text_pair: Tuple with 2 items where:
+            [0] element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+            [1] text: text to be contained into the element
+        :returns: the web element if it contains the text or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        element, text = element_text_pair
+        web_element = self._expected_condition_find_element(element)
+        try:
+            return web_element if web_element and text in web_element.text else False
+        except StaleElementReferenceException:
+            return False
+        
+    def _expected_condition_value_in_element_attribute(self, element_attribute_value):
+        """Tries to find the element and checks that it contains the requested attribute with the expected value,
+           but does not thrown an exception if the element is not found
+
+        :param element_attribute_value: Tuple with 3 items where:
+            [0] element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+            [1] attribute: element's attribute where to check its value
+            [2] value: expected value for the element's attribute
+        :returns: the web element if it contains the expected value for the requested attribute or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        element, attribute, value = element_attribute_value
+        web_element = self._expected_condition_find_element(element)
+        try:
+            return web_element if web_element and web_element.get_attribute(attribute) == value else False
+        except StaleElementReferenceException:
+            return False
 
     def _wait_until(self, condition_method, condition_input, timeout=None):
         """
@@ -289,6 +343,40 @@ class Utils(object):
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
         return self._wait_until(self._expected_condition_find_element_clickable, element, timeout)
+    
+    def wait_until_element_stops(self, element, times, timeout=None):
+        """Search element and wait until it has stopped moving
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :param times: number of iterations checking the element's location that must be the same for all of them
+        in order to considering the element has stopped
+        :returns: the web element if it is clickable or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        return self._wait_until(self._expected_condition_find_element_stopped, (element, times), timeout)
+
+    def wait_until_element_contains_text(self, element, text, timeout=None):
+        """Search element and wait until it contains the expected text
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :param text: text expected to be contained into the element
+        :param timeout: max time to wait
+        :returns: the web element if it is clickable or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        return self._wait_until(self._expected_condition_find_element_containing_text, (element, text), timeout)
+    
+    def wait_until_element_attribute_is(self, element, attribute, value, timeout=None):
+        """Search element and wait until it contains the expected text
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :param attribute: attribute belonging to the element
+        :param value: expected value for the attribute of the element
+        :param timeout: max time to wait
+        :returns: the web element if it is clickable or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        return self._wait_until(self._expected_condition_value_in_element_attribute, (element, attribute, value), timeout)
 
     def get_remote_node(self):
         """Return the remote node that it's executing the actual test session
