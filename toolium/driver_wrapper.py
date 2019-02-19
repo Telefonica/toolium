@@ -213,7 +213,7 @@ class DriverWrapper(object):
         if self.server_type == 'grid':
             self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.remote_node)
         else:
-            self.remote_node_video_enabled = True if self.server_type == 'ggr' else False
+            self.remote_node_video_enabled = True if self.server_type in ['ggr', 'selenoid'] else False
 
             # Save app_strings in mobile tests
         if self.is_mobile_test() and not self.is_web_test() and self.config.getboolean_optional('Driver',

@@ -166,7 +166,8 @@ class DriverWrappersPool(object):
             try:
                 driver_wrapper.driver.quit()
             except Exception as e:
-                driver_wrapper.logger.warn("Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s" % e)
+                driver_wrapper.logger.warn(
+                    "Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s" % e)
 
     @classmethod
     def download_videos(cls, name, test_passed=True, maintain_default=False):
@@ -189,16 +190,18 @@ class DriverWrappersPool(object):
                 # Download video if necessary (error case or enabled video)
                 if (not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False)) \
                         and driver_wrapper.remote_node_video_enabled:
-                    if driver_wrapper.server_type == 'ggr':
+                    if driver_wrapper.server_type in ['ggr', 'selenoid']:
                         # Download video from GGR
                         name = get_valid_filename(video_name.format(name, driver_index))
                         Selenoid(driver_wrapper).download_session_video(name)
                     elif driver_wrapper.server_type == 'grid':
                         # Download video from Grid Extras
-                        driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node, driver_wrapper.session_id,
-                                                               video_name.format(name, driver_index))
+                        driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node,
+                                                                   driver_wrapper.session_id,
+                                                                   video_name.format(name, driver_index))
             except Exception as e:
-                driver_wrapper.logger.warn("Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s" % e)
+                driver_wrapper.logger.warn(
+                    "Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s" % e)
             driver_index += 1
 
     @classmethod
@@ -239,7 +242,7 @@ class DriverWrappersPool(object):
         log_name = '{} [driver {}]' if len(cls.driver_wrappers) > 1 else '{}'
         driver_index = 1
         for driver_wrapper in cls.driver_wrappers:
-            if not driver_wrapper.driver or driver_wrapper.server_type != 'ggr':
+            if not driver_wrapper.driver or driver_wrapper.server_type not in ['ggr', 'selenoid']:
                 continue
             try:
                 if driver_wrapper.config.getboolean_optional('Server', 'logs_enabled') or not test_passed:

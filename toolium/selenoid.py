@@ -50,31 +50,26 @@ class Selenoid(object):
        the files are always removed in the selenoid server
     """
 
-    def __init__(self, driver_wrapper, hub=True, **kwargs):
+    def __init__(self, driver_wrapper, **kwargs):
         """
         get data from properties file and session
         :param driver_wrapper: driver_wrapper instance from toolium
-        :param hub: determine if the server is a node (Selenoid-False) or a hub (GGR-True)
         dynamic parameters:
         :param videos_dir: videos directory to download
         :param logs_dir: logs directory to download
         :param output_dir: general directory to download
         """
         self.driver_wrapper = driver_wrapper
-        self.hub = hub
         from toolium.driver_wrappers_pool import DriverWrappersPool
         self.videos_directory = kwargs.get('videos_dir', DriverWrappersPool.videos_directory)
         self.logs_directory = kwargs.get('logs_dir', DriverWrappersPool.logs_directory)
         self.output_directory = kwargs.get('output_dir', DriverWrappersPool.output_directory)
-
-        driver_wrapper.logger.info('Selenoid download is beginning, using GGR as hub: {}...'.format(self.hub))
         self.browser_remote = driver_wrapper.config.getboolean_optional('Server', 'enabled', False)
         self.enabled_logs = driver_wrapper.config.getboolean_optional('Server', 'logs_enabled', False)
 
         if self.browser_remote:
             self.session_id = driver_wrapper.driver.session_id
             self.server_url = driver_wrapper.utils.get_server_url()
-            driver_wrapper.logger.info('Selenoid host info: \n %s' % self.get_selenoid_info())
 
     def __download_file(self, url, path_file, timeout):
         """
@@ -118,19 +113,17 @@ class Selenoid(object):
 
     def get_selenoid_info(self):
         """
-        retrieve the current selenoid host info. Used only in hub mode (GGR)
+        retrieve the current selenoid host info
         request: http://<username>:<password>@<ggr_host>:<ggr_port>/host/<ggr_session_id>
         :return: dict
         """
-        if self.hub:
-            host_url = '{}/host/{}'.format(self.server_url, self.session_id)
-            try:
-                response = requests.get(host_url)
-            except Exception as e:
-                self.driver_wrapper.logger.warn("the GGR request to get the node host is failed: \n  %s" % e)
-                return None
-            return response.json()
-        return None
+        host_url = '{}/host/{}'.format(self.server_url, self.session_id)
+        try:
+            selenoid_info = requests.get(host_url).json()
+        except Exception:
+            return None
+        self.driver_wrapper.logger.info('Selenoid host info: \n %s' % selenoid_info)
+        return selenoid_info
 
     def download_session_video(self, scenario_name, timeout=10):
         """
@@ -142,7 +135,7 @@ class Selenoid(object):
         :param timeout: threshold until the video file is downloaded
         """
         path_file = os.path.join(self.videos_directory, '%s.%s' % (scenario_name, MP4_EXTENSION))
-        if not self.hub:
+        if self.driver_wrapper.server_type == 'selenoid':
             filename = '%s.%s' % (self.session_id, MP4_EXTENSION)
         else:
             filename = self.session_id
@@ -163,7 +156,7 @@ class Selenoid(object):
         :param timeout: threshold until the video file is downloaded
         """
         path_file = os.path.join(self.logs_directory, '%s_ggr.%s' % (scenario_name, LOG_EXTENSION))
-        if not self.hub:
+        if self.driver_wrapper.server_type == 'selenoid':
             filename = '%s.%s' % (self.session_id, LOG_EXTENSION)
         else:
             filename = self.session_id
