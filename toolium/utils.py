@@ -226,7 +226,7 @@ class Utils(object):
         element, times = element_times
         web_element = self._expected_condition_find_element(element)
         try:
-            locations_list = [tuple(web_element.location.values()) for i in range(int(times))]
+            locations_list = [tuple(web_element.location.values()) for i in range(int(times)) if not time.sleep(0.001)]
             return web_element if set(locations_list) == set(locations_list[-1:]) else False
         except StaleElementReferenceException:
             return False
@@ -344,7 +344,7 @@ class Utils(object):
         """
         return self._wait_until(self._expected_condition_find_element_clickable, element, timeout)
     
-    def wait_until_element_stops(self, element, times, timeout=None):
+    def wait_until_element_stops(self, element, times=1000, timeout=None):
         """Search element and wait until it has stopped moving
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
