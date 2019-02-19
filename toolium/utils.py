@@ -301,6 +301,7 @@ class Utils(object):
         if self.driver_wrapper.config.getboolean_optional('Server', 'enabled'):
             # Request session info from grid hub
             session_id = self.driver_wrapper.driver.session_id
+            self.logger.debug("Trying to identify remote node")
             try:
                 # Request session info from grid hub and extract remote node
                 url = '{}/grid/api/testsession?session={}'.format(self.get_server_url(),
@@ -317,9 +318,18 @@ class Utils(object):
                     server_type = 'ggr'
                     self.logger.debug("Test running in a GGR remote node %s", remote_node)
                 except Exception:
-                    # The remote node is not a grid node or the session has been closed
-                    remote_node = self.driver_wrapper.config.get('Server', 'host')
-                    server_type = 'selenium'
+                    try:
+                        # The remote node is a Selenoid node
+                        url = '{}/status'.format(self.get_server_url())
+                        requests.get(url).json()['total']
+                        remote_node = self.driver_wrapper.config.get('Server', 'host')
+                        server_type = 'selenoid'
+                        self.logger.debug("Test running in a Selenoid node %s", remote_node)
+                    except Exception:
+                        # The remote node is not a grid node or the session has been closed
+                        remote_node = self.driver_wrapper.config.get('Server', 'host')
+                        server_type = 'selenium'
+                        self.logger.debug("Test running in a Selenium node %s", remote_node)
 
         return server_type, remote_node
 
