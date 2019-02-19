@@ -367,7 +367,7 @@ class Utils(object):
         return self._wait_until(self._expected_condition_find_element_containing_text, (element, text), timeout)
     
     def wait_until_element_attribute_is(self, element, attribute, value, timeout=None):
-        """Search element and wait until it contains the expected text
+        """Search element and wait until the requested attribute contains the expected value
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :param attribute: attribute belonging to the element
