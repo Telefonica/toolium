@@ -4,7 +4,7 @@ Toolium Changelog
 v1.5.0
 ------
 
-*Release date: WIP*
+*Release date: 2019-02-26*
 
 - Latest version of Appium can be used
 - Make Toolium compatible with GGR and Selenoid
