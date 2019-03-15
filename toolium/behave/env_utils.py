@@ -252,3 +252,14 @@ class DynamicEnvironment:
         """
         if not self.feature_error:
             self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)
+
+    @staticmethod
+    def fail_first_step_precondition_exception(scenario):
+        """
+        Fail first step in the given Scenario and add exception message for the output.
+        This is needed because xUnit exporter in Behave fails if there are not failed steps.
+        :param scenario: Behave's Scenario
+        """
+        scenario.steps[0].status = "failed"
+        scenario.steps[0].exception = Exception("Preconditions failed")
+        scenario.steps[0].error_message = "Failing steps due to precondition exceptions"

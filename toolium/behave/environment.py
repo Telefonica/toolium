@@ -240,7 +240,7 @@ def after_scenario(context, scenario):
     # Behave dynamic environment: Fail all steps if dyn_env has got any error and reset it
     if context.dyn_env.check_error_status_and_reset():
         scenario.reset()
-        _fail_first_step_precondition_exception(scenario)
+        context.dyn_env.fail_first_step_precondition_exception(scenario)
 
 
 def bdd_common_after_scenario(context_or_world, scenario, status):
@@ -304,7 +304,7 @@ def after_feature(context, feature):
     if context.dyn_env.check_error_status_and_reset():
         feature.reset()
         for scenario in feature.walk_scenarios():
-            _fail_first_step_precondition_exception(scenario)
+            context.dyn_env.fail_first_step_precondition_exception(scenario)
 
 
 def after_all(context):
