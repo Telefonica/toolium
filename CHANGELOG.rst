@@ -6,6 +6,8 @@ v1.5.1
 
 *Release date: WIP*
 
+- Add a sleep between Selenoid retries when downloading files
+
 v1.5.0
 ------
 
