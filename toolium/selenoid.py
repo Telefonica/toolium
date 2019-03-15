@@ -85,6 +85,8 @@ class Selenoid(object):
         while status_code != STATUS_OK and time.time() - init_time < float(timeout):
             body = requests.get(url)
             status_code = body.status_code
+            if status_code != STATUS_OK:
+                time.sleep(1)
         took = time.time() - init_time  # time used to download the file
         # create the folders and store the file downloaded
         if status_code == STATUS_OK:
@@ -125,7 +127,7 @@ class Selenoid(object):
         self.driver_wrapper.logger.info('Selenoid host info: \n %s' % selenoid_info)
         return selenoid_info
 
-    def download_session_video(self, scenario_name, timeout=10):
+    def download_session_video(self, scenario_name, timeout=5):
         """
         download the execution video file if the scenario fails or the video is enabled,
         renaming the file to scenario name and removing the video file in the server.
@@ -146,7 +148,7 @@ class Selenoid(object):
         # remove the video file if it does exist
         self.__remove_file(video_url)
 
-    def download_session_log(self, scenario_name, timeout=10):
+    def download_session_log(self, scenario_name, timeout=5):
         """
         download the session log file from remote selenoid,
         renaming the file to scenario name and removing the video file in the server.
@@ -167,7 +169,7 @@ class Selenoid(object):
         # remove the log file if it does exist
         self.__remove_file(logs_url)
 
-    def download_file(self, filename, timeout=10):
+    def download_file(self, filename, timeout=5):
         """
         download a file from remote selenoid and removing the file in the server.
         request: http://<username>:<password>@<ggr_host>:<ggr_port>/download/<ggr_session_id>/<filename>
