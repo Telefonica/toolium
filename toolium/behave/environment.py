@@ -34,6 +34,17 @@ from toolium.pageelements import PageElement
 from toolium.behave.env_utils import DynamicEnvironment
 
 
+def _fail_first_step_precondition_exception(scenario):
+    """
+    Fail first step in the Scenario and add exception message for the output.
+    This is needed because xUnit exporter in Behave fails if there are not failed steps.
+    :param scenario: Behave's Scenario
+    """
+    scenario.steps[0].status = "failed"
+    scenario.steps[0].exception = Exception("Preconditions failed")
+    scenario.steps[0].error_message = "Failing steps due to precondition exceptions"
+
+
 def before_all(context):
     """Initialization method that will be executed before the test execution
 
@@ -83,6 +94,9 @@ def before_feature(context, feature):
     # Behave dynamic environment
     context.dyn_env.get_steps_from_feature_description(feature.description)
     context.dyn_env.execute_before_feature_steps(context)
+    if context.dyn_env.error:
+        # Mark this Scenario as skipped. Steps will not be executed.
+        feature.mark_skipped()
 
 
 def before_scenario(context, scenario):
@@ -125,6 +139,9 @@ def before_scenario(context, scenario):
 
     # Behave dynamic environment
     context.dyn_env.execute_before_scenario_steps(context)
+    if context.dyn_env.error:
+        # Mark this Scenario as skipped. Steps will not be executed.
+        scenario.mark_skipped()
 
 
 def bdd_common_before_scenario(context_or_world, scenario, no_driver=False):
@@ -220,6 +237,11 @@ def after_scenario(context, scenario):
     """
     bdd_common_after_scenario(context, scenario, scenario.status)
 
+    # Behave dynamic environment: Fail all steps if dyn_env.error and reset it
+    if context.dyn_env.check_error_status_and_reset():
+        scenario.reset()
+        _fail_first_step_precondition_exception(scenario)
+
 
 def bdd_common_after_scenario(context_or_world, scenario, status):
     """Clean method that will be executed after each scenario in behave or lettuce
@@ -277,6 +299,12 @@ def after_feature(context, feature):
     # Close drivers
     DriverWrappersPool.close_drivers(scope='module', test_name=feature.name,
                                      test_passed=context.global_status['test_passed'])
+
+    # Behave dynamic environment: Fail all steps if dyn_env.error and reset it
+    if context.dyn_env.check_error_status_and_reset():
+        feature.reset()
+        for scenario in feature.walk_scenarios():
+            _fail_first_step_precondition_exception(scenario)
 
 
 def after_all(context):

@@ -64,7 +64,7 @@ class Logger:
               '           - Exception: %s' % exc
         if self.logger is not None:
             self.logger.error(msg)
-        raise Exception('      ERROR - %s' % msg)
+        self.by_console('      ERROR - %s' % msg)
 
     def debug(self, value):
         """
@@ -130,8 +130,7 @@ class DynamicEnvironment:
         self.logger = Logger(logger_class, self.show)
         self.init_actions()
         self.scenario_counter = 0
-        self.feature_error = False
-        self.scenario_error = False
+        self.error = False
 
     def init_actions(self):
         """clear actions lists"""
@@ -204,11 +203,19 @@ class DynamicEnvironment:
                     context.execute_steps(u'''%s%s''' % (GIVEN_PREFIX, self.__remove_prefix(item)))
                     self.logger.debug(u'step defined in pre-actions: %s' % repr(item))
                 except Exception as exc:
-                    if action in [ACTIONS_BEFORE_FEATURE]:
-                        self.feature_error = True
-                    elif action in [ACTIONS_BEFORE_SCENARIO]:
-                        self.scenario_error = True
+                    self.error = True
                     self.logger.error(exc)
+                    break
+
+    def check_error_status_and_reset(self):
+        """
+        Check if the dyn_env has got any exception when executing the steps and restore the value of status to False.
+        :return: True if any exception has been raised when executing steps
+        """
+        try:
+            return self.error
+        finally:
+            self.error = False
 
     def execute_before_feature_steps(self, context):
         """
@@ -222,7 +229,7 @@ class DynamicEnvironment:
         actions before each scenario
         :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
         """
-        if not self.feature_error:
+        if not self.error:
             self.__execute_steps_by_action(context, ACTIONS_BEFORE_SCENARIO)
 
     def execute_after_scenario_steps(self, context):
@@ -230,7 +237,7 @@ class DynamicEnvironment:
         actions after each scenario
         :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
         """
-        if not self.feature_error and not self.scenario_error:
+        if not self.error:
             self.__execute_steps_by_action(context, ACTIONS_AFTER_SCENARIO)
 
     def execute_after_feature_steps(self, context):
@@ -238,5 +245,5 @@ class DynamicEnvironment:
         actions after the feature
         :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
         """
-        if not self.feature_error:
+        if not self.error:
             self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)

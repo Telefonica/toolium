@@ -139,7 +139,11 @@ All kind of steps are allowed:
 - with tables
 - executing another step internally
 
-In case that a step fails, an exception is thrown, i.e. 'waitrty 3 seconds' step
+In case that a step of dynamic environment fails, an exception is printed on console, i.e. 'waitrty 3 seconds' step.
+When this happens, steps of the affected scenarios for that precondition are not executed (skipped) and, after that,
+first step defined in those scenarios will be automatically failed because of that precondition exception,
+in order to properly fail the execution and show the stats.
+
 
 Lettuce
 ~~~~~~~
