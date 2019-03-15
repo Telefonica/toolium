@@ -19,6 +19,7 @@ limitations under the License.
 import warnings
 import sys
 
+from behave.model_core import Status
 
 # constants
 # pre-actions in feature files
@@ -260,6 +261,6 @@ class DynamicEnvironment:
         This is needed because xUnit exporter in Behave fails if there are not failed steps.
         :param scenario: Behave's Scenario
         """
-        scenario.steps[0].status = "failed"
+        scenario.steps[0].status = Status.failed
         scenario.steps[0].exception = Exception("Preconditions failed")
         scenario.steps[0].error_message = "Failing steps due to precondition exceptions"
