@@ -191,7 +191,6 @@ class DriverWrappersPool(object):
                 if (not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False)) \
                         and driver_wrapper.remote_node_video_enabled:
                     if driver_wrapper.server_type in ['ggr', 'selenoid']:
-                        # Download video from GGR
                         name = get_valid_filename(video_name.format(name, driver_index))
                         Selenoid(driver_wrapper).download_session_video(name)
                     elif driver_wrapper.server_type == 'grid':
@@ -222,7 +221,7 @@ class DriverWrappersPool(object):
         log_name = '{} [driver {}]' if len(cls.driver_wrappers) > 1 else '{}'
         driver_index = 1
         for driver_wrapper in cls.driver_wrappers:
-            if not driver_wrapper.driver:
+            if not driver_wrapper.driver or driver_wrapper.server_type in ['ggr', 'selenoid']:
                 continue
             if driver_wrapper.config.getboolean_optional('Server', 'logs_enabled') or not test_passed:
                 try:

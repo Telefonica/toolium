@@ -81,6 +81,7 @@ class Selenoid(object):
         """
         status_code = 0
         init_time = time.time()
+        self.driver_wrapper.logger.info('Downloading file from Selenoid node: %s' % url)
         # retries policy
         while status_code != STATUS_OK and time.time() - init_time < float(timeout):
             body = requests.get(url)
@@ -97,14 +98,13 @@ class Selenoid(object):
                 fp = open(path_file, 'wb')
                 fp.write(body.content)
                 fp.close()
-                self.driver_wrapper.logger.info('the %s file has been downloaded successfully and took %d'
-                                                ' seconds' % (path_file, took))
+                self.driver_wrapper.logger.info('File has been downloaded successfully to "%s" and took %d '
+                                                'seconds' % (path_file, took))
                 return True
             except IOError as e:
-                self.driver_wrapper.logger.warn('the %s file has a problem; \n %s' % (path_file, e))
+                self.driver_wrapper.logger.warn('Error writing downloaded file in "%s":\n %s' % (path_file, e))
         else:
-            self.driver_wrapper.logger.warn('the file to download does not exist in the server after %s seconds'
-                                            ' (timeout).' % timeout)
+            self.driver_wrapper.logger.warn('File "%s" does not exist in the server after %s seconds' % (url, timeout))
         return False
 
     def __remove_file(self, url):
@@ -136,13 +136,17 @@ class Selenoid(object):
         :param scenario_name: scenario name
         :param timeout: threshold until the video file is downloaded
         """
+        # Download video only in linux nodes
+        if self.driver_wrapper.driver.desired_capabilities['platform'].lower() != 'linux':
+            return
+
         path_file = os.path.join(self.videos_directory, '%s.%s' % (scenario_name, MP4_EXTENSION))
         if self.driver_wrapper.server_type == 'selenoid':
             filename = '%s.%s' % (self.session_id, MP4_EXTENSION)
         else:
             filename = self.session_id
         video_url = '{}/video/{}'.format(self.server_url, filename)
-        # download the execution video file if the scenario is failed
+        # download the execution video file
         if self.browser_remote:
             self.__download_file(video_url, path_file, timeout)
         # remove the video file if it does exist
@@ -157,6 +161,10 @@ class Selenoid(object):
         :param scenario_name: scenario name
         :param timeout: threshold until the video file is downloaded
         """
+        # Download logs only in linux nodes
+        if self.driver_wrapper.driver.desired_capabilities['platform'].lower() != 'linux':
+            return
+
         path_file = os.path.join(self.logs_directory, '%s_ggr.%s' % (scenario_name, LOG_EXTENSION))
         if self.driver_wrapper.server_type == 'selenoid':
             filename = '%s.%s' % (self.session_id, LOG_EXTENSION)
@@ -179,7 +187,7 @@ class Selenoid(object):
         """
         path_file = os.path.join(self.output_directory, DOWNLOADS_PATH, self.session_id[-8:], filename)
         file_url = '{}/download/{}/{}'.format(self.server_url, self.session_id, filename)
-        # download the session log file
+        # download the file
         if self.browser_remote:
             self.__download_file(file_url, path_file, timeout)
             return path_file

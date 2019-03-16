@@ -6,6 +6,7 @@ v1.5.1
 
 *Release date: WIP*
 
+- Download Selenoid video and logs files only in Linux nodes
 - Add a sleep between Selenoid retries when downloading files
 
 v1.5.0
