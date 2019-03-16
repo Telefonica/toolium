@@ -18,8 +18,7 @@ limitations under the License.
 
 import warnings
 import sys
-
-from behave.model_core import Status
+from pkg_resources import parse_version
 
 # constants
 # pre-actions in feature files
@@ -196,7 +195,8 @@ class DynamicEnvironment:
                 self.logger.by_console('\n')
                 if action == ACTIONS_BEFORE_SCENARIO:
                     self.scenario_counter += 1
-                    self.logger.by_console("  ------------------ Scenario Nº: %d ------------------" % self.scenario_counter)
+                    self.logger.by_console(
+                        "  ------------------ Scenario Nº: %d ------------------" % self.scenario_counter)
                 self.logger.by_console('  %s:' % action)
             for item in self.actions[action]:
                 self.scenario_error = False
@@ -254,13 +254,23 @@ class DynamicEnvironment:
         if not self.feature_error:
             self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)
 
-    @staticmethod
-    def fail_first_step_precondition_exception(scenario):
+    def fail_first_step_precondition_exception(self, scenario):
         """
         Fail first step in the given Scenario and add exception message for the output.
         This is needed because xUnit exporter in Behave fails if there are not failed steps.
         :param scenario: Behave's Scenario
         """
-        scenario.steps[0].status = Status.failed
+
+        try:
+            import behave
+            if parse_version(behave.__version__) < parse_version('1.2.6'):
+                status = 'failed'
+            else:
+                status = behave.model_core.Status.failed
+        except ImportError as exc:
+            self.logger.error(exc)
+            raise
+
+        scenario.steps[0].status = status
         scenario.steps[0].exception = Exception("Preconditions failed")
         scenario.steps[0].error_message = "Failing steps due to precondition exceptions"

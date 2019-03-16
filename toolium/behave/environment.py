@@ -34,17 +34,6 @@ from toolium.pageelements import PageElement
 from toolium.behave.env_utils import DynamicEnvironment
 
 
-def _fail_first_step_precondition_exception(scenario):
-    """
-    Fail first step in the Scenario and add exception message for the output.
-    This is needed because xUnit exporter in Behave fails if there are not failed steps.
-    :param scenario: Behave's Scenario
-    """
-    scenario.steps[0].status = "failed"
-    scenario.steps[0].exception = Exception("Preconditions failed")
-    scenario.steps[0].error_message = "Failing steps due to precondition exceptions"
-
-
 def before_all(context):
     """Initialization method that will be executed before the test execution
 
