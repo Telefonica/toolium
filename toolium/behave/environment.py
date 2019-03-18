@@ -83,9 +83,6 @@ def before_feature(context, feature):
     # Behave dynamic environment
     context.dyn_env.get_steps_from_feature_description(feature.description)
     context.dyn_env.execute_before_feature_steps(context)
-    if context.dyn_env.feature_error:
-        # Mark this Scenario as skipped. Steps will not be executed.
-        feature.mark_skipped()
 
 
 def before_scenario(context, scenario):
@@ -128,9 +125,6 @@ def before_scenario(context, scenario):
 
     # Behave dynamic environment
     context.dyn_env.execute_before_scenario_steps(context)
-    if context.dyn_env.scenario_error:
-        # Mark this Scenario as skipped. Steps will not be executed.
-        scenario.mark_skipped()
 
 
 def bdd_common_before_scenario(context_or_world, scenario, no_driver=False):
@@ -226,11 +220,6 @@ def after_scenario(context, scenario):
     """
     bdd_common_after_scenario(context, scenario, scenario.status)
 
-    # Behave dynamic environment: Fail all steps if dyn_env has got any error and reset it
-    if context.dyn_env.check_error_status_and_reset():
-        scenario.reset()
-        context.dyn_env.fail_first_step_precondition_exception(scenario)
-
 
 def bdd_common_after_scenario(context_or_world, scenario, status):
     """Clean method that will be executed after each scenario in behave or lettuce
@@ -288,12 +277,6 @@ def after_feature(context, feature):
     # Close drivers
     DriverWrappersPool.close_drivers(scope='module', test_name=feature.name,
                                      test_passed=context.global_status['test_passed'])
-
-    # Behave dynamic environment: Fail all steps if dyn_env has got any error and reset it
-    if context.dyn_env.check_error_status_and_reset():
-        feature.reset()
-        for scenario in feature.walk_scenarios():
-            context.dyn_env.fail_first_step_precondition_exception(scenario)
 
 
 def after_all(context):

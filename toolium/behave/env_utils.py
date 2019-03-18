@@ -212,7 +212,7 @@ class DynamicEnvironment:
                     self.logger.error(exc)
                     break
 
-    def check_error_status_and_reset(self):
+    def reset_error_status(self):
         """
         Check if the dyn_env has got any exception when executing the steps and restore the value of status to False.
         :return: True if any exception has been raised when executing steps
@@ -230,6 +230,10 @@ class DynamicEnvironment:
         """
         self.__execute_steps_by_action(context, ACTIONS_BEFORE_FEATURE)
 
+        if context.dyn_env.feature_error:
+            # Mark this Feature as skipped. Steps will not be executed.
+            context.feature.mark_skipped()
+
     def execute_before_scenario_steps(self, context):
         """
         actions before each scenario
@@ -237,6 +241,10 @@ class DynamicEnvironment:
         """
         if not self.feature_error:
             self.__execute_steps_by_action(context, ACTIONS_BEFORE_SCENARIO)
+
+        if context.dyn_env.scenario_error:
+            # Mark this Scenario as skipped. Steps will not be executed.
+            context.scenario.mark_skipped()
 
     def execute_after_scenario_steps(self, context):
         """
@@ -246,6 +254,11 @@ class DynamicEnvironment:
         if not self.feature_error and not self.scenario_error:
             self.__execute_steps_by_action(context, ACTIONS_AFTER_SCENARIO)
 
+        # Behave dynamic environment: Fail all steps if dyn_env has got any error and reset it
+        if self.reset_error_status():
+            context.scenario.reset()
+            context.dyn_env.fail_first_step_precondition_exception(context.scenario)
+
     def execute_after_feature_steps(self, context):
         """
         actions after the feature
@@ -253,6 +266,12 @@ class DynamicEnvironment:
         """
         if not self.feature_error:
             self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)
+
+        # Behave dynamic environment: Fail all steps if dyn_env has got any error and reset it
+        if self.reset_error_status():
+            context.feature.reset()
+            for scenario in context.feature.walk_scenarios():
+                context.dyn_env.fail_first_step_precondition_exception(scenario)
 
     def fail_first_step_precondition_exception(self, scenario):
         """
