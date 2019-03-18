@@ -4,10 +4,11 @@ Toolium Changelog
 v1.5.1
 ------
 
-*Release date: WIP*
+*Release date: 2019-03-18*
 
 - Download Selenoid video and logs files only in linux nodes if video or logs are enabled
 - Add a sleep between Selenoid retries when downloading files
+- Manage exceptions in dynamic environment to mark affected scenarios as failed
 
 v1.5.0
 ------
