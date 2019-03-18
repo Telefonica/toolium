@@ -136,8 +136,9 @@ class Selenoid(object):
         :param scenario_name: scenario name
         :param timeout: threshold until the video file is downloaded
         """
-        # Download video only in linux nodes
-        if self.driver_wrapper.driver.desired_capabilities['platform'].lower() != 'linux':
+        # Download video only in linux nodes with video enabled
+        if (self.driver_wrapper.get_driver_platform().lower() != 'linux' or
+                not self.driver_wrapper.config.getboolean_optional('Capabilities', 'enableVideo')):
             return
 
         path_file = os.path.join(self.videos_directory, '%s.%s' % (scenario_name, MP4_EXTENSION))
@@ -161,8 +162,9 @@ class Selenoid(object):
         :param scenario_name: scenario name
         :param timeout: threshold until the video file is downloaded
         """
-        # Download logs only in linux nodes
-        if self.driver_wrapper.driver.desired_capabilities['platform'].lower() != 'linux':
+        # Download logs only in linux nodes with logs enabled
+        if (self.driver_wrapper.get_driver_platform().lower() != 'linux' or
+                not self.driver_wrapper.config.getboolean_optional('Capabilities', 'enableLog')):
             return
 
         path_file = os.path.join(self.logs_directory, '%s_ggr.%s' % (scenario_name, LOG_EXTENSION))
