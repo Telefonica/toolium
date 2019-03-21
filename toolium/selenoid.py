@@ -147,7 +147,7 @@ class Selenoid(object):
         for browser in response:
             if response[browser] != {}:
                 sessions = response[browser][server_url_splitted[1].split("@")[0].replace("//", "")]["sessions"]
-                for idx, session in enumerate(sessions):
+                for session in sessions:
                     if session["id"] == self.session_id:
                         return True
         return False
