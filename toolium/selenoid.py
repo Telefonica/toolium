@@ -142,13 +142,13 @@ class Selenoid(object):
         try:
             response = requests.get(host_url).json()["browsers"][self.browser]
         except Exception as e:
-            self.driver_wrapper.logger.warn("the GGR status request has failed: \n  %s" % response.content)
+            self.driver_wrapper.logger.warn("the GGR status request has failed: \nResponse:  %s \nError message: %s\n" % (response.content, e))
             return None
         for browser in response:
             if response[browser] != {}:
                 sessions = response[browser][server_url_splitted[1].split("@")[0].replace("//", "")]["sessions"]
-                for pos in range(len(sessions)):
-                    if sessions[pos]["id"] == self.session_id:
+                for idx, session in enumerate(sessions):
+                    if session["id"] == self.session_id:
                         return True
         return False
 
