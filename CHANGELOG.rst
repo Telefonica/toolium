@@ -6,6 +6,8 @@ v1.5.2
 
 *Release date: WIP*
 
+- Check if a GGR session (current) is still active
+
 v1.5.1
 ------
 
