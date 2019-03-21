@@ -67,11 +67,7 @@ class Selenoid(object):
         self.output_directory = kwargs.get('output_dir', DriverWrappersPool.output_directory)
         self.browser_remote = driver_wrapper.config.getboolean_optional('Server', 'enabled', False)
         self.enabled_logs = driver_wrapper.config.getboolean_optional('Server', 'logs_enabled', False)
-        self.browser = driver_wrapper.config.get('Driver', 'type')
-
-        # rename the browse name to selenoid browser
-        if self.browser == "iexplore":
-            self.browser = "internet explorer"
+        self.browser = driver_wrapper.driver.desired_capabilities['browserName']
 
         if self.browser_remote:
             self.session_id = driver_wrapper.driver.session_id
@@ -138,12 +134,10 @@ class Selenoid(object):
         Is the GGR session still active? Associated to a browser and the sessionId
         Example of GGR status:
         {"browsers":{"MicrosoftEdge":{"latest":{}},"android":{"8.1":{}},"chrome":{"70.0":{},"latest":{"test_tef":{"count":1,"sessions":[{"caps":{"browserName":"chrome","enableVNC":true,"enableVideo":true,"platform":"ANY","screenResolution":"1280x1024x24","version":"latest","videoName":"selenoide952e551bb9395e16d060f28c54e5d31.mp4","videoScreenSize":"1280x1024"},"container":"8489205e28c9781472e99c3921a6240de3894a3603ed9e187ad6360b6b013b8b","containerInfo":{"id":"8489205e28c9781472e99c3921a6240de3894a3603ed9e187ad6360b6b013b8b","ip":"172.17.0.4"},"id":"1345506093dfed8dbcef610da476911a228ca315978e5464ae49fb1142bbc49b","screen":"1280x1024x24","vnc":true}]}}},"firefox":{"59.0":{},"63.0":{},"64.0":{},"latest":{}},"internet explorer":{"11":{}},"opera":{"56.0":{},"latest":{}},"safari":{"latest":{}}},"pending":0,"queued":0,"total":30,"used":1}
-        :return boolean
+        :return boolean (although in case of error in the request will be returned None)
         """
         server_url_splitted = self.server_url.split(":")
         host_url = "{}:{}:{}:{}/status".format(server_url_splitted[0], server_url_splitted[1], server_url_splitted[2], STATUS_PORT)
-
-        print "browser: %s" % self.browser
 
         try:
             response = requests.get(host_url).json()["browsers"][self.browser]
