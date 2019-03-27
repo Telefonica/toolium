@@ -66,7 +66,6 @@ class Selenoid(object):
         self.logs_directory = kwargs.get('logs_dir', DriverWrappersPool.logs_directory)
         self.output_directory = kwargs.get('output_dir', DriverWrappersPool.output_directory)
         self.browser_remote = driver_wrapper.config.getboolean_optional('Server', 'enabled', False)
-        self.enabled_logs = driver_wrapper.config.getboolean_optional('Server', 'logs_enabled', False)
         self.browser = driver_wrapper.driver.desired_capabilities['browserName']
 
         if self.browser_remote:
@@ -199,7 +198,7 @@ class Selenoid(object):
             filename = self.session_id
         logs_url = '{}/logs/{}'.format(self.server_url, filename)
         # download the session log file
-        if self.enabled_logs and self.browser_remote:
+        if self.browser_remote:
             self.__download_file(logs_url, path_file, timeout)
         # remove the log file if it does exist
         self.__remove_file(logs_url)

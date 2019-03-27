@@ -7,6 +7,7 @@ v1.5.2
 *Release date: WIP*
 
 - Check if a GGR session (current) is still active
+- Download Selenoid logs files also when test fails
 
 v1.5.1
 ------
