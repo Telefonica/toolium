@@ -1,10 +1,27 @@
 Toolium Changelog
 =================
 
-v1.5.0
+v1.5.2
 ------
 
 *Release date: WIP*
+
+- Check if a GGR session (current) is still active
+- Download Selenoid logs files also when test fails
+
+v1.5.1
+------
+
+*Release date: 2019-03-18*
+
+- Download Selenoid video and logs files only in linux nodes if video or logs are enabled
+- Add a sleep between Selenoid retries when downloading files
+- Manage exceptions in dynamic environment to mark affected scenarios as failed
+
+v1.5.0
+------
+
+*Release date: 2019-02-26*
 
 - Latest version of Appium can be used
 - Make Toolium compatible with GGR and Selenoid

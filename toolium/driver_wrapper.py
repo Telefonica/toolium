@@ -213,7 +213,7 @@ class DriverWrapper(object):
         if self.server_type == 'grid':
             self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.remote_node)
         else:
-            self.remote_node_video_enabled = True if self.server_type == 'ggr' else False
+            self.remote_node_video_enabled = True if self.server_type in ['ggr', 'selenoid'] else False
 
             # Save app_strings in mobile tests
         if self.is_mobile_test() and not self.is_web_test() and self.config.getboolean_optional('Driver',
@@ -339,3 +339,15 @@ class DriverWrapper(object):
                                             and context.reuse_driver_from_tags)
         return (((reuse_driver and scope == 'function') or (reuse_driver_session and scope != 'session'))
                 and (test_passed or not restart_driver_after_failure))
+
+    def get_driver_platform(self):
+        """
+        Get driver platform where tests are running
+        :return: platform name
+        """
+        platform = ''
+        if 'platform' in self.driver.desired_capabilities:
+            platform = self.driver.desired_capabilities['platform']
+        elif 'platformName' in self.driver.desired_capabilities:
+            platform = self.driver.desired_capabilities['platformName']
+        return platform

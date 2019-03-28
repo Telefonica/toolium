@@ -123,8 +123,8 @@ def test_get_remote_node_ggr(driver_wrapper, utils):
     driver_wrapper.driver.session_id = '5af'
     grid_url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
     ggr_url = 'http://{}:{}/host/{}'.format('localhost', 4444, '5af')
-    ggr_response_json = {u'Count': 3, u'Username': u'', u'Scheme': u'', u'VNC': u'', u'Name': u'host_name',
-                          u'Password': u'', u'Port': 4500}
+    ggr_response_json = {'Count': 3, 'Username': '', 'Scheme': '', 'VNC': '', 'Name': 'host_name', 'Password': '',
+                         'Port': 4500}
 
     with requests_mock.mock() as req_mock:
         req_mock.get(grid_url, text='non_json_response')
@@ -136,20 +136,43 @@ def test_get_remote_node_ggr(driver_wrapper, utils):
         assert ggr_url == req_mock.request_history[1].url
 
 
+def test_get_remote_node_selenoid(driver_wrapper, utils):
+    # Configure mock
+    driver_wrapper.driver.session_id = '5af'
+    grid_url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
+    ggr_url = 'http://{}:{}/host/{}'.format('localhost', 4444, '5af')
+    selenoid_url = 'http://{}:{}/status'.format('localhost', 4444)
+    selenoid_response_json = {'total': 5, 'used': 0, 'queued': 0, 'pending': 0, 'browsers': {'firefox': {'59.0': {}}}}
+
+    with requests_mock.mock() as req_mock:
+        req_mock.get(grid_url, text='non_json_response')
+        req_mock.get(ggr_url, json={})
+        req_mock.get(selenoid_url, json=selenoid_response_json)
+
+        # Get remote node and check result
+        assert utils.get_remote_node() == ('selenoid', 'localhost')
+        assert grid_url == req_mock.request_history[0].url
+        assert ggr_url == req_mock.request_history[1].url
+        assert selenoid_url == req_mock.request_history[2].url
+
+
 def test_get_remote_node_non_grid(driver_wrapper, utils):
     # Configure mock
     driver_wrapper.driver.session_id = '5af'
     grid_url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
     ggr_url = 'http://{}:{}/host/{}'.format('localhost', 4444, '5af')
+    selenoid_url = 'http://{}:{}/status'.format('localhost', 4444)
 
     with requests_mock.mock() as req_mock:
         req_mock.get(grid_url, text='non_json_response')
         req_mock.get(ggr_url, json={})
+        req_mock.get(selenoid_url, json={})
 
         # Get remote node and check result
         assert utils.get_remote_node() == ('selenium', 'localhost')
         assert grid_url == req_mock.request_history[0].url
         assert ggr_url == req_mock.request_history[1].url
+        assert selenoid_url == req_mock.request_history[2].url
 
 
 def test_get_remote_node_local_execution(driver_wrapper, utils):
