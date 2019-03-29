@@ -248,6 +248,23 @@ class Utils(object):
         except StaleElementReferenceException:
             return False
         
+    def _expected_condition_find_element_not_containing_text(self, element_text_pair):
+        """Tries to find the element and checks that it does not contain the specified text,
+            but does not thrown an exception if the element is found
+
+        :param element_text_pair: Tuple with 2 items where:
+            [0] element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+            [1] text: text to not be contained into the element
+        :returns: the web element if it does not contain the text or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        element, text = element_text_pair
+        web_element = self._expected_condition_find_element(element)
+        try:
+            return web_element if web_element and text not in web_element.text else False
+        except StaleElementReferenceException:
+            return False
+        
     def _expected_condition_value_in_element_attribute(self, element_attribute_value):
         """Tries to find the element and checks that it contains the requested attribute with the expected value,
            but does not thrown an exception if the element is not found
@@ -291,8 +308,9 @@ class Utils(object):
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :param timeout: max time to wait
-        :returns: the web element if it is present or False
+        :returns: the web element if it is present
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element is not found after the timeout
         """
         return self._wait_until(self._expected_condition_find_element, element, timeout)
 
@@ -301,8 +319,9 @@ class Utils(object):
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :param timeout: max time to wait
-        :returns: the web element if it is visible or False
+        :returns: the web element if it is visible
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element is still not visible after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_visible, element, timeout)
 
@@ -311,8 +330,9 @@ class Utils(object):
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :param timeout: max time to wait
-        :returns: the web element if it exists but is not visible or False
+        :returns: the web element if it exists but is not visible
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element is still visible after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_not_visible, element, timeout)
 
@@ -324,6 +344,7 @@ class Utils(object):
         :param timeout: max time to wait
         :returns: first element found
         :rtype: toolium.pageelements.PageElement or tuple
+        :raises TimeoutException: If no element in the list is found after the timeout
         """
         try:
             return self._wait_until(self._expected_condition_find_first_element, elements, timeout)
@@ -339,8 +360,9 @@ class Utils(object):
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :param timeout: max time to wait
-        :returns: the web element if it is clickable or False
+        :returns: the web element if it is clickable
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element is not clickable after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_clickable, element, timeout)
     
@@ -350,8 +372,9 @@ class Utils(object):
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :param times: number of iterations checking the element's location that must be the same for all of them
         in order to considering the element has stopped
-        :returns: the web element if it is clickable or False
+        :returns: the web element if it is clickable
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element does not stop after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_stopped, (element, times), timeout)
 
@@ -361,10 +384,23 @@ class Utils(object):
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :param text: text expected to be contained into the element
         :param timeout: max time to wait
-        :returns: the web element if it is clickable or False
+        :returns: the web element if it contains the expected text
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element does not contain the expected text after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_containing_text, (element, text), timeout)
+    
+    def wait_until_element_not_contain_text(self, element, text, timeout=None):
+        """Search element and wait until it does not contain the expected text
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :param text: text expected to be contained into the element
+        :param timeout: max time to wait
+        :returns: the web element if it does not contain the given text
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element contains the expected text after the timeout
+        """
+        return self._wait_until(self._expected_condition_find_element_not_containing_text, (element, text), timeout)
     
     def wait_until_element_attribute_is(self, element, attribute, value, timeout=None):
         """Search element and wait until the requested attribute contains the expected value
@@ -373,8 +409,9 @@ class Utils(object):
         :param attribute: attribute belonging to the element
         :param value: expected value for the attribute of the element
         :param timeout: max time to wait
-        :returns: the web element if it is clickable or False
+        :returns: the web element if the element's attribute contains the expected value
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element's attribute does not contain the expected value after the timeout
         """
         return self._wait_until(self._expected_condition_value_in_element_attribute, (element, attribute, value), timeout)
 
