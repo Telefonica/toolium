@@ -372,7 +372,7 @@ class Utils(object):
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :param times: number of iterations checking the element's location that must be the same for all of them
         in order to considering the element has stopped
-        :returns: the web element if it is clickable
+        :returns: the web element if the element is stopped
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         :raises TimeoutException: If the element does not stop after the timeout
         """
