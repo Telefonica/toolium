@@ -4,12 +4,12 @@ Toolium Changelog
 v1.5.2
 ------
 
-*Release date: WIP*
+*Release date: 2019-04-01*
 
 - Check if a GGR session (current) is still active
 - Download Selenoid logs files also when test fails
-- Fixes on utils.py wait functions' descriptions
-- Added new wait to utils.py in order to wait for an element not containing some text
+- Fix utils.py wait functions' descriptions
+- Add new wait to utils.py in order to wait for an element not containing some text
 
 
 v1.5.1
