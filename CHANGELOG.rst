@@ -1,11 +1,12 @@
 Toolium Changelog
 =================
 
-v1.5.3.dev0
------------
+v1.5.3
+------
 
-*Release date: WIP*
+*Release date: 2019-04-05*
 
+- Fix error executing Appium locally
 
 v1.5.2
 ------
@@ -16,7 +17,6 @@ v1.5.2
 - Download Selenoid logs files also when test fails
 - Fix utils.py wait functions' descriptions
 - Add new wait to utils.py in order to wait for an element not containing some text
-
 
 v1.5.1
 ------
