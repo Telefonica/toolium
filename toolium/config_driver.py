@@ -44,7 +44,7 @@ def get_error_message_from_exception(exception):
 class ConfigDriver(object):
     def __init__(self, config, utils=None):
         self.logger = logging.getLogger(__name__)
-        self.config = config.deepcopy()
+        self.config = config
         self.utils = utils
 
     def create_driver(self):
