@@ -40,7 +40,7 @@ class PageElements(CommonObject):
     """
     page_element_class = PageElement  #: class of page elements (PageElement, Button...)
 
-    def __init__(self, by, value, parent=None, page_element_class=None, order=None, shadowroot= None):
+    def __init__(self, by, value, parent=None, page_element_class=None, order=None):
         """Initialize the PageElements object with the given locator components.
 
         If parent is not None, find_elements will be performed over it, instead of
@@ -57,7 +57,7 @@ class PageElements(CommonObject):
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.order = order  #: index value if the locator returns more than one element
-        self.shadowroot = shadowroot  #: CSS SELECTOR of the shadowroot for encapsulated element
+        self.shadowroot = None  #: Not implemented for PAgeElements yet
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         # update instance element class or use PageElement class
         if page_element_class:

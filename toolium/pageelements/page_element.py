@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.webdriver.common.by import By
 
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.pageobjects.common_object import CommonObject
@@ -32,7 +33,7 @@ class PageElement(CommonObject):
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     """
 
-    def __init__(self, by, value, parent=None, order=None, wait=False, shadowroot= None):
+    def __init__(self, by, value, parent=None, order=None, wait=False, shadowroot=None):
         """Initialize the PageElement object with the given locator components.
 
         If parent is not None, find_element will be performed over it, instead of
@@ -85,6 +86,8 @@ class PageElement(CommonObject):
         if not self._web_element or not self.config.getboolean_optional('Driver', 'save_web_element'):
             # If the element is encapsulated we use the shadowroot tag in yaml (eg. Shadowroot: root_element_name)
             if self.shadowroot:
+                if self.locator[0] != By.CSS_SELECTOR:
+                    raise Exception('Locator type should be CSS_SELECTOR but found: '.format(self.locator[0]))
                 # querySelector only support CSS SELECTOR locator
                 self._web_element = self.driver.execute_script('return document.querySelector("%s")'
                                                            '.shadowRoot.querySelector("%s")' % (self.shadowroot, self.locator[1]))
@@ -94,8 +97,6 @@ class PageElement(CommonObject):
                 # Find elements and get the correct index or find a single element
                 self._web_element = base.find_elements(*self.locator)[self.order] if self.order else base.find_element(
                     *self.locator)
-                #self._web_element = base.find_elements(*self.locator)[self.order] if self.order else base.find_element(
-                #    *self.locator)
 
     def scroll_element_into_view(self):
         """Scroll element into view
