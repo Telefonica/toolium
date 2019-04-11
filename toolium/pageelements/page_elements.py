@@ -51,11 +51,13 @@ class PageElements(CommonObject):
         :param parent: parent element (WebElement, PageElement or locator tuple)
         :param order: index value if the locator returns more than one element
         :param page_element_class: class of page elements (PageElement, Button...)
+        :param shadowroot: CSS SELECTOR of JS element where shadowroot tag appears
         """
         super(PageElements, self).__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.order = order  #: index value if the locator returns more than one element
+        self.shadowroot = None  #: Not implemented for PAgeElements yet
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         # update instance element class or use PageElement class
         if page_element_class:
