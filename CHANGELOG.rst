@@ -6,6 +6,13 @@ v1.5.4.dev0
 
 *Release date: WIP*
 
+- Add support to encapsulated elements (Shadowroot)
+
+    | Only support CSS_SELECTOR locator
+    | It is not supported for list of elements yet
+    | It is not supported for element find by parent yet
+    | It is not supported nested encapsulation yet
+
 v1.5.3
 ------
 
