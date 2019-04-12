@@ -90,6 +90,18 @@ locator tuple.
     form = PageElement(By.XPATH, "//form[@id='login']")
     login_button = Button(By.XPATH, "./button", parent=form)
 
+Shadowroot
+~~~~~~~~~~
+
+Page elements have an optional argument *shadowroot*, with the CSS selector of the shadowroot parent. The page element
+will be searched within the shadowroot parent element, instead of the entire page.
+
+It is only supported for PageElement objects identified by CSS, so it is not supported for PageElements, Group,
+elements with nested encapsulation or PageElement identified by other selector types.
+
+.. code-block:: python
+
+    login_button = Button(By.CSS_SELECTOR, "css_selector", shadowroot="shadowroot_css_selector")
 
 Group
 ~~~~~
@@ -114,7 +126,6 @@ instead of the entire page.
             self.form.username.text = username
             self.form.password.text = password
             self.form.login_button.click()
-
 
 Find multiple page elements
 ---------------------------

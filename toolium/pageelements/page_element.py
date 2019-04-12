@@ -87,10 +87,12 @@ class PageElement(CommonObject):
             # If the element is encapsulated we use the shadowroot tag in yaml (eg. Shadowroot: root_element_name)
             if self.shadowroot:
                 if self.locator[0] != By.CSS_SELECTOR:
-                    raise Exception('Locator type should be CSS_SELECTOR but found: '.format(self.locator[0]))
+                    raise Exception('Locator type should be CSS_SELECTOR using shadowroot but found: '
+                                    '%s'.format(self.locator[0]))
                 # querySelector only support CSS SELECTOR locator
-                self._web_element = self.driver.execute_script('return document.querySelector("%s")'
-                                                           '.shadowRoot.querySelector("%s")' % (self.shadowroot, self.locator[1]))
+                self._web_element = self.driver.execute_script('return document.querySelector("%s").shadowRoot.'
+                                                               'querySelector("%s")' % (self.shadowroot,
+                                                                                        self.locator[1]))
             else:
                 # Element will be finded from parent element or from driver
                 base = self.utils.get_web_element(self.parent) if self.parent else self.driver
