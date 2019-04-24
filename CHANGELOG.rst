@@ -9,6 +9,7 @@ v1.5.4.dev0
 - Add support to encapsulated elements (Shadowroot)
 
     | Only support CSS_SELECTOR locator
+    | Input text page element fixed
     | It is not supported for list of elements yet
     | It is not supported for element find by parent yet
     | It is not supported nested encapsulation yet
