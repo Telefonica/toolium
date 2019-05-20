@@ -210,6 +210,7 @@ class DynamicEnvironment:
                     elif action in [ACTIONS_BEFORE_SCENARIO]:
                         self.scenario_error = True
                     self.logger.error(exc)
+                    self.error_exception = exc
                     break
 
     def reset_error_status(self):
@@ -292,4 +293,4 @@ class DynamicEnvironment:
 
         scenario.steps[0].status = status
         scenario.steps[0].exception = Exception("Preconditions failed")
-        scenario.steps[0].error_message = "Failing steps due to precondition exceptions"
+        scenario.steps[0].error_message = self.error_exception.message
