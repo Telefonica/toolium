@@ -292,5 +292,5 @@ class DynamicEnvironment:
             raise
 
         scenario.steps[0].status = status
-        scenario.steps[0].exception = Exception("Preconditions failed")
+        scenario.steps[0].exception = self.error_exception
         scenario.steps[0].error_message = self.error_exception.message
