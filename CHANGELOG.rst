@@ -1,10 +1,10 @@
 Toolium Changelog
 =================
 
-v1.5.4.dev0
------------
+v1.5.4
+------
 
-*Release date: WIP*
+*Release date: 2019-07-22*
 
 - Add support to encapsulated elements (Shadowroot)
 
@@ -13,6 +13,8 @@ v1.5.4.dev0
     | It is not supported for list of elements yet
     | It is not supported for element find by parent yet
     | It is not supported nested encapsulation yet
+
+- Fix Selenium dependency conflict
 
 v1.5.3
 ------
