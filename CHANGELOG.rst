@@ -1,11 +1,12 @@
 Toolium Changelog
 =================
 
-v1.5.5.dev0
------------
+v1.5.5
+------
 
-*Release date: In development*
+*Release date: 2019-07-29*
 
+- Fix screeninfo dependency to 0.3.1 version
 
 v1.5.4
 ------
