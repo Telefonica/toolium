@@ -1,10 +1,12 @@
 Toolium Changelog
 =================
 
-v1.5.6.dev0
------------
+v1.5.6
+------
 
-*Release date: In development*
+*Release date: 2019-10-04*
+
+- Fix dynamic environment exit code when there are hook errors
 
 v1.5.5
 ------
