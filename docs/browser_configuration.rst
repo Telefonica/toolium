@@ -218,6 +218,15 @@ For example, to use a predefined chrome profile::
     [ChromeArguments]
     user-data-dir: C:\Users\USERNAME\AppData\Local\Google\Chrome\User Data
 
+When Chrome is installed in a non-default location, configure the Chrome binary path in *[Chrome]* configuration
+section::
+
+    [Driver]
+    type: chrome
+
+    [Chrome]
+    binary: /usr/local/chrome_beta/chrome
+
 Another examples showing how to use
 `Chrome Device Mode <https://sites.google.com/a/chromium.org/chromedriver/mobile-emulation>`_ in two different ways::
 
