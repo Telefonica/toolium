@@ -6,6 +6,22 @@ v1.5.7
 
 *Release date: In development*
 
+- New config property 'binary' in [Chrome] section to configure the chrome binary path
+- Allow configuration properties with colon in name
+
+    For instance, to set a capability with : in name, like:
+
+.. code:: console
+
+    goog:loggingPrefs = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
+
+    Following property should be added in properties.cfg:
+
+.. code:: console
+
+    [Capabilities]
+    goog___loggingPrefs: {'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}
+
 v1.5.6
 ------
 
