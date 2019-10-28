@@ -142,3 +142,12 @@ def test_configure_properties_change_configuration_file(driver_wrapper):
 
     # Check that configuration has been initialized
     assert driver_wrapper.config.get('Driver', 'type') == 'android'
+
+
+def test_configure_properties_colon_in_name(driver_wrapper):
+    os.environ["Config_prop_filenames"] = 'special-properties.cfg'
+    driver_wrapper.configure_properties()
+    # Property name is called goog___loggingPrefs in properties.cfg
+    logging_prefs = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
+    assert driver_wrapper.config.get_optional('Capabilities', 'goog:loggingPrefs') == logging_prefs
+    assert driver_wrapper.config.get_optional('Capabilities', 'goog___loggingPrefs') is None
