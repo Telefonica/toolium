@@ -4,7 +4,7 @@ Toolium Changelog
 v1.6.0
 ------
 
-*Release date: In development*
+*Release date: 2020-01-15*
 
 - New config property 'binary' in [Chrome] section to configure the chrome binary path
 - Allow configuration properties with colon in name
