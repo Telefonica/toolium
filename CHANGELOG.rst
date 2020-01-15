@@ -1,7 +1,7 @@
 Toolium Changelog
 =================
 
-v1.5.7
+v1.6.0
 ------
 
 *Release date: In development*
@@ -21,6 +21,8 @@ v1.5.7
 
     [Capabilities]
     goog___loggingPrefs: {'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}
+
+- Add support for python 3.8
 
 v1.5.6
 ------
