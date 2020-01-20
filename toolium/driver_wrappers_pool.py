@@ -22,7 +22,7 @@ import os
 import datetime
 
 from toolium.config_files import ConfigFiles
-from toolium.format_utils import get_valid_filename
+from toolium.path_utils import get_valid_filename, makedirs_safe
 from toolium.selenoid import Selenoid
 
 
@@ -285,8 +285,7 @@ class DriverWrappersPool(object):
             if not os.path.isabs(cls.output_directory):
                 # If output directory is relative, we use the same path as config directory
                 cls.output_directory = os.path.join(os.path.dirname(cls.config_directory), cls.output_directory)
-            if not os.path.exists(cls.output_directory):
-                os.makedirs(cls.output_directory)
+            makedirs_safe(cls.output_directory)
 
             # Get visual baseline directory from properties
             default_baseline = os.path.join(cls.output_directory, 'visualtests', 'baseline')

@@ -6,6 +6,8 @@ v1.6.1.dev0
 
 *In development*
 
+- Fix concurrent folder creation. Add *makedirs_safe* method to create a new folder.
+
 v1.6.0
 ------
 
