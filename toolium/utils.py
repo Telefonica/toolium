@@ -32,7 +32,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from six.moves.urllib.parse import urlparse  # Python 2 and 3 compatibility
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.format_utils import get_valid_filename
+from toolium.path_utils import get_valid_filename, makedirs_safe
 
 
 class Utils(object):
@@ -69,8 +69,7 @@ class Utils(object):
         filename = '{0:0=2d}_{1}'.format(DriverWrappersPool.screenshots_number, name)
         filename = '{}.png'.format(get_valid_filename(filename))
         filepath = os.path.join(DriverWrappersPool.screenshots_directory, filename)
-        if not os.path.exists(DriverWrappersPool.screenshots_directory):
-            os.makedirs(DriverWrappersPool.screenshots_directory)
+        makedirs_safe(DriverWrappersPool.screenshots_directory)
         if self.driver_wrapper.driver.get_screenshot_as_file(filepath):
             self.logger.info('Screenshot saved in %s', filepath)
             DriverWrappersPool.screenshots_number += 1
@@ -530,8 +529,7 @@ class Utils(object):
         filename = '{0:0=2d}_{1}'.format(DriverWrappersPool.videos_number, video_name)
         filename = '{}.mp4'.format(get_valid_filename(filename))
         filepath = os.path.join(DriverWrappersPool.videos_directory, filename)
-        if not os.path.exists(DriverWrappersPool.videos_directory):
-            os.makedirs(DriverWrappersPool.videos_directory)
+        makedirs_safe(DriverWrappersPool.videos_directory)
         response = requests.get(video_url)
         open(filepath, 'wb').write(response.content)
         self.logger.info("Video saved in '%s'", filepath)
@@ -665,3 +663,4 @@ class Utils(object):
     def switch_to_first_webview_context(self):
         """Switch to the first WEBVIEW context"""
         self.driver_wrapper.driver.switch_to.context(self.get_first_webview_context())
+

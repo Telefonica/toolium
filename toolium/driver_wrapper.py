@@ -25,7 +25,7 @@ from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils import Utils
-from toolium.format_utils import get_valid_filename
+from toolium.path_utils import get_valid_filename
 
 
 class DriverWrapper(object):

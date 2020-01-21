@@ -16,8 +16,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
+try:
+    import Queue as queue  # Py2
+except ImportError:
+    import queue as queue  # Py3
+import threading
+import uuid
+
 import pytest
-import toolium.format_utils as format_utils
+
+from toolium.path_utils import get_valid_filename, makedirs_safe
 
 filename_tests = (
     ('hola_pepito', 'hola_pepito'),
@@ -30,7 +39,7 @@ filename_tests = (
 
 @pytest.mark.parametrize('input_filename, expected_filename', filename_tests)
 def test_get_valid_filename(input_filename, expected_filename):
-    valid_filename = format_utils.get_valid_filename(input_filename)
+    valid_filename = get_valid_filename(input_filename)
 
     assert expected_filename == valid_filename
 
@@ -38,6 +47,46 @@ def test_get_valid_filename(input_filename, expected_filename):
 def test_get_valid_filename_length():
     input_filename = ' hola:pep /ito* '
     expected_filename = 'hola_pep__it'
-    valid_filename = format_utils.get_valid_filename(input_filename, 12)
+    valid_filename = get_valid_filename(input_filename, 12)
 
     assert expected_filename == valid_filename
+
+
+def test_create_new_folder():
+    folder = os.path.join('output', str(uuid.uuid4()))
+    makedirs_safe(folder)
+
+    assert os.path.isdir(folder)
+    os.rmdir(folder)
+
+
+def test_create_existing_folder():
+    folder = os.path.join('output', str(uuid.uuid4()))
+    os.makedirs(folder)
+    makedirs_safe(folder)
+
+    assert os.path.isdir(folder)
+    os.rmdir(folder)
+
+
+def test_create_new_folder_parallel():
+    folder = os.path.join('output', str(uuid.uuid4()))
+
+    def run_makedirs(folder, exceptions):
+        try:
+            makedirs_safe(folder)
+        except Exception as exc:
+            exceptions.put(exc)
+
+    for _ in range(5):
+        exceptions = queue.Queue()
+        thread1 = threading.Thread(target=run_makedirs, args=(folder, exceptions))
+        thread2 = threading.Thread(target=run_makedirs, args=(folder, exceptions))
+        thread1.start()
+        thread2.start()
+        thread1.join()
+        thread2.join()
+
+        assert exceptions.qsize() == 0
+        assert os.path.isdir(folder)
+        os.rmdir(folder)

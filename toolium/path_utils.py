@@ -16,6 +16,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from os import makedirs
+try:
+    from os import errno  # Py2, < Py3.7
+except ImportError:
+    import errno  # Py3.7
 import re
 
 FILENAME_MAX_LENGTH = 100
@@ -33,3 +38,15 @@ def get_valid_filename(s, max_length=FILENAME_MAX_LENGTH):
     s = str(s).strip().replace(' -- @', '_')
     s = re.sub(r'(?u)[^-\w]', '_', s).strip('_')
     return s[:max_length]
+
+
+def makedirs_safe(folder):
+    """
+    Create a new folder if it does not exist
+    :param folder: folder path
+    """
+    try:
+        makedirs(folder)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
