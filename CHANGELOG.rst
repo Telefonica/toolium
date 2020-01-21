@@ -1,10 +1,10 @@
 Toolium Changelog
 =================
 
-v1.6.1.dev0
+v1.6.1
 ------
 
-*In development*
+*Release date: 2020-01-21*
 
 - Fix concurrent folder creation. Add *makedirs_safe* method to create a new folder.
 
