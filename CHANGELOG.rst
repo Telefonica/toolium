@@ -1,13 +1,86 @@
 Toolium Changelog
 =================
 
+v1.6.2.dev0
+------
+
+*In development*
+
+v1.6.1
+------
+
+*Release date: 2020-01-21*
+
+- Fix concurrent folder creation. Add *makedirs_safe* method to create a new folder.
+
+v1.6.0
+------
+
+*Release date: 2020-01-15*
+
+- New config property 'binary' in [Chrome] section to configure the chrome binary path
+- Allow configuration properties with colon in name
+
+    For instance, to set a capability with : in name, like:
+
+.. code:: console
+
+    goog:loggingPrefs = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
+
+    Following property should be added in properties.cfg:
+
+.. code:: console
+
+    [Capabilities]
+    goog___loggingPrefs: {'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}
+
+- Add support for python 3.8
+
+v1.5.6
+------
+
+*Release date: 2019-10-04*
+
+- Fix dynamic environment exit code when there are hook errors
+
+v1.5.5
+------
+
+*Release date: 2019-07-29*
+
+- Fix screeninfo dependency to 0.3.1 version
+
+v1.5.4
+------
+
+*Release date: 2019-07-22*
+
+- Add support to encapsulated elements (Shadowroot)
+
+    | Only support CSS_SELECTOR locator
+    | Input text page element fixed
+    | It is not supported for list of elements yet
+    | It is not supported for element find by parent yet
+    | It is not supported nested encapsulation yet
+
+- Fix Selenium dependency conflict
+
+v1.5.3
+------
+
+*Release date: 2019-04-05*
+
+- Fix error executing Appium locally
+
 v1.5.2
 ------
 
-*Release date: WIP*
+*Release date: 2019-04-01*
 
 - Check if a GGR session (current) is still active
 - Download Selenoid logs files also when test fails
+- Fix utils.py wait functions' descriptions
+- Add new wait to utils.py in order to wait for an element not containing some text
 
 v1.5.1
 ------

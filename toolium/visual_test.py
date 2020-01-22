@@ -31,7 +31,7 @@ from selenium.common.exceptions import NoSuchElementException
 from six.moves import xrange  # Python 2 and 3 compatibility
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.format_utils import get_valid_filename
+from toolium.path_utils import get_valid_filename, makedirs_safe
 
 try:
     from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
@@ -80,10 +80,8 @@ class VisualTest(object):
         self.save_baseline = self.driver_wrapper.config.getboolean_optional('VisualTests', 'save')
 
         # Create folders
-        if not os.path.exists(self.baseline_directory):
-            os.makedirs(self.baseline_directory)
-        if not os.path.exists(self.output_directory):
-            os.makedirs(self.output_directory)
+        makedirs_safe(self.baseline_directory)
+        makedirs_safe(self.output_directory)
 
         # Copy js, css and html template to output directory
         dst_template_path = os.path.join(self.output_directory, self.report_name)

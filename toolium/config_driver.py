@@ -44,7 +44,7 @@ def get_error_message_from_exception(exception):
 class ConfigDriver(object):
     def __init__(self, config, utils=None):
         self.logger = logging.getLogger(__name__)
-        self.config = config.deepcopy()
+        self.config = config
         self.utils = utils
 
     def create_driver(self):
@@ -315,6 +315,9 @@ class ConfigDriver(object):
 
         :returns: chrome options object
         """
+        # Get Chrome binary
+        chrome_binary = self.config.get_optional('Chrome', 'binary')
+
         # Create Chrome options
         options = webdriver.ChromeOptions()
 
@@ -323,6 +326,9 @@ class ConfigDriver(object):
             options.add_argument('--headless')
             if os.name == 'nt':  # Temporarily needed if running on Windows.
                 options.add_argument('--disable-gpu')
+
+        if chrome_binary is not None:
+            options.binary_location = chrome_binary
 
         # Add Chrome preferences, mobile emulation options and chrome arguments
         self._add_chrome_options(options, 'prefs')
