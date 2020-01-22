@@ -5,6 +5,7 @@ v1.6.2.dev0
 ------
 
 *In development*
+- Fix to allow step's text (context.text) declaration into dynamic envyronment sections
 
 v1.6.1
 ------
