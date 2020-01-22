@@ -166,7 +166,7 @@ class DynamicEnvironment:
                     self.actions[label_exists][-1] = "%s\n      %s" % (self.actions[label_exists][-1], row)
                     step_text_start = True
                 else:
-                    label_exists = EMPTY                    
+                    label_exists = EMPTY
 
             for action_label in self.actions:
                 if row.lower().find(action_label) >= 0:
