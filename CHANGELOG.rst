@@ -5,7 +5,9 @@ v1.6.2.dev0
 ------
 
 *In development*
+
 - Fix to allow step's text (context.text) declaration into dynamic environment sections
+- Add `ssl` config property in [Server] section to allow using https in Selenium Grid url
 
 v1.6.1
 ------
