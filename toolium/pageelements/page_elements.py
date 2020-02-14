@@ -94,7 +94,8 @@ class PageElements(CommonObject):
         return self._web_elements
 
     @property
-    def page_elements(self):  # type: (...) -> List[Any]
+    def page_elements(self):
+        # type: () -> List[Any]
         """Find multiple PageElement using element locator
 
         :returns: list of page element objects
@@ -110,6 +111,15 @@ class PageElements(CommonObject):
                 page_element._web_element = web_element
                 self._page_elements.append(page_element)
         return self._page_elements
+
+    def __len__(self):
+        return len(self.page_elements)
+
+    def __getitem__(self, i):
+        return self.page_elements[i]
+
+    def __iter__(self):
+        return iter(self.page_elements)
 
 
 class Buttons(PageElements):
