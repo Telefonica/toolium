@@ -3,3 +3,4 @@ selenium>=2.53.6,<4         # web tests
 Appium-Python-Client>=0.24  # mobile tests
 six>=1.10.0
 screeninfo==0.3.1
+typing==3.7.4.1
