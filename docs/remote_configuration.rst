@@ -11,6 +11,7 @@ section in properties.cfg file::
 
     [Server]
     enabled: true
+    ssl: false
     host: SERVER_IP
     port: SERVER_PORT
     username: SERVER_USERNAME
@@ -22,6 +23,11 @@ enabled
 ~~~~~~~
 | *true*: remote execution is enabled, tests will be executed remotely
 | *false*: remote execution is disabled, tests will be executed locally
+
+ssl
+~~~
+| *true*: use https in server url
+| *false*: use http in server url
 
 host
 ~~~~
