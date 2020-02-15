@@ -161,7 +161,7 @@ class VisualTest(object):
         DriverWrappersPool.visual_number += 1
 
         # Determine whether we should save the baseline image
-        if self.save_baseline or not os.path.exists(baseline_file):
+        if self.save_baseline and not os.path.exists(baseline_file):
             # Copy screenshot to baseline
             shutil.copyfile(output_file, baseline_file)
 
