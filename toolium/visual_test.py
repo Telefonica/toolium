@@ -161,7 +161,7 @@ class VisualTest(object):
         DriverWrappersPool.visual_number += 1
 
         # Determine whether we should save the baseline image
-        if self.save_baseline or not os.path.exists(baseline_file):
+        if self.save_baseline:
             # Copy screenshot to baseline
             shutil.copyfile(output_file, baseline_file)
 
@@ -169,6 +169,13 @@ class VisualTest(object):
                 self._add_result_to_report('baseline', report_name, output_file, None, 'Screenshot added to baseline')
 
             self.logger.debug("Visual screenshot '%s' saved in visualtests/baseline folder", filename)
+        elif not os.path.exists(baseline_file):
+            # Baseline should exist if save mode is not enabled
+            error_message = "Baseline file not found: %s" % baseline_file
+            self.logger.warning(error_message)
+            self._add_result_to_report('diff', report_name, output_file, None, 'Baseline file not found')
+            if self.driver_wrapper.config.getboolean_optional('VisualTests', 'fail') or self.force:
+                raise AssertionError(error_message)
         else:
             # Compare the screenshots
             self.compare_files(report_name, output_file, baseline_file, threshold)
