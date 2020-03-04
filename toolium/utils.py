@@ -47,9 +47,13 @@ class Utils(object):
         # Configure logger
         self.logger = logging.getLogger(__name__)
 
+    def get_implicitly_wait(self):
+        """Read implicitly timeout from configuration properties"""
+        return self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait')
+
     def set_implicitly_wait(self):
         """Read implicitly timeout from configuration properties and configure driver implicitly wait"""
-        implicitly_wait = self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait')
+        implicitly_wait = self.get_implicitly_wait()
         if implicitly_wait:
             self.driver_wrapper.driver.implicitly_wait(implicitly_wait)
 
@@ -292,14 +296,19 @@ class Utils(object):
         :returns: condition method response
         """
         # Remove implicitly wait timeout
-        self.driver_wrapper.driver.implicitly_wait(0)
-        # Get explicitly wait timeout
-        timeout = timeout if timeout else self.get_explicitly_wait()
-        # Wait for condition
-        condition_response = WebDriverWait(self.driver_wrapper.driver, timeout).until(
-            lambda s: condition_method(condition_input))
-        # Restore implicitly wait timeout from properties
-        self.set_implicitly_wait()
+        implicitly_wait = self.get_implicitly_wait()
+        if implicitly_wait != 0:
+            self.driver_wrapper.driver.implicitly_wait(0)
+        try:
+            # Get explicitly wait timeout
+            timeout = timeout if timeout else self.get_explicitly_wait()
+            # Wait for condition
+            condition_response = WebDriverWait(self.driver_wrapper.driver, timeout).until(
+                lambda s: condition_method(condition_input))
+        finally:
+            # Restore implicitly wait timeout from properties
+            if implicitly_wait != 0:
+                self.set_implicitly_wait()
         return condition_response
 
     def wait_until_element_present(self, element, timeout=None):
