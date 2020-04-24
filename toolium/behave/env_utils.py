@@ -261,7 +261,7 @@ class DynamicEnvironment:
         actions after each scenario
         :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
         """
-        if not self.feature_error and not self.scenario_error:
+        if not self.feature_error:
             self.__execute_steps_by_action(context, ACTIONS_AFTER_SCENARIO)
 
         # Behave dynamic environment: Fail all steps if dyn_env has got any error and reset it
@@ -274,8 +274,7 @@ class DynamicEnvironment:
         actions after the feature
         :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
         """
-        if not self.feature_error:
-            self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)
+        self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)
 
         # Behave dynamic environment: Fail all steps if dyn_env has got any error and reset it
         if self.reset_error_status():
@@ -303,4 +302,4 @@ class DynamicEnvironment:
 
         scenario.steps[0].status = status
         scenario.steps[0].exception = Exception("Preconditions failed")
-        scenario.steps[0].error_message = self.error_exception.message
+        scenario.steps[0].error_message = str(self.error_exception)
