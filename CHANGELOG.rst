@@ -10,6 +10,7 @@ v1.6.2.dev0
 - Add `ssl` config property in [Server] section to allow using https in Selenium Grid url
 - Visual testing comparison must fail when baseline does not exist and save mode is disabled
 - Fix dynamic environment behaviour, after scenario/feature actions are executed when before scenario/feature actions fail
+- Fix unit tests to work without any additional dependencies
 
 v1.6.1
 ------
