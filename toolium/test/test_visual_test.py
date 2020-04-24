@@ -243,7 +243,22 @@ def assert_image(visual, img, img_name, expected_image_filename):
 
     # Output image and expected image must be equal
     expected_image = os.path.join(root_path, 'resources', expected_image_filename + '.png')
-    MagickEngine().assertSameFiles(result_file, expected_image, 0.1)
+    compare_image_files(result_file, expected_image)
+
+
+def compare_image_files(image, expected_image, threshold=0.1):
+    """Compare two images
+
+    :param image: file path image to compare
+    :param expected_image: expected image
+    :param threshold: allowed threshold
+    """
+    # Pil needs a pixel number threshold instead of a percentage threshold
+    img = Image.open(expected_image)
+    width, height = img.size
+    threshold = int(width * height * threshold)
+
+    PilEngine().assertSameFiles(image, expected_image, threshold)
 
 
 def test_crop_element(driver_wrapper):
@@ -475,7 +490,7 @@ def test_assert_screenshot_full_and_save_baseline(driver_wrapper):
 
     # Output image and new baseline image must be equal
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_full.png')
-    MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
+    compare_image_files(output_file, baseline_file)
 
 
 def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
@@ -497,11 +512,11 @@ def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'register_cropped_element.png')
     output_file = os.path.join(visual.output_directory, '01_screenshot_elem__screenshot_suffix.png')
-    MagickEngine().assertSameFiles(output_file, expected_image, 0.1)
+    compare_image_files(output_file, expected_image)
 
     # Output image and new baseline image must be equal
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_elem.png')
-    MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
+    compare_image_files(output_file, baseline_file)
 
 
 def test_assert_screenshot_full_and_compare(driver_wrapper):
@@ -603,11 +618,11 @@ def test_assert_screenshot_mobile_resize_and_exclude(driver_wrapper):
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'ios_excluded.png')
     output_file = os.path.join(visual.output_directory, '01_screenshot_ios__screenshot_suffix.png')
-    MagickEngine().assertSameFiles(output_file, expected_image, 0.1)
+    compare_image_files(output_file, expected_image)
 
     # Output image and new baseline image must be equal
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_ios.png')
-    MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
+    compare_image_files(output_file, baseline_file)
 
 
 def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
@@ -637,11 +652,11 @@ def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'ios_web_exclude.png')
     output_file = os.path.join(visual.output_directory, '01_screenshot_ios_web__screenshot_suffix.png')
-    MagickEngine().assertSameFiles(output_file, expected_image, 0.1)
+    compare_image_files(output_file, expected_image)
 
     # Output image and new baseline image must be equal
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_ios_web.png')
-    MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
+    compare_image_files(output_file, baseline_file)
 
 
 def test_assert_screenshot_str_threshold(driver_wrapper):
