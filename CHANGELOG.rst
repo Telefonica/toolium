@@ -9,6 +9,7 @@ v1.6.2.dev0
 - Fix to allow step's text (context.text) declaration into dynamic environment sections
 - Add `ssl` config property in [Server] section to allow using https in Selenium Grid url
 - Visual testing comparison must fail when baseline does not exist and save mode is disabled
+- Fix dynamic environment behaviour, after scenario/feature actions are executed when before scenario/feature actions fail
 
 v1.6.1
 ------
