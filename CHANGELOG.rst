@@ -4,7 +4,9 @@ Toolium Changelog
 v1.7.1
 ------
 
-*In development*
+*Release date: 2020-05-18*
+
+- Fix Appium dependency conflict, current allowed versions: from 0.24 to 0.52
 
 v1.7.0
 ------
