@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 u"""
-Copyright 2018 Telefónica Investigación y Desarrollo, S.A.U.
+Copyright 2020 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# Imports to maintain backwards compatibility
+# Import to maintain backwards compatibility
 
-from toolium.utils.path_utils import get_valid_filename, makedirs_safe
+from toolium.utils.driver_utils import Utils

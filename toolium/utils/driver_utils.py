@@ -31,8 +31,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
 from six.moves.urllib.parse import urlparse  # Python 2 and 3 compatibility
 
-from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.path_utils import get_valid_filename, makedirs_safe
+from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 
 
 class Utils(object):
@@ -43,6 +42,7 @@ class Utils(object):
 
         :param driver_wrapper: driver wrapper instance
         """
+        from toolium.driver_wrappers_pool import DriverWrappersPool
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
         # Configure logger
         self.logger = logging.getLogger(__name__)
@@ -70,6 +70,7 @@ class Utils(object):
         :param name: screenshot name suffix
         :returns: screenshot path
         """
+        from toolium.driver_wrappers_pool import DriverWrappersPool
         filename = '{0:0=2d}_{1}'.format(DriverWrappersPool.screenshots_number, name)
         filename = '{}.png'.format(get_valid_filename(filename))
         filepath = os.path.join(DriverWrappersPool.screenshots_directory, filename)
@@ -111,6 +112,7 @@ class Utils(object):
             return
 
         if len(logs) > 0:
+            from toolium.driver_wrappers_pool import DriverWrappersPool
             log_file_name = '{}_{}.txt'.format(get_valid_filename(test_name), log_type)
             log_file_name = os.path.join(DriverWrappersPool.logs_directory, log_file_name)
             with open(log_file_name, 'a+', encoding='utf-8') as log_file:
@@ -536,6 +538,7 @@ class Utils(object):
         :param video_url: video url
         :param video_name: video name
         """
+        from toolium.driver_wrappers_pool import DriverWrappersPool
         filename = '{0:0=2d}_{1}'.format(DriverWrappersPool.videos_number, video_name)
         filename = '{}.mp4'.format(get_valid_filename(filename))
         filepath = os.path.join(DriverWrappersPool.videos_directory, filename)

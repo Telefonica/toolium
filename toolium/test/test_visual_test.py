@@ -30,7 +30,7 @@ from needle.engines.pil_engine import Engine as PilEngine
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrapper import DriverWrappersPool
-from toolium.test.test_utils import get_mock_element
+from toolium.test.utils.test_driver_utils import get_mock_element
 from toolium.visual_test import VisualTest
 
 # Get file paths

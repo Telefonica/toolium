@@ -22,7 +22,7 @@ import os
 import datetime
 
 from toolium.config_files import ConfigFiles
-from toolium.path_utils import get_valid_filename, makedirs_safe
+from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 from toolium.selenoid import Selenoid
 
 
