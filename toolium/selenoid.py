@@ -21,7 +21,7 @@ import time
 
 import requests
 
-from toolium.path_utils import makedirs_safe
+from toolium.utils.path_utils import makedirs_safe
 
 # constants
 STATUS_OK = 200

@@ -31,7 +31,7 @@ from selenium.common.exceptions import NoSuchElementException
 from six.moves import xrange  # Python 2 and 3 compatibility
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.path_utils import get_valid_filename, makedirs_safe
+from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 
 try:
     from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine

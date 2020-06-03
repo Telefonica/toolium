@@ -96,7 +96,7 @@ class SeleniumTestCase(BasicTestCase):
         utils: test utils instance
 
     :type driver: selenium.webdriver.remote.webdriver.WebDriver
-    :type utils: toolium.utils.Utils
+    :type utils: toolium.utils.driver_utils.Utils
     """
     driver = None
     utils = None

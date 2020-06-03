@@ -24,8 +24,8 @@ import screeninfo
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.utils import Utils
-from toolium.path_utils import get_valid_filename
+from toolium.utils.driver_utils import Utils
+from toolium.utils.path_utils import get_valid_filename
 
 
 class DriverWrapper(object):
@@ -33,7 +33,7 @@ class DriverWrapper(object):
 
     :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
     :type config: toolium.config_parser.ExtendedConfigParser or configparser.ConfigParser
-    :type utils: toolium.utils.Utils
+    :type utils: toolium.utils.driver_utils.Utils
     :type app_strings: dict
     :type session_id: str
     :type remote_node: str
