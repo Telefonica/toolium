@@ -7,6 +7,7 @@ v1.7.2
 *In development*
 
 - Move utils.py and path_utils.py files to utils folder maintaining backwards compatibility
+- Add datetime_utils to utils folder to convert time string to seconds and vice versa.
 
 v1.7.1
 ------
