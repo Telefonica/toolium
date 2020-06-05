@@ -43,7 +43,8 @@ def get_long_description():
 setup(
     name='toolium',
     version=read_file('VERSION').strip(),
-    packages=['toolium', 'toolium.pageobjects', 'toolium.pageelements', 'toolium.lettuce', 'toolium.behave'],
+    packages=['toolium', 'toolium.pageobjects', 'toolium.pageelements', 'toolium.lettuce', 'toolium.behave',
+              'toolium.utils'],
     package_data={'': ['resources/VisualTestsTemplate.html', 'resources/VisualTests.js', 'resources/VisualTests.css']},
     install_requires=read_file('requirements.txt').splitlines(),
     setup_requires=['pytest-runner'],
