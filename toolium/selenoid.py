@@ -21,6 +21,8 @@ import time
 
 import requests
 
+from toolium.utils.path_utils import makedirs_safe
+
 # constants
 STATUS_OK = 200
 STATUS_PORT = "8888"
@@ -93,8 +95,7 @@ class Selenoid(object):
         # create the folders and store the file downloaded
         if status_code == STATUS_OK:
             path, name = os.path.split(path_file)
-            if not os.path.exists(path):
-                os.makedirs(path)
+            makedirs_safe(path)
             try:
                 fp = open(path_file, 'wb')
                 fp.write(body.content)

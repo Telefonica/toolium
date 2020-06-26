@@ -29,6 +29,7 @@ ACTIONS_AFTER_FEATURE = u'actions after the feature'
 KEYWORDS = [u'Setup', u'Check', u'Given', u'When', u'Then', u'And', u'But']  # prefix in steps to actions
 GIVEN_PREFIX = u'Given'
 TABLE_SEPARATOR = u'|'
+STEP_TEXT_SEPARATORS = [u'"""', u"'''"]
 EMPTY = u''
 
 warnings.filterwarnings('ignore')
@@ -147,6 +148,7 @@ class DynamicEnvironment:
         """
         self.init_actions()
         label_exists = EMPTY
+        step_text_start = False
         for row in description:
             if label_exists != EMPTY:
                 # in case of a line with a comment, it is removed
@@ -155,10 +157,17 @@ class DynamicEnvironment:
 
                 if any(row.startswith(x) for x in KEYWORDS):
                     self.actions[label_exists].append(row)
-                elif row.find(TABLE_SEPARATOR) >= 0:
+                elif row.strip()[-3:] in STEP_TEXT_SEPARATORS and step_text_start:
                     self.actions[label_exists][-1] = "%s\n      %s" % (self.actions[label_exists][-1], row)
+                    step_text_start = False
+                elif row.find(TABLE_SEPARATOR) >= 0 or step_text_start:
+                    self.actions[label_exists][-1] = "%s\n      %s" % (self.actions[label_exists][-1], row)
+                elif row.strip()[:3] in STEP_TEXT_SEPARATORS and not step_text_start:
+                    self.actions[label_exists][-1] = "%s\n      %s" % (self.actions[label_exists][-1], row)
+                    step_text_start = True
                 else:
                     label_exists = EMPTY
+
             for action_label in self.actions:
                 if row.lower().find(action_label) >= 0:
                     label_exists = action_label
@@ -210,6 +219,7 @@ class DynamicEnvironment:
                     elif action in [ACTIONS_BEFORE_SCENARIO]:
                         self.scenario_error = True
                     self.logger.error(exc)
+                    self.error_exception = exc
                     break
 
     def reset_error_status(self):
@@ -251,7 +261,7 @@ class DynamicEnvironment:
         actions after each scenario
         :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
         """
-        if not self.feature_error and not self.scenario_error:
+        if not self.feature_error:
             self.__execute_steps_by_action(context, ACTIONS_AFTER_SCENARIO)
 
         # Behave dynamic environment: Fail all steps if dyn_env has got any error and reset it
@@ -264,14 +274,14 @@ class DynamicEnvironment:
         actions after the feature
         :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
         """
-        if not self.feature_error:
-            self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)
+        self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)
 
         # Behave dynamic environment: Fail all steps if dyn_env has got any error and reset it
         if self.reset_error_status():
             context.feature.reset()
             for scenario in context.feature.walk_scenarios():
                 context.dyn_env.fail_first_step_precondition_exception(scenario)
+            raise Exception("Preconditions failed during the execution")
 
     def fail_first_step_precondition_exception(self, scenario):
         """
@@ -292,4 +302,4 @@ class DynamicEnvironment:
 
         scenario.steps[0].status = status
         scenario.steps[0].exception = Exception("Preconditions failed")
-        scenario.steps[0].error_message = "Failing steps due to precondition exceptions"
+        scenario.steps[0].error_message = str(self.error_exception)

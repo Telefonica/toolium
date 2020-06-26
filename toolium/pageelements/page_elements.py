@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from typing import List, Any
 
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.pageelements.button_page_element import Button
@@ -94,6 +95,7 @@ class PageElements(CommonObject):
 
     @property
     def page_elements(self):
+        # type: () -> List[Any]
         """Find multiple PageElement using element locator
 
         :returns: list of page element objects
@@ -109,6 +111,15 @@ class PageElements(CommonObject):
                 page_element._web_element = web_element
                 self._page_elements.append(page_element)
         return self._page_elements
+
+    def __len__(self):
+        return len(self.page_elements)
+
+    def __getitem__(self, i):
+        return self.page_elements[i]
+
+    def __iter__(self):
+        return iter(self.page_elements)
 
 
 class Buttons(PageElements):

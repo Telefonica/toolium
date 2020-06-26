@@ -31,8 +31,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
 from six.moves.urllib.parse import urlparse  # Python 2 and 3 compatibility
 
-from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.format_utils import get_valid_filename
+from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 
 
 class Utils(object):
@@ -43,13 +42,18 @@ class Utils(object):
 
         :param driver_wrapper: driver wrapper instance
         """
+        from toolium.driver_wrappers_pool import DriverWrappersPool
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
         # Configure logger
         self.logger = logging.getLogger(__name__)
 
+    def get_implicitly_wait(self):
+        """Read implicitly timeout from configuration properties"""
+        return self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait')
+
     def set_implicitly_wait(self):
         """Read implicitly timeout from configuration properties and configure driver implicitly wait"""
-        implicitly_wait = self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait')
+        implicitly_wait = self.get_implicitly_wait()
         if implicitly_wait:
             self.driver_wrapper.driver.implicitly_wait(implicitly_wait)
 
@@ -66,11 +70,11 @@ class Utils(object):
         :param name: screenshot name suffix
         :returns: screenshot path
         """
+        from toolium.driver_wrappers_pool import DriverWrappersPool
         filename = '{0:0=2d}_{1}'.format(DriverWrappersPool.screenshots_number, name)
         filename = '{}.png'.format(get_valid_filename(filename))
         filepath = os.path.join(DriverWrappersPool.screenshots_directory, filename)
-        if not os.path.exists(DriverWrappersPool.screenshots_directory):
-            os.makedirs(DriverWrappersPool.screenshots_directory)
+        makedirs_safe(DriverWrappersPool.screenshots_directory)
         if self.driver_wrapper.driver.get_screenshot_as_file(filepath):
             self.logger.info('Screenshot saved in %s', filepath)
             DriverWrappersPool.screenshots_number += 1
@@ -108,6 +112,7 @@ class Utils(object):
             return
 
         if len(logs) > 0:
+            from toolium.driver_wrappers_pool import DriverWrappersPool
             log_file_name = '{}_{}.txt'.format(get_valid_filename(test_name), log_type)
             log_file_name = os.path.join(DriverWrappersPool.logs_directory, log_file_name)
             with open(log_file_name, 'a+', encoding='utf-8') as log_file:
@@ -293,14 +298,19 @@ class Utils(object):
         :returns: condition method response
         """
         # Remove implicitly wait timeout
-        self.driver_wrapper.driver.implicitly_wait(0)
-        # Get explicitly wait timeout
-        timeout = timeout if timeout else self.get_explicitly_wait()
-        # Wait for condition
-        condition_response = WebDriverWait(self.driver_wrapper.driver, timeout).until(
-            lambda s: condition_method(condition_input))
-        # Restore implicitly wait timeout from properties
-        self.set_implicitly_wait()
+        implicitly_wait = self.get_implicitly_wait()
+        if implicitly_wait != 0:
+            self.driver_wrapper.driver.implicitly_wait(0)
+        try:
+            # Get explicitly wait timeout
+            timeout = timeout if timeout else self.get_explicitly_wait()
+            # Wait for condition
+            condition_response = WebDriverWait(self.driver_wrapper.driver, timeout).until(
+                lambda s: condition_method(condition_input))
+        finally:
+            # Restore implicitly wait timeout from properties
+            if implicitly_wait != 0:
+                self.set_implicitly_wait()
         return condition_response
 
     def wait_until_element_present(self, element, timeout=None):
@@ -465,10 +475,11 @@ class Utils(object):
         """
         server_host = self.driver_wrapper.config.get('Server', 'host')
         server_port = self.driver_wrapper.config.get('Server', 'port')
+        server_ssl = 'https' if self.driver_wrapper.config.getboolean_optional('Server', 'ssl') else 'http'
         server_username = self.driver_wrapper.config.get_optional('Server', 'username')
         server_password = self.driver_wrapper.config.get_optional('Server', 'password')
         server_auth = '{}:{}@'.format(server_username, server_password) if server_username and server_password else ''
-        server_url = 'http://{}{}:{}'.format(server_auth, server_host, server_port)
+        server_url = '{}://{}{}:{}'.format(server_ssl, server_auth, server_host, server_port)
         return server_url
 
     def download_remote_video(self, remote_node, session_id, video_name):
@@ -527,11 +538,11 @@ class Utils(object):
         :param video_url: video url
         :param video_name: video name
         """
+        from toolium.driver_wrappers_pool import DriverWrappersPool
         filename = '{0:0=2d}_{1}'.format(DriverWrappersPool.videos_number, video_name)
         filename = '{}.mp4'.format(get_valid_filename(filename))
         filepath = os.path.join(DriverWrappersPool.videos_directory, filename)
-        if not os.path.exists(DriverWrappersPool.videos_directory):
-            os.makedirs(DriverWrappersPool.videos_directory)
+        makedirs_safe(DriverWrappersPool.videos_directory)
         response = requests.get(video_url)
         open(filepath, 'wb').write(response.content)
         self.logger.info("Video saved in '%s'", filepath)
@@ -665,3 +676,4 @@ class Utils(object):
     def switch_to_first_webview_context(self):
         """Switch to the first WEBVIEW context"""
         self.driver_wrapper.driver.switch_to.context(self.get_first_webview_context())
+

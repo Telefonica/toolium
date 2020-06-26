@@ -1,10 +1,80 @@
 Toolium Changelog
 =================
 
-v1.5.4.dev0
------------
+v1.7.2
+------
 
-*Release date: WIP*
+*In development*
+
+- Move utils.py and path_utils.py files to utils folder maintaining backwards compatibility
+
+v1.7.1
+------
+
+*Release date: 2020-05-18*
+
+- Fix Appium dependency conflict, current allowed versions: from 0.24 to 0.52
+
+v1.7.0
+------
+
+*Release date: 2020-05-11*
+
+- Fix to allow step's text (context.text) declaration into dynamic environment sections
+- Add `ssl` config property in [Server] section to allow using https in Selenium Grid url
+- Visual testing comparison must fail when baseline does not exist and save mode is disabled
+- Update dynamic environment behaviour to work as the behave's one, i.e. after scenario/feature actions are executed
+ even when before scenario/feature actions fail
+- Fix unit tests to work without any additional dependencies
+
+v1.6.1
+------
+
+*Release date: 2020-01-21*
+
+- Fix concurrent folder creation. Add *makedirs_safe* method to create a new folder.
+
+v1.6.0
+------
+
+*Release date: 2020-01-15*
+
+- New config property 'binary' in [Chrome] section to configure the chrome binary path
+- Allow configuration properties with colon in name
+
+    For instance, to set a capability with : in name, like:
+
+.. code:: console
+
+    goog:loggingPrefs = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
+
+    Following property should be added in properties.cfg:
+
+.. code:: console
+
+    [Capabilities]
+    goog___loggingPrefs: {'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}
+
+- Add support for python 3.8
+
+v1.5.6
+------
+
+*Release date: 2019-10-04*
+
+- Fix dynamic environment exit code when there are hook errors
+
+v1.5.5
+------
+
+*Release date: 2019-07-29*
+
+- Fix screeninfo dependency to 0.3.1 version
+
+v1.5.4
+------
+
+*Release date: 2019-07-22*
 
 - Add support to encapsulated elements (Shadowroot)
 
@@ -13,6 +83,8 @@ v1.5.4.dev0
     | It is not supported for list of elements yet
     | It is not supported for element find by parent yet
     | It is not supported nested encapsulation yet
+
+- Fix Selenium dependency conflict
 
 v1.5.3
 ------

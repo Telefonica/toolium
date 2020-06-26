@@ -30,7 +30,7 @@ from needle.engines.pil_engine import Engine as PilEngine
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrapper import DriverWrappersPool
-from toolium.test.test_utils import get_mock_element
+from toolium.test.utils.test_driver_utils import get_mock_element
 from toolium.visual_test import VisualTest
 
 # Get file paths
@@ -142,8 +142,10 @@ def test_compare_files_diff_fail(driver_wrapper):
     driver_wrapper.config.set('VisualTests', 'fail', 'true')
     visual = VisualTest(driver_wrapper)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError) as exc:
         visual.compare_files('report_name', file_v1, file_v2, 0)
+    assert str(exc.value) == "The new screenshot '%s' did not match the baseline '%s' " \
+                             "(by a distance of 522.65)" % (file_v1, file_v2)
 
 
 def test_compare_files_size(driver_wrapper):
@@ -158,8 +160,9 @@ def test_compare_files_size_fail(driver_wrapper):
     driver_wrapper.config.set('VisualTests', 'fail', 'true')
     visual = VisualTest(driver_wrapper)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError) as exc:
         visual.compare_files('report_name', file_v1, file_small, 0)
+    assert str(exc.value).startswith('assert (1680, 388) == (1246, 388)')
 
 
 def test_get_img_element(driver_wrapper):
@@ -240,7 +243,22 @@ def assert_image(visual, img, img_name, expected_image_filename):
 
     # Output image and expected image must be equal
     expected_image = os.path.join(root_path, 'resources', expected_image_filename + '.png')
-    MagickEngine().assertSameFiles(result_file, expected_image, 0.1)
+    compare_image_files(result_file, expected_image)
+
+
+def compare_image_files(image, expected_image, threshold=0.1):
+    """Compare two images
+
+    :param image: file path image to compare
+    :param expected_image: expected image
+    :param threshold: allowed threshold
+    """
+    # Pil needs a pixel number threshold instead of a percentage threshold
+    img = Image.open(expected_image)
+    width, height = img.size
+    threshold = int(width * height * threshold)
+
+    PilEngine().assertSameFiles(image, expected_image, threshold)
 
 
 def test_crop_element(driver_wrapper):
@@ -426,6 +444,10 @@ def test_assert_screenshot_no_enabled_force(driver_wrapper):
     driver_wrapper.config.set('VisualTests', 'enabled', 'false')
     visual = VisualTest(driver_wrapper, force=True)
 
+    # Add v1 baseline image
+    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_full.png')
+    shutil.copyfile(file_v1, baseline_file)
+
     # Assert screenshot
     visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
     driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
@@ -447,9 +469,10 @@ def test_assert_screenshot_no_enabled_force_fail(driver_wrapper):
     shutil.copyfile(file_v2, baseline_file)
 
     # Assert screenshot
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError) as exc:
         visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
     driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
+    assert str(exc.value).endswith("did not match the baseline '%s' (by a distance of 522.65)" % baseline_file)
 
 
 def test_assert_screenshot_full_and_save_baseline(driver_wrapper):
@@ -457,6 +480,7 @@ def test_assert_screenshot_full_and_save_baseline(driver_wrapper):
     with open(file_v1, "rb") as f:
         image_data = f.read()
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
+    driver_wrapper.config.set('VisualTests', 'save', 'true')
     visual = VisualTest(driver_wrapper)
 
     # Assert screenshot
@@ -466,7 +490,7 @@ def test_assert_screenshot_full_and_save_baseline(driver_wrapper):
 
     # Output image and new baseline image must be equal
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_full.png')
-    MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
+    compare_image_files(output_file, baseline_file)
 
 
 def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
@@ -478,6 +502,7 @@ def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
     with open(file_v1, "rb") as f:
         image_data = f.read()
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
+    driver_wrapper.config.set('VisualTests', 'save', 'true')
     visual = VisualTest(driver_wrapper)
 
     # Assert screenshot
@@ -487,11 +512,11 @@ def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'register_cropped_element.png')
     output_file = os.path.join(visual.output_directory, '01_screenshot_elem__screenshot_suffix.png')
-    MagickEngine().assertSameFiles(output_file, expected_image, 0.1)
+    compare_image_files(output_file, expected_image)
 
     # Output image and new baseline image must be equal
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_elem.png')
-    MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
+    compare_image_files(output_file, baseline_file)
 
 
 def test_assert_screenshot_full_and_compare(driver_wrapper):
@@ -531,6 +556,44 @@ def test_assert_screenshot_element_and_compare(driver_wrapper):
     driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
 
+def test_assert_screenshot_full_without_baseline(driver_wrapper):
+    # Configure driver mock
+    with open(file_v1, "rb") as f:
+        image_data = f.read()
+    driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
+    driver_wrapper.config.set('VisualTests', 'fail', 'true')
+    visual = VisualTest(driver_wrapper)
+
+    # Assert screenshot
+    with pytest.raises(AssertionError) as exc:
+        visual.assert_screenshot(None, filename='screenshot_full', file_suffix='screenshot_suffix')
+    driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
+    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_full.png')
+    assert str(exc.value) == 'Baseline file not found: %s' % baseline_file
+
+
+def test_assert_screenshot_element_without_baseline(driver_wrapper):
+    # Add baseline image
+    driver_wrapper.driver.execute_script.return_value = 0  # scrollX=0 and scrollY=0
+    driver_wrapper.config.set('VisualTests', 'fail', 'true')
+    visual = VisualTest(driver_wrapper)
+
+    # Create element mock
+    web_element = get_mock_element(x=250, y=40, height=40, width=300)
+
+    # Configure driver mock
+    with open(file_v1, "rb") as f:
+        image_data = f.read()
+    driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
+
+    # Assert screenshot
+    with pytest.raises(AssertionError) as exc:
+        visual.assert_screenshot(web_element, filename='screenshot_elem', file_suffix='screenshot_suffix')
+    driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
+    baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_elem.png')
+    assert str(exc.value) == 'Baseline file not found: %s' % baseline_file
+
+
 def test_assert_screenshot_mobile_resize_and_exclude(driver_wrapper):
     # Create elements mock
     driver_wrapper.driver.execute_script.return_value = 0  # scrollX=0 and scrollY=0
@@ -544,6 +607,7 @@ def test_assert_screenshot_mobile_resize_and_exclude(driver_wrapper):
 
     # Update conf and create a new VisualTest instance
     driver_wrapper.config.set('Driver', 'type', 'ios')
+    driver_wrapper.config.set('VisualTests', 'save', 'true')
     visual = VisualTest(driver_wrapper)
 
     # Assert screenshot
@@ -554,11 +618,11 @@ def test_assert_screenshot_mobile_resize_and_exclude(driver_wrapper):
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'ios_excluded.png')
     output_file = os.path.join(visual.output_directory, '01_screenshot_ios__screenshot_suffix.png')
-    MagickEngine().assertSameFiles(output_file, expected_image, 0.1)
+    compare_image_files(output_file, expected_image)
 
     # Output image and new baseline image must be equal
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_ios.png')
-    MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
+    compare_image_files(output_file, baseline_file)
 
 
 def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
@@ -577,6 +641,7 @@ def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
     # Update conf and create a new VisualTest instance
     driver_wrapper.config.set('Driver', 'type', 'ios')
     driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
+    driver_wrapper.config.set('VisualTests', 'save', 'true')
     visual = VisualTest(driver_wrapper)
 
     # Assert screenshot
@@ -587,20 +652,22 @@ def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'ios_web_exclude.png')
     output_file = os.path.join(visual.output_directory, '01_screenshot_ios_web__screenshot_suffix.png')
-    MagickEngine().assertSameFiles(output_file, expected_image, 0.1)
+    compare_image_files(output_file, expected_image)
 
     # Output image and new baseline image must be equal
     baseline_file = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox', 'screenshot_ios_web.png')
-    MagickEngine().assertSameFiles(output_file, baseline_file, 0.1)
+    compare_image_files(output_file, baseline_file)
 
 
 def test_assert_screenshot_str_threshold(driver_wrapper):
     visual = VisualTest(driver_wrapper)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError) as exc:
         visual.assert_screenshot(None, 'screenshot_full', threshold='name')
+    assert str(exc.value) == 'Threshold must be a number between 0 and 1: name'
 
 
 def test_assert_screenshot_greater_threshold(driver_wrapper):
     visual = VisualTest(driver_wrapper)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError) as exc:
         visual.assert_screenshot(None, 'screenshot_full', threshold=2)
+    assert str(exc.value) == 'Threshold must be a number between 0 and 1: 2'

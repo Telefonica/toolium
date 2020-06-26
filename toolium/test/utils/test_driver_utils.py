@@ -31,7 +31,7 @@ from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.pageelements.page_element import PageElement
-from toolium.utils import Utils
+from toolium.utils.driver_utils import Utils
 
 navigation_bar_tests = (
     ('android', 'C:/Demo.apk', None, 0),
@@ -253,7 +253,7 @@ def test_is_remote_video_enabled_disabled(utils):
         assert url == req_mock.request_history[0].url
 
 
-@mock.patch('toolium.utils.requests.get')
+@mock.patch('toolium.utils.driver_utils.requests.get')
 def test_is_remote_video_enabled_non_grid_extras(req_get_mock, utils):
     # Configure mock
     req_get_mock.side_effect = ConnectionError('exception error')
@@ -537,3 +537,10 @@ def test_wait_until_first_element_is_found_custom_timeout(driver_wrapper, utils)
     driver_wrapper.driver.find_element.assert_called_with(*element_locator)
     # Execution time must be greater than timeout
     assert end_time - start_time > 15
+
+
+def test_utils_compatibility():
+    # Check that utils works with old import
+    from toolium.utils import Utils
+    old_import_utils = Utils()
+    assert hasattr(old_import_utils, 'get_web_element')

@@ -7,6 +7,7 @@ toolium packages
     toolium.lettuce
     toolium.pageelements
     toolium.pageobjects
+    toolium.utils
 
 toolium modules
 ===============
@@ -77,16 +78,6 @@ test_cases
 ----------
 
 .. automodule:: toolium.test_cases
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. _utils:
-
-utils
------
-
-.. automodule:: toolium.utils
     :members:
     :undoc-members:
     :show-inheritance:
