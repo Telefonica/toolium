@@ -56,6 +56,7 @@ class LoginPageObject(PageObject):
     language = Select(By.ID, 'language')
     login = Button(By.ID, 'login')
     menu = Menu(By.ID, 'menu')
+    username_shadowroot = InputText(By.XPATH, '//input[1]', shadowroot='shadowroot_css')
 
 
 @pytest.fixture
@@ -117,6 +118,34 @@ def test_set_input_text(driver_wrapper):
     LoginPageObject().username.text = 'new input value'
 
     mock_element.send_keys.assert_called_once_with('new input value')
+
+
+def test_set_input_text_shadowroot(driver_wrapper):
+    # Configure driver mock
+    driver_wrapper.driver.find_element.return_value = mock_element
+    driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
+    text_value = 'new input value'
+    expected_script = 'return document.querySelector("shadowroot_css").shadowRoot.querySelector("//input[1]").value ' \
+                      '= "new input value"'
+
+    LoginPageObject().username_shadowroot.text = text_value
+
+    mock_element.send_keys.assert_not_called()
+    driver_wrapper.driver.execute_script.assert_called_once_with(expected_script)
+
+
+def test_set_input_text_shadowroot_quotation_marks(driver_wrapper):
+    # Configure driver mock
+    driver_wrapper.driver.find_element.return_value = mock_element
+    driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
+    text_value = 'new "input" value'
+    expected_script = 'return document.querySelector("shadowroot_css").shadowRoot.querySelector("//input[1]").value ' \
+                      '= "new \\"input\\" value"'
+
+    LoginPageObject().username_shadowroot.text = text_value
+
+    mock_element.send_keys.assert_not_called()
+    driver_wrapper.driver.execute_script.assert_called_once_with(expected_script)
 
 
 def test_get_selected_option(driver_wrapper):
