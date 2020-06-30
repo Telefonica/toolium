@@ -58,7 +58,7 @@ class PageElements(CommonObject):
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.order = order  #: index value if the locator returns more than one element
-        self.shadowroot = None  #: Not implemented for PAgeElements yet
+        self.shadowroot = None  #: Not implemented for PageElements yet
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         # update instance element class or use PageElement class
         if page_element_class:

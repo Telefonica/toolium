@@ -88,7 +88,7 @@ class PageElement(CommonObject):
             if self.shadowroot:
                 if self.locator[0] != By.CSS_SELECTOR:
                     raise Exception('Locator type should be CSS_SELECTOR using shadowroot but found: '
-                                    '%s'.format(self.locator[0]))
+                                    '%s' % self.locator[0])
                 # querySelector only support CSS SELECTOR locator
                 self._web_element = self.driver.execute_script('return document.querySelector("%s").shadowRoot.'
                                                                'querySelector("%s")' % (self.shadowroot,

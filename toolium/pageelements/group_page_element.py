@@ -43,7 +43,7 @@ class Group(PageObject, PageElement):
         self.parent = parent  #: element from which to find actual elements
         self.order = order  #: index value if the locator returns more than one element
         self.wait = wait  #: True if it must be loaded in wait_until_loaded method of the container page object
-        self.shadowroot = None  #: Not implemented for PAgeElements yet
+        self.shadowroot = None  #: Not implemented for Group yet
         self.driver_wrapper = driver_wrapper if driver_wrapper else \
             DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self.init_page_elements()

@@ -39,6 +39,8 @@ class RegisterPageObject(PageObject):
         self.language = PageElement(By.ID, 'language')
         self.email = PageElement(By.ID, 'email', mock_element)
         self.address = PageElement(By.ID, 'address', (By.ID, 'parent'))
+        self.address_shadowroot = PageElement(By.CSS_SELECTOR, '#address', shadowroot='shadowroot_css')
+        self.address_shadowroot_by_id = PageElement(By.ID, 'address', shadowroot='shadowroot_css')
 
 
 @pytest.fixture
@@ -135,6 +137,21 @@ def test_get_web_element_with_parent_web_element(driver_wrapper):
     assert web_element == child_element
     driver_wrapper.driver.find_element.assert_not_called()
     mock_element.find_element.assert_called_once_with(By.ID, 'email')
+
+
+def test_get_web_element_shadowroot(driver_wrapper):
+    RegisterPageObject(driver_wrapper).address_shadowroot.web_element
+    expected_script = 'return document.querySelector("shadowroot_css").shadowRoot.querySelector("#address")'
+
+    mock_element.find_element.assert_not_called()
+    driver_wrapper.driver.execute_script.assert_called_once_with(expected_script)
+
+
+def test_get_web_element_shadowroot_wrong_locator(driver_wrapper):
+    with pytest.raises(Exception) as excinfo:
+        RegisterPageObject(driver_wrapper).address_shadowroot_by_id.web_element
+    assert "Locator type should be CSS_SELECTOR using shadowroot but found: id" in str(excinfo.value)
+    mock_element.find_element.assert_not_called()
 
 
 def test_get_web_element_in_test(driver_wrapper):
