@@ -87,7 +87,11 @@ class Utils(object):
         :param test_name: test that has generated these logs
         """
         try:
-            log_types = self.driver_wrapper.driver.log_types
+            configured_log_types = self.driver_wrapper.config.get_optional('Server', 'log_types')
+            if configured_log_types is None or configured_log_types == 'all':
+                log_types = self.driver_wrapper.driver.log_types
+            else:
+                log_types = [log_type.strip() for log_type in configured_log_types.split(',') if log_type.strip() != '']
         except Exception:
             # geckodriver does not implement log_types, but it implements get_log for client and server
             log_types = ['client', 'server']

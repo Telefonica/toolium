@@ -88,6 +88,86 @@ def utils():
     return Utils()
 
 
+def test_save_webdriver_logs_one_log_type(driver_wrapper, utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', 'client')
+
+    utils.save_webdriver_logs('test_name')
+    log_types_mock.assert_not_called()
+    Utils.save_webdriver_logs_by_type.assert_called_once_with('client', 'test_name')
+
+
+def test_save_webdriver_logs_multiple_log_types(driver_wrapper, utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', 'client,server,browser')
+
+    utils.save_webdriver_logs('test_name')
+    log_types_mock.assert_not_called()
+    Utils.save_webdriver_logs_by_type.assert_has_calls(
+        [mock.call('client', 'test_name'), mock.call('server', 'test_name'), mock.call('browser', 'test_name')])
+
+
+def test_save_webdriver_logs_multiple_log_types_with_spaces(driver_wrapper, utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', 'client, server , browser')
+
+    utils.save_webdriver_logs('test_name')
+    log_types_mock.assert_not_called()
+    Utils.save_webdriver_logs_by_type.assert_has_calls(
+        [mock.call('client', 'test_name'), mock.call('server', 'test_name'), mock.call('browser', 'test_name')])
+
+
+def test_save_webdriver_logs_none_log_type(driver_wrapper, utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', '')
+
+    utils.save_webdriver_logs('test_name')
+    log_types_mock.assert_not_called()
+    Utils.save_webdriver_logs_by_type.assert_not_called()
+
+
+def test_save_webdriver_logs_all_log_type(driver_wrapper, utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', 'all')
+
+    utils.save_webdriver_logs('test_name')
+    log_types_mock.assert_called_once_with()
+    Utils.save_webdriver_logs_by_type.assert_has_calls([mock.call('client', 'test_name'),
+                                                        mock.call('server', 'test_name')])
+
+
+def test_save_webdriver_logs_without_log_types(driver_wrapper, utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    utils.save_webdriver_logs('test_name')
+    log_types_mock.assert_called_once_with()
+    Utils.save_webdriver_logs_by_type.assert_has_calls([mock.call('client', 'test_name'),
+                                                        mock.call('server', 'test_name')])
+
+
 def test_get_remote_node(driver_wrapper, utils):
     # Configure mock
     driver_wrapper.driver.session_id = '5af'

@@ -8,6 +8,7 @@ v1.7.2
 
 - Move utils.py and path_utils.py files to utils folder maintaining backwards compatibility
 - Fix input text when element has a shadowroot and text contains quotation marks
+- New config property 'logs_types' in [Server] section to configure webdriver log types that should be downloaded
 
 v1.7.1
 ------
