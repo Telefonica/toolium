@@ -4,7 +4,7 @@ Toolium Changelog
 v1.7.2
 ------
 
-*In development*
+*Release date: 2020-09-01*
 
 - Move utils.py and path_utils.py files to utils folder maintaining backwards compatibility
 - Fix input text when element has a shadowroot and text contains quotation marks
