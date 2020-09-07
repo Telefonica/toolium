@@ -81,7 +81,7 @@ class ConfigSpecFilesLoader(object):
         if os.path.isfile(yaml_path):
             definition_file_list.append(yaml_path)
         else:
-            for root, dirs, aux_definition_files in os.walk(yaml_path, topdown=False):
+            for root, _, aux_definition_files in os.walk(yaml_path, topdown=False):
                 definition_file_list += [os.path.join(root, definition_file) for definition_file in aux_definition_files
                                          if ".yml" or ".yaml" in definition_file]
 
