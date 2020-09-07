@@ -22,17 +22,16 @@ from __future__ import division
 import logging
 import os
 import time
-from datetime import datetime
 from io import open
 
 import requests
+from datetime import datetime
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
 from six.moves.urllib.parse import urlparse  # Python 2 and 3 compatibility
 
-from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.format_utils import get_valid_filename
+from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 
 
 class Utils(object):
@@ -43,13 +42,18 @@ class Utils(object):
 
         :param driver_wrapper: driver wrapper instance
         """
+        from toolium.driver_wrappers_pool import DriverWrappersPool
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
         # Configure logger
         self.logger = logging.getLogger(__name__)
 
+    def get_implicitly_wait(self):
+        """Read implicitly timeout from configuration properties"""
+        return self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait')
+
     def set_implicitly_wait(self):
         """Read implicitly timeout from configuration properties and configure driver implicitly wait"""
-        implicitly_wait = self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait')
+        implicitly_wait = self.get_implicitly_wait()
         if implicitly_wait:
             self.driver_wrapper.driver.implicitly_wait(implicitly_wait)
 
@@ -66,11 +70,11 @@ class Utils(object):
         :param name: screenshot name suffix
         :returns: screenshot path
         """
+        from toolium.driver_wrappers_pool import DriverWrappersPool
         filename = '{0:0=2d}_{1}'.format(DriverWrappersPool.screenshots_number, name)
         filename = '{}.png'.format(get_valid_filename(filename))
         filepath = os.path.join(DriverWrappersPool.screenshots_directory, filename)
-        if not os.path.exists(DriverWrappersPool.screenshots_directory):
-            os.makedirs(DriverWrappersPool.screenshots_directory)
+        makedirs_safe(DriverWrappersPool.screenshots_directory)
         if self.driver_wrapper.driver.get_screenshot_as_file(filepath):
             self.logger.info('Screenshot saved in %s', filepath)
             DriverWrappersPool.screenshots_number += 1
@@ -83,7 +87,11 @@ class Utils(object):
         :param test_name: test that has generated these logs
         """
         try:
-            log_types = self.driver_wrapper.driver.log_types
+            configured_log_types = self.driver_wrapper.config.get_optional('Server', 'log_types')
+            if configured_log_types is None or configured_log_types == 'all':
+                log_types = self.driver_wrapper.driver.log_types
+            else:
+                log_types = [log_type.strip() for log_type in configured_log_types.split(',') if log_type.strip() != '']
         except Exception:
             # geckodriver does not implement log_types, but it implements get_log for client and server
             log_types = ['client', 'server']
@@ -108,8 +116,9 @@ class Utils(object):
             return
 
         if len(logs) > 0:
-            log_file_ext = os.path.splitext(self.driver_wrapper.output_log_filename)
-            log_file_name = '{}_{}{}'.format(log_file_ext[0], log_type, log_file_ext[1])
+            from toolium.driver_wrappers_pool import DriverWrappersPool
+            log_file_name = '{}_{}.txt'.format(get_valid_filename(test_name), log_type)
+            log_file_name = os.path.join(DriverWrappersPool.logs_directory, log_file_name)
             with open(log_file_name, 'a+', encoding='utf-8') as log_file:
                 driver_type = self.driver_wrapper.config.get('Driver', 'type')
                 log_file.write(
@@ -211,6 +220,77 @@ class Utils(object):
             return web_element if web_element and web_element.is_enabled() else False
         except StaleElementReferenceException:
             return False
+        
+    def _expected_condition_find_element_stopped(self, element_times):
+        """Tries to find the element and checks that it has stopped moving, but does not thrown an exception if the element
+            is not found
+
+        :param element_times: Tuple with 2 items where:
+            [0] element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+            [1] times: number of iterations checking the element's location that must be the same for all of them
+            in order to considering the element has stopped
+        :returns: the web element if it is clickable or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        element, times = element_times
+        web_element = self._expected_condition_find_element(element)
+        try:
+            locations_list = [tuple(web_element.location.values()) for i in range(int(times)) if not time.sleep(0.001)]
+            return web_element if set(locations_list) == set(locations_list[-1:]) else False
+        except StaleElementReferenceException:
+            return False
+
+    def _expected_condition_find_element_containing_text(self, element_text_pair):
+        """Tries to find the element and checks that it contains the specified text, but does not thrown an exception if the element is
+            not found
+
+        :param element_text_pair: Tuple with 2 items where:
+            [0] element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+            [1] text: text to be contained into the element
+        :returns: the web element if it contains the text or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        element, text = element_text_pair
+        web_element = self._expected_condition_find_element(element)
+        try:
+            return web_element if web_element and text in web_element.text else False
+        except StaleElementReferenceException:
+            return False
+        
+    def _expected_condition_find_element_not_containing_text(self, element_text_pair):
+        """Tries to find the element and checks that it does not contain the specified text,
+            but does not thrown an exception if the element is found
+
+        :param element_text_pair: Tuple with 2 items where:
+            [0] element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+            [1] text: text to not be contained into the element
+        :returns: the web element if it does not contain the text or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        element, text = element_text_pair
+        web_element = self._expected_condition_find_element(element)
+        try:
+            return web_element if web_element and text not in web_element.text else False
+        except StaleElementReferenceException:
+            return False
+        
+    def _expected_condition_value_in_element_attribute(self, element_attribute_value):
+        """Tries to find the element and checks that it contains the requested attribute with the expected value,
+           but does not thrown an exception if the element is not found
+
+        :param element_attribute_value: Tuple with 3 items where:
+            [0] element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+            [1] attribute: element's attribute where to check its value
+            [2] value: expected value for the element's attribute
+        :returns: the web element if it contains the expected value for the requested attribute or False
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        """
+        element, attribute, value = element_attribute_value
+        web_element = self._expected_condition_find_element(element)
+        try:
+            return web_element if web_element and web_element.get_attribute(attribute) == value else False
+        except StaleElementReferenceException:
+            return False
 
     def _wait_until(self, condition_method, condition_input, timeout=None):
         """
@@ -222,14 +302,19 @@ class Utils(object):
         :returns: condition method response
         """
         # Remove implicitly wait timeout
-        self.driver_wrapper.driver.implicitly_wait(0)
-        # Get explicitly wait timeout
-        timeout = timeout if timeout else self.get_explicitly_wait()
-        # Wait for condition
-        condition_response = WebDriverWait(self.driver_wrapper.driver, timeout).until(
-            lambda s: condition_method(condition_input))
-        # Restore implicitly wait timeout from properties
-        self.set_implicitly_wait()
+        implicitly_wait = self.get_implicitly_wait()
+        if implicitly_wait != 0:
+            self.driver_wrapper.driver.implicitly_wait(0)
+        try:
+            # Get explicitly wait timeout
+            timeout = timeout if timeout else self.get_explicitly_wait()
+            # Wait for condition
+            condition_response = WebDriverWait(self.driver_wrapper.driver, timeout).until(
+                lambda s: condition_method(condition_input))
+        finally:
+            # Restore implicitly wait timeout from properties
+            if implicitly_wait != 0:
+                self.set_implicitly_wait()
         return condition_response
 
     def wait_until_element_present(self, element, timeout=None):
@@ -237,8 +322,9 @@ class Utils(object):
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :param timeout: max time to wait
-        :returns: the web element if it is present or False
+        :returns: the web element if it is present
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element is not found after the timeout
         """
         return self._wait_until(self._expected_condition_find_element, element, timeout)
 
@@ -247,8 +333,9 @@ class Utils(object):
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :param timeout: max time to wait
-        :returns: the web element if it is visible or False
+        :returns: the web element if it is visible
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element is still not visible after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_visible, element, timeout)
 
@@ -257,8 +344,9 @@ class Utils(object):
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :param timeout: max time to wait
-        :returns: the web element if it exists but is not visible or False
+        :returns: the web element if it exists but is not visible
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element is still visible after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_not_visible, element, timeout)
 
@@ -270,6 +358,7 @@ class Utils(object):
         :param timeout: max time to wait
         :returns: first element found
         :rtype: toolium.pageelements.PageElement or tuple
+        :raises TimeoutException: If no element in the list is found after the timeout
         """
         try:
             return self._wait_until(self._expected_condition_find_first_element, elements, timeout)
@@ -285,34 +374,117 @@ class Utils(object):
 
         :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
         :param timeout: max time to wait
-        :returns: the web element if it is clickable or False
+        :returns: the web element if it is clickable
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element is not clickable after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_clickable, element, timeout)
+    
+    def wait_until_element_stops(self, element, times=1000, timeout=None):
+        """Search element and wait until it has stopped moving
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :param times: number of iterations checking the element's location that must be the same for all of them
+        in order to considering the element has stopped
+        :returns: the web element if the element is stopped
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element does not stop after the timeout
+        """
+        return self._wait_until(self._expected_condition_find_element_stopped, (element, times), timeout)
+
+    def wait_until_element_contains_text(self, element, text, timeout=None):
+        """Search element and wait until it contains the expected text
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :param text: text expected to be contained into the element
+        :param timeout: max time to wait
+        :returns: the web element if it contains the expected text
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element does not contain the expected text after the timeout
+        """
+        return self._wait_until(self._expected_condition_find_element_containing_text, (element, text), timeout)
+    
+    def wait_until_element_not_contain_text(self, element, text, timeout=None):
+        """Search element and wait until it does not contain the expected text
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :param text: text expected to be contained into the element
+        :param timeout: max time to wait
+        :returns: the web element if it does not contain the given text
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element contains the expected text after the timeout
+        """
+        return self._wait_until(self._expected_condition_find_element_not_containing_text, (element, text), timeout)
+    
+    def wait_until_element_attribute_is(self, element, attribute, value, timeout=None):
+        """Search element and wait until the requested attribute contains the expected value
+
+        :param element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
+        :param attribute: attribute belonging to the element
+        :param value: expected value for the attribute of the element
+        :param timeout: max time to wait
+        :returns: the web element if the element's attribute contains the expected value
+        :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
+        :raises TimeoutException: If the element's attribute does not contain the expected value after the timeout
+        """
+        return self._wait_until(self._expected_condition_value_in_element_attribute, (element, attribute, value), timeout)
 
     def get_remote_node(self):
         """Return the remote node that it's executing the actual test session
 
-        :returns: remote node name
+        :returns: tuple with server type (local, grid, ggr, selenium) and remote node name
         """
         logging.getLogger("requests").setLevel(logging.WARNING)
         remote_node = None
+        server_type = 'local'
         if self.driver_wrapper.config.getboolean_optional('Server', 'enabled'):
             # Request session info from grid hub
-            host = self.driver_wrapper.config.get('Server', 'host')
-            port = self.driver_wrapper.config.get('Server', 'port')
             session_id = self.driver_wrapper.driver.session_id
-            url = 'http://{}:{}/grid/api/testsession?session={}'.format(host, port, session_id)
+            self.logger.debug("Trying to identify remote node")
             try:
-                # Extract remote node from response
+                # Request session info from grid hub and extract remote node
+                url = '{}/grid/api/testsession?session={}'.format(self.get_server_url(),
+                                                                  session_id)
                 proxy_id = requests.get(url).json()['proxyId']
                 remote_node = urlparse(proxy_id).hostname if urlparse(proxy_id).hostname else proxy_id
+                server_type = 'grid'
                 self.logger.debug("Test running in remote node %s", remote_node)
             except (ValueError, KeyError):
-                # The remote node is not a grid node or the session has been closed
-                remote_node = host
+                try:
+                    # Request session info from GGR and extract remote node
+                    from toolium.selenoid import Selenoid
+                    remote_node = Selenoid(self.driver_wrapper).get_selenoid_info()['Name']
+                    server_type = 'ggr'
+                    self.logger.debug("Test running in a GGR remote node %s", remote_node)
+                except Exception:
+                    try:
+                        # The remote node is a Selenoid node
+                        url = '{}/status'.format(self.get_server_url())
+                        requests.get(url).json()['total']
+                        remote_node = self.driver_wrapper.config.get('Server', 'host')
+                        server_type = 'selenoid'
+                        self.logger.debug("Test running in a Selenoid node %s", remote_node)
+                    except Exception:
+                        # The remote node is not a grid node or the session has been closed
+                        remote_node = self.driver_wrapper.config.get('Server', 'host')
+                        server_type = 'selenium'
+                        self.logger.debug("Test running in a Selenium node %s", remote_node)
 
-        return remote_node
+        return server_type, remote_node
+
+    def get_server_url(self):
+        """Return the configured server url
+
+        :returns: server url
+        """
+        server_host = self.driver_wrapper.config.get('Server', 'host')
+        server_port = self.driver_wrapper.config.get('Server', 'port')
+        server_ssl = 'https' if self.driver_wrapper.config.getboolean_optional('Server', 'ssl') else 'http'
+        server_username = self.driver_wrapper.config.get_optional('Server', 'username')
+        server_password = self.driver_wrapper.config.get_optional('Server', 'password')
+        server_auth = '{}:{}@'.format(server_username, server_password) if server_username and server_password else ''
+        server_url = '{}://{}{}:{}'.format(server_ssl, server_auth, server_host, server_port)
+        return server_url
 
     def download_remote_video(self, remote_node, session_id, video_name):
         """Download the video recorded in the remote node during the specified test session and save it in videos folder
@@ -370,11 +542,11 @@ class Utils(object):
         :param video_url: video url
         :param video_name: video name
         """
+        from toolium.driver_wrappers_pool import DriverWrappersPool
         filename = '{0:0=2d}_{1}'.format(DriverWrappersPool.videos_number, video_name)
         filename = '{}.mp4'.format(get_valid_filename(filename))
         filepath = os.path.join(DriverWrappersPool.videos_directory, filename)
-        if not os.path.exists(DriverWrappersPool.videos_directory):
-            os.makedirs(DriverWrappersPool.videos_directory)
+        makedirs_safe(DriverWrappersPool.videos_directory)
         response = requests.get(video_url)
         open(filepath, 'wb').write(response.content)
         self.logger.info("Video saved in '%s'", filepath)
@@ -508,3 +680,4 @@ class Utils(object):
     def switch_to_first_webview_context(self):
         """Switch to the first WEBVIEW context"""
         self.driver_wrapper.driver.switch_to.context(self.get_first_webview_context())
+

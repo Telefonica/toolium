@@ -105,7 +105,10 @@ def before_scenario(context, scenario):
 
     # Force to reset driver before each scenario if it has @reset_driver tag
     if 'reset_driver' in scenario.tags:
-        DriverWrappersPool.close_drivers_and_download_videos('multiple tests', context.global_status['test_passed'])
+        DriverWrappersPool.stop_drivers()
+        DriverWrappersPool.download_videos('multiple tests', context.global_status['test_passed'])
+        DriverWrappersPool.save_all_ggr_logs('multiple tests', context.global_status['test_passed'])
+        DriverWrappersPool.remove_drivers()
         context.global_status['test_passed'] = True
 
     # Skip android_only or ios_only scenarios

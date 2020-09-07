@@ -1,6 +1,7 @@
-requests>=2.12.4            # api tests
-selenium>=2.53.6            # web tests
-Appium-Python-Client>=0.24  # mobile tests
-PyYAML==3.11                # page object specification files
+requests>=2.12.4               # api tests
+selenium>=2.53.6,<4            # web tests
+Appium-Python-Client>=0.24,<1  # mobile tests
+PyYAML==3.11                   # page object specification files
 six>=1.10.0
-screeninfo
+screeninfo==0.3.1
+typing==3.7.4.1

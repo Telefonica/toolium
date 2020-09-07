@@ -42,9 +42,10 @@ def get_error_message_from_exception(exception):
 
 
 class ConfigDriver(object):
-    def __init__(self, config):
+    def __init__(self, config, utils=None):
         self.logger = logging.getLogger(__name__)
-        self.config = config.deepcopy()
+        self.config = config
+        self.utils = utils
 
     def create_driver(self):
         """Create a selenium driver using specified config properties
@@ -74,9 +75,7 @@ class ConfigDriver(object):
         :returns: a new remote selenium driver
         """
         # Get server url
-        server_host = self.config.get('Server', 'host')
-        server_port = self.config.get('Server', 'port')
-        server_url = 'http://{0}:{1}/wd/hub'.format(server_host, server_port)
+        server_url = '{}/wd/hub'.format(self.utils.get_server_url())
 
         # Get driver capabilities
         driver_type = self.config.get('Driver', 'type')
@@ -316,6 +315,9 @@ class ConfigDriver(object):
 
         :returns: chrome options object
         """
+        # Get Chrome binary
+        chrome_binary = self.config.get_optional('Chrome', 'binary')
+
         # Create Chrome options
         options = webdriver.ChromeOptions()
 
@@ -324,6 +326,9 @@ class ConfigDriver(object):
             options.add_argument('--headless')
             if os.name == 'nt':  # Temporarily needed if running on Windows.
                 options.add_argument('--disable-gpu')
+
+        if chrome_binary is not None:
+            options.binary_location = chrome_binary
 
         # Add Chrome preferences, mobile emulation options and chrome arguments
         self._add_chrome_options(options, 'prefs')

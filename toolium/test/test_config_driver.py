@@ -251,10 +251,11 @@ def test_create_local_driver_capabilities(webdriver_mock, options, config):
 
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_firefox(webdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'firefox')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     # Firefox profile mock
     class ProfileMock(object):
@@ -265,16 +266,17 @@ def test_create_remote_driver_firefox(webdriver_mock, config):
     config_driver._create_remote_driver()
     capabilities = DesiredCapabilities.FIREFOX.copy()
     capabilities['firefox_profile'] = 'encoded profile'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=capabilities)
 
 
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_chrome(webdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'chrome')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     # Chrome options mock
     chrome_options = mock.MagicMock()
@@ -284,16 +286,17 @@ def test_create_remote_driver_chrome(webdriver_mock, config):
     config_driver._create_remote_driver()
     capabilities = DesiredCapabilities.CHROME.copy()
     capabilities['goog:chromeOptions'] = 'chrome options'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=capabilities)
 
 
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_chrome_old_selenium(webdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'chrome')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     # Chrome options mock
     chrome_options = mock.MagicMock()
@@ -303,163 +306,174 @@ def test_create_remote_driver_chrome_old_selenium(webdriver_mock, config):
     config_driver._create_remote_driver()
     capabilities = DesiredCapabilities.CHROME.copy()
     capabilities['chromeOptions'] = 'chrome options'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=capabilities)
 
 
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_safari(webdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'safari')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     config_driver._create_remote_driver()
-    webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=DesiredCapabilities.SAFARI)
 
 
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_opera(webdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'opera')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     config_driver._create_remote_driver()
     capabilities = DesiredCapabilities.OPERA
     capabilities['opera.autostart'] = True
     capabilities['opera.arguments'] = '-fullscreen'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=capabilities)
 
 
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_iexplore(webdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'iexplore')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     config_driver._create_remote_driver()
-    webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=DesiredCapabilities.INTERNETEXPLORER)
 
 
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_edge(webdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'edge')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     config_driver._create_remote_driver()
-    webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=DesiredCapabilities.EDGE)
 
 
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_phantomjs(webdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'phantomjs')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     config_driver._create_remote_driver()
-    webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=DesiredCapabilities.PHANTOMJS)
 
 
 @mock.patch('toolium.config_driver.appiumdriver')
 def test_create_remote_driver_android(appiumdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'android')
     config.add_section('AppiumCapabilities')
     config.set('AppiumCapabilities', 'automationName', 'Appium')
     config.set('AppiumCapabilities', 'platformName', 'Android')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     config_driver._create_remote_driver()
     capabilities = {'automationName': 'Appium', 'platformName': 'Android'}
-    appiumdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    appiumdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                      desired_capabilities=capabilities)
 
 
 @mock.patch('toolium.config_driver.appiumdriver')
 def test_create_remote_driver_ios(appiumdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'ios')
     config.add_section('AppiumCapabilities')
     config.set('AppiumCapabilities', 'automationName', 'Appium')
     config.set('AppiumCapabilities', 'platformName', 'iOS')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     config_driver._create_remote_driver()
     capabilities = {'automationName': 'Appium', 'platformName': 'iOS'}
-    appiumdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    appiumdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                      desired_capabilities=capabilities)
 
 
 @mock.patch('toolium.config_driver.appiumdriver')
 def test_create_remote_driver_iphone(appiumdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'iphone')
     config.add_section('AppiumCapabilities')
     config.set('AppiumCapabilities', 'automationName', 'Appium')
     config.set('AppiumCapabilities', 'platformName', 'iOS')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     config_driver._create_remote_driver()
     capabilities = {'automationName': 'Appium', 'platformName': 'iOS'}
-    appiumdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    appiumdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                      desired_capabilities=capabilities)
 
 
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_version_platform(webdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'iexplore-11-on-WIN10')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     config_driver._create_remote_driver()
     capabilities = DesiredCapabilities.INTERNETEXPLORER
     capabilities['version'] = '11'
     capabilities['platform'] = 'WIN10'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=capabilities)
 
 
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_version(webdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'iexplore-11')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     config_driver._create_remote_driver()
     capabilities = DesiredCapabilities.INTERNETEXPLORER.copy()
     capabilities['version'] = '11'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=capabilities)
 
 
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_capabilities(webdriver_mock, config):
-    config.set('Server', 'host', '10.20.30.40')
-    config.set('Server', 'port', '5555')
     config.set('Driver', 'type', 'iexplore-11')
     config.add_section('Capabilities')
     config.set('Capabilities', 'version', '11')
-    config_driver = ConfigDriver(config)
+    server_url = 'http://10.20.30.40:5555'
+    utils = mock.MagicMock()
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
 
     config_driver._create_remote_driver()
     capabilities = DesiredCapabilities.INTERNETEXPLORER.copy()
     capabilities['version'] = '11'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='http://10.20.30.40:5555/wd/hub',
+    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=capabilities)
 
 

@@ -1,17 +1,157 @@
 Toolium Changelog
 =================
 
-v1.4.2
+v1.7.3
 ------
 
 *Release date: In development*
 
+- Feature: PageObject Specification Files: Basic loader
+
+v1.7.2
+------
+
+*Release date: 2020-09-01*
+
+- Move utils.py and path_utils.py files to utils folder maintaining backwards compatibility
+- Fix input text when element has a shadowroot and text contains quotation marks
+- New config property 'logs_types' in [Server] section to configure webdriver log types that should be downloaded
+
+v1.7.1
+------
+
+*Release date: 2020-05-18*
+
+- Fix Appium dependency conflict, current allowed versions: from 0.24 to 0.52
+
+v1.7.0
+------
+
+*Release date: 2020-05-11*
+
+- Fix to allow step's text (context.text) declaration into dynamic environment sections
+- Add `ssl` config property in [Server] section to allow using https in Selenium Grid url
+- Visual testing comparison must fail when baseline does not exist and save mode is disabled
+- Update dynamic environment behaviour to work as the behave's one, i.e. after scenario/feature actions are executed
+ even when before scenario/feature actions fail
+- Fix unit tests to work without any additional dependencies
+
+v1.6.1
+------
+
+*Release date: 2020-01-21*
+
+- Fix concurrent folder creation. Add *makedirs_safe* method to create a new folder.
+
+v1.6.0
+------
+
+*Release date: 2020-01-15*
+
+- New config property 'binary' in [Chrome] section to configure the chrome binary path
+- Allow configuration properties with colon in name
+
+    For instance, to set a capability with : in name, like:
+
+.. code:: console
+
+    goog:loggingPrefs = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
+
+    Following property should be added in properties.cfg:
+
+.. code:: console
+
+    [Capabilities]
+    goog___loggingPrefs: {'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}
+
+- Add support for python 3.8
+
+v1.5.6
+------
+
+*Release date: 2019-10-04*
+
+- Fix dynamic environment exit code when there are hook errors
+
+v1.5.5
+------
+
+*Release date: 2019-07-29*
+
+- Fix screeninfo dependency to 0.3.1 version
+
+v1.5.4
+------
+
+*Release date: 2019-07-22*
+
+- Add support to encapsulated elements (Shadowroot)
+
+    | Only support CSS_SELECTOR locator
+    | Input text page element fixed
+    | It is not supported for list of elements yet
+    | It is not supported for element find by parent yet
+    | It is not supported nested encapsulation yet
+
+- Fix Selenium dependency conflict
+
+v1.5.3
+------
+
+*Release date: 2019-04-05*
+
+- Fix error executing Appium locally
+
+v1.5.2
+------
+
+*Release date: 2019-04-01*
+
+- Check if a GGR session (current) is still active
+- Download Selenoid logs files also when test fails
+- Fix utils.py wait functions' descriptions
+- Add new wait to utils.py in order to wait for an element not containing some text
+
+v1.5.1
+------
+
+*Release date: 2019-03-18*
+
+- Download Selenoid video and logs files only in linux nodes if video or logs are enabled
+- Add a sleep between Selenoid retries when downloading files
+- Manage exceptions in dynamic environment to mark affected scenarios as failed
+
+v1.5.0
+------
+
+*Release date: 2019-02-26*
+
+- Latest version of Appium can be used
+- Make Toolium compatible with GGR and Selenoid
+- Download execution video and session logs if the test fails using GGR and Selenoid
+- Add logs path in the `_output` folder to download GGR logs
+- Add `username` and `password` config properties in [Server] section to enable basic authentication in Selenium Grid (required by GGR)
+
+v1.4.3
+------
+
+*Release date: 2018-12-18*
+
+- Fix Appium version to 0.31 or minor
+
+v1.4.2
+------
+
+*Release date: 2018-10-26*
+
 - Add movement in X axis in *scroll_element_into_view* method
-- Fix bugs in the Dynamic Environment feature:
+- Fix bugs and new features in the Dynamic Environment library:
 
    | chars no utf-8 are accepted
    | no replace behave prefixes into a step
    | pretty print by console, in Steps multi lines
+   | raise an exception in error case
+   | allow comments in the steps
 
 - Add support for python 3.7
 

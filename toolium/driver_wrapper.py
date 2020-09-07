@@ -24,8 +24,8 @@ import screeninfo
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.utils import Utils
-from toolium.format_utils import get_valid_filename
+from toolium.utils.driver_utils import Utils
+from toolium.utils.path_utils import get_valid_filename
 
 
 class DriverWrapper(object):
@@ -33,7 +33,7 @@ class DriverWrapper(object):
 
     :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
     :type config: toolium.config_parser.ExtendedConfigParser or configparser.ConfigParser
-    :type utils: toolium.utils.Utils
+    :type utils: toolium.utils.driver_utils.Utils
     :type app_strings: dict
     :type session_id: str
     :type remote_node: str
@@ -50,6 +50,7 @@ class DriverWrapper(object):
     utils = None  #: test utils instance
     app_strings = None  #: mobile application strings
     session_id = None  #: remote webdriver session id
+    server_type = None  #: remote server type
     remote_node = None  #: remote grid node
     remote_node_video_enabled = False  #: True if the remote grid node has the video recorder enabled
     logger = None  #: logger instance
@@ -121,6 +122,7 @@ class DriverWrapper(object):
             # Initialize the config object
             self.config = ExtendedConfigParser.get_config_from_file(prop_filenames)
             self.config_properties_filenames = prop_filenames
+            self.update_magic_config_names()
 
         # Override properties with system properties
         self.config.update_properties(os.environ)
@@ -128,6 +130,20 @@ class DriverWrapper(object):
         # Override properties with behave userdata properties
         if behave_properties:
             self.config.update_properties(behave_properties)
+
+    def update_magic_config_names(self):
+        """Replace '___' for ':' in options names as a workaround of a configparser limitation
+        To set a config property with : in name
+            goog:loggingPrefs = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
+        Configure properties.cfg with:
+            goog___loggingPrefs: {'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}
+        """
+        for section in self.config.sections():
+            for option in self.config.options(section):
+                if '___' in option:
+                    option_value = self.config.get(section, option)
+                    self.config.set(section, option.replace('___', ':'), option_value)
+                    self.config.remove_option(section, option)
 
     def configure_visual_baseline(self):
         """Configure baseline directory"""
@@ -204,14 +220,17 @@ class DriverWrapper(object):
         if not self.config.get('Driver', 'type') or self.config.get('Driver', 'type') in ['api', 'no_driver']:
             return None
 
-        self.driver = ConfigDriver(self.config).create_driver()
+        self.driver = ConfigDriver(self.config, self.utils).create_driver()
 
         # Save session id and remote node to download video after the test execution
         self.session_id = self.driver.session_id
-        self.remote_node = self.utils.get_remote_node()
-        self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.remote_node)
+        self.server_type, self.remote_node = self.utils.get_remote_node()
+        if self.server_type == 'grid':
+            self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.remote_node)
+        else:
+            self.remote_node_video_enabled = True if self.server_type in ['ggr', 'selenoid'] else False
 
-        # Save app_strings in mobile tests
+            # Save app_strings in mobile tests
         if self.is_mobile_test() and not self.is_web_test() and self.config.getboolean_optional('Driver',
                                                                                                 'appium_app_strings'):
             self.app_strings = self.driver.app_strings()
@@ -335,3 +354,15 @@ class DriverWrapper(object):
                                             and context.reuse_driver_from_tags)
         return (((reuse_driver and scope == 'function') or (reuse_driver_session and scope != 'session'))
                 and (test_passed or not restart_driver_after_failure))
+
+    def get_driver_platform(self):
+        """
+        Get driver platform where tests are running
+        :return: platform name
+        """
+        platform = ''
+        if 'platform' in self.driver.desired_capabilities:
+            platform = self.driver.desired_capabilities['platform']
+        elif 'platformName' in self.driver.desired_capabilities:
+            platform = self.driver.desired_capabilities['platformName']
+        return platform

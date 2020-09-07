@@ -154,6 +154,7 @@ def test_connect(create_driver, driver_wrapper):
     expected_driver = mock.MagicMock()
     create_driver.return_value = expected_driver
     driver_wrapper.utils = mock.MagicMock()
+    driver_wrapper.utils.get_remote_node.return_value = ('local', None)
 
     # Connect and check the returned driver
     assert driver_wrapper.connect(maximize=False) == expected_driver

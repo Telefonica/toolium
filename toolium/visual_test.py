@@ -31,7 +31,7 @@ from selenium.common.exceptions import NoSuchElementException
 from six.moves import xrange  # Python 2 and 3 compatibility
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.format_utils import get_valid_filename
+from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 
 try:
     from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
@@ -80,10 +80,8 @@ class VisualTest(object):
         self.save_baseline = self.driver_wrapper.config.getboolean_optional('VisualTests', 'save')
 
         # Create folders
-        if not os.path.exists(self.baseline_directory):
-            os.makedirs(self.baseline_directory)
-        if not os.path.exists(self.output_directory):
-            os.makedirs(self.output_directory)
+        makedirs_safe(self.baseline_directory)
+        makedirs_safe(self.output_directory)
 
         # Copy js, css and html template to output directory
         dst_template_path = os.path.join(self.output_directory, self.report_name)
@@ -163,7 +161,7 @@ class VisualTest(object):
         DriverWrappersPool.visual_number += 1
 
         # Determine whether we should save the baseline image
-        if self.save_baseline or not os.path.exists(baseline_file):
+        if self.save_baseline:
             # Copy screenshot to baseline
             shutil.copyfile(output_file, baseline_file)
 
@@ -171,6 +169,13 @@ class VisualTest(object):
                 self._add_result_to_report('baseline', report_name, output_file, None, 'Screenshot added to baseline')
 
             self.logger.debug("Visual screenshot '%s' saved in visualtests/baseline folder", filename)
+        elif not os.path.exists(baseline_file):
+            # Baseline should exist if save mode is not enabled
+            error_message = "Baseline file not found: %s" % baseline_file
+            self.logger.warning(error_message)
+            self._add_result_to_report('diff', report_name, output_file, None, 'Baseline file not found')
+            if self.driver_wrapper.config.getboolean_optional('VisualTests', 'fail') or self.force:
+                raise AssertionError(error_message)
         else:
             # Compare the screenshots
             self.compare_files(report_name, output_file, baseline_file, threshold)

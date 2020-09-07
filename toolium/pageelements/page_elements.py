@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from typing import List, Any
 
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.pageelements.button_page_element import Button
@@ -51,11 +52,13 @@ class PageElements(CommonObject):
         :param parent: parent element (WebElement, PageElement or locator tuple)
         :param order: index value if the locator returns more than one element
         :param page_element_class: class of page elements (PageElement, Button...)
+        :param shadowroot: CSS SELECTOR of JS element where shadowroot tag appears
         """
         super(PageElements, self).__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.order = order  #: index value if the locator returns more than one element
+        self.shadowroot = None  #: Not implemented for PageElements yet
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         # update instance element class or use PageElement class
         if page_element_class:
@@ -92,6 +95,7 @@ class PageElements(CommonObject):
 
     @property
     def page_elements(self):
+        # type: () -> List[Any]
         """Find multiple PageElement using element locator
 
         :returns: list of page element objects
@@ -107,6 +111,15 @@ class PageElements(CommonObject):
                 page_element._web_element = web_element
                 self._page_elements.append(page_element)
         return self._page_elements
+
+    def __len__(self):
+        return len(self.page_elements)
+
+    def __getitem__(self, i):
+        return self.page_elements[i]
+
+    def __iter__(self):
+        return iter(self.page_elements)
 
 
 class Buttons(PageElements):

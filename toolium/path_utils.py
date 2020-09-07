@@ -16,19 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import re
+# Imports to maintain backwards compatibility
 
-FILENAME_MAX_LENGTH = 100
-
-
-def get_valid_filename(s, max_length=FILENAME_MAX_LENGTH):
-    """
-    Returns the given string converted to a string that can be used for a clean filename.
-    Removes leading and trailing spaces; converts anything that is not an alphanumeric,
-    dash or underscore to underscore; converts behave examples separator ` -- @` to underscore.
-    It also cuts the resulting name to `max_length`.
-
-    @see https://github.com/django/django/blob/master/django/utils/text.py
-    """
-    s = str(s).strip().replace(' -- @', '_')
-    return re.sub(r'(?u)[^-\w]', '_', s)[:max_length]
+from toolium.utils.path_utils import get_valid_filename, makedirs_safe

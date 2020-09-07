@@ -31,7 +31,7 @@ from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.pageelements.page_element import PageElement
-from toolium.utils import Utils
+from toolium.utils.driver_utils import Utils
 
 navigation_bar_tests = (
     ('android', 'C:/Demo.apk', None, 0),
@@ -88,6 +88,86 @@ def utils():
     return Utils()
 
 
+def test_save_webdriver_logs_one_log_type(driver_wrapper, utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', 'client')
+
+    utils.save_webdriver_logs('test_name')
+    log_types_mock.assert_not_called()
+    Utils.save_webdriver_logs_by_type.assert_called_once_with('client', 'test_name')
+
+
+def test_save_webdriver_logs_multiple_log_types(driver_wrapper, utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', 'client,server,browser')
+
+    utils.save_webdriver_logs('test_name')
+    log_types_mock.assert_not_called()
+    Utils.save_webdriver_logs_by_type.assert_has_calls(
+        [mock.call('client', 'test_name'), mock.call('server', 'test_name'), mock.call('browser', 'test_name')])
+
+
+def test_save_webdriver_logs_multiple_log_types_with_spaces(driver_wrapper, utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', 'client, server , browser')
+
+    utils.save_webdriver_logs('test_name')
+    log_types_mock.assert_not_called()
+    Utils.save_webdriver_logs_by_type.assert_has_calls(
+        [mock.call('client', 'test_name'), mock.call('server', 'test_name'), mock.call('browser', 'test_name')])
+
+
+def test_save_webdriver_logs_none_log_type(driver_wrapper, utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', '')
+
+    utils.save_webdriver_logs('test_name')
+    log_types_mock.assert_not_called()
+    Utils.save_webdriver_logs_by_type.assert_not_called()
+
+
+def test_save_webdriver_logs_all_log_type(driver_wrapper, utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', 'all')
+
+    utils.save_webdriver_logs('test_name')
+    log_types_mock.assert_called_once_with()
+    Utils.save_webdriver_logs_by_type.assert_has_calls([mock.call('client', 'test_name'),
+                                                        mock.call('server', 'test_name')])
+
+
+def test_save_webdriver_logs_without_log_types(driver_wrapper, utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    utils.save_webdriver_logs('test_name')
+    log_types_mock.assert_called_once_with()
+    Utils.save_webdriver_logs_by_type.assert_has_calls([mock.call('client', 'test_name'),
+                                                        mock.call('server', 'test_name')])
+
+
 def test_get_remote_node(driver_wrapper, utils):
     # Configure mock
     driver_wrapper.driver.session_id = '5af'
@@ -99,7 +179,7 @@ def test_get_remote_node(driver_wrapper, utils):
         req_mock.get(url, json=grid_response_json)
 
         # Get remote node and check result
-        assert utils.get_remote_node() == '10.20.30.40'
+        assert utils.get_remote_node() == ('grid', '10.20.30.40')
         assert url == req_mock.request_history[0].url
 
 
@@ -114,26 +194,70 @@ def test_get_remote_node_selenium3(driver_wrapper, utils):
         req_mock.get(url, json=grid_response_json)
 
         # Get remote node and check result
-        assert utils.get_remote_node() == '10.20.30.40'
+        assert utils.get_remote_node() == ('grid', '10.20.30.40')
         assert url == req_mock.request_history[0].url
+
+
+def test_get_remote_node_ggr(driver_wrapper, utils):
+    # Configure mock
+    driver_wrapper.driver.session_id = '5af'
+    grid_url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
+    ggr_url = 'http://{}:{}/host/{}'.format('localhost', 4444, '5af')
+    ggr_response_json = {'Count': 3, 'Username': '', 'Scheme': '', 'VNC': '', 'Name': 'host_name', 'Password': '',
+                         'Port': 4500}
+
+    with requests_mock.mock() as req_mock:
+        req_mock.get(grid_url, text='non_json_response')
+        req_mock.get(ggr_url, json=ggr_response_json)
+
+        # Get remote node and check result
+        assert utils.get_remote_node() == ('ggr', 'host_name')
+        assert grid_url == req_mock.request_history[0].url
+        assert ggr_url == req_mock.request_history[1].url
+
+
+def test_get_remote_node_selenoid(driver_wrapper, utils):
+    # Configure mock
+    driver_wrapper.driver.session_id = '5af'
+    grid_url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
+    ggr_url = 'http://{}:{}/host/{}'.format('localhost', 4444, '5af')
+    selenoid_url = 'http://{}:{}/status'.format('localhost', 4444)
+    selenoid_response_json = {'total': 5, 'used': 0, 'queued': 0, 'pending': 0, 'browsers': {'firefox': {'59.0': {}}}}
+
+    with requests_mock.mock() as req_mock:
+        req_mock.get(grid_url, text='non_json_response')
+        req_mock.get(ggr_url, json={})
+        req_mock.get(selenoid_url, json=selenoid_response_json)
+
+        # Get remote node and check result
+        assert utils.get_remote_node() == ('selenoid', 'localhost')
+        assert grid_url == req_mock.request_history[0].url
+        assert ggr_url == req_mock.request_history[1].url
+        assert selenoid_url == req_mock.request_history[2].url
 
 
 def test_get_remote_node_non_grid(driver_wrapper, utils):
     # Configure mock
     driver_wrapper.driver.session_id = '5af'
-    url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
+    grid_url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
+    ggr_url = 'http://{}:{}/host/{}'.format('localhost', 4444, '5af')
+    selenoid_url = 'http://{}:{}/status'.format('localhost', 4444)
 
     with requests_mock.mock() as req_mock:
-        req_mock.get(url, text='non_json_response')
+        req_mock.get(grid_url, text='non_json_response')
+        req_mock.get(ggr_url, json={})
+        req_mock.get(selenoid_url, json={})
 
         # Get remote node and check result
-        assert utils.get_remote_node() == 'localhost'
-        assert url == req_mock.request_history[0].url
+        assert utils.get_remote_node() == ('selenium', 'localhost')
+        assert grid_url == req_mock.request_history[0].url
+        assert ggr_url == req_mock.request_history[1].url
+        assert selenoid_url == req_mock.request_history[2].url
 
 
 def test_get_remote_node_local_execution(driver_wrapper, utils):
     driver_wrapper.config.set('Server', 'enabled', 'false')
-    assert utils.get_remote_node() is None
+    assert utils.get_remote_node() == ('local', None)
 
 
 def test_get_remote_video_url(utils):
@@ -209,7 +333,7 @@ def test_is_remote_video_enabled_disabled(utils):
         assert url == req_mock.request_history[0].url
 
 
-@mock.patch('toolium.utils.requests.get')
+@mock.patch('toolium.utils.driver_utils.requests.get')
 def test_is_remote_video_enabled_non_grid_extras(req_get_mock, utils):
     # Configure mock
     req_get_mock.side_effect = ConnectionError('exception error')
@@ -493,3 +617,10 @@ def test_wait_until_first_element_is_found_custom_timeout(driver_wrapper, utils)
     driver_wrapper.driver.find_element.assert_called_with(*element_locator)
     # Execution time must be greater than timeout
     assert end_time - start_time > 15
+
+
+def test_utils_compatibility():
+    # Check that utils works with old import
+    from toolium.utils import Utils
+    old_import_utils = Utils()
+    assert hasattr(old_import_utils, 'get_web_element')

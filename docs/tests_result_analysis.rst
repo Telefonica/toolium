@@ -40,9 +40,8 @@ Videos
 
 When a test fails, Toolium downloads a video of the test execution into the folder *output/videos/DATE_DRIVER_TYPE*.
 This feature only works when the test has been executed in a
-`Selenium Grid Extras <https://github.com/groupon/Selenium-Grid-Extras>`_ grid node. Selenium Grid Extras is a
-Selenium Grid manager that, among other features, allows recording videos of test executions.
-
+`Selenium Grid Extras <https://github.com/groupon/Selenium-Grid-Extras>`_ or `GGR <https://github.com/aerokube/ggr>`_
+grid node. Both grids allow recording videos of test executions.
 
 In order to download the execution video even if the test passes, configure the property *video_enabled* in *[Server]*
 section in properties.cfg file ::
@@ -60,15 +59,18 @@ Webdriver logs
 --------------
 
 When a test fails during a remote execution, Toolium downloads webdriver logs into the folder *output*. Depending on
-the driver type, the webdriver has different log types: client, server, browser and logcat.
+the driver type, the webdriver will contain different log types, for instance, *client*, *server*, *browser*, *driver*,
+*performance*, *profiler*, *logcat*, *bugreport*, etc.
 
-In order to download webdriver logs even if the test passes, configure the property *logs_enabled* in *[Server]* section in
-properties.cfg file ::
+By default, when a test fails, toolium will download all log types available in current webdriver. But it can be also
+configured to download only a set of log types setting the property `logs_types <https://toolium.readthedocs.io/en/latest/remote_configuration.html#logs-types>`_
+in *[Server]* section in properties.cfg file ::
+
+    [Server]
+    logs_types: client,server
+
+In order to download webdriver logs even if the test passes, configure the property `logs_enabled <https://toolium.readthedocs.io/en/latest/remote_configuration.html#logs-enabled>`_
+in *[Server]* section in properties.cfg file ::
 
     [Server]
     logs_enabled: true
-
-logs_enabled
-~~~~~~~~~~~~
-| *true*: webdriver logs are downloaded and saved to local files after test execution
-| *false*: webdriver logs are downloaded and saved to local files only if the test fails

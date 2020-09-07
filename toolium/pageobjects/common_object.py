@@ -58,7 +58,7 @@ class CommonObject(object):
     def utils(self):
         """Get utils instance
 
-        :type utils: toolium.utils.Utils
+        :type utils: toolium.utils.driver_utils.Utils
         :returns: utils instance
         """
         return self.driver_wrapper.utils

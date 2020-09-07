@@ -36,12 +36,14 @@ class Group(PageObject, PageElement):
         :param driver_wrapper: driver wrapper instance
         :param order: index value if the locator returns more than one element
         :param wait: True if the page element must be loaded in wait_until_loaded method of the container page object
+        :param shadowroot: CSS SELECTOR of JS element where shadowroot tag appears
         """
         self.logger = logging.getLogger(__name__)  #: logger instance
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.order = order  #: index value if the locator returns more than one element
         self.wait = wait  #: True if it must be loaded in wait_until_loaded method of the container page object
+        self.shadowroot = None  #: Not implemented for Group yet
         self.driver_wrapper = driver_wrapper if driver_wrapper else \
             DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self.init_page_elements()
