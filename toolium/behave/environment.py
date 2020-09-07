@@ -182,7 +182,6 @@ def create_and_configure_wrapper(context_or_world):
         :return: PageObject properly created with all its PageElements defined in the Specification File
         """
         pageobject = context_or_world.pageobject_spec_loader.init_page_object(pageobject_name)
-        pageobject.wait_until_loaded()
 
         return pageobject
 
