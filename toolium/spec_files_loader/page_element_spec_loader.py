@@ -52,7 +52,7 @@ class PageElementSpecLoader:
 
     def load_page_element_from_model(self, pageelement_model_data, page_element_class_name, page_element_module):
         """"
-        This method returns an instance of the given PageElement located in the Python module specified.
+        This method returns an instance of the given PageElement located in the specified Python's module.
 
         :param pageelement_model_data: (dict) Attributes loaded for the PageElement from the Specification File
         :param page_element_class_name: (string) Name of the Class for the PageElement

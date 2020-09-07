@@ -38,7 +38,7 @@ class PageObjectSpecLoader:
 
         :param pageobject_name: (string) Name of the PageObject
         :param pageobject_model_data: (list) List of elements and _Properties_ (if given).
-                                      All Specifications to build the PageObject based in the Specification File..
+                                      All Specifications to build the PageObject based on the Specification File..
                                       Example:
                                         {
                                          'Text':{
@@ -64,8 +64,6 @@ class PageObjectSpecLoader:
         created_page_object = PageObjectModelClass(page_name=pageobject_name)
 
         for page_element_data in pageobject_model_data:
-            # Data example:
-            # page_element_data
             if PAGE_OBJECT_MODEL_PROPERTIES_BASE_OBJECT not in page_element_data:
                 page_element_name = list(page_element_data.keys())[0]
                 page_element_model_data = list(page_element_data.values())[0]

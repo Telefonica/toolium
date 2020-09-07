@@ -26,8 +26,8 @@ from toolium.spec_files_loader.page_object_spec_loader import PageObjectSpecLoad
 
 class ConfigSpecFilesLoader(object):
     """
-    This Loader builds all PageObject from the information given in PageObject Specification Files (YAML files).
-        - Builds all PageObjects with the given PageElements and its configuration.
+    This Loader builds all PageObject from the information given by PageObject Specification Files (YAML files).
+        - Builds all PageObjects with the given PageElements and their configuration.
         - Build PageElements already existing in Toolium.
         - TODO: Allow to include in the PageObject Models all PageElements implemented by the user.
         - TODO: Allow to inherit already implemented PageObjects by the user.
@@ -86,7 +86,8 @@ class ConfigSpecFilesLoader(object):
                                          if ".yml" or ".yaml" in definition_file]
 
         if not definition_file_list:
-            self.logger.warn("No models loaded. Has been the spec files path properly configured? '%s'", yaml_path)
+            self.logger.warning("No Spec Files loaded. Has the spec files path been properly "
+                                "configured? '%s'", yaml_path)
         else:
             for definition_file in definition_file_list:
                 with open(definition_file, 'r') as stream:

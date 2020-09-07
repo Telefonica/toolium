@@ -33,7 +33,8 @@ To enable and configure this feature, it is needed to properly set the following
 PageObject and PageElements implementation
 ------------------------------------------
 
-The implementation of PageObjects allow to define all PageElements implemented by default as part of Toolium.
+The implementation of PageObjects as part of these YAML spec files allows to use all PageElements
+implemented by default as part of Toolium.
 
 .. code-block:: yaml
 
