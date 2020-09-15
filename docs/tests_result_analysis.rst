@@ -63,7 +63,7 @@ the driver type, the webdriver will contain different log types, for instance, *
 *performance*, *profiler*, *logcat*, *bugreport*, etc.
 
 By default, when a test fails, toolium will download all log types available in current webdriver. But it can be also
-configured to download only a set of log types setting the property `log_types <https://toolium.readthedocs.io/en/latest/remote_configuration.html#logs-types>`_
+configured to download only a set of log types setting the property `log_types <https://toolium.readthedocs.io/en/latest/remote_configuration.html#log-types>`_
 in *[Server]* section in properties.cfg file ::
 
     [Server]
