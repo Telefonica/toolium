@@ -18,7 +18,7 @@ section in properties.cfg file::
     password: SERVER_PASSWORD
     video_enabled: false
     logs_enabled: false
-    logs_types: all
+    log_types: all
 
 enabled
 ~~~~~~~
@@ -60,7 +60,7 @@ logs_enabled
 | *true*: webdriver and GGR logs are downloaded and saved to local files after test execution
 | *false*: webdriver and GGR logs are downloaded and saved to local files only if the test fails
 
-logs_types
+log_types
 ~~~~~~~~~~
 | Comma-separated list of webdriver log types that will be downloaded if remote test fails or if *logs_enabled* is true
 |
