@@ -293,6 +293,8 @@ class ConfigDriver(object):
             return False
         elif str(value).startswith('{') and str(value).endswith('}'):
             return ast.literal_eval(value)
+        elif str(value).startswith('[') and str(value).endswith(']'):
+            return ast.literal_eval(value)
         else:
             try:
                 return int(value)

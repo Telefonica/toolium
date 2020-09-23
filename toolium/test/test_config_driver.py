@@ -507,6 +507,12 @@ def test_convert_property_type_str(config):
     assert config_driver._convert_property_type(value) == value
 
 
+def test_convert_property_type_list(config):
+    config_driver = ConfigDriver(config)
+    value = "[1, 2, 3]"
+    assert config_driver._convert_property_type(value) == [1, 2, 3]
+
+
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_firefox_profile(webdriver_mock, config):
     config.add_section('Firefox')
