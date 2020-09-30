@@ -5,6 +5,7 @@ v1.7.3
 ------
 
 *Release date: In development*
+- Include click action in InputText element
 
 v1.7.2
 ------
