@@ -140,6 +140,7 @@ def test_reset_object(driver_wrapper):
     mock_element_11 = mock.MagicMock(spec=WebElement)
     mock_element_12 = mock.MagicMock(spec=WebElement)
     driver_wrapper.driver.find_elements.side_effect = [[mock_element_11, mock_element_12]]
+    driver_wrapper.is_mobile_test = mock.MagicMock(return_value=False)
 
     page_object = RegisterPageObject(driver_wrapper)
 
@@ -186,6 +187,7 @@ def test_reset_object(driver_wrapper):
 
 
 def test_wait_until_loaded(driver_wrapper):
+    driver_wrapper.is_mobile_test = mock.MagicMock(return_value=False)
     page_object = RegisterPageObject(driver_wrapper).wait_until_loaded()
 
     # Check that all page elements with wait=True have a web element

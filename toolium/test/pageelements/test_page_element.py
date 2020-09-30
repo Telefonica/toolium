@@ -41,6 +41,7 @@ class RegisterPageObject(PageObject):
         self.address = PageElement(By.ID, 'address', (By.ID, 'parent'))
         self.address_shadowroot = PageElement(By.CSS_SELECTOR, '#address', shadowroot='shadowroot_css')
         self.address_shadowroot_by_id = PageElement(By.ID, 'address', shadowroot='shadowroot_css')
+        self.element_webview = PageElement(By.ID, 'webview', webview=True)
 
 
 @pytest.fixture
@@ -57,6 +58,7 @@ def driver_wrapper():
     # Create a new wrapper
     driver_wrapper = DriverWrappersPool.get_default_wrapper()
     driver_wrapper.driver = mock.MagicMock()
+    driver_wrapper.is_mobile_test = mock.MagicMock(return_value=False)
 
     return driver_wrapper
 
@@ -369,3 +371,63 @@ def test_get_attribute(driver_wrapper):
     RegisterPageObject(driver_wrapper).username.get_attribute('attribute_name')
 
     mock_element.get_attribute.assert_called_once_with('attribute_name')
+
+
+def test_automatic_context_selection_no_webview_context_available(driver_wrapper):
+    driver_wrapper.is_mobile_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.getboolean_optional.return_value = True
+    driver_wrapper.driver.context = "NATIVE_APP"
+    driver_wrapper.driver.contexts = ["NATIVE_APP"]
+
+    with pytest.raises(Exception) as excinfo:
+        RegisterPageObject(driver_wrapper).element_webview.web_element
+    assert "WEBVIEW context not found" in str(excinfo.value)
+
+
+def test_automatic_context_selection_native_to_webview(driver_wrapper):
+    driver_wrapper.is_mobile_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.getboolean_optional.return_value = True
+    driver_wrapper.driver.context = "NATIVE_APP"
+    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
+
+    RegisterPageObject(driver_wrapper).element_webview.web_element
+    driver_wrapper.driver.switch_to.context.assert_called_once_with("WEBVIEW")
+    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'webview')
+
+
+def test_automatic_context_selection_webview_to_native(driver_wrapper):
+    driver_wrapper.is_mobile_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.getboolean_optional.return_value = True
+    driver_wrapper.driver.context = "WEBVIEW"
+    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
+
+    RegisterPageObject(driver_wrapper).language.web_element
+    driver_wrapper.driver.switch_to.context.assert_called_once_with("NATIVE_APP")
+    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'language')
+
+
+def test_automatic_context_selection_native_to_native(driver_wrapper):
+    driver_wrapper.is_mobile_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.getboolean_optional.return_value = True
+    driver_wrapper.driver.context = "NATIVE_APP"
+    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
+
+    RegisterPageObject(driver_wrapper).language.web_element
+    driver_wrapper.driver.switch_to.context.assert_not_called()
+    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'language')
+
+
+def test_automatic_context_selection_webview_to_webview(driver_wrapper):
+    driver_wrapper.is_mobile_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.getboolean_optional.return_value = True
+    driver_wrapper.driver.context = "WEBVIEW"
+    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
+
+    RegisterPageObject(driver_wrapper).element_webview.web_element
+    driver_wrapper.driver.switch_to.context.assert_not_called()
+    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'webview')

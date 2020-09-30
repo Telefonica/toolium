@@ -6,6 +6,11 @@ v1.7.3
 
 *Release date: In development*
 
+- New config property 'automatic_context_selection' in [Driver] section for mobile tests with webview
+
+   | If it's false, the WebElement is searched using always NATIVE context
+   | If it's true, the WebElement is searched using context NATIVE or WEBVIEW depeding of the webview attribute value
+
 v1.7.2
 ------
 
