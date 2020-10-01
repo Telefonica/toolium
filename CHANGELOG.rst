@@ -5,6 +5,7 @@ v1.7.3
 ------
 
 *Release date: In development*
+- Include click action in InputText element
 
 - New config property 'automatic_context_selection' in [Driver] section for mobile tests with webview
 
