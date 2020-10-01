@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import os
 
 import mock
 import pytest
@@ -22,6 +23,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
+from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.pageelements import PageElement
@@ -57,6 +59,16 @@ def driver_wrapper():
 
     # Create a new wrapper
     driver_wrapper = DriverWrappersPool.get_default_wrapper()
+
+    # Configure wrapper
+    root_path = os.path.dirname(os.path.realpath(__file__))
+    config_files = ConfigFiles()
+    config_files.set_config_directory(os.path.join(root_path, 'conf'))
+    config_files.set_output_directory(os.path.join(root_path, 'output'))
+    config_files.set_config_log_filename('logging.conf')
+    DriverWrappersPool.configure_common_directories(config_files)
+    driver_wrapper.configure_properties()
+
     driver_wrapper.driver = mock.MagicMock()
     driver_wrapper.is_mobile_test = mock.MagicMock(return_value=False)
 
@@ -163,9 +175,7 @@ def test_get_web_element_in_test(driver_wrapper):
 
 
 def test_get_web_element_two_times_saving_enabled(driver_wrapper):
-    # Mock Driver.save_web_element = True
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.getboolean_optional.return_value = True
+    driver_wrapper.config.set('Driver', 'save_web_element', 'true')
     login_page = RegisterPageObject(driver_wrapper)
     login_page.username.web_element
     login_page.username.web_element
@@ -175,9 +185,7 @@ def test_get_web_element_two_times_saving_enabled(driver_wrapper):
 
 
 def test_get_web_element_two_times_saving_disabled(driver_wrapper):
-    # Mock Driver.save_web_element = False
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.getboolean_optional.return_value = False
+    driver_wrapper.config.set('Driver', 'save_web_element', 'false')
     login_page = RegisterPageObject(driver_wrapper)
     login_page.username.web_element
     login_page.username.web_element
@@ -376,7 +384,7 @@ def test_get_attribute(driver_wrapper):
 def test_automatic_context_selection_no_webview_context_available(driver_wrapper):
     driver_wrapper.is_mobile_test = mock.MagicMock(return_value=True)
     driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.getboolean_optional.return_value = True
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
     driver_wrapper.driver.context = "NATIVE_APP"
     driver_wrapper.driver.contexts = ["NATIVE_APP"]
 
@@ -387,8 +395,7 @@ def test_automatic_context_selection_no_webview_context_available(driver_wrapper
 
 def test_automatic_context_selection_native_to_webview(driver_wrapper):
     driver_wrapper.is_mobile_test = mock.MagicMock(return_value=True)
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.getboolean_optional.return_value = True
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
     driver_wrapper.driver.context = "NATIVE_APP"
     driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
 
@@ -399,8 +406,7 @@ def test_automatic_context_selection_native_to_webview(driver_wrapper):
 
 def test_automatic_context_selection_webview_to_native(driver_wrapper):
     driver_wrapper.is_mobile_test = mock.MagicMock(return_value=True)
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.getboolean_optional.return_value = True
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
     driver_wrapper.driver.context = "WEBVIEW"
     driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
 
@@ -411,8 +417,7 @@ def test_automatic_context_selection_webview_to_native(driver_wrapper):
 
 def test_automatic_context_selection_native_to_native(driver_wrapper):
     driver_wrapper.is_mobile_test = mock.MagicMock(return_value=True)
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.getboolean_optional.return_value = True
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
     driver_wrapper.driver.context = "NATIVE_APP"
     driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
 
@@ -423,11 +428,20 @@ def test_automatic_context_selection_native_to_native(driver_wrapper):
 
 def test_automatic_context_selection_webview_to_webview(driver_wrapper):
     driver_wrapper.is_mobile_test = mock.MagicMock(return_value=True)
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.getboolean_optional.return_value = True
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
     driver_wrapper.driver.context = "WEBVIEW"
     driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
 
     RegisterPageObject(driver_wrapper).element_webview.web_element
     driver_wrapper.driver.switch_to.context.assert_not_called()
+    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'webview')
+
+
+def test_automatic_context_selection_disabled(driver_wrapper):
+    driver_wrapper.is_mobile_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'false')
+    PageElement._automatic_context_selection = mock.MagicMock()
+
+    RegisterPageObject(driver_wrapper).element_webview.web_element
+    PageElement._automatic_context_selection.assert_not_called()
     driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'webview')

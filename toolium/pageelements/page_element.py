@@ -84,10 +84,10 @@ class PageElement(CommonObject):
 
     def _find_web_element(self):
         """Find WebElement using element locator and save it in _web_element attribute"""
-        if not self._web_element or not self.config.getboolean_optional('Driver', 'save_web_element'):
+        if not self._web_element or not self.driver_wrapper.config.getboolean_optional('Driver', 'save_web_element'):
             # check context for mobile webviews
-            if self.driver_wrapper.is_mobile_test() and self.config.getboolean_optional('Driver',
-                                                                                        'automatic_context_selection'):
+            if self.driver_wrapper.is_mobile_test() and self.driver_wrapper.config.\
+                    getboolean_optional('Driver', 'automatic_context_selection'):
                 self._automatic_context_selection()
 
             # If the element is encapsulated we use the shadowroot tag in yaml (eg. Shadowroot: root_element_name)
