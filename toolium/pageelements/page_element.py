@@ -33,7 +33,7 @@ class PageElement(CommonObject):
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     """
 
-    def __init__(self, by, value, parent=None, order=None, wait=False, shadowroot=None):
+    def __init__(self, by, value, parent=None, order=None, wait=False, shadowroot=None, webview=False):
         """Initialize the PageElement object with the given locator components.
 
         If parent is not None, find_element will be performed over it, instead of
@@ -52,6 +52,7 @@ class PageElement(CommonObject):
         self.order = order  #: index value if the locator returns more than one element
         self.wait = wait  #: True if it must be loaded in wait_until_loaded method of the container page object
         self.shadowroot = shadowroot  #: CSS SELECTOR of the shadowroot for encapsulated element
+        self.webview = webview  #: True if element is in a mobile webview
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self.reset_object(self.driver_wrapper)
 
@@ -83,7 +84,12 @@ class PageElement(CommonObject):
 
     def _find_web_element(self):
         """Find WebElement using element locator and save it in _web_element attribute"""
-        if not self._web_element or not self.config.getboolean_optional('Driver', 'save_web_element'):
+        if not self._web_element or not self.driver_wrapper.config.getboolean_optional('Driver', 'save_web_element'):
+            # check context for mobile webviews
+            if self.driver_wrapper.is_mobile_test() and self.driver_wrapper.config.\
+                    getboolean_optional('Driver', 'automatic_context_selection'):
+                self._automatic_context_selection()
+
             # If the element is encapsulated we use the shadowroot tag in yaml (eg. Shadowroot: root_element_name)
             if self.shadowroot:
                 if self.locator[0] != By.CSS_SELECTOR:
@@ -99,6 +105,23 @@ class PageElement(CommonObject):
                 # Find elements and get the correct index or find a single element
                 self._web_element = base.find_elements(*self.locator)[self.order] if self.order else base.find_element(
                     *self.locator)
+
+    def _automatic_context_selection(self):
+        """Change context selection depending if the element is a webview"""
+        context_native = "NATIVE_APP"
+        context_webview = "WEBVIEW"
+        if self.webview:
+            if self.driver.context == context_native:
+                for _context in self.driver.contexts:
+                    if context_webview in _context:
+                        self.driver.switch_to.context(_context)
+                        break
+                else:
+                    raise Exception("WEBVIEW context not found")
+
+        else:
+            if self.driver.context != context_native:
+                self.driver.switch_to.context(context_native)
 
     def scroll_element_into_view(self):
         """Scroll element into view

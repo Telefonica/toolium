@@ -75,6 +75,8 @@ def driver_wrapper():
     # Create a new wrapper
     driver_wrapper = DriverWrappersPool.get_default_wrapper()
     driver_wrapper.driver = mock.MagicMock()
+    driver_wrapper.is_mobile_test = mock.MagicMock(return_value=False)
+
 
     return driver_wrapper
 
