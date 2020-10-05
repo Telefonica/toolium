@@ -86,6 +86,20 @@ class Utils(object):
 
         :param test_name: test that has generated these logs
         """
+        log_types = self.get_available_log_types()
+        self.logger.debug("Reading driver logs of types '%s' and writing them to log files", ', '.join(log_types))
+        for log_type in log_types:
+            try:
+                self.save_webdriver_logs_by_type(log_type, test_name)
+            except Exception:
+                # Capture exceptions to avoid errors in teardown method
+                pass
+
+    def get_available_log_types(self):
+        """Get log types that are configured in log_types variable or available in current driver
+
+        :returns: log types list
+        """
         try:
             configured_log_types = self.driver_wrapper.config.get_optional('Server', 'log_types')
             if configured_log_types is None or configured_log_types == 'all':
@@ -95,14 +109,7 @@ class Utils(object):
         except Exception:
             # geckodriver does not implement log_types, but it implements get_log for client and server
             log_types = ['client', 'server']
-
-        self.logger.debug("Reading logs from '%s' and writing them to log files", ', '.join(log_types))
-        for log_type in log_types:
-            try:
-                self.save_webdriver_logs_by_type(log_type, test_name)
-            except Exception:
-                # Capture exceptions to avoid errors in teardown method
-                pass
+        return log_types
 
     def save_webdriver_logs_by_type(self, log_type, test_name):
         """Get webdriver logs of the specified type and write them to a log file
