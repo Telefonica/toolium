@@ -1,12 +1,14 @@
 Toolium Changelog
 =================
 
-v1.7.3
+v1.8.0
 ------
 
-*Release date: In development*
-- Include click action in InputText element
+*Release date: 2020-10-05*
 
+- Allow lists in config properties instead of converting them to strings
+- Fix typo in documentation for configuration Server logs type
+- Include click action in InputText element
 - New config property 'automatic_context_selection' in [Driver] section for mobile tests with webview
 
    | If it's false, the WebElement is searched using always NATIVE context
@@ -37,7 +39,7 @@ v1.7.0
 - Add `ssl` config property in [Server] section to allow using https in Selenium Grid url
 - Visual testing comparison must fail when baseline does not exist and save mode is disabled
 - Update dynamic environment behaviour to work as the behave's one, i.e. after scenario/feature actions are executed
- even when before scenario/feature actions fail
+  even when before scenario/feature actions fail
 - Fix unit tests to work without any additional dependencies
 
 v1.6.1
