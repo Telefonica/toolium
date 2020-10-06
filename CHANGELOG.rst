@@ -6,6 +6,8 @@ v1.8.1
 
 *Release date: In development*
 
+- Create logs folder before downloading driver logs
+
 v1.8.0
 ------
 
