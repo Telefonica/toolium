@@ -124,6 +124,7 @@ class Utils(object):
 
         if len(logs) > 0:
             from toolium.driver_wrappers_pool import DriverWrappersPool
+            makedirs_safe(DriverWrappersPool.logs_directory)
             log_file_name = '{}_{}.txt'.format(get_valid_filename(test_name), log_type)
             log_file_name = os.path.join(DriverWrappersPool.logs_directory, log_file_name)
             with open(log_file_name, 'a+', encoding='utf-8') as log_file:
