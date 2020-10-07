@@ -5,7 +5,7 @@ Toolium
 
 Toolium is a Python wrapper tool of Selenium and Appium libraries to test web and mobile applications in a single
 project. It provides a way of choosing and configuring the driver through a configuration file, implements a Page Object
-pattern and includes a simple visual testing solution.
+pattern and, includes a simple visual testing solution.
 
 .. |Build Status| image:: https://travis-ci.org/Telefonica/toolium.svg?branch=master
    :target: https://travis-ci.org/Telefonica/toolium
@@ -23,7 +23,7 @@ The requirements to install Toolium are `Python 2.7 or 3.3+ <http://www.python.o
 `pip <https://pypi.org/project/pip>`_. If you use Python 2.7.9+, you don't need to install pip separately.
 
 Run ``pip install toolium`` to install the latest version from `PyPi <https://pypi.org/project/toolium>`_. It's
-highly recommendable to use a virtualenv.
+highly recommendable to use a virtual environment.
 
 The main dependencies are:
 
@@ -35,8 +35,8 @@ The main dependencies are:
 
 **Using toolium-template**
 
-The easiest way of getting started is to clone `toolium-template <https://github.com/Telefonica/toolium-template>`_
-project, run the example test and add your own tests and configuration.
+The easiest way of getting started is to clone the `toolium-template <https://github.com/Telefonica/toolium-template>`_
+project, run the example test, and add your own tests and configuration.
 
 .. code:: console
 
@@ -64,7 +64,7 @@ the examples of the tests.
 Contributing
 ------------
 
-If you want to collaborate in Toolium development, feel free of `forking it <https://github.com/Telefonica/toolium>`_
+If you want to collaborate in Toolium development, feel free to `forking it <https://github.com/Telefonica/toolium>`_
 and asking for a pull request.
 
 Don't forget to run unit tests:
