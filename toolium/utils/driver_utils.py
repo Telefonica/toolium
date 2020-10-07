@@ -29,6 +29,7 @@ from datetime import datetime
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
 from six.moves.urllib.parse import urlparse  # Python 2 and 3 compatibility
 
 from toolium.utils.path_utils import get_valid_filename, makedirs_safe
@@ -228,7 +229,7 @@ class Utils(object):
             return web_element if web_element and web_element.is_enabled() else False
         except StaleElementReferenceException:
             return False
-        
+
     def _expected_condition_find_element_stopped(self, element_times):
         """Tries to find the element and checks that it has stopped moving, but does not thrown an exception if the element
             is not found
@@ -264,7 +265,7 @@ class Utils(object):
             return web_element if web_element and text in web_element.text else False
         except StaleElementReferenceException:
             return False
-        
+
     def _expected_condition_find_element_not_containing_text(self, element_text_pair):
         """Tries to find the element and checks that it does not contain the specified text,
             but does not thrown an exception if the element is found
@@ -281,7 +282,7 @@ class Utils(object):
             return web_element if web_element and text not in web_element.text else False
         except StaleElementReferenceException:
             return False
-        
+
     def _expected_condition_value_in_element_attribute(self, element_attribute_value):
         """Tries to find the element and checks that it contains the requested attribute with the expected value,
            but does not thrown an exception if the element is not found
@@ -387,7 +388,7 @@ class Utils(object):
         :raises TimeoutException: If the element is not clickable after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_clickable, element, timeout)
-    
+
     def wait_until_element_stops(self, element, times=1000, timeout=None):
         """Search element and wait until it has stopped moving
 
@@ -411,7 +412,7 @@ class Utils(object):
         :raises TimeoutException: If the element does not contain the expected text after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_containing_text, (element, text), timeout)
-    
+
     def wait_until_element_not_contain_text(self, element, text, timeout=None):
         """Search element and wait until it does not contain the expected text
 
@@ -423,7 +424,7 @@ class Utils(object):
         :raises TimeoutException: If the element contains the expected text after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_not_containing_text, (element, text), timeout)
-    
+
     def wait_until_element_attribute_is(self, element, attribute, value, timeout=None):
         """Search element and wait until the requested attribute contains the expected value
 
@@ -435,7 +436,8 @@ class Utils(object):
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         :raises TimeoutException: If the element's attribute does not contain the expected value after the timeout
         """
-        return self._wait_until(self._expected_condition_value_in_element_attribute, (element, attribute, value), timeout)
+        return self._wait_until(self._expected_condition_value_in_element_attribute, (element, attribute, value),
+                                timeout)
 
     def get_remote_node(self):
         """Return the remote node that it's executing the actual test session
@@ -689,3 +691,12 @@ class Utils(object):
         """Switch to the first WEBVIEW context"""
         self.driver_wrapper.driver.switch_to.context(self.get_first_webview_context())
 
+    def focus_element(self, element, click=False):
+        """
+        Set the focus over the given element.
+        :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value)
+        :param click: (bool) If true, click on the element after putting the focus over it.
+        """
+
+        action_chain = ActionChains(self.driver_wrapper.driver).move_to_element(self.get_web_element(element))
+        action_chain.click().perform() if click else action_chain.perform()

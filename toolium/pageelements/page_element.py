@@ -223,3 +223,12 @@ class PageElement(CommonObject):
         :returns: attribute value
         """
         return self.web_element.get_attribute(name)
+
+    def set_focus(self):
+        """
+        Set the focus over the element
+
+        :returns: page element instance
+        """
+        self.utils.focus_element(self.web_element)
+        return self
