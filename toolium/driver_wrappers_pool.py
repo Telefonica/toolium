@@ -218,18 +218,7 @@ class DriverWrappersPool(object):
         :param test_name: test that has generated these logs
         :param test_passed: True if the test has passed
         """
-        log_name = '{} [driver {}]' if len(cls.driver_wrappers) > 1 else '{}'
-        driver_index = 1
-        for driver_wrapper in cls.driver_wrappers:
-            if not driver_wrapper.driver or driver_wrapper.server_type in ['ggr', 'selenoid']:
-                continue
-            if driver_wrapper.config.getboolean_optional('Server', 'logs_enabled') or not test_passed:
-                try:
-                    driver_wrapper.utils.save_webdriver_logs(log_name.format(test_name, driver_index))
-                except Exception as exc:
-                    # Capture exceptions to avoid errors in teardown method due to session timeouts
-                    driver_wrapper.logger.warn('Error downloading webdriver logs: %s' % exc)
-            driver_index += 1
+        cls.save_all_webdriver_or_ggr_logs(test_name, test_passed, ggr=False)
 
     @classmethod
     def save_all_ggr_logs(cls, test_name, test_passed):
@@ -238,18 +227,30 @@ class DriverWrappersPool(object):
         :param test_name: test that has generated these logs
         :param test_passed: True if the test has passed
         """
+        cls.save_all_webdriver_or_ggr_logs(test_name, test_passed, ggr=True)
+
+    @classmethod
+    def save_all_webdriver_or_ggr_logs(cls, test_name, test_passed, ggr=False):
+        """Get all webdriver or GGR logs of each driver and write them to log files
+
+        :param test_name: test that has generated these logs
+        :param test_passed: True if the test has passed
+        :param ggr: True if driver should be ggr or selenoid
+        """
         log_name = '{} [driver {}]' if len(cls.driver_wrappers) > 1 else '{}'
         driver_index = 1
         for driver_wrapper in cls.driver_wrappers:
-            if not driver_wrapper.driver or driver_wrapper.server_type not in ['ggr', 'selenoid']:
-                continue
-            try:
-                if driver_wrapper.config.getboolean_optional('Server', 'logs_enabled') or not test_passed:
-                    name = get_valid_filename(log_name.format(test_name, driver_index))
-                    Selenoid(driver_wrapper).download_session_log(name)
-            except Exception as exc:
-                # Capture exceptions to avoid errors in teardown method due to session timeouts
-                driver_wrapper.logger.warn('Error downloading GGR logs: %s' % exc)
+            if driver_wrapper.driver and (driver_wrapper.config.getboolean_optional('Server', 'logs_enabled')
+                                          or not test_passed):
+                try:
+                    log_file_name = get_valid_filename(log_name.format(test_name, driver_index))
+                    if ggr and driver_wrapper.server_type in ['ggr', 'selenoid']:
+                        Selenoid(driver_wrapper).download_session_log(log_file_name)
+                    elif not ggr and driver_wrapper.server_type not in ['ggr', 'selenoid']:
+                        driver_wrapper.utils.save_webdriver_logs(log_file_name)
+                except Exception as exc:
+                    # Capture exceptions to avoid errors in teardown method due to session timeouts
+                    driver_wrapper.logger.warn('Error downloading webdriver logs: %s' % exc)
             driver_index += 1
 
     @staticmethod
