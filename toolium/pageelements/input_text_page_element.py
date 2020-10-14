@@ -63,3 +63,12 @@ class InputText(PageElement):
             # Retry if element has changed
             self.web_element.click()
         return self
+
+    def set_focus(self):
+        """
+        Set the focus over the element and click on the InputField
+
+        :returns: page element instance
+        """
+        self.utils.focus_element(self.web_element, click=True)
+        return self
