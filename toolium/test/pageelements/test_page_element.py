@@ -26,16 +26,22 @@ from selenium.webdriver.remote.webelement import WebElement
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.pageelements import PageElement
+from toolium.pageelements import PageElement, Group
 from toolium.pageobjects.page_object import PageObject
 
 child_element = 'child_element'
 mock_element = None
 
 
+class MenuGroup(Group):
+    logo = PageElement(By.ID, 'image')
+    logo_wait = PageElement(By.ID, 'image2', wait=True)
+
+
 class RegisterPageObject(PageObject):
     username = PageElement(By.XPATH, '//input[0]')
     password = PageElement(By.ID, 'password', username)
+    menu_group = MenuGroup(By.ID, 'menu')
 
     def init_page_elements(self):
         self.language = PageElement(By.ID, 'language')
@@ -44,6 +50,7 @@ class RegisterPageObject(PageObject):
         self.address_shadowroot = PageElement(By.CSS_SELECTOR, '#address', shadowroot='shadowroot_css')
         self.address_shadowroot_by_id = PageElement(By.ID, 'address', shadowroot='shadowroot_css')
         self.element_webview = PageElement(By.ID, 'webview', webview=True)
+
 
 
 @pytest.fixture
@@ -379,6 +386,18 @@ def test_get_attribute(driver_wrapper):
     RegisterPageObject(driver_wrapper).username.get_attribute('attribute_name')
 
     mock_element.get_attribute.assert_called_once_with('attribute_name')
+
+
+def test_automatic_context_selection_group(driver_wrapper):
+    driver_wrapper.utils.wait_until_element_visible = mock.MagicMock(return_value=mock_element)
+    driver_wrapper.is_mobile_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
+    driver_wrapper.driver.context = "NATIVE_APP"
+    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
+
+    RegisterPageObject(driver_wrapper).menu_group.web_element
+    driver_wrapper.driver.switch_to.context.assert_not_called()
+    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'menu')
 
 
 def test_automatic_context_selection_no_webview_context_available(driver_wrapper):

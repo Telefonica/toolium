@@ -7,6 +7,7 @@ v1.8.1
 *Release date: In development*
 
 - Create logs folder before downloading driver logs
+- Fix automatic_context_selection for group element
 
 v1.8.0
 ------
