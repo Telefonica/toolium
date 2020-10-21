@@ -45,6 +45,7 @@ class PageElement(CommonObject):
         :param order: index value if the locator returns more than one element
         :param wait: True if the page element must be loaded in wait_until_loaded method of the container page object
         :param shadowroot: CSS SELECTOR of JS element where shadowroot tag appears
+        :param webview: True if the element is in a mobile webiew
         """
         super(PageElement, self).__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value

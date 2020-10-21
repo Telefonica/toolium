@@ -9,6 +9,7 @@ v1.8.1
 - Create logs folder before downloading driver logs
 - Add *set_focus* method to common elements and input text elements
 - Fix driver log types list in local executions
+- Fix automatic_context_selection for group element
 
 v1.8.0
 ------
