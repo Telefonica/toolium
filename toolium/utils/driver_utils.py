@@ -92,24 +92,27 @@ class Utils(object):
         for log_type in log_types:
             try:
                 self.save_webdriver_logs_by_type(log_type, test_name)
-            except Exception:
+            except Exception as exc:
                 # Capture exceptions to avoid errors in teardown method
-                pass
+                self.logger.debug("Logs of type '%s' can not be read from driver due to '%s'" % (log_type, str(exc)))
 
     def get_available_log_types(self):
         """Get log types that are configured in log_types variable or available in current driver
 
         :returns: log types list
         """
-        try:
-            configured_log_types = self.driver_wrapper.config.get_optional('Server', 'log_types')
-            if configured_log_types is None or configured_log_types == 'all':
-                log_types = self.driver_wrapper.driver.log_types
+        configured_log_types = self.driver_wrapper.config.get_optional('Server', 'log_types')
+        if configured_log_types is None or configured_log_types == 'all':
+            if self.driver_wrapper.server_type == 'local':
+                log_types = ['browser', 'driver']
             else:
-                log_types = [log_type.strip() for log_type in configured_log_types.split(',') if log_type.strip() != '']
-        except Exception:
-            # geckodriver does not implement log_types, but it implements get_log for client and server
-            log_types = ['client', 'server']
+                try:
+                    log_types = self.driver_wrapper.driver.log_types
+                except Exception as exc:
+                    self.logger.debug("Available log types can not be read from driver due to '%s'" % str(exc))
+                    log_types = ['client', 'server']
+        else:
+            log_types = [log_type.strip() for log_type in configured_log_types.split(',') if log_type.strip() != '']
         return log_types
 
     def save_webdriver_logs_by_type(self, log_type, test_name):
@@ -118,10 +121,7 @@ class Utils(object):
         :param log_type: browser, client, driver, performance, server, syslog, crashlog or logcat
         :param test_name: test that has generated these logs
         """
-        try:
-            logs = self.driver_wrapper.driver.get_log(log_type)
-        except Exception:
-            return
+        logs = self.driver_wrapper.driver.get_log(log_type)
 
         if len(logs) > 0:
             from toolium.driver_wrappers_pool import DriverWrappersPool
