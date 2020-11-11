@@ -6,6 +6,8 @@ v1.8.2
 
 *Release date: In development*
 
+- Manage multiples webviews for mobile tests
+
 v1.8.1
 ------
 
