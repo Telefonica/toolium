@@ -25,7 +25,7 @@ from toolium.pageobjects.page_object import PageObject
 
 class Group(PageObject, PageElement):
     def __init__(self, by, value, parent=None, driver_wrapper=None, order=None, wait=False, webview=False,
-                 webview_name=None, webview_window=None):
+                 webview_index=None):
         """Initialize the Group object with the given locator components.
 
         If parent is not None, find_elements will be performed over it, instead of
@@ -39,8 +39,7 @@ class Group(PageObject, PageElement):
         :param wait: True if the page element must be loaded in wait_until_loaded method of the container page object
         :param shadowroot: CSS SELECTOR of JS element where shadowroot tag appears
         :param webview: True if the element is in a mobile webiew
-        :param webview_name: String, webview name when there are multiple webviews in ios devices
-        :param webview_window: Integer position of the window when there are multiple webviews in android devices
+        :param webview_index: Integer, index of the webview when there are multiple webviews in mobile devices
         """
         self.logger = logging.getLogger(__name__)  #: logger instance
         self.locator = (by, value)  #: tuple with locator type and locator value
@@ -48,8 +47,7 @@ class Group(PageObject, PageElement):
         self.order = order  #: index value if the locator returns more than one element
         self.wait = wait  #: True if it must be loaded in wait_until_loaded method of the container page object
         self.webview = webview  #: True if element is in a mobile webview
-        self.webview_name = webview_name  #: webview name for ios device
-        self.webview_window = webview_window  #: window position for android device
+        self.webview_index = webview_index  #: webview index for multiple webviews in mobile devices
         self.shadowroot = None  #: Not implemented for Group yet
         self.driver_wrapper = driver_wrapper if driver_wrapper else \
             DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance

@@ -36,7 +36,7 @@ class PageElement(CommonObject):
     context_webview = "WEBVIEW"
 
     def __init__(self, by, value, parent=None, order=None, wait=False, shadowroot=None, webview=False,
-                 webview_name=None, webview_window=None):
+                 webview_index=None):
         """Initialize the PageElement object with the given locator components.
 
         If parent is not None, find_element will be performed over it, instead of
@@ -49,8 +49,7 @@ class PageElement(CommonObject):
         :param wait: True if the page element must be loaded in wait_until_loaded method of the container page object
         :param shadowroot: CSS SELECTOR of JS element where shadowroot tag appears
         :param webview: True if the element is in a mobile webiew
-        :param webview_name: String, webview name when there are multiple webviews in ios devices
-        :param webview_window: Integer position of the window when there are multiple webviews in android devices
+        :param webview_index: Integer, index of the webview when there are multiple webviews in mobile devices
         """
         super(PageElement, self).__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value
@@ -59,8 +58,7 @@ class PageElement(CommonObject):
         self.wait = wait  #: True if it must be loaded in wait_until_loaded method of the container page object
         self.shadowroot = shadowroot  #: CSS SELECTOR of the shadowroot for encapsulated element
         self.webview = webview  #: True if element is in a mobile webview
-        self.webview_name = webview_name  #: webview name for ios device
-        self.webview_window = webview_window  #: window position for android device
+        self.webview_index = webview_index  #: webview index for multiple webviews in mobile devices
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self.reset_object(self.driver_wrapper)
 
@@ -123,15 +121,16 @@ class PageElement(CommonObject):
                 for _context in self.driver.contexts:
                     if PageElement.context_webview in _context:
                         self.driver.switch_to.context(_context)
-                        if self.webview_window and (
-                                self.driver.current_window_handle != self.driver.window_handles[self.webview_window]):
-                            self.driver.switch_to.window(self.driver.window_handles[self.webview_window])
+                        if self.webview_index and (
+                                self.driver.current_window_handle !=
+                                self.driver.window_handles[self.webview_index]):
+                            self.driver.switch_to.window(self.driver.window_handles[self.webview_index])
                         break
                 else:
                     raise KeyError("WEBVIEW context not found")
-            elif self.webview_window and (
-                    self.driver.current_window_handle != self.driver.window_handles[self.webview_window]):
-                self.driver.switch_to.window(self.driver.window_handles[self.webview_window])
+            elif self.webview_index and (
+                    self.driver.current_window_handle != self.driver.window_handles[self.webview_index]):
+                self.driver.switch_to.window(self.driver.window_handles[self.webview_index])
         else:
             if self.driver.context != PageElement.context_native:
                 self.driver.switch_to.context(PageElement.context_native)
@@ -139,8 +138,8 @@ class PageElement(CommonObject):
     def _ios_automatic_context_selection(self):
         """Change context selection depending if the element is a webview for ios devices"""
         if self.webview:
-            if self.webview_name and (self.driver.context != self.webview_name):
-                self.driver.switch_to.context(self.webview_name)
+            if self.webview_index and (self.driver.context != self.driver.contexts[self.webview_index + 1]):
+                self.driver.switch_to.context(self.driver.contexts[self.webview_index + 1])
             elif self.driver.context == PageElement.context_native:
                 for _context in self.driver.contexts:
                     if PageElement.context_webview in _context:

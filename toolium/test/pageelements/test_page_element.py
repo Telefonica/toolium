@@ -50,9 +50,7 @@ class RegisterPageObject(PageObject):
         self.address_shadowroot = PageElement(By.CSS_SELECTOR, '#address', shadowroot='shadowroot_css')
         self.address_shadowroot_by_id = PageElement(By.ID, 'address', shadowroot='shadowroot_css')
         self.element_webview = PageElement(By.ID, 'webview', webview=True)
-        self.element_multi_webview = PageElement(By.ID, 'multi_webview', webview=True, webview_name='WEBVIEW_415.1',
-                                                 webview_window=1)
-
+        self.element_multi_webview = PageElement(By.ID, 'multi_webview', webview=True, webview_index=1)
 
 
 @pytest.fixture
@@ -551,7 +549,7 @@ def test_android_automatic_context_selection_multiwebview_native_to_default_webv
     driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'multi_webview')
 
 
-def test_android_automatic_context_selection_multiwebview_native_to_webview_1(driver_wrapper):
+def test_android_automatic_context_selection_multiwebview_native_to_webview_2(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
     driver_wrapper.config = mock.MagicMock()
@@ -567,7 +565,7 @@ def test_android_automatic_context_selection_multiwebview_native_to_webview_1(dr
     driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'multi_webview')
 
 
-def test_android_automatic_context_selection_multiwebview_webview_0_to_webview_1(driver_wrapper):
+def test_android_automatic_context_selection_multiwebview_webview_1_to_webview_2(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
     driver_wrapper.config = mock.MagicMock()
@@ -599,7 +597,7 @@ def test_android_automatic_context_selection_multiwebview_webview_1_to_webview_1
     driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'multi_webview')
 
 
-def test_ios_automatic_context_selection_multiwebview_native_to_webview_1(driver_wrapper):
+def test_ios_automatic_context_selection_multiwebview_native_to_webview_2(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
     driver_wrapper.config = mock.MagicMock()
@@ -612,7 +610,7 @@ def test_ios_automatic_context_selection_multiwebview_native_to_webview_1(driver
     driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'multi_webview')
 
 
-def test_ios_automatic_context_selection_multiwebview_webview_0_to_webview_1(driver_wrapper):
+def test_ios_automatic_context_selection_multiwebview_webview_1_to_webview_2(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
     driver_wrapper.config = mock.MagicMock()
@@ -625,7 +623,7 @@ def test_ios_automatic_context_selection_multiwebview_webview_0_to_webview_1(dri
     driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'multi_webview')
 
 
-def test_ios_automatic_context_selection_multiwebview_webview_1_to_webview_1(driver_wrapper):
+def test_ios_automatic_context_selection_multiwebview_webview_2_to_webview_2(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
     driver_wrapper.config = mock.MagicMock()
