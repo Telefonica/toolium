@@ -7,6 +7,7 @@ v1.8.2
 *Release date: In development*
 
 - Add *get_driver_name* method to driver utils class
+- Add doc about how to configure Firefox device mode
 
 v1.8.1
 ------
