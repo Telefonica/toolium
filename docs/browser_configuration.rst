@@ -133,6 +133,7 @@ Firefox
 ~~~~~~~
 
 **Firefox section**
+
 To use a predefined firefox profile, configure the profile directory in *[Firefox]* configuration section::
 
     [Driver]
@@ -151,6 +152,7 @@ section::
     binary: /usr/local/firefox_beta/firefox
 
 **FirefoxPreferences section**
+
 To use a custom Firefox profile, create a *[FirefoxPreferences]* configuration section and add every preference that
 you want to configure with its value.
 
@@ -176,6 +178,7 @@ Another example showing how to use *Firefox Device Mode*::
     general.useragent.override: Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19
 
 **FirefoxExtensions section**
+
 Firefox plugins can also be installed adding their file paths to *[FirefoxExtensions]* configuration section.
 
 For example, the following configuration exports network information to har files::
@@ -196,6 +199,7 @@ For example, the following configuration exports network information to har file
     firebug: resources/firebug-3.0.0-beta.3.xpi
 
 **FirefoxArguments section**
+
 To configure `Firefox arguments <https://developer.mozilla.org/en-US/docs/Mozilla/Command_Line_Options#Browser>`_, create a
 *[FirefoxArguments]* configuration section and add every argument that you want to configure with its value.
 
@@ -211,6 +215,7 @@ Chrome
 ~~~~~~
 
 **Chrome section**
+
 When Chrome is installed in a non-default location, configure the Chrome binary path in *[Chrome]* configuration
 section::
 
@@ -221,6 +226,7 @@ section::
     binary: /usr/local/chrome_beta/chrome
 
 **ChromePreferences section**
+
 To configure `Chrome preferences <https://cs.chromium.org/chromium/src/chrome/common/pref_names.cc>`_, create a
 *[ChromePreferences]* configuration section and add every preference that you want to configure with its value.
 
@@ -233,6 +239,7 @@ For example, the following configuration allows to download files without asking
     download.default_directory: C:\tmp
 
 **ChromeArguments section**
+
 To configure `Chrome arguments <https://cs.chromium.org/chromium/src/chrome/common/chrome_switches.cc>`_, create a
 *[ChromeArguments]* configuration section and add every argument that you want to configure with its value.
 
@@ -245,6 +252,7 @@ For example, to use a predefined chrome profile::
     user-data-dir: C:\Users\USERNAME\AppData\Local\Google\Chrome\User Data
 
 **ChromeMobileEmulation section**
+
 Another examples showing how to use
 `Chrome Device Mode <https://sites.google.com/a/chromium.org/chromedriver/mobile-emulation>`_ in two different ways::
 
