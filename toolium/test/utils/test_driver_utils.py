@@ -41,6 +41,13 @@ navigation_bar_tests = (
     ('firefox', None, None, 0),
 )
 
+driver_name_tests = (
+    ('firefox', 'firefox'),
+    ('chrome', 'chrome'),
+    ('iexplore-11', 'iexplore'),
+    ('iexplore-11-on-WIN10', 'iexplore'),
+)
+
 
 def get_mock_element(x, y, height, width):
     """Create a mock element with custom location and size
@@ -86,6 +93,12 @@ def driver_wrapper():
 def utils():
     # Create a new Utils instance
     return Utils()
+
+
+@pytest.mark.parametrize("driver_type, driver_name", driver_name_tests)
+def test_get_driver_name(driver_type, driver_name, driver_wrapper, utils):
+    driver_wrapper.config.set('Driver', 'type', driver_type)
+    assert utils.get_driver_name() == driver_name
 
 
 def test_get_available_log_types_one_log_type(driver_wrapper, utils):
