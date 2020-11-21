@@ -188,13 +188,12 @@ class VisualTest(object):
         """
         scroll_x = 0
         scroll_y = 0
-        if (self.driver_wrapper.config.get('Driver', 'type').split('-')[0] in ['chrome', 'iexplore'] and
-                not self.driver_wrapper.is_mobile_test()):
+        if self.utils.get_driver_name() in ['chrome', 'iexplore'] and not self.driver_wrapper.is_mobile_test():
             scroll_height = self.driver_wrapper.driver.execute_script("return document.body.scrollHeight")
             scroll_width = self.driver_wrapper.driver.execute_script("return document.body.scrollWidth")
             window_height = self.driver_wrapper.driver.execute_script("return window.innerHeight")
             window_width = self.driver_wrapper.driver.execute_script("return window.innerWidth")
-            scroll_size = 21 if self.driver_wrapper.config.get('Driver', 'type').split('-')[0] == 'iexplore' else 17
+            scroll_size = 21 if self.utils.get_driver_name() == 'iexplore' else 17
             scroll_x = scroll_size if scroll_width > window_width else 0
             scroll_y = scroll_size if scroll_height > window_height else 0
         return {'x': scroll_x, 'y': scroll_y}
