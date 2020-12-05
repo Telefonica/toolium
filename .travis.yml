@@ -21,6 +21,10 @@ matrix:
         env: TOX_ENV=py38
         dist: xenial
         sudo: false
+      - python: 3.9
+        env: TOX_ENV=py39
+        dist: focal
+        sudo: false
 install:
     - pip install tox
     - pip install setuptools
