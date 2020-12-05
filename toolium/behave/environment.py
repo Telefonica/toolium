@@ -72,12 +72,10 @@ def before_feature(context, feature):
     """
     context.global_status = {'test_passed': True}
 
-    # Read @no_driver tag
-    no_driver = 'no_driver' in feature.tags
-
     # Start driver if it should be reused in feature
     context.reuse_driver_from_tags = 'reuse_driver' in feature.tags
     if context.toolium_config.getboolean_optional('Driver', 'reuse_driver') or context.reuse_driver_from_tags:
+        no_driver = 'no_driver' in feature.tags
         start_driver(context, no_driver)
 
     # Behave dynamic environment
