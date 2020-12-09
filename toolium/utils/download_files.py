@@ -110,26 +110,18 @@ def get_downloaded_files_list(context):
     return os.listdir(destination_folder)
 
 
-def _get_download_directory_url(context):
+def _get_remote_node_for_download(context):
     remote_node = context.driver_wrapper.remote_node
-    if context.driver_wrapper.config.get_optional('Server', 'username') == 'test_11paths':
-        # Translate walle port into node ip
-        nodes = {
-            '4500': '172.16.0.81',
-            '4502': '172.16.0.115',
-            '4504': '172.16.0.176'
-        }
-        node_port = Selenoid(context.driver_wrapper).get_selenoid_info()['Port']
-        remote_node = nodes[str(node_port)]
-    else:
-        # DCIP 2.0 needs domain
-        remote_node = '%s.hi.inet' % remote_node
+    return remote_node
+
+
+def _get_download_directory_url(context):
+    remote_node = _get_remote_node_for_download(context)
     if context.download_directory:
         url = 'http://{}:{}/{}'.format(remote_node, DOWNLOADS_SERVICE_PORT,
                                        context.download_directory.replace('\\', '/'))
     else:
         url = 'http://{}:{}'.format(remote_node, DOWNLOADS_SERVICE_PORT)
-
     return url
 
 

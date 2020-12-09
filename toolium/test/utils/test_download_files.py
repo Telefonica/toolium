@@ -21,6 +21,8 @@ import mock
 import os
 import pytest
 
+import toolium
+
 try:
     from urllib import urlretrieve, urlopen  # Py2
 except ImportError:
@@ -82,7 +84,7 @@ def test_get_download_directory_base_no_server_section_exception(context):
         get_download_directory_base(context)
 
 
-def test_get_download_directory_base_server_enabled_false(context):
+def test_get_download_directory_base_server_disabled(context):
     context.download_directory = ""
     context.driver_wrapper.config.set('Server', 'enabled', 'false')
 
@@ -90,14 +92,14 @@ def test_get_download_directory_base_server_enabled_false(context):
                                                                 DOWNLOADS_FOLDER, '')
 
 
-def test_get_download_directory_base_server_enabled_true_no_driver_section(context):
+def test_get_download_directory_base_server_enabled_no_driver_section(context):
     context.download_directory = ""
     context.driver_wrapper.config.set('Server', 'enabled', 'true')
 
     assert get_download_directory_base(context) == "/tmp/%s/" % DOWNLOADS_FOLDER
 
 
-def test_get_download_directory_base_server_enabled_true_linux(context):
+def test_get_download_directory_base_server_enabled_linux(context):
     context.download_directory = ""
     context.driver_wrapper.config.set('Server', 'enabled', 'true')
     context.driver_wrapper.config.set('Driver', 'type', 'part1-part2-part3-linux')
@@ -105,7 +107,7 @@ def test_get_download_directory_base_server_enabled_true_linux(context):
     assert get_download_directory_base(context) == "/tmp/%s/" % DOWNLOADS_FOLDER
 
 
-def test_get_download_directory_base_server_enabled_true_win(context):
+def test_get_download_directory_base_server_enabled_win(context):
     context.download_directory = ""
     context.driver_wrapper.config.set('Server', 'enabled', 'true')
     context.driver_wrapper.config.set('Driver', 'type', 'part1-part2-part3-win')
@@ -114,6 +116,13 @@ def test_get_download_directory_base_server_enabled_true_win(context):
 
 
     ##########
+
+def test_get_downloaded_file_path_server_type_selenoid(context):
+    context.driver_wrapper.server_type = 'selenoid'
+    toolium.utils.download_files.retrieve_remote_downloaded_file = mock.Mock(return_value='https://path/file_name')
+
+    assert get_downloaded_file_path(context, 'file_name') == 'https://path/file_name'
+
 
 def test_get_downloaded_file_path_server_type_unknown(context):
     context.driver_wrapper.server_type = 'unknown'
@@ -126,17 +135,27 @@ def test_get_downloaded_file_path_server_type_unknown(context):
     ##########
 
 
-def test_get_retrieve_remote_downloaded_file_download_directory_none(context):
+def test_retrieve_remote_downloaded_file_download_directory_none(context):
     context.download_directory = None
 
     assert retrieve_remote_downloaded_file(context, 'file_name') is None
 
 
-def test_get_retrieve_remote_downloaded_file_download_no_server_section(context):
+def test_retrieve_remote_downloaded_file_download_no_server_section(context):
     context.download_directory = 'donwload_path'
     context.driver_wrapper.config.remove_option('Server', 'enabled')
 
     assert retrieve_remote_downloaded_file(context, 'file_name') is None
 
+
+def test_retrieve_remote_downloaded_file_download_directory_and_server_section(context):
+    context.download_directory = "/downloads"
+    context.driver_wrapper.config.set('Server', 'enabled', 'true')
+    toolium.utils.download_files._get_download_directory_url = mock.Mock(return_value='https://path')
+    toolium.utils.path_utils.makedirs_safe = mock.Mock()
+    urllib.request.urlretrieve = mock.Mock()
+
+
+    assert retrieve_remote_downloaded_file(context, 'file_name') == ''
 
 
