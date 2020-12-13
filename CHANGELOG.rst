@@ -8,6 +8,7 @@ v1.8.2
 
 - Add *get_driver_name* method to driver utils class
 - Add doc about how to configure Firefox device mode
+- Fix driver log types documentation
 
 v1.8.1
 ------
@@ -25,7 +26,7 @@ v1.8.0
 *Release date: 2020-10-05*
 
 - Allow lists in config properties instead of converting them to strings
-- Fix typo in documentation for configuration Server logs type
+- Fix typo in documentation for configuration Server log types
 - Include click action in InputText element
 - New config property 'automatic_context_selection' in [Driver] section for mobile tests with webview
 
@@ -39,7 +40,7 @@ v1.7.2
 
 - Move utils.py and path_utils.py files to utils folder maintaining backwards compatibility
 - Fix input text when element has a shadowroot and text contains quotation marks
-- New config property 'logs_types' in [Server] section to configure webdriver log types that should be downloaded
+- New config property 'log_types' in [Server] section to configure webdriver log types that should be downloaded
 
 v1.7.1
 ------
