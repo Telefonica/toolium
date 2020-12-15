@@ -65,7 +65,7 @@ log_types
 | Comma-separated list of webdriver log types that will be downloaded if remote test fails or if *logs_enabled* is true
 |
 | *all*: all available log types in remote server will be downloaded (default value)
-| '': setting an empty string, any log type will be downloaded
+| '': setting an empty string, no log types will be downloaded
 | *client,server*: in this example, only client and server logs will be downloaded
 
 
