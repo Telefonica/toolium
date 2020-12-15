@@ -16,12 +16,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import mock
 import os
+import pkg_resources
+import pytest
 import re
 import shutil
-
-import mock
-import pytest
 from PIL import Image
 from needle.engines.imagemagick_engine import Engine as MagickEngine
 from needle.engines.perceptualdiff_engine import Engine as PerceptualEngine
@@ -151,8 +151,11 @@ def test_compare_files_diff_fail(driver_wrapper):
 def test_compare_files_size(driver_wrapper):
     visual = VisualTest(driver_wrapper)
     message = visual.compare_files('report_name', file_v1, file_small, 0)
-    # PIL returns an empty error, but PyTest modifies AssertionError
-    assert 'assert (1680, 388) == (1246, 388)' in message
+    if pkg_resources.get_distribution('pytest').version == '2.9.2':
+        # PIL returns an empty error, but PyTest modifies AssertionError
+        assert message.startswith('assert (1680, 388) == (1246, 388)')
+    else:
+        assert message == 'Image dimensions do not match'
 
 
 def test_compare_files_size_fail(driver_wrapper):
@@ -162,7 +165,11 @@ def test_compare_files_size_fail(driver_wrapper):
 
     with pytest.raises(AssertionError) as exc:
         visual.compare_files('report_name', file_v1, file_small, 0)
-    assert str(exc.value).startswith('assert (1680, 388) == (1246, 388)')
+    if pkg_resources.get_distribution('pytest').version == '2.9.2':
+        # PIL returns an empty error, but PyTest modifies AssertionError
+        assert str(exc.value).startswith('assert (1680, 388) == (1246, 388)')
+    else:
+        assert str(exc.value) == ''
 
 
 def test_get_img_element(driver_wrapper):

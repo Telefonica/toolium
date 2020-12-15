@@ -6,6 +6,7 @@ v1.8.2
 
 *Release date: In development*
 
+- Add support for python 3.9
 - Add *get_driver_name* method to driver utils class
 - Add doc about how to configure Firefox device mode
 - Fix driver log types documentation
