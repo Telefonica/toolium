@@ -15,8 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import urllib
-
 import mock
 import os
 import pytest
@@ -32,7 +30,8 @@ from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.download_files import DOWNLOADS_FOLDER, get_download_directory_base, get_downloaded_file_path, \
-    retrieve_remote_downloaded_file
+    retrieve_remote_downloaded_file, get_downloaded_files_list, _get_remote_node_for_download, \
+    _get_download_directory_url, delete_remote_downloaded_file, delete_retrieved_downloaded_file, DOWNLOADS_SERVICE_PORT
 
 
 @pytest.fixture
@@ -115,8 +114,6 @@ def test_get_download_directory_base_server_enabled_win(context):
     assert get_download_directory_base(context) == 'C:\\tmp\\%s\\' % DOWNLOADS_FOLDER
 
 
-    ##########
-
 def test_get_downloaded_file_path_server_type_selenoid(context):
     context.driver_wrapper.server_type = 'selenoid'
     toolium.utils.download_files.retrieve_remote_downloaded_file = mock.Mock(return_value='https://path/file_name')
@@ -132,16 +129,13 @@ def test_get_downloaded_file_path_server_type_unknown(context):
     assert get_downloaded_file_path(context, 'file_name') == '/path/file_name'
 
 
-    ##########
-
-
 def test_retrieve_remote_downloaded_file_download_directory_none(context):
     context.download_directory = None
 
     assert retrieve_remote_downloaded_file(context, 'file_name') is None
 
 
-def test_retrieve_remote_downloaded_file_download_no_server_section(context):
+def test_retrieve_remote_downloaded_no_server_section(context):
     context.download_directory = 'donwload_path'
     context.driver_wrapper.config.remove_option('Server', 'enabled')
 
@@ -151,11 +145,137 @@ def test_retrieve_remote_downloaded_file_download_no_server_section(context):
 def test_retrieve_remote_downloaded_file_download_directory_and_server_section(context):
     context.download_directory = "/downloads"
     context.driver_wrapper.config.set('Server', 'enabled', 'true')
-    toolium.utils.download_files._get_download_directory_url = mock.Mock(return_value='https://path')
-    toolium.utils.path_utils.makedirs_safe = mock.Mock()
-    urllib.request.urlretrieve = mock.Mock()
+    toolium.utils.download_files._get_download_directory_url = mock.Mock(return_value='https://host:8001')
+    toolium.utils.download_files.makedirs_safe = mock.Mock(return_value=0)
+    toolium.utils.download_files.urlretrieve = mock.Mock(return_value=0)
+
+    assert retrieve_remote_downloaded_file(context, 'file_name') == '/downloads/file_name'
+    toolium.utils.download_files.urlretrieve.assert_called_once_with('https://host:8001/file_name',
+                                                                     '/downloads/file_name')
 
 
-    assert retrieve_remote_downloaded_file(context, 'file_name') == ''
+def test_get_downloaded_files_list_download_directory_none(context):
+    context.download_directory = None
+    toolium.utils.download_files.os.listdir = mock.Mock(return_value=['file1.jpg', 'file2.txt'])
+
+    assert get_downloaded_files_list(context) == ['file1.jpg', 'file2.txt']
+    toolium.utils.download_files.os.listdir.assert_called_once_with(os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), 'output', 'downloads'))
 
 
+def test_get_downloaded_files_list_no_server_section(context):
+    context.download_directory = 'download_path'
+    context.driver_wrapper.config.remove_option('Server', 'enabled')
+    toolium.utils.download_files.os.listdir = mock.Mock(return_value=['file1.jpg', 'file2.txt'])
+
+    assert get_downloaded_files_list(context) == ['file1.jpg', 'file2.txt']
+    toolium.utils.download_files.os.listdir.assert_called_once_with(os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), 'output', DOWNLOADS_FOLDER, 'download_path'))
+
+
+def test_get_downloaded_files_list_download_directory_and_server_section(context):
+    context.download_directory = "/downloads"
+    context.driver_wrapper.config.set('Server', 'enabled', 'true')
+    toolium.utils.download_files._get_download_directory_url = mock.Mock(return_value='https://host:8001')
+    response = mock.Mock()
+    response.read.return_value = "html_response"
+    toolium.utils.download_files.urlopen = mock.Mock(return_value=response)
+    text = mock.Mock()
+    text.xpath.return_value = ['file1.jpg', 'file2.txt']
+    toolium.utils.download_files.html.fromstring = mock.Mock(return_value=text)
+
+    assert get_downloaded_files_list(context) == ['file1.jpg', 'file2.txt']
+
+
+def test_get_remote_node_for_download(context):
+    context.driver_wrapper.remote_node = "localhost"
+    assert _get_remote_node_for_download(context) == "localhost"
+
+
+def test_get_download_directory_url_download_directory(context):
+    context.download_directory = "/downloads"
+    toolium.utils.download_files._get_remote_node_for_download = mock.Mock(return_value='localhost')
+
+    assert _get_download_directory_url(context) == "http://localhost:{}/downloads".format(DOWNLOADS_SERVICE_PORT)
+
+
+def test_get_download_directory_url_download_directory_none(context):
+    context.download_directory = None
+    toolium.utils.download_files._get_remote_node_for_download = mock.Mock(return_value='localhost')
+
+    assert _get_download_directory_url(context) == "http://localhost:{}".format(DOWNLOADS_SERVICE_PORT)
+
+
+def test_delete_remote_downloaded_file_no_server_section(context):
+    context.driver_wrapper.config.remove_option('Server', 'enabled')
+    response = mock.Mock()
+    response.status_code.return_value = 200
+    toolium.utils.download_files.requests.delete = mock.Mock(return_value=response)
+
+    delete_remote_downloaded_file(context, "filename")
+    toolium.utils.download_files.requests.delete.assert_not_called()
+
+
+def test_delete_remote_downloaded_file_server_section(context):
+    context.driver_wrapper.config.set('Server', 'enabled', 'true')
+    toolium.utils.download_files._get_download_directory_url = mock.Mock(return_value='https://host:8001')
+    response_mock = mock.MagicMock()
+    type(response_mock).status_code = mock.PropertyMock(return_value=200)
+    toolium.utils.download_files.requests.delete = mock.Mock(return_value=response_mock)
+
+    delete_remote_downloaded_file(context, "filename")
+    toolium.utils.download_files.requests.delete.assert_called_once_with('https://host:8001/filename')
+
+
+def test_delete_remote_downloaded_file_server_section_error(context):
+    context.driver_wrapper.config.set('Server', 'enabled', 'true')
+    toolium.utils.download_files._get_download_directory_url = mock.Mock(return_value='https://host:8001')
+    response_mock = mock.MagicMock()
+    type(response_mock).status_code = mock.PropertyMock(return_value=404)
+    toolium.utils.download_files.requests.delete = mock.Mock(return_value=response_mock)
+
+    with pytest.raises(AssertionError) as exc:
+        delete_remote_downloaded_file(context, "filename")
+    assert 'ERROR deleting file "https://host:8001/filename":' in str(exc.value)
+
+
+def test_delete_retrieved_downloaded_file_download_directory_file_dwn(context):
+    context.download_directory = "download_path"
+    toolium.utils.download_files.os.remove = mock.Mock(return_value=0)
+    toolium.utils.download_files.os.rmdir = mock.Mock(return_value=0)
+
+    delete_retrieved_downloaded_file(context, 'file_downloaded', None)
+    toolium.utils.download_files.os.remove.assert_called_once_with(os.path.
+                                                                   join(os.path.dirname(os.path.realpath(__file__)),
+                                                                        'output', DOWNLOADS_FOLDER, 'download_path',
+                                                                        'file_downloaded'))
+    toolium.utils.download_files.os.rmdir.assert_called_once_with(os.path.
+                                                                  join(os.path.dirname(os.path.realpath(__file__)),
+                                                                       'output', DOWNLOADS_FOLDER, 'download_path'))
+
+
+def test_delete_retrieved_downloaded_file_download_directory_file_retr(context):
+    context.download_directory = "download_path"
+    toolium.utils.download_files.os.remove = mock.Mock(return_value=0)
+    toolium.utils.download_files.os.rmdir = mock.Mock(return_value=0)
+
+    delete_retrieved_downloaded_file(context, 'file_downloaded', 'file_retrieved')
+    toolium.utils.download_files.os.remove.assert_called_once_with(os.path.
+                                                                   join(os.path.dirname(os.path.realpath(__file__)),
+                                                                        'output', DOWNLOADS_FOLDER, 'download_path',
+                                                                        'file_retrieved'))
+    toolium.utils.download_files.os.rmdir.assert_called_once_with(os.path.
+                                                                  join(os.path.dirname(os.path.realpath(__file__)),
+                                                                       'output', DOWNLOADS_FOLDER, 'download_path'))
+
+
+def test_delete_retrieved_downloaded_file_download_directory_none(context):
+    context.download_directory = ''
+    toolium.utils.download_files.os.remove = mock.Mock(return_value=0)
+    toolium.utils.download_files.os.rmdir = mock.Mock(return_value=0)
+
+    delete_retrieved_downloaded_file(context, 'file_name', None)
+    toolium.utils.download_files.os.remove.assert_called_once_with(os.path.
+                                                                   join(os.path.dirname(os.path.realpath(__file__)),
+                                                                        'output', 'downloads', 'file_name'))
+    toolium.utils.download_files.os.rmdir.assert_not_called()

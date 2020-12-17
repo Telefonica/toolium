@@ -9,9 +9,10 @@ import os
 import time
 
 try:
-    from urllib import urlretrieve, urlopen  # Py2
+    from urllib import urlretrieve, urlopen   # Py2
 except ImportError:
     from urllib.request import urlretrieve, urlopen  # Py3
+from urllib import parse
 import requests
 from lxml import html
 
@@ -81,7 +82,6 @@ def retrieve_remote_downloaded_file(context, filename, destination_filename=None
                                                                                                     'enabled'):
         url = _get_download_directory_url(context)
         file_url = '%s/%s' % (url, filename)
-
         destination_folder = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER,
                                           context.download_directory)
         makedirs_safe(destination_folder)
@@ -105,7 +105,11 @@ def get_downloaded_files_list(context):
 
         return html.fromstring(content).xpath('//li/a/text()')
 
-    destination_folder = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER, context.download_directory)
+    if context.download_directory is None:
+        destination_folder = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER)
+    else:
+        destination_folder = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER,
+                                          context.download_directory)
 
     return os.listdir(destination_folder)
 
@@ -118,8 +122,8 @@ def _get_remote_node_for_download(context):
 def _get_download_directory_url(context):
     remote_node = _get_remote_node_for_download(context)
     if context.download_directory:
-        url = 'http://{}:{}/{}'.format(remote_node, DOWNLOADS_SERVICE_PORT,
-                                       context.download_directory.replace('\\', '/'))
+        host = 'http://{}:{}'.format(remote_node, DOWNLOADS_SERVICE_PORT)
+        url = parse.urljoin(host, context.download_directory)
     else:
         url = 'http://{}:{}'.format(remote_node, DOWNLOADS_SERVICE_PORT)
     return url
@@ -193,6 +197,7 @@ def delete_remote_downloaded_file(context, file_dwn):
         url = _get_download_directory_url(context)
         file_dwn_url = u'{url}/{filename}'.format(url=url, filename=file_dwn)
         r_dwn = requests.delete(file_dwn_url)
+        print(r_dwn.status_code)
         assert r_dwn.status_code == 200, u'ERROR deleting file "{}": "{}"'.format(file_dwn_url, r_dwn.text)
 
 
