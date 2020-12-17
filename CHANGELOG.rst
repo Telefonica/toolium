@@ -4,7 +4,7 @@ Toolium Changelog
 v1.8.2
 ------
 
-*Release date: In development*
+*Release date: 2020-12-17*
 
 - Add support for python 3.9
 - Add *get_driver_name* method to driver utils class
