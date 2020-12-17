@@ -7,6 +7,7 @@ v1.7.2
 *In development*
 
 - Move utils.py and path_utils.py files to utils folder maintaining backwards compatibility
+- Added utilities to download files
 
 v1.7.1
 ------
