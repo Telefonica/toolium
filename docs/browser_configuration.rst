@@ -132,6 +132,27 @@ Additional Configuration
 Firefox
 ~~~~~~~
 
+**Firefox section**
+
+To use a predefined firefox profile, configure the profile directory in *[Firefox]* configuration section::
+
+    [Driver]
+    type: firefox
+
+    [Firefox]
+    profile: resources/firefox-profile.default
+
+When firefox is installed in a non-default location, configure the firefox binary path in *[Firefox]* configuration
+section::
+
+    [Driver]
+    type: firefox
+
+    [Firefox]
+    binary: /usr/local/firefox_beta/firefox
+
+**FirefoxPreferences section**
+
 To use a custom Firefox profile, create a *[FirefoxPreferences]* configuration section and add every preference that
 you want to configure with its value.
 
@@ -145,6 +166,18 @@ For example, the following configuration allows to download files without asking
     browser.download.dir: C:\tmp
     browser.helperApps.neverAsk.saveToDisk: application/octet-stream
     dom.serviceWorkers.enabled: True
+
+Another example showing how to use *Firefox Device Mode*::
+
+    [Driver]
+    type: firefox
+    window_width: 1200
+    window_height: 800
+
+    [FirefoxPreferences]
+    general.useragent.override: Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19
+
+**FirefoxExtensions section**
 
 Firefox plugins can also be installed adding their file paths to *[FirefoxExtensions]* configuration section.
 
@@ -165,22 +198,7 @@ For example, the following configuration exports network information to har file
     [FirefoxExtensions]
     firebug: resources/firebug-3.0.0-beta.3.xpi
 
-To use a predefined firefox profile, configure the profile directory in *[Firefox]* configuration section::
-
-    [Driver]
-    type: firefox
-
-    [Firefox]
-    profile: resources/firefox-profile.default
-
-When firefox is installed in a non-default location, configure the firefox binary path in *[Firefox]* configuration
-section::
-
-    [Driver]
-    type: firefox
-
-    [Firefox]
-    binary: /usr/local/firefox_beta/firefox
+**FirefoxArguments section**
 
 To configure `Firefox arguments <https://developer.mozilla.org/en-US/docs/Mozilla/Command_Line_Options#Browser>`_, create a
 *[FirefoxArguments]* configuration section and add every argument that you want to configure with its value.
@@ -196,6 +214,19 @@ For example, to open firefox in a private browsing mode::
 Chrome
 ~~~~~~
 
+**Chrome section**
+
+When Chrome is installed in a non-default location, configure the Chrome binary path in *[Chrome]* configuration
+section::
+
+    [Driver]
+    type: chrome
+
+    [Chrome]
+    binary: /usr/local/chrome_beta/chrome
+
+**ChromePreferences section**
+
 To configure `Chrome preferences <https://cs.chromium.org/chromium/src/chrome/common/pref_names.cc>`_, create a
 *[ChromePreferences]* configuration section and add every preference that you want to configure with its value.
 
@@ -206,6 +237,8 @@ For example, the following configuration allows to download files without asking
 
     [ChromePreferences]
     download.default_directory: C:\tmp
+
+**ChromeArguments section**
 
 To configure `Chrome arguments <https://cs.chromium.org/chromium/src/chrome/common/chrome_switches.cc>`_, create a
 *[ChromeArguments]* configuration section and add every argument that you want to configure with its value.
@@ -218,14 +251,7 @@ For example, to use a predefined chrome profile::
     [ChromeArguments]
     user-data-dir: C:\Users\USERNAME\AppData\Local\Google\Chrome\User Data
 
-When Chrome is installed in a non-default location, configure the Chrome binary path in *[Chrome]* configuration
-section::
-
-    [Driver]
-    type: chrome
-
-    [Chrome]
-    binary: /usr/local/chrome_beta/chrome
+**ChromeMobileEmulation section**
 
 Another examples showing how to use
 `Chrome Device Mode <https://sites.google.com/a/chromium.org/chromedriver/mobile-emulation>`_ in two different ways::
@@ -243,5 +269,5 @@ Another examples showing how to use
 
     [ChromeMobileEmulation]
     deviceMetrics: { "width": 360, "height": 640, "pixelRatio": 3.0 }
-    userAgent: Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko)
-               Chrome/18.0.1025.166 Mobile Safari/535.19
+    userAgent: Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19
+

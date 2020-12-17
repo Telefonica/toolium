@@ -41,6 +41,13 @@ navigation_bar_tests = (
     ('firefox', None, None, 0),
 )
 
+driver_name_tests = (
+    ('firefox', 'firefox'),
+    ('chrome', 'chrome'),
+    ('iexplore-11', 'iexplore'),
+    ('iexplore-11-on-WIN10', 'iexplore'),
+)
+
 
 def get_mock_element(x, y, height, width):
     """Create a mock element with custom location and size
@@ -86,6 +93,101 @@ def driver_wrapper():
 def utils():
     # Create a new Utils instance
     return Utils()
+
+
+@pytest.mark.parametrize("driver_type, driver_name", driver_name_tests)
+def test_get_driver_name(driver_type, driver_name, driver_wrapper, utils):
+    driver_wrapper.config.set('Driver', 'type', driver_type)
+    assert utils.get_driver_name() == driver_name
+
+
+def test_get_available_log_types_one_log_type(driver_wrapper, utils):
+    # Configure mock
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', 'client')
+
+    log_types = utils.get_available_log_types()
+    log_types_mock.assert_not_called()
+    assert log_types == ['client']
+
+
+def test_get_available_log_types_multiple_log_types(driver_wrapper, utils):
+    # Configure mock
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', 'client,server,browser')
+
+    log_types = utils.get_available_log_types()
+    log_types_mock.assert_not_called()
+    assert log_types == ['client', 'server', 'browser']
+
+
+def test_get_available_log_types_multiple_log_types_with_spaces(driver_wrapper, utils):
+    # Configure mock
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', 'client, server , browser')
+
+    log_types = utils.get_available_log_types()
+    log_types_mock.assert_not_called()
+    assert log_types == ['client', 'server', 'browser']
+
+
+def test_get_available_log_types_none_log_type(driver_wrapper, utils):
+    # Configure mock
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', '')
+
+    log_types = utils.get_available_log_types()
+    log_types_mock.assert_not_called()
+    assert log_types == []
+
+
+def test_get_available_log_types_all_log_type(driver_wrapper, utils):
+    # Configure mock
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    driver_wrapper.config.set('Server', 'log_types', 'all')
+
+    log_types = utils.get_available_log_types()
+    log_types_mock.assert_called_once_with()
+    assert log_types == ['client', 'server']
+
+
+def test_get_available_log_types_without_log_types(driver_wrapper, utils):
+    # Configure mock
+    log_types_mock = mock.PropertyMock(return_value=['client', 'server'])
+    type(driver_wrapper.driver).log_types = log_types_mock
+
+    log_types = utils.get_available_log_types()
+    log_types_mock.assert_called_once_with()
+    assert log_types == ['client', 'server']
+
+
+def test_save_webdriver_logs_all_log_type(utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    Utils.get_available_log_types = mock.MagicMock(return_value=['client', 'server'])
+
+    utils.save_webdriver_logs('test_name')
+    Utils.save_webdriver_logs_by_type.assert_has_calls([mock.call('client', 'test_name'),
+                                                        mock.call('server', 'test_name')])
+
+
+def test_save_webdriver_logs_without_log_types(utils):
+    # Configure mock
+    Utils.save_webdriver_logs_by_type = mock.MagicMock()
+    Utils.get_available_log_types = mock.MagicMock(return_value=[])
+
+    utils.save_webdriver_logs('test_name')
+    Utils.save_webdriver_logs_by_type.assert_not_called()
 
 
 def test_get_remote_node(driver_wrapper, utils):

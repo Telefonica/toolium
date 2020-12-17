@@ -29,6 +29,7 @@ from datetime import datetime
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
 from six.moves.urllib.parse import urlparse  # Python 2 and 3 compatibility
 
 from toolium.utils.path_utils import get_valid_filename, makedirs_safe
@@ -46,6 +47,13 @@ class Utils(object):
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
         # Configure logger
         self.logger = logging.getLogger(__name__)
+
+    def get_driver_name(self):
+        """
+        Get driver name
+        :return: driver name
+        """
+        return self.driver_wrapper.config.get('Driver', 'type').split('-')[0]
 
     def get_implicitly_wait(self):
         """Read implicitly timeout from configuration properties"""
@@ -86,19 +94,33 @@ class Utils(object):
 
         :param test_name: test that has generated these logs
         """
-        try:
-            log_types = self.driver_wrapper.driver.log_types
-        except Exception:
-            # geckodriver does not implement log_types, but it implements get_log for client and server
-            log_types = ['client', 'server']
-
-        self.logger.debug("Reading logs from '%s' and writing them to log files", ', '.join(log_types))
+        log_types = self.get_available_log_types()
+        self.logger.debug("Reading driver logs of types '%s' and writing them to log files", ', '.join(log_types))
         for log_type in log_types:
             try:
                 self.save_webdriver_logs_by_type(log_type, test_name)
-            except Exception:
+            except Exception as exc:
                 # Capture exceptions to avoid errors in teardown method
-                pass
+                self.logger.debug("Logs of type '%s' can not be read from driver due to '%s'" % (log_type, str(exc)))
+
+    def get_available_log_types(self):
+        """Get log types that are configured in log_types variable or available in current driver
+
+        :returns: log types list
+        """
+        configured_log_types = self.driver_wrapper.config.get_optional('Server', 'log_types')
+        if configured_log_types is None or configured_log_types == 'all':
+            if self.driver_wrapper.server_type == 'local':
+                log_types = ['browser', 'driver']
+            else:
+                try:
+                    log_types = self.driver_wrapper.driver.log_types
+                except Exception as exc:
+                    self.logger.debug("Available log types can not be read from driver due to '%s'" % str(exc))
+                    log_types = ['client', 'server']
+        else:
+            log_types = [log_type.strip() for log_type in configured_log_types.split(',') if log_type.strip() != '']
+        return log_types
 
     def save_webdriver_logs_by_type(self, log_type, test_name):
         """Get webdriver logs of the specified type and write them to a log file
@@ -106,13 +128,11 @@ class Utils(object):
         :param log_type: browser, client, driver, performance, server, syslog, crashlog or logcat
         :param test_name: test that has generated these logs
         """
-        try:
-            logs = self.driver_wrapper.driver.get_log(log_type)
-        except Exception:
-            return
+        logs = self.driver_wrapper.driver.get_log(log_type)
 
         if len(logs) > 0:
             from toolium.driver_wrappers_pool import DriverWrappersPool
+            makedirs_safe(DriverWrappersPool.logs_directory)
             log_file_name = '{}_{}.txt'.format(get_valid_filename(test_name), log_type)
             log_file_name = os.path.join(DriverWrappersPool.logs_directory, log_file_name)
             with open(log_file_name, 'a+', encoding='utf-8') as log_file:
@@ -216,7 +236,7 @@ class Utils(object):
             return web_element if web_element and web_element.is_enabled() else False
         except StaleElementReferenceException:
             return False
-        
+
     def _expected_condition_find_element_stopped(self, element_times):
         """Tries to find the element and checks that it has stopped moving, but does not thrown an exception if the element
             is not found
@@ -252,7 +272,7 @@ class Utils(object):
             return web_element if web_element and text in web_element.text else False
         except StaleElementReferenceException:
             return False
-        
+
     def _expected_condition_find_element_not_containing_text(self, element_text_pair):
         """Tries to find the element and checks that it does not contain the specified text,
             but does not thrown an exception if the element is found
@@ -269,7 +289,7 @@ class Utils(object):
             return web_element if web_element and text not in web_element.text else False
         except StaleElementReferenceException:
             return False
-        
+
     def _expected_condition_value_in_element_attribute(self, element_attribute_value):
         """Tries to find the element and checks that it contains the requested attribute with the expected value,
            but does not thrown an exception if the element is not found
@@ -375,7 +395,7 @@ class Utils(object):
         :raises TimeoutException: If the element is not clickable after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_clickable, element, timeout)
-    
+
     def wait_until_element_stops(self, element, times=1000, timeout=None):
         """Search element and wait until it has stopped moving
 
@@ -399,7 +419,7 @@ class Utils(object):
         :raises TimeoutException: If the element does not contain the expected text after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_containing_text, (element, text), timeout)
-    
+
     def wait_until_element_not_contain_text(self, element, text, timeout=None):
         """Search element and wait until it does not contain the expected text
 
@@ -411,7 +431,7 @@ class Utils(object):
         :raises TimeoutException: If the element contains the expected text after the timeout
         """
         return self._wait_until(self._expected_condition_find_element_not_containing_text, (element, text), timeout)
-    
+
     def wait_until_element_attribute_is(self, element, attribute, value, timeout=None):
         """Search element and wait until the requested attribute contains the expected value
 
@@ -423,7 +443,8 @@ class Utils(object):
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         :raises TimeoutException: If the element's attribute does not contain the expected value after the timeout
         """
-        return self._wait_until(self._expected_condition_value_in_element_attribute, (element, attribute, value), timeout)
+        return self._wait_until(self._expected_condition_value_in_element_attribute, (element, attribute, value),
+                                timeout)
 
     def get_remote_node(self):
         """Return the remote node that it's executing the actual test session
@@ -677,3 +698,12 @@ class Utils(object):
         """Switch to the first WEBVIEW context"""
         self.driver_wrapper.driver.switch_to.context(self.get_first_webview_context())
 
+    def focus_element(self, element, click=False):
+        """
+        Set the focus over the given element.
+        :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value)
+        :param click: (bool) If true, click on the element after putting the focus over it.
+        """
+
+        action_chain = ActionChains(self.driver_wrapper.driver).move_to_element(self.get_web_element(element))
+        action_chain.click().perform() if click else action_chain.perform()

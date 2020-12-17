@@ -59,15 +59,23 @@ Webdriver logs
 --------------
 
 When a test fails during a remote execution, Toolium downloads webdriver logs into the folder *output*. Depending on
-the driver type, the webdriver has different log types: client, server, browser and logcat.
+the driver type, the webdriver will contain different log types, for instance, *client*, *server*, *browser*, *driver*,
+*performance*, *profiler*, *logcat*, *bugreport*, etc.
 
-In order to download webdriver logs even if the test passes, configure the property *logs_enabled* in *[Server]* section in
-properties.cfg file ::
+By default, when a test fails, toolium will download all log types available in current webdriver. But it can be also
+configured to download only a set of log types setting the property `log_types <https://toolium.readthedocs.io/en/latest/remote_configuration.html#log-types>`_
+in *[Server]* section in properties.cfg file ::
+
+    [Server]
+    log_types: client,server
+
+Notice that if using Chrome, log types can be enabled in *capabilities* section ::
+
+    [Capabilities]
+    goog___loggingPrefs: {'browser':'ALL', 'driver': 'ALL', 'performance': 'ALL'}
+
+In order to download webdriver logs even if the test passes, configure the property `logs_enabled <https://toolium.readthedocs.io/en/latest/remote_configuration.html#logs-enabled>`_
+in *[Server]* section in properties.cfg file ::
 
     [Server]
     logs_enabled: true
-
-logs_enabled
-~~~~~~~~~~~~
-| *true*: webdriver and GGR logs are downloaded and saved to local files after test execution
-| *false*: webdriver and GGR logs are downloaded and saved to local files only if the test fails

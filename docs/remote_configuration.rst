@@ -18,6 +18,7 @@ section in properties.cfg file::
     password: SERVER_PASSWORD
     video_enabled: false
     logs_enabled: false
+    log_types: all
 
 enabled
 ~~~~~~~
@@ -50,7 +51,7 @@ video_enabled
 | This property is only valid using `Selenium Grid Extras <https://github.com/groupon/Selenium-Grid-Extras>`_ or
 | `GGR with Selenoid <https://github.com/aerokube/ggr>`_ as remote server, that allow recording videos of test
 | executions.
-
+|
 | *true*: remote video recording is enabled, a video of the test execution will be recorded and saved locally
 | *false*: remote video recording is disabled
 
@@ -58,6 +59,14 @@ logs_enabled
 ~~~~~~~~~~~~
 | *true*: webdriver and GGR logs are downloaded and saved to local files after test execution
 | *false*: webdriver and GGR logs are downloaded and saved to local files only if the test fails
+
+log_types
+~~~~~~~~~~
+| Comma-separated list of webdriver log types that will be downloaded if remote test fails or if *logs_enabled* is true
+|
+| *all*: all available log types in remote server will be downloaded (default value)
+| '': setting an empty string, no log types will be downloaded
+| *client,server*: in this example, only client and server logs will be downloaded
 
 
 Remote Driver Capabilities

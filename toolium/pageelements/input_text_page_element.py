@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+from selenium.common.exceptions import StaleElementReferenceException
 from toolium.pageelements.page_element import PageElement
 
 
@@ -37,6 +37,7 @@ class InputText(PageElement):
         if self.driver_wrapper.is_ios_test() and not self.driver_wrapper.is_web_test():
             self.web_element.set_value(value)
         elif self.shadowroot:
+            value = value.replace("\"", "\\\"")
             self.driver.execute_script('return document.querySelector("%s")'
                                        '.shadowRoot.querySelector("%s")'
                                        '.value = "%s"' % (self.shadowroot, self.locator[1], value))
@@ -49,4 +50,25 @@ class InputText(PageElement):
         :returns: page element instance
         """
         self.web_element.clear()
+        return self
+
+    def click(self):
+        """Click the element
+
+        :returns: page element instance
+        """
+        try:
+            self.wait_until_clickable().web_element.click()
+        except StaleElementReferenceException:
+            # Retry if element has changed
+            self.web_element.click()
+        return self
+
+    def set_focus(self):
+        """
+        Set the focus over the element and click on the InputField
+
+        :returns: page element instance
+        """
+        self.utils.focus_element(self.web_element, click=True)
         return self

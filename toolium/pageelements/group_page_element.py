@@ -24,7 +24,7 @@ from toolium.pageobjects.page_object import PageObject
 
 
 class Group(PageObject, PageElement):
-    def __init__(self, by, value, parent=None, driver_wrapper=None, order=None, wait=False):
+    def __init__(self, by, value, parent=None, driver_wrapper=None, order=None, wait=False, webview=False):
         """Initialize the Group object with the given locator components.
 
         If parent is not None, find_elements will be performed over it, instead of
@@ -37,13 +37,15 @@ class Group(PageObject, PageElement):
         :param order: index value if the locator returns more than one element
         :param wait: True if the page element must be loaded in wait_until_loaded method of the container page object
         :param shadowroot: CSS SELECTOR of JS element where shadowroot tag appears
+        :param webview: True if the element is in a mobile webiew
         """
         self.logger = logging.getLogger(__name__)  #: logger instance
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.order = order  #: index value if the locator returns more than one element
         self.wait = wait  #: True if it must be loaded in wait_until_loaded method of the container page object
-        self.shadowroot = None  #: Not implemented for PAgeElements yet
+        self.webview = webview  #: True if element is in a mobile webview
+        self.shadowroot = None  #: Not implemented for Group yet
         self.driver_wrapper = driver_wrapper if driver_wrapper else \
             DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self.init_page_elements()

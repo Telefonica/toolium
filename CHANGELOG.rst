@@ -1,13 +1,55 @@
 Toolium Changelog
 =================
 
+v1.8.3
+------
+
+*Release date: In development*
+
+- Added utilities to download files
+
+
+v1.8.2
+------
+
+*Release date: 2020-12-17*
+
+- Add support for python 3.9
+- Add *get_driver_name* method to driver utils class
+- Add doc about how to configure Firefox device mode
+- Fix driver log types documentation
+
+v1.8.1
+------
+
+*Release date: 2020-11-02*
+
+- Create logs folder before downloading driver logs
+- Add *set_focus* method to common elements and input text elements
+- Fix driver log types list in local executions
+- Fix automatic_context_selection for group element
+
+v1.8.0
+------
+
+*Release date: 2020-10-05*
+
+- Allow lists in config properties instead of converting them to strings
+- Fix typo in documentation for configuration Server log types
+- Include click action in InputText element
+- New config property 'automatic_context_selection' in [Driver] section for mobile tests with webview
+
+   | If it's false, the WebElement is searched using always NATIVE context
+   | If it's true, the WebElement is searched using context NATIVE or WEBVIEW depeding of the webview attribute value
+
 v1.7.2
 ------
 
-*In development*
+*Release date: 2020-09-01*
 
 - Move utils.py and path_utils.py files to utils folder maintaining backwards compatibility
-- Added utilities to download files
+- Fix input text when element has a shadowroot and text contains quotation marks
+- New config property 'log_types' in [Server] section to configure webdriver log types that should be downloaded
 
 v1.7.1
 ------
@@ -25,7 +67,7 @@ v1.7.0
 - Add `ssl` config property in [Server] section to allow using https in Selenium Grid url
 - Visual testing comparison must fail when baseline does not exist and save mode is disabled
 - Update dynamic environment behaviour to work as the behave's one, i.e. after scenario/feature actions are executed
- even when before scenario/feature actions fail
+  even when before scenario/feature actions fail
 - Fix unit tests to work without any additional dependencies
 
 v1.6.1
