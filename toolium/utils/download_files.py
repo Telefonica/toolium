@@ -1,8 +1,20 @@
 # -*- coding: utf-8 -*-
+u"""
+Copyright 2020 Telefónica Investigación y Desarrollo, S.A.U.
+This file is part of Toolium.
 
-# Copyright (c) Telefónica Digital.
-# QA Team <qacdco@telefonica.com>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 import difflib
 import filecmp
 import os
@@ -10,15 +22,17 @@ import time
 
 try:
     from urllib import urlretrieve, urlopen   # Py2
+    from urlparse import urljoin
 except ImportError:
     from urllib.request import urlretrieve, urlopen  # Py3
-from urllib import parse
+    from urllib.parse import urljoin
+
 import requests
 from lxml import html
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.path_utils import makedirs_safe
-from toolium.selenoid import Selenoid
+
 
 DOWNLOADS_SERVICE_PORT = 8001
 DOWNLOADS_FOLDER = 'downloads'
@@ -123,7 +137,7 @@ def _get_download_directory_url(context):
     remote_node = _get_remote_node_for_download(context)
     if context.download_directory:
         host = 'http://{}:{}'.format(remote_node, DOWNLOADS_SERVICE_PORT)
-        url = parse.urljoin(host, context.download_directory)
+        url = urljoin(host, context.download_directory)
     else:
         url = 'http://{}:{}'.format(remote_node, DOWNLOADS_SERVICE_PORT)
     return url
