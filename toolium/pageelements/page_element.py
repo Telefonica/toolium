@@ -118,16 +118,15 @@ class PageElement(CommonObject):
         """Change context selection depending if the element is a webview for android devices"""
         if self.webview:
             if self.driver.context == PageElement.context_native:
-                for _context in self.driver.contexts:
-                    if PageElement.context_webview in _context:
-                        self.driver.switch_to.context(_context)
-                        if self.webview_index and (
-                                self.driver.current_window_handle !=
-                                self.driver.window_handles[self.webview_index]):
-                            self.driver.switch_to.window(self.driver.window_handles[self.webview_index])
-                        break
+                app_web_context = "{}_{}".format(PageElement.context_webview, self.driver.capabilities['appPackage'])
+                if app_web_context in self.driver.contexts:
+                    self.driver.switch_to.context(app_web_context)
+                    if self.webview_index and (
+                            self.driver.current_window_handle !=
+                            self.driver.window_handles[self.webview_index]):
+                        self.driver.switch_to.window(self.driver.window_handles[self.webview_index])
                 else:
-                    raise KeyError("WEBVIEW context not found")
+                    raise KeyError("App WEBVIEW context not found")
             elif self.webview_index and (
                     self.driver.current_window_handle != self.driver.window_handles[self.webview_index]):
                 self.driver.switch_to.window(self.driver.window_handles[self.webview_index])
