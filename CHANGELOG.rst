@@ -6,6 +6,9 @@ v1.8.3
 
 *Release date: In development*
 
+- Added utilities to download files
+
+
 v1.8.2
 ------
 
