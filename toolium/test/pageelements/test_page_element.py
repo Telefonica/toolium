@@ -400,14 +400,39 @@ def test_automatic_context_selection_group(driver_wrapper):
     driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'menu')
 
 
+def test_android_automatic_context_selection_app_package_cap_not_available(driver_wrapper):
+    driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
+    driver_wrapper.driver.context = "NATIVE_APP"
+    driver_wrapper.driver.execute_script.return_value = [{'webviewName': 'WEBVIEW_test.package.fake',
+                                                          'pages': [{'id': '1234567890'}]}]
+    driver_wrapper.driver.capabilities.__getitem__.side_effect = KeyError('no cap')
+    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW_other.fake", "WEBVIEW_test.package.fake"]
+    with pytest.raises(KeyError, match=r"no cap"):
+        RegisterPageObject(driver_wrapper).element_webview.web_element
+
+
+def test_ios_automatic_context_selection_bundle_id_cap_not_available(driver_wrapper):
+    driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
+    driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
+    driver_wrapper.driver.context = "NATIVE_APP"
+    driver_wrapper.driver.execute_script.return_value = [{'bundleId': 'test.package.fake',
+                                                          'id': 'WEBVIEW_12345.1'}]
+    driver_wrapper.driver.capabilities.__getitem__.side_effect = KeyError('no cap')
+    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW_other.fake", "WEBVIEW_test.package.fake"]
+    with pytest.raises(KeyError, match=r"no cap"):
+        RegisterPageObject(driver_wrapper).element_webview.web_element
+
+
 def test_android_automatic_context_selection_no_webview_context_available(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
     driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.driver.execute_script.return_value = [{'webviewName': 'WEBVIEW_test.package.fake',
+                                                          'pages': [{'id': '1234567890'}]}]
     driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
     driver_wrapper.driver.context = "NATIVE_APP"
-    driver_wrapper.driver.contexts = ["NATIVE_APP"]
-
     with pytest.raises(Exception) as excinfo:
         RegisterPageObject(driver_wrapper).element_webview.web_element
     assert "WEBVIEW context not found" in str(excinfo.value)
@@ -417,110 +442,137 @@ def test_ios_automatic_context_selection_no_webview_context_available(driver_wra
     driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
     driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.driver.execute_script.return_value = [{'bundleId': 'test.package.fake',
+                                                          'id': 'WEBVIEW_12345.1'}]
     driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
     driver_wrapper.driver.context = "NATIVE_APP"
-    driver_wrapper.driver.contexts = ["NATIVE_APP"]
-
     with pytest.raises(Exception) as excinfo:
         RegisterPageObject(driver_wrapper).element_webview.web_element
     assert "WEBVIEW context not found" in str(excinfo.value)
 
 
-def test_android_automatic_context_selection_native_to_webview(driver_wrapper):
+def test_android_automatic_context_selection_already_in_desired_webview_context_and_window(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
+    driver_wrapper.config = mock.MagicMock()
     driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "NATIVE_APP"
     driver_wrapper.driver.capabilities = {'appPackage': 'test.package.fake'}
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW_other.fake", "WEBVIEW_test.package.fake"]
-
+    driver_wrapper.driver.context = "WEBVIEW_test.package.fake"
+    driver_wrapper.driver.current_window_handle = "CWindow-1234567890"
+    driver_wrapper.driver.execute_script.return_value = [{'webviewName': 'WEBVIEW_test.package.fake',
+                                                          'pages': [{'id': '1234567890',
+                                                                     'id': '0987654321'}]}]
     RegisterPageObject(driver_wrapper).element_webview.web_element
-    driver_wrapper.driver.switch_to.context.assert_called_once_with("WEBVIEW_test.package.fake")
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'webview')
+    driver_wrapper.driver.switch_to.context.assert_not_called
+    driver_wrapper.driver.switch_to.window.assert_not_called
 
 
-def test_ios_automatic_context_selection_native_to_webview(driver_wrapper):
-    driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
-    driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
-    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "NATIVE_APP"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
-
-    RegisterPageObject(driver_wrapper).element_webview.web_element
-    driver_wrapper.driver.switch_to.context.assert_called_once_with("WEBVIEW")
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'webview')
-
-
-def test_android_automatic_context_selection_webview_to_native(driver_wrapper):
+def test_android_automatic_context_selection_already_in_desired_webview_context_but_different_window(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
+    driver_wrapper.config = mock.MagicMock()
     driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "WEBVIEW"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
+    driver_wrapper.driver.capabilities = {'appPackage': 'test.package.fake'}
+    driver_wrapper.driver.context = "WEBVIEW_test.package.fake"
+    driver_wrapper.driver.current_window_handle = "CDwindow-0987654321"
+    driver_wrapper.driver.execute_script.return_value = [{'webviewName': 'WEBVIEW_test.package.fake',
+                                                          'pages': [{'id': '1234567890'},
+                                                                    {'id': '0987654321'}]}]
+    RegisterPageObject(driver_wrapper).element_webview.web_element
+    driver_wrapper.driver.switch_to.context.assert_not_called
+    driver_wrapper.driver.switch_to.window.assert_called_once_with('CDwindow-1234567890')
 
-    RegisterPageObject(driver_wrapper).language.web_element
-    driver_wrapper.driver.switch_to.context.assert_called_once_with("NATIVE_APP")
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'language')
 
-
-def test_ios_automatic_context_selection_webview_to_native(driver_wrapper):
+def test_ios_automatic_context_selection_already_in_desired_webview_context(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config = mock.MagicMock()
     driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "WEBVIEW"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
+    driver_wrapper.driver.capabilities = {'bundleId': 'test.package.fake'}
+    driver_wrapper.driver.context = "WEBVIEW_12345.1"
+    driver_wrapper.driver.execute_script.return_value = [{'bundleId': 'test.package.fake',
+                                                          'id': 'WEBVIEW_12345.1'},
+                                                         {'bundleId': 'test.package.fake',
+                                                          'id': 'WEBVIEW_12345.7'},
+                                                         {'bundleId': 'test.package.fake',
+                                                          'id': 'WEBVIEW_54321.1'}]
+    RegisterPageObject(driver_wrapper).element_webview.web_element
+    driver_wrapper.driver.switch_to.context.assert_not_called
 
-    RegisterPageObject(driver_wrapper).language.web_element
-    driver_wrapper.driver.switch_to.context.assert_called_once_with("NATIVE_APP")
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'language')
 
-
-def test_android_automatic_context_selection_native_to_native(driver_wrapper):
+def test_android_automatic_context_selection_switch_to_new_webview_context(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
+    driver_wrapper.config = mock.MagicMock()
     driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "NATIVE_APP"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
+    driver_wrapper.driver.capabilities = {'appPackage': 'test.package.fake'}
+    driver_wrapper.driver.context = "WEBVIEW_other.fake.context"
+    driver_wrapper.driver.current_window_handle = "CDwindow-0987654321"
+    driver_wrapper.driver.execute_script.return_value = [{'webviewName': 'WEBVIEW_test.package.fake',
+                                                          'pages': [{'id': '1234567890'},
+                                                                    {'id': '0987654321'}]}]
+    RegisterPageObject(driver_wrapper).element_webview.web_element
+    driver_wrapper.driver.switch_to.context.assert_called_once_with('WEBVIEW_test.package.fake')
+    driver_wrapper.driver.switch_to.window.assert_called_once_with('CDwindow-1234567890')
 
-    RegisterPageObject(driver_wrapper).language.web_element
-    driver_wrapper.driver.switch_to.context.assert_not_called()
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'language')
 
-
-def test_ios_automatic_context_selection_native_to_native(driver_wrapper):
+def test_ios_automatic_context_selection_switch_to_new_webview_context(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config = mock.MagicMock()
     driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "NATIVE_APP"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
+    driver_wrapper.driver.capabilities = {'bundleId': 'test.package.fake'}
+    driver_wrapper.driver.context = "WEBVIEW_54321.1"
+    driver_wrapper.driver.execute_script.return_value = [{'bundleId': 'test.package.fake',
+                                                          'id': 'WEBVIEW_12345.1'},
+                                                         {'bundleId': 'test.package.fake',
+                                                          'id': 'WEBVIEW_12345.7'},
+                                                         {'bundleId': 'other.package.fake',
+                                                          'id': 'WEBVIEW_54321.1'}]
+    RegisterPageObject(driver_wrapper).element_webview.web_element
+    driver_wrapper.driver.switch_to.context.assert_called_once_with('WEBVIEW_12345.7')
 
-    RegisterPageObject(driver_wrapper).language.web_element
-    driver_wrapper.driver.switch_to.context.assert_not_called()
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'language')
 
-
-def test_android_automatic_context_selection_webview_to_webview(driver_wrapper):
+def test_android_automatic_context_selection_already_in_native_context(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
+    driver_wrapper.config = mock.MagicMock()
     driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "WEBVIEW"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
-
-    RegisterPageObject(driver_wrapper).element_webview.web_element
-    driver_wrapper.driver.switch_to.context.assert_not_called()
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'webview')
+    driver_wrapper.driver.capabilities = {'appPackage': 'test.package.fake'}
+    driver_wrapper.driver.context = "NATIVE_APP"
+    RegisterPageObject(driver_wrapper).email
+    driver_wrapper.driver.switch_to.context.assert_not_called
 
 
-def test_ios_automatic_context_selection_webview_to_webview(driver_wrapper):
+def test_ios_automatic_context_selection_already_in_native_context(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config = mock.MagicMock()
     driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "WEBVIEW"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
+    driver_wrapper.driver.capabilities = {'appPackage': 'test.package.fake'}
+    driver_wrapper.driver.context = "NATIVE_APP"
+    RegisterPageObject(driver_wrapper).email
+    driver_wrapper.driver.switch_to.context.assert_not_called
 
-    RegisterPageObject(driver_wrapper).element_webview.web_element
-    driver_wrapper.driver.switch_to.context.assert_not_called()
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'webview')
+
+def test_android_automatic_context_selection_switch_to_native_context(driver_wrapper):
+    driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
+    driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
+    driver_wrapper.driver.context = "WEBVIEW_test.package.fake"
+    RegisterPageObject(driver_wrapper).language.web_element
+    driver_wrapper.driver.switch_to.context.assert_called_once_with('NATIVE_APP')
+
+
+def test_ios_automatic_context_selection_switch_to_native_context(driver_wrapper):
+    driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
+    driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
+    driver_wrapper.driver.context = "WEBVIEW_12345.1"
+    RegisterPageObject(driver_wrapper).language.web_element
+    driver_wrapper.driver.switch_to.context.assert_called_once_with('NATIVE_APP')
 
 
 def test_automatic_context_selection_disabled(driver_wrapper):
@@ -532,108 +584,3 @@ def test_automatic_context_selection_disabled(driver_wrapper):
     RegisterPageObject(driver_wrapper).element_webview.web_element
     PageElement._automatic_context_selection.assert_not_called()
     driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'webview')
-
-
-def test_android_automatic_context_selection_multiwebview_native_to_default_webview(driver_wrapper):
-    driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
-    driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.capabilities = {'appPackage': 'test.package.fake'}
-    driver_wrapper.driver.context = "NATIVE_APP"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW_test.package.fake", "WEBVIEW_other.fake"]
-    driver_wrapper.driver.current_window_handle = "CDwindow-1"
-    driver_wrapper.driver.window_handles = ["CDwindow-0", "CDwindow-1"]
-
-    RegisterPageObject(driver_wrapper).element_multi_webview.web_element
-    driver_wrapper.driver.switch_to.context.assert_called_once_with("WEBVIEW_test.package.fake")
-    driver_wrapper.driver.switch_to.window.assert_not_called()
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'multi_webview')
-
-
-def test_android_automatic_context_selection_multiwebview_native_to_webview_2(driver_wrapper):
-    driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
-    driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.capabilities = {'appPackage': 'test.package.fake'}
-    driver_wrapper.driver.context = "NATIVE_APP"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW_test.package.fake", "WEBVIEW_other.fake"]
-    driver_wrapper.driver.current_window_handle = "CDwindow-0"
-    driver_wrapper.driver.window_handles = ["CDwindow-0", "CDwindow-1"]
-
-    RegisterPageObject(driver_wrapper).element_multi_webview.web_element
-    driver_wrapper.driver.switch_to.context.assert_called_once_with("WEBVIEW_test.package.fake")
-    driver_wrapper.driver.switch_to.window.assert_called_once_with("CDwindow-1")
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'multi_webview')
-
-
-def test_android_automatic_context_selection_multiwebview_webview_1_to_webview_2(driver_wrapper):
-    driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
-    driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "WEBVIEW"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
-    driver_wrapper.driver.current_window_handle = "CDwindow-0"
-    driver_wrapper.driver.window_handles = ["CDwindow-0", "CDwindow-1"]
-
-    RegisterPageObject(driver_wrapper).element_multi_webview.web_element
-    driver_wrapper.driver.switch_to.context.assert_not_called()
-    driver_wrapper.driver.switch_to.window.assert_called_once_with("CDwindow-1")
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'multi_webview')
-
-
-def test_android_automatic_context_selection_multiwebview_webview_1_to_webview_1(driver_wrapper):
-    driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
-    driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "WEBVIEW"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW"]
-    driver_wrapper.driver.current_window_handle = "CDwindow-1"
-    driver_wrapper.driver.window_handles = ["CDwindow-0", "CDwindow-1"]
-
-    RegisterPageObject(driver_wrapper).element_multi_webview.web_element
-    driver_wrapper.driver.switch_to.context.assert_not_called()
-    driver_wrapper.driver.switch_to.window.assert_not_called()
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'multi_webview')
-
-
-def test_ios_automatic_context_selection_multiwebview_native_to_webview_2(driver_wrapper):
-    driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
-    driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "NATIVE_APP"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW_415.0", "WEBVIEW_415.1", "WEBVIEW_415.2"]
-
-    RegisterPageObject(driver_wrapper).element_multi_webview.web_element
-    driver_wrapper.driver.switch_to.context.assert_called_once_with("WEBVIEW_415.1")
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'multi_webview')
-
-
-def test_ios_automatic_context_selection_multiwebview_webview_1_to_webview_2(driver_wrapper):
-    driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
-    driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "WEBVIEW_415.0"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW_415.0", "WEBVIEW_415.1", "WEBVIEW_415.2"]
-
-    RegisterPageObject(driver_wrapper).element_multi_webview.web_element
-    driver_wrapper.driver.switch_to.context.assert_called_once_with("WEBVIEW_415.1")
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'multi_webview')
-
-
-def test_ios_automatic_context_selection_multiwebview_webview_2_to_webview_2(driver_wrapper):
-    driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
-    driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
-    driver_wrapper.config = mock.MagicMock()
-    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
-    driver_wrapper.driver.context = "WEBVIEW_415.1"
-    driver_wrapper.driver.contexts = ["NATIVE_APP", "WEBVIEW_415.0", "WEBVIEW_415.1", "WEBVIEW_415.2"]
-
-    RegisterPageObject(driver_wrapper).element_multi_webview.web_element
-    driver_wrapper.driver.switch_to.context.assert_not_called()
-    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'multi_webview')
