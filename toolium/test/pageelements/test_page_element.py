@@ -538,6 +538,7 @@ def test_android_automatic_context_selection_already_in_native_context(driver_wr
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
     driver_wrapper.config = mock.MagicMock()
     driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
+    driver_wrapper.driver.capabilities = {'appPackage': 'test.package.fake'}
     driver_wrapper.driver.context = "NATIVE_APP"
     RegisterPageObject(driver_wrapper).email
     driver_wrapper.driver.switch_to.context.assert_not_called
@@ -548,6 +549,7 @@ def test_ios_automatic_context_selection_already_in_native_context(driver_wrappe
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
     driver_wrapper.config = mock.MagicMock()
     driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
+    driver_wrapper.driver.capabilities = {'appPackage': 'test.package.fake'}
     driver_wrapper.driver.context = "NATIVE_APP"
     RegisterPageObject(driver_wrapper).email
     driver_wrapper.driver.switch_to.context.assert_not_called
