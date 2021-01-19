@@ -50,7 +50,9 @@ class RegisterPageObject(PageObject):
         self.address_shadowroot = PageElement(By.CSS_SELECTOR, '#address', shadowroot='shadowroot_css')
         self.address_shadowroot_by_id = PageElement(By.ID, 'address', shadowroot='shadowroot_css')
         self.element_webview = PageElement(By.ID, 'webview', webview=True)
-        self.element_multi_webview = PageElement(By.ID, 'multi_webview', webview=True, webview_index=1)
+        self.element_multi_webview = PageElement(By.ID,
+                                                 'multi_webview',
+                                                 webview=True)
 
 
 @pytest.fixture
