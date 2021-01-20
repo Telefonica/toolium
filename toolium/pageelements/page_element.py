@@ -50,7 +50,7 @@ class PageElement(CommonObject):
         :param shadowroot: CSS SELECTOR of JS element where shadowroot tag appears
         :param webview: True if the element is in a mobile webiew
         :param webview_context_selection_callback: method provided to select the desired webview context if
-        automatic_context_selection is enabled. Must return a tuple (context_id, window) for android, and a context_id
+        automatic_context_selection is enabled. Must return a tuple (context, window_handle) for android, and a context
         for ios
         :param webview_csc_args: arguments list for webview_context_selection_callback
         """
@@ -126,8 +126,7 @@ class PageElement(CommonObject):
             context = None
             window_handle = None
             if self.webview_context_selection_callback:
-                context, window_handle_id = self.webview_context_selection_callback(*self.webview_csc_args)
-                window_handle = 'CDwindow-{}'.format(window_handle_id)
+                context, window_handle = self.webview_context_selection_callback(*self.webview_csc_args)
             else:
                 app_web_context = "{}_{}".format(PageElement.webview_context_prefix, self.driver.capabilities['appPackage'])
                 contexts = self.driver.execute_script('mobile: getContexts')
