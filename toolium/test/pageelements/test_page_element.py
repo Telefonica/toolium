@@ -50,9 +50,6 @@ class RegisterPageObject(PageObject):
         self.address_shadowroot = PageElement(By.CSS_SELECTOR, '#address', shadowroot='shadowroot_css')
         self.address_shadowroot_by_id = PageElement(By.ID, 'address', shadowroot='shadowroot_css')
         self.element_webview = PageElement(By.ID, 'webview', webview=True)
-        self.element_multi_webview = PageElement(By.ID,
-                                                 'multi_webview',
-                                                 webview=True)
 
 
 @pytest.fixture
@@ -575,6 +572,34 @@ def test_ios_automatic_context_selection_switch_to_native_context(driver_wrapper
     driver_wrapper.driver.context = "WEBVIEW_12345.1"
     RegisterPageObject(driver_wrapper).language.web_element
     driver_wrapper.driver.switch_to.context.assert_called_once_with('NATIVE_APP')
+
+
+def test_android_automatic_context_selection_callback_provided(driver_wrapper):
+    driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
+    driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
+    driver_wrapper.driver.context = "WEBVIEW_fake.app.package"
+    driver_wrapper.driver.current_window_handle = "CDwindow-0987654321"
+    page_object = RegisterPageObject(driver_wrapper)
+    page_object.element_webview.webview_context_selection_callback = lambda a, b: (a, b)
+    page_object.element_webview.webview_csc_args = ['WEBVIEW_fake.other', "CDwindow-0123456789"]
+    page_object.element_webview.web_element
+    driver_wrapper.driver.switch_to.context.assert_called_once_with('WEBVIEW_fake.other')
+    driver_wrapper.driver.switch_to.window.assert_called_once_with("CDwindow-0123456789")
+
+
+def test_ios_automatic_context_selection_callback_provided(driver_wrapper):
+    driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
+    driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
+    driver_wrapper.config = mock.MagicMock()
+    driver_wrapper.config.set('Driver', 'automatic_context_selection', 'true')
+    driver_wrapper.driver.context = "WEBVIEW_12345.1"
+    page_object = RegisterPageObject(driver_wrapper)
+    page_object.element_webview.webview_context_selection_callback = lambda a: a
+    page_object.element_webview.webview_csc_args = ['WEBVIEW_012345.67']
+    page_object.element_webview.web_element
+    driver_wrapper.driver.switch_to.context.assert_called_once_with('WEBVIEW_012345.67')
 
 
 def test_automatic_context_selection_disabled(driver_wrapper):
