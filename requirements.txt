@@ -4,4 +4,3 @@ Appium-Python-Client>=0.24,<1  # mobile tests
 six>=1.10.0
 screeninfo==0.3.1
 typing==3.7.4.1
-future==0.18.2

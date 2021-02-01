@@ -19,4 +19,3 @@ limitations under the License.
 # Import to maintain backwards compatibility
 
 from toolium.utils.driver_utils import Utils
-from toolium.utils.dataset import *

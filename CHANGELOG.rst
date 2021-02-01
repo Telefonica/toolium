@@ -6,7 +6,7 @@ v1.8.3
 
 *Release date: In development*
 
-- Migrate prepare_param logic from Toolium-Telefonica
+- Add replace_param method
 
 v1.8.2
 ------
