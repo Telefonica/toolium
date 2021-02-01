@@ -6,7 +6,8 @@ v1.8.3
 
 *Release date: In development*
 
-- Add replace_param method
+- Added utilities to download files
+- Add dataset utilities
 
 v1.8.2
 ------
