@@ -26,7 +26,12 @@ class InputText(PageElement):
 
         :returns: element text value
         """
-        return self.web_element.get_attribute("value")
+        if self.driver_wrapper.is_web_test():
+            return self.web_element.get_attribute("value")
+        elif self.driver_wrapper.is_ios_test():
+            return self.web_element.get_attribute("label")
+        elif self.driver_wrapper.is_android_test():
+            return self.web_element.get_attribute("text")
 
     @text.setter
     def text(self, value):

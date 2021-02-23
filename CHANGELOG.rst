@@ -7,6 +7,7 @@ v1.8.3
 *Release date: In development*
 
 - Added utilities to download files
+- Get text for InputText element in mobile tests
 
 
 v1.8.2
