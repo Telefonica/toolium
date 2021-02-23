@@ -103,6 +103,36 @@ elements with nested encapsulation or PageElement identified by other selector t
 
     login_button = Button(By.CSS_SELECTOR, "css_selector", shadowroot="shadowroot_css_selector")
 
+Webview
+~~~~~~~~~~
+
+Page elements have an optional argument *webview*, a boolean that indicates if the page element is in a webview context
+(default value is False). Only apply to mobile tests, where we need to do a change to webview context to find an
+element, which is in a webview. This argument only will be used if the configuration property
+*automatic_context_selection* is True.
+
+If only *webview* argument is True, then the default webview context change behaviour will apply. This behaviour
+depend of the mobile client:
+
+- Android: First window handle of the appPackage webview context.
+- iOS: Last webview context of the APP bundleID.
+
+If this default behaviour is not valid for our app (for example has more than one webview context), we can use the
+following optional parameters:
+
+- webview_context_selection_callback: Method provided to select the desired webview context if
+automatic_context_selection is enabled. Must return a tuple (context, window_handle) for android, and a context for ios.
+- webview_csc_args: arguments list for webview_context_selection_callback.
+
+To use this functionality appium version must be greater or equal to 1.17. (where mobile:getContexts functionality was
+added to iOS)
+
+.. code-block:: python
+
+    login_button = Button(By.XPATH, "//*[@data-qsysid='subscription-counters']/div/div/", webview=True,
+                          webview_context_selection_callback = webview_context_selector_per_url,
+                          webview_csc_args = [driver_wrapper, WebviewConfigHelper.get_helper().account])
+
 Group
 ~~~~~
 
