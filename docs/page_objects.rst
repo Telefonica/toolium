@@ -108,11 +108,11 @@ Webview
 
 Page elements have an optional argument *webview*, a boolean that indicates if the page element is in a webview context
 (default value is False). Only apply to mobile tests, where we need to do a change to webview context to find an
-element, which is in a webview. This argument be used only if the configuration property
+element, which is in a webview. This argument will be used only if the configuration property
 *automatic_context_selection* is True.
 
 If *webview* argument is True but webview_context_selection_callback is not defined, then the default webview context
-change behaviour. This behaviour depends on the mobile client:
+change behaviour will apply. This behaviour depends on the mobile client:
 
 - Android: The first window handle of the appPackage webview context will be selected.
 - iOS: The last webview context of the APP bundleID will be selected.
