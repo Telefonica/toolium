@@ -108,14 +108,14 @@ def generate_fixed_length_param(param):
     :return param with the desired length
     """
     if param.startswith("[") and param.endswith("]"):
-        if "_ARRAY_WITH_LENGTH_" in param:
+        if any(x in param for x in ["STRING_ARRAY_WITH_LENGTH_", "INTEGER_ARRAY_WITH_LENGTH_"]):
             seeds = {"STRING": "a", "INTEGER": 1}
             seed, length = param[1:-1].split("_ARRAY_WITH_LENGTH_")
             param = list(seeds[seed] for x in xrange(int(length)))
         elif "JSON_WITH_LENGTH_" in param:
             length = int(param[1:-1].split("JSON_WITH_LENGTH_")[1])
             param = dict((str(x), str(x)) for x in xrange(length))
-        elif "_WITH_LENGTH_" in param:
+        elif any(x in param for x in ["STRING_WITH_LENGTH_", "INTEGER_WITH_LENGTH_"]):
             seeds = {"STRING": "a", "INTEGER": "1"}
             # The chain to be generated can be just a part of param
             start = param.find("[")

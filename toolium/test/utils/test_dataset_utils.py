@@ -192,3 +192,12 @@ def test_replace_param_incomplete_format():
     param = replace_param("[INTEGER_WITH_LENGTH_4")
     assert param == "[INTEGER_WITH_LENGTH_4"
 
+
+def test_replace_param_float_with_length():
+    param = replace_param("[FLOAT_WITH_LENGTH_4]")
+    assert param == "[FLOAT_WITH_LENGTH_4]"
+
+
+def test_replace_param_float_with_length():
+    param = replace_param("[FLOAT_ARRAY_WITH_LENGTH_4]")
+    assert param == "[FLOAT_ARRAY_WITH_LENGTH_4]"
