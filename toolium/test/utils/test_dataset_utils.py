@@ -198,6 +198,6 @@ def test_replace_param_float_with_length():
     assert param == "[FLOAT_WITH_LENGTH_4]"
 
 
-def test_replace_param_float_with_length():
+def test_replace_param_float_array_with_length():
     param = replace_param("[FLOAT_ARRAY_WITH_LENGTH_4]")
     assert param == "[FLOAT_ARRAY_WITH_LENGTH_4]"
