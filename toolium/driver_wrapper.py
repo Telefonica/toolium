@@ -290,16 +290,14 @@ class DriverWrapper(object):
 
         :returns: True if test must be executed in an Android mobile
         """
-        driver_name = self.config.get('Driver', 'type').split('-')[0]
-        return driver_name == 'android'
+        return self.utils.get_driver_name() == 'android'
 
     def is_ios_test(self):
         """Check if actual test must be executed in an iOS mobile
 
         :returns: True if test must be executed in an iOS mobile
         """
-        driver_name = self.config.get('Driver', 'type').split('-')[0]
-        return driver_name in ('ios', 'iphone')
+        return self.utils.get_driver_name() in ('ios', 'iphone')
 
     def is_mobile_test(self):
         """Check if actual test must be executed in a mobile

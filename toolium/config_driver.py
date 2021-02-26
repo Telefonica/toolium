@@ -78,11 +78,11 @@ class ConfigDriver(object):
         server_url = '{}/wd/hub'.format(self.utils.get_server_url())
 
         # Get driver capabilities
-        driver_type = self.config.get('Driver', 'type')
-        driver_name = driver_type.split('-')[0]
+        driver_name = self.utils.get_driver_name()
         capabilities = self._get_capabilities_from_driver_type(driver_name)
 
         # Add driver version
+        driver_type = self.config.get('Driver', 'type')
         try:
             capabilities['version'] = driver_type.split('-')[1]
         except IndexError:
@@ -130,8 +130,7 @@ class ConfigDriver(object):
 
         :returns: a new local selenium driver
         """
-        driver_type = self.config.get('Driver', 'type')
-        driver_name = driver_type.split('-')[0]
+        driver_name = self.utils.get_driver_name()
 
         if driver_name in ('android', 'ios', 'iphone'):
             # Create local appium driver
@@ -146,8 +145,9 @@ class ConfigDriver(object):
                 'edge': self._setup_edge,
                 'phantomjs': self._setup_phantomjs
             }
-            driver_setup_method = driver_setup.get(driver_name)
-            if not driver_setup_method:
+            try:
+                driver_setup_method = driver_setup[driver_name]
+            except KeyError:
                 raise Exception('Unknown driver {0}'.format(driver_name))
 
             # Get driver capabilities

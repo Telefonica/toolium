@@ -48,6 +48,13 @@ class Utils(object):
         # Configure logger
         self.logger = logging.getLogger(__name__)
 
+    def get_driver_name(self):
+        """
+        Get driver name
+        :return: driver name
+        """
+        return self.driver_wrapper.config.get('Driver', 'type').split('-')[0]
+
     def get_implicitly_wait(self):
         """Read implicitly timeout from configuration properties"""
         return self.driver_wrapper.config.get_optional('Driver', 'implicitly_wait')

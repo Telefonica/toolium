@@ -69,6 +69,11 @@ in *[Server]* section in properties.cfg file ::
     [Server]
     log_types: client,server
 
+Notice that if using Chrome, log types can be enabled in *capabilities* section ::
+
+    [Capabilities]
+    goog___loggingPrefs: {'browser':'ALL', 'driver': 'ALL', 'performance': 'ALL'}
+
 In order to download webdriver logs even if the test passes, configure the property `logs_enabled <https://toolium.readthedocs.io/en/latest/remote_configuration.html#logs-enabled>`_
 in *[Server]* section in properties.cfg file ::
 
