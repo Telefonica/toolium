@@ -147,12 +147,9 @@ class DriverWrapper(object):
 
     def configure_visual_baseline(self):
         """Configure baseline directory"""
-        # Get baseline name
+        # Get baseline name and translate config variables
         baseline_name = self.config.get_optional('VisualTests', 'baseline_name', '{Driver_type}')
-        for section in self.config.sections():
-            for option in self.config.options(section):
-                option_value = self.config.get(section, option)
-                baseline_name = baseline_name.replace('{{{0}_{1}}}'.format(section, option), option_value)
+        baseline_name = self.config.translate_config_variables(baseline_name)
 
         # Configure baseline directory if baseline name has changed
         if self.baseline_name != baseline_name:

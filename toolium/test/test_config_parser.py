@@ -116,3 +116,17 @@ def test_update_properties_behave(config):
 
     # Check the new config value
     assert new_value == config.get(section, option)
+
+
+strings_to_translate = (
+    ('{Driver_type}', 'firefox'),
+    ('', ''),
+    ('[{Driver_type}] ', '[firefox] '),
+    ('{Driver_type}/{Server_enabled}', 'firefox/true'),
+    ('{AppiumCapabilities_deviceName} {Server}', 'Android Emulator {Server}'),
+)
+
+
+@pytest.mark.parametrize("string_with_variables, translated_string", strings_to_translate)
+def test_translate_config_variables(config, string_with_variables, translated_string):
+    assert translated_string == config.translate_config_variables(string_with_variables)
