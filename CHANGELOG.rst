@@ -1,10 +1,10 @@
 Toolium Changelog
 =================
 
-v1.8.3
+v1.9.0
 ------
 
-*Release date: In development*
+*Release date: 2021-03-02*
 
 - Added utilities to download files
 - Get text for InputText element in mobile tests
