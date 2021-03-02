@@ -95,6 +95,19 @@ class ExtendedConfigParser(configparser.ConfigParser):
         except KeyError:
             pass
 
+    def translate_config_variables(self, str_with_variables):
+        """
+        Translate config variables included in string with format {Section_option}
+        :param context: behave context
+        :param str_with_variables: string with config variables, i.e. {Driver_type}_{Driver_width}
+        :return: string with translated variables
+        """
+        for section in self.sections():
+            for option in self.options(section):
+                option_value = self.get(section, option)
+                str_with_variables = str_with_variables.replace('{{{0}_{1}}}'.format(section, option), option_value)
+        return str_with_variables
+
     @staticmethod
     def get_config_from_file(conf_properties_files):
         """Reads properties files and saves them to a config object

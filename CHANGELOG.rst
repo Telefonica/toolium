@@ -8,6 +8,7 @@ v1.8.3
 
 - Added utilities to download files
 - Get text for InputText element in mobile tests
+- Add *translate_config_variables* method to config parser class to translate config variables in a string
 - Add dataset utilities
 - Manage multiples webviews for mobile tests
 
