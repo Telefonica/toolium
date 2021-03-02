@@ -32,8 +32,11 @@ class PageElement(CommonObject):
                   or toolium.pageelements.PageElement
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     """
+    native_context = "NATIVE_APP"
+    webview_context_prefix = "WEBVIEW"
 
-    def __init__(self, by, value, parent=None, order=None, wait=False, shadowroot=None, webview=False):
+    def __init__(self, by, value, parent=None, order=None, wait=False, shadowroot=None, webview=False,
+                 webview_context_selection_callback=None, webview_csc_args=None):
         """Initialize the PageElement object with the given locator components.
 
         If parent is not None, find_element will be performed over it, instead of
@@ -46,6 +49,10 @@ class PageElement(CommonObject):
         :param wait: True if the page element must be loaded in wait_until_loaded method of the container page object
         :param shadowroot: CSS SELECTOR of JS element where shadowroot tag appears
         :param webview: True if the element is in a mobile webiew
+        :param webview_context_selection_callback: method provided to select the desired webview context if
+        automatic_context_selection is enabled. Must return a tuple (context, window_handle) for android, and a context
+        for ios
+        :param webview_csc_args: arguments list for webview_context_selection_callback
         """
         super(PageElement, self).__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value
@@ -54,6 +61,9 @@ class PageElement(CommonObject):
         self.wait = wait  #: True if it must be loaded in wait_until_loaded method of the container page object
         self.shadowroot = shadowroot  #: CSS SELECTOR of the shadowroot for encapsulated element
         self.webview = webview  #: True if element is in a mobile webview
+        self.webview_context_selection_callback = webview_context_selection_callback  #: callback for selection of the
+        # webview context with automatic_context_selection
+        self.webview_csc_args = webview_csc_args  #: arguments list for the context selection callback method
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         self.reset_object(self.driver_wrapper)
 
@@ -87,9 +97,11 @@ class PageElement(CommonObject):
         """Find WebElement using element locator and save it in _web_element attribute"""
         if not self._web_element or not self.driver_wrapper.config.getboolean_optional('Driver', 'save_web_element'):
             # check context for mobile webviews
-            if self.driver_wrapper.is_mobile_test() and self.driver_wrapper.config.\
-                    getboolean_optional('Driver', 'automatic_context_selection'):
-                self._automatic_context_selection()
+            if self.driver_wrapper.config.getboolean_optional('Driver', 'automatic_context_selection'):
+                if self.driver_wrapper.is_android_test():
+                    self._android_automatic_context_selection()
+                elif self.driver_wrapper.is_ios_test():
+                    self._ios_automatic_context_selection()
 
             # If the element is encapsulated we use the shadowroot tag in yaml (eg. Shadowroot: root_element_name)
             if self.shadowroot:
@@ -107,22 +119,54 @@ class PageElement(CommonObject):
                 self._web_element = base.find_elements(*self.locator)[self.order] if self.order else base.find_element(
                     *self.locator)
 
-    def _automatic_context_selection(self):
-        """Change context selection depending if the element is a webview"""
-        context_native = "NATIVE_APP"
-        context_webview = "WEBVIEW"
+    def _android_automatic_context_selection(self):
+        """Change context selection depending if the element is a webview for android devices"""
+        # we choose the appPackage webview context, and select the first window returned by mobile: getContexts
         if self.webview:
-            if self.driver.context == context_native:
-                for _context in self.driver.contexts:
-                    if context_webview in _context:
-                        self.driver.switch_to.context(_context)
-                        break
-                else:
-                    raise Exception("WEBVIEW context not found")
-
+            context = None
+            window_handle = None
+            if self.webview_context_selection_callback:
+                context, window_handle = self.webview_context_selection_callback(*self.webview_csc_args)
+            else:
+                app_web_context = "{}_{}".format(PageElement.webview_context_prefix, self.driver.capabilities['appPackage'])
+                contexts = self.driver.execute_script('mobile: getContexts')
+                context_dict = next(
+                    (item for item in contexts if 'webviewName' in item and item['webviewName'] == app_web_context),
+                    None)
+                if context_dict:
+                    context = app_web_context
+                    window_handle = 'CDwindow-{}'.format(context_dict['pages'][0]['id'])
+            if context:
+                if self.driver.context != context:
+                    self.driver.switch_to.context(context)
+                if self.driver.current_window_handle != window_handle:
+                    self.driver.switch_to.window(window_handle)
+            else:
+                raise KeyError("WEBVIEW context not found")
         else:
-            if self.driver.context != context_native:
-                self.driver.switch_to.context(context_native)
+            if self.driver.context != PageElement.native_context:
+                self.driver.switch_to.context(PageElement.native_context)
+
+    def _ios_automatic_context_selection(self):
+        """Change context selection depending if the element is a webview for ios devices"""
+        # we choose the last webview context returned by mobile: getContexts for the bundleid
+        if self.webview:
+            if self.webview_context_selection_callback:
+                context_id = self.webview_context_selection_callback(*self.webview_csc_args)
+            else:
+                contexts = self.driver.execute_script('mobile: getContexts')
+                context_id = next(
+                    (item['id'] for item in reversed(contexts) if
+                     'bundleId' in item and item['bundleId'] == self.driver.capabilities['bundleId']),
+                    None)
+            if context_id:
+                if self.driver.context != context_id:
+                    self.driver.switch_to.context(context_id)
+            else:
+                raise KeyError("WEBVIEW context not found")
+        else:
+            if self.driver.context != PageElement.native_context:
+                self.driver.switch_to.context(PageElement.native_context)
 
     def scroll_element_into_view(self):
         """Scroll element into view
