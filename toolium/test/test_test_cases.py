@@ -51,7 +51,7 @@ def run_mock(test_name):
     return test
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def logger():
     # Configure logger mock
     logger = mock.MagicMock()

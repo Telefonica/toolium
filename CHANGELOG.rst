@@ -6,6 +6,8 @@ v2.0.0
 
 *Release date: In development*
 
+- Update deprecated methods to fix warnings in python3 execution
+
 v1.9.1
 ------
 

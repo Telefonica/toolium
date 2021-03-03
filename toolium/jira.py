@@ -166,12 +166,12 @@ def get_error_message(response_content):
     :param response_content: HTTP response from test case execution API
     :returns: error message
     """
-    apache_regex = re.compile('.*<u>(.*)</u></p><p>.*')
+    apache_regex = re.compile(r'.*<u>(.*)</u></p><p>.*')
     match = apache_regex.search(response_content)
     if match:
         error_message = match.group(1)
     else:
-        local_regex = re.compile('.*<title>(.*)</title>.*')
+        local_regex = re.compile(r'.*<title>(.*)</title>.*')
         match = local_regex.search(response_content)
         if match:
             error_message = match.group(1)

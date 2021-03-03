@@ -25,7 +25,7 @@ from toolium.config_files import ConfigFiles
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def driver_wrapper():
     # Create a new wrapper
     new_driver_wrapper = DriverWrappersPool.get_default_wrapper()

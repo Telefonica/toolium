@@ -255,7 +255,7 @@ def get_jira_key_from_scenario(scenario):
     :param scenario: behave scenario
     :returns: Jira test case key
     """
-    jira_regex = re.compile('jira[=\(\']*([A-Z]+\-[0-9]+)[\'\)]*$')
+    jira_regex = re.compile(r'jira[=\(\']*([A-Z]+\-[0-9]+)[\'\)]*$')
     for tag in scenario.tags:
         match = jira_regex.search(tag)
         if match:

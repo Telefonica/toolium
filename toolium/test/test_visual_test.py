@@ -42,7 +42,7 @@ file_scroll = os.path.join(root_path, 'resources', 'register_chrome_scroll.png')
 file_ios = os.path.join(root_path, 'resources', 'ios.png')
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def driver_wrapper():
     # Remove previous visual path
     root_path = os.path.dirname(os.path.realpath(__file__))
@@ -173,14 +173,14 @@ def test_compare_files_size_fail(driver_wrapper):
 
 
 def test_get_img_element(driver_wrapper):
-    expected_img = '<img src=".*register_v2.png" title="Baseline image"/>'
+    expected_img = r'<img src=".*register_v2.png" title="Baseline image"/>'
     visual = VisualTest(driver_wrapper)
     img = visual._get_img_element('register_v2.png', 'Baseline image')
     assert re.compile(expected_img).match(img) is not None
 
 
 def test_get_html_row(driver_wrapper):
-    expected_row = '<tr class=diff><td>report_name</td><td><img src=".*register_v2.png" title="Baseline image"/>' \
+    expected_row = r'<tr class=diff><td>report_name</td><td><img src=".*register_v2.png" title="Baseline image"/>' \
                    '</td><td><img src=".*register.png" title="Screenshot image"/></td><td></td></tr>'
     visual = VisualTest(driver_wrapper)
     row = visual._get_html_row('diff', 'report_name', file_v1, file_v2)

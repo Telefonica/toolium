@@ -27,7 +27,7 @@ from toolium import jira
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def logger():
     # Configure logger mock
     logger = mock.MagicMock()

@@ -68,7 +68,12 @@ class ExtendedConfigParser(configparser.ConfigParser):
 
         # Create a new config object
         config_copy = ExtendedConfigParser()
-        config_copy.readfp(config_string)
+        try:
+            # Python 3
+            config_copy.read_file(config_string)
+        except AttributeError:
+            # Python 2.7
+            config_copy.readfp(config_string)
 
         return config_copy
 
