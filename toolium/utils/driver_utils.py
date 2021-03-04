@@ -308,6 +308,17 @@ class Utils(object):
         except StaleElementReferenceException:
             return False
 
+    def wait_until_ajax_request_completed(self, timeout=None):
+        """
+        Wait for all ajax requests completed
+        :param timeout: max time to wait
+        """
+        timeout = timeout if timeout else self.get_explicitly_wait()
+        self.logger.debug("Waiting for ajax request ... (%d seconds)", timeout)
+        WebDriverWait(self.driver_wrapper.driver, timeout). \
+            until(lambda driver: self.driver_wrapper.driver.execute_script("return jQuery.active == 0"))
+        self.logger.debug("Ajax request completed")
+
     def _wait_until(self, condition_method, condition_input, timeout=None):
         """
         Common method to wait until condition met
