@@ -6,6 +6,8 @@ v1.9.1
 
 *Release date: In development*
 
+- Added new method wait_until_ajax_request_completed to driver utils class
+
 v1.9.0
 ------
 
