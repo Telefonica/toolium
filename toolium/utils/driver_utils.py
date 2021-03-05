@@ -308,16 +308,12 @@ class Utils(object):
         except StaleElementReferenceException:
             return False
 
-    def wait_until_ajax_request_completed(self, timeout=None):
+    def _expected_condition_ajax_request_completed(self, element):
+        """Load all ajax request
+
+        :returns: the ajax request is completed
         """
-        Wait for all ajax requests completed
-        :param timeout: max time to wait
-        """
-        timeout = timeout if timeout else self.get_explicitly_wait()
-        self.logger.debug("Waiting for ajax request ... (%d seconds)", timeout)
-        WebDriverWait(self.driver_wrapper.driver, timeout). \
-            until(lambda driver: self.driver_wrapper.driver.execute_script("return jQuery.active == 0"))
-        self.logger.debug("Ajax request completed")
+        return self.driver_wrapper.driver.execute_script("return jQuery.active == 0")
 
     def _wait_until(self, condition_method, condition_input, timeout=None):
         """
@@ -457,6 +453,13 @@ class Utils(object):
         return self._wait_until(self._expected_condition_value_in_element_attribute, (element, attribute, value),
                                 timeout)
 
+    def wait_until_ajax_request_completed(self, timeout=None):
+        """
+        Wait for all ajax requests completed
+        :param timeout: max time to wait
+        """
+        return self._wait_until(self._expected_condition_ajax_request_completed, None, timeout)
+    
     def get_remote_node(self):
         """Return the remote node that it's executing the actual test session
 
