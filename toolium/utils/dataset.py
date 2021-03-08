@@ -81,8 +81,11 @@ def replace_param(param, language="es"):
         return None
     elif type_mapping_match_group and type_mapping_match_group.group(1) in \
             ["LIST", "DICT", "INT", "FLOAT", "STR"]:
-        exec(u"exec_param = {type}({value})".format(type=type_mapping_match_group.group(1).lower(),
-                                                    value=type_mapping_match_group.group(2)))
+        if type_mapping_match_group.group(1) == "STR":
+            return type_mapping_match_group.group(2)
+        else:
+            exec(u"exec_param = {type}({value})".format(type=type_mapping_match_group.group(1).lower(),
+                                                        value=type_mapping_match_group.group(2)))
         return locals()["exec_param"]
     elif date_matcher and len(date_matcher.groups()) == 3:
         configuration = dict([(date_matcher.group(3).lower(), int(date_matcher.group(2).replace(

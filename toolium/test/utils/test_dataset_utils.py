@@ -85,10 +85,16 @@ def test_replace_param_false():
     assert param is False
 
 
-def test_replace_param_str():
+def test_replace_param_str_int():
     param = replace_param("[STR:28]")
     assert type(param) == str
     assert param == "28"
+
+
+def test_replace_param_str():
+    param = replace_param("[STR:abc]")
+    assert type(param) == str
+    assert param == "abc"
 
 
 def test_replace_param_int():

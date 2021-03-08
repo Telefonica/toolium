@@ -6,6 +6,8 @@ v1.9.1
 
 *Release date: In development*
 
+- Fix string conversion in dataset utilities
+
 v1.9.0
 ------
 
