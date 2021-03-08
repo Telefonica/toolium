@@ -6,6 +6,8 @@ v1.9.1
 
 *Release date: In development*
 
+- Move CI from Travis to Github Actions
+
 v1.9.0
 ------
 
