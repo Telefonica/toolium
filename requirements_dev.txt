@@ -1,12 +1,13 @@
-Sphinx==1.5.1
-behave==1.2.5
+Sphinx==1.8.5 ; python_version < '3.0'
+Sphinx==3.* ; python_version >= '3.5'
 lettuce==0.2.23
-pytest==2.9.2 ; python_version < '3.9'
-pytest==6.1.2 ; python_version >= '3.9'
-coverage==4.3.1
-mock==2.0.0
-requests-mock==1.2.0
-coveralls==1.1
+pytest==4.6.11 ; python_version < '3.0'
+pytest==6.* ; python_version >= '3.5'
+coverage==5.*
+coveralls==3.* ; python_version >= '3.5'
+mock==3.*
+requests-mock==1.*
 needle==0.5.0
-docutils==0.14
-Pygments==2.2.0
+docutils==0.*
+Pygments==2.*
+flake8==3.*

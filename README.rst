@@ -7,8 +7,8 @@ Toolium is a Python wrapper tool of Selenium and Appium libraries to test web an
 project. It provides a way of choosing and configuring the driver through a configuration file, implements a Page Object
 pattern and includes a simple visual testing solution.
 
-.. |Build Status| image:: https://travis-ci.org/Telefonica/toolium.svg?branch=master
-   :target: https://travis-ci.org/Telefonica/toolium
+.. |Build Status| image:: https://github.com/Telefonica/toolium/workflows/build/badge.svg
+   :target: https://github.com/Telefonica/toolium/actions
 .. |Documentation Status| image:: https://readthedocs.org/projects/toolium/badge/?version=latest
    :target: http://toolium.readthedocs.org/en/latest
 .. |Coverage Status| image:: https://coveralls.io/repos/Telefonica/toolium/badge.svg?branch=master&service=github
