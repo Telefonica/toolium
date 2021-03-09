@@ -59,6 +59,9 @@ def replace_param(param, language="es"):
     type_mapping_regex = "\[(DICT|LIST|INT|FLOAT|STR):(.*)\]"
     type_mapping_match_group = re.match(type_mapping_regex, param)
 
+    string_format_regex = '\[(UPPER|LOWER):(.*)\]'
+    string_format_match_group = re.match(string_format_regex, param)
+
     if "[MISSING_PARAM]" in param:
         new_param = None
     elif "[EMPTY]" in param:
@@ -95,6 +98,12 @@ def replace_param(param, language="es"):
         replace_value = reference_date + datetime.timedelta(**configuration)
         return replace_value.strftime(date_format) if now else replace_value.strftime(
             date_day_format)
+    elif string_format_match_group and string_format_match_group.group(1) in ["UPPER", "LOWER"]:
+        if string_format_match_group.group(1) == "UPPER":
+            return string_format_match_group.group(2).upper()
+        elif string_format_match_group.group(1) == "LOWER":
+            return string_format_match_group.group(2).lower()
+
     else:
         new_param = generate_fixed_length_param(param)
     logger.debug("Input param: %s, output param: %s" % (param, new_param))
