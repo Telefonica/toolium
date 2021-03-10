@@ -59,6 +59,9 @@ def replace_param(param, language="es"):
     type_mapping_regex = "\[(DICT|LIST|INT|FLOAT|STR):(.*)\]"
     type_mapping_match_group = re.match(type_mapping_regex, param)
 
+    string_format_regex = '\[(UPPER|LOWER):(.*)\]'
+    string_format_match_group = re.match(string_format_regex, param)
+
     if "[MISSING_PARAM]" in param:
         new_param = None
     elif "[EMPTY]" in param:
@@ -81,8 +84,11 @@ def replace_param(param, language="es"):
         return None
     elif type_mapping_match_group and type_mapping_match_group.group(1) in \
             ["LIST", "DICT", "INT", "FLOAT", "STR"]:
-        exec(u"exec_param = {type}({value})".format(type=type_mapping_match_group.group(1).lower(),
-                                                    value=type_mapping_match_group.group(2)))
+        if type_mapping_match_group.group(1) == "STR":
+            return type_mapping_match_group.group(2)
+        else:
+            exec(u"exec_param = {type}({value})".format(type=type_mapping_match_group.group(1).lower(),
+                                                        value=type_mapping_match_group.group(2)))
         return locals()["exec_param"]
     elif date_matcher and len(date_matcher.groups()) == 3:
         configuration = dict([(date_matcher.group(3).lower(), int(date_matcher.group(2).replace(
@@ -92,6 +98,12 @@ def replace_param(param, language="es"):
         replace_value = reference_date + datetime.timedelta(**configuration)
         return replace_value.strftime(date_format) if now else replace_value.strftime(
             date_day_format)
+    elif string_format_match_group and string_format_match_group.group(1) in ["UPPER", "LOWER"]:
+        if string_format_match_group.group(1) == "UPPER":
+            return string_format_match_group.group(2).upper()
+        elif string_format_match_group.group(1) == "LOWER":
+            return string_format_match_group.group(2).lower()
+
     else:
         new_param = generate_fixed_length_param(param)
     logger.debug("Input param: %s, output param: %s" % (param, new_param))

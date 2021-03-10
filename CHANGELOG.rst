@@ -7,6 +7,8 @@ v1.9.1
 *Release date: In development*
 
 - Move CI from Travis to Github Actions
+- Fix string conversion in dataset utilities
+- Add upper/lower conversion to replace param method
 
 v1.9.0
 ------

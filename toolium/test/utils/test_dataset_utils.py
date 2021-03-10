@@ -85,10 +85,16 @@ def test_replace_param_false():
     assert param is False
 
 
-def test_replace_param_str():
+def test_replace_param_str_int():
     param = replace_param("[STR:28]")
     assert type(param) == str
     assert param == "28"
+
+
+def test_replace_param_str():
+    param = replace_param("[STR:abc]")
+    assert type(param) == str
+    assert param == "abc"
 
 
 def test_replace_param_int():
@@ -201,3 +207,17 @@ def test_replace_param_float_with_length():
 def test_replace_param_float_array_with_length():
     param = replace_param("[FLOAT_ARRAY_WITH_LENGTH_4]")
     assert param == "[FLOAT_ARRAY_WITH_LENGTH_4]"
+
+
+def test_replace_param_upper():
+    param = replace_param("[UPPER:test]")
+    assert param == "TEST"
+    param = replace_param("[UPPER:TeSt]")
+    assert param == "TEST"
+
+
+def test_replace_param_lower():
+    param = replace_param("[LOWER:TEST]")
+    assert param == "test"
+    param = replace_param("[LOWER:TeSt]")
+    assert param == "test"
