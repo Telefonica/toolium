@@ -4,7 +4,7 @@ Toolium Changelog
 v1.9.1
 ------
 
-*Release date: In development*
+*Release date: 2021-03-11*
 
 - Added new method wait_until_ajax_request_completed to driver utils class
 - Move CI from Travis to Github Actions
