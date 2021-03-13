@@ -7,6 +7,8 @@ v2.0.0
 *Release date: In development*
 
 - Update deprecated methods to fix warnings in python3 execution
+- Move *get_valid_filename* and *makedirs_safe* methods from *toolium.path_utils* to *toolium.utils.path_utils*
+- Move *Utils* class from *toolium.utils* to *toolium.utils.driver_utils*
 
 v1.9.1
 ------

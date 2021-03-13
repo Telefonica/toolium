@@ -81,25 +81,8 @@ class ConfigDriver(object):
         driver_name = self.utils.get_driver_name()
         capabilities = self._get_capabilities_from_driver_type(driver_name)
 
-        # Add driver version
-        driver_type = self.config.get('Driver', 'type')
-        try:
-            capabilities['version'] = driver_type.split('-')[1]
-        except IndexError:
-            pass
-
-        # Add platform capability
-        try:
-            platforms_list = {'xp': 'XP',
-                              'windows_7': 'VISTA',
-                              'windows_8': 'WIN8',
-                              'windows_10': 'WIN10',
-                              'linux': 'LINUX',
-                              'android': 'ANDROID',
-                              'mac': 'MAC'}
-            capabilities['platform'] = platforms_list.get(driver_type.split('-')[3], driver_type.split('-')[3])
-        except IndexError:
-            pass
+        # Add version and platform capabilities
+        self._add_capabilities_from_driver_type(capabilities)
 
         if driver_name == 'opera':
             capabilities['opera.autostart'] = True
@@ -183,6 +166,29 @@ class ConfigDriver(object):
         elif driver_name in ('android', 'ios', 'iphone'):
             return {}
         raise Exception('Unknown driver {0}'.format(driver_name))
+
+    def _add_capabilities_from_driver_type(self, capabilities):
+        """Extract version and platform from driver type and add them to capabilities
+
+        :param capabilities: capabilities dict
+        """
+        driver_type = self.config.get('Driver', 'type')
+        try:
+            capabilities['version'] = driver_type.split('-')[1]
+        except IndexError:
+            pass
+
+        try:
+            platforms_list = {'xp': 'XP',
+                              'windows_7': 'VISTA',
+                              'windows_8': 'WIN8',
+                              'windows_10': 'WIN10',
+                              'linux': 'LINUX',
+                              'android': 'ANDROID',
+                              'mac': 'MAC'}
+            capabilities['platform'] = platforms_list.get(driver_type.split('-')[3], driver_type.split('-')[3])
+        except IndexError:
+            pass
 
     def _add_capabilities_from_properties(self, capabilities, section):
         """Add capabilities from properties file

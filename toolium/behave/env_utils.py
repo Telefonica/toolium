@@ -16,8 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import warnings
 import sys
+import warnings
 from pkg_resources import parse_version
 
 # constants
@@ -87,7 +87,8 @@ class Logger:
 
 class DynamicEnvironment:
     """
-    This class is useful when we would like execute generic steps: before the feature, before each scenario, after the feature or/and after each scenario.
+    This class is useful when we would like execute generic steps: before the feature, before each scenario,
+     after the feature or/and after each scenario.
     It is necessary to append certain lines in the environment.py:
 
         from common.utils.env_utils import DynamicEnvironment
@@ -196,7 +197,8 @@ class DynamicEnvironment:
     def __execute_steps_by_action(self, context, action):
         """
         execute a steps set by action
-        :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
+        :param context: It’s a clever place where you and behave can store information to share around,
+                        automatically managed by behave.
         :param action: action executed: see labels allowed above.
         """
         if len(self.actions[action]) > 0:
@@ -236,7 +238,8 @@ class DynamicEnvironment:
     def execute_before_feature_steps(self, context):
         """
         actions before the feature
-        :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
+        :param context: It’s a clever place where you and behave can store information to share around,
+                        automatically managed by behave.
         """
         self.__execute_steps_by_action(context, ACTIONS_BEFORE_FEATURE)
 
@@ -247,7 +250,8 @@ class DynamicEnvironment:
     def execute_before_scenario_steps(self, context):
         """
         actions before each scenario
-        :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
+        :param context: It’s a clever place where you and behave can store information to share around,
+                        automatically managed by behave.
         """
         if not self.feature_error:
             self.__execute_steps_by_action(context, ACTIONS_BEFORE_SCENARIO)
@@ -259,7 +263,8 @@ class DynamicEnvironment:
     def execute_after_scenario_steps(self, context):
         """
         actions after each scenario
-        :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
+        :param context: It’s a clever place where you and behave can store information to share around,
+                        automatically managed by behave.
         """
         if not self.feature_error:
             self.__execute_steps_by_action(context, ACTIONS_AFTER_SCENARIO)
@@ -272,7 +277,8 @@ class DynamicEnvironment:
     def execute_after_feature_steps(self, context):
         """
         actions after the feature
-        :param context: It’s a clever place where you and behave can store information to share around, automatically managed by behave.
+        :param context: It’s a clever place where you and behave can store information to share around,
+                        automatically managed by behave.
         """
         self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)
 

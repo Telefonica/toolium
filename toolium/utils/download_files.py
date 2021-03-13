@@ -31,7 +31,7 @@ import requests
 from lxml import html
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.path_utils import makedirs_safe
+from toolium.utils.path_utils import makedirs_safe
 
 
 DOWNLOADS_SERVICE_PORT = 8001

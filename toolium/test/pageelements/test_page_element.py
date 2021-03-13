@@ -459,8 +459,8 @@ def test_android_automatic_context_selection_already_in_desired_webview_context_
     driver_wrapper.driver.context = "WEBVIEW_test.package.fake"
     driver_wrapper.driver.current_window_handle = "CWindow-1234567890"
     driver_wrapper.driver.execute_script.return_value = [{'webviewName': 'WEBVIEW_test.package.fake',
-                                                          'pages': [{'id': '1234567890',
-                                                                     'id': '0987654321'}]}]
+                                                          'pages': [{'id': '1234567890'},
+                                                                    {'id': '0987654321'}]}]
     RegisterPageObject(driver_wrapper).element_webview.web_element
     driver_wrapper.driver.switch_to.context.assert_not_called
     driver_wrapper.driver.switch_to.window.assert_not_called

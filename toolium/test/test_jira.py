@@ -53,7 +53,7 @@ def logger():
 
 def test_change_jira_status(logger):
     # Test response
-    response = b"The Test Case Execution 'TOOLIUM-2' has been created\r\n"
+    response = b"The Test Case Execution 'TOOLIUM-11' has been created\r\n"
 
     # Configure jira module
     jira.enabled = True
@@ -80,12 +80,12 @@ def test_change_jira_status(logger):
             assert partial_url in req_mock.request_history[0].text
 
     # Check logging call
-    logger.debug.assert_called_once_with("%s", "The Test Case Execution 'TOOLIUM-2' has been created")
+    logger.debug.assert_called_once_with("%s", "The Test Case Execution 'TOOLIUM-11' has been created")
 
 
 def test_change_jira_status_attachments(logger):
     # Test response
-    response = b"The Test Case Execution 'TOOLIUM-2' has been created\r\n"
+    response = b"The Test Case Execution 'TOOLIUM-11' has been created\r\n"
 
     # Configure jira module
     jira.enabled = True
@@ -124,7 +124,7 @@ def test_change_jira_status_attachments(logger):
         assert partial_url in body
 
     # Check logging call
-    logger.debug.assert_called_once_with("%s", "The Test Case Execution 'TOOLIUM-2' has been created")
+    logger.debug.assert_called_once_with("%s", "The Test Case Execution 'TOOLIUM-11' has been created")
 
 
 @mock.patch('toolium.jira.requests.get')
@@ -207,12 +207,12 @@ def test_jira_annotation_multiple(logger):
     MockTestClass().mock_test_pass()
     with pytest.raises(AssertionError):
         MockTestClass().mock_test_fail()
-    MockTestClass().mock_test_pass()
+    MockTestClass().mock_test_pass_2()
 
     # Check jira status
     expected_status = {'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None, []),
                        'TOOLIUM-3': ('TOOLIUM-3', 'Fail', "The test 'test name' has failed: test error", []),
-                       'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None, [])}
+                       'TOOLIUM-2': ('TOOLIUM-2', 'Pass', None, [])}
     assert expected_status == jira.jira_tests_status
 
 
@@ -239,6 +239,10 @@ class MockTestClass():
 
     @jira.jira(test_key='TOOLIUM-1')
     def mock_test_pass(self):
+        pass
+
+    @jira.jira(test_key='TOOLIUM-2')
+    def mock_test_pass_2(self):
         pass
 
     @jira.jira(test_key='TOOLIUM-3')

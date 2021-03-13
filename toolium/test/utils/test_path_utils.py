@@ -94,14 +94,14 @@ def test_create_new_folder_parallel():
 
 def test_path_utils_filename_compatibility():
     # Check that path_utils works with old imports
-    from toolium.path_utils import get_valid_filename
+    from toolium.utils.path_utils import get_valid_filename
 
     assert 'test' == get_valid_filename('test')
 
 
 def test_path_utils_makedirs_compatibility():
     # Check that path_utils works with old imports
-    from toolium.path_utils import makedirs_safe
+    from toolium.utils.path_utils import makedirs_safe
 
     folder = os.path.join('output', str(uuid.uuid4()))
     makedirs_safe(folder)
