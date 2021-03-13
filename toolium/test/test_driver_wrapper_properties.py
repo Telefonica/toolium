@@ -25,7 +25,7 @@ from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def driver_wrapper():
     # Reset wrappers pool values
     DriverWrappersPool._empty_pool()

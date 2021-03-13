@@ -64,7 +64,7 @@ def get_mock_element(x, y, height, width):
     return mock_element
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def driver_wrapper():
     # Reset wrappers pool values
     DriverWrappersPool._empty_pool()

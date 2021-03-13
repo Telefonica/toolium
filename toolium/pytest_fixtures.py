@@ -29,7 +29,7 @@ def pytest_runtest_makereport(item):
     return
 
 
-@pytest.yield_fixture(scope='session', autouse=True)
+@pytest.fixture(scope='session', autouse=True)
 def session_driver_fixture(request):
     yield None
     DriverWrappersPool.close_drivers(scope='session',
@@ -37,7 +37,7 @@ def session_driver_fixture(request):
                                      test_passed=request.session.testsfailed == 0)
 
 
-@pytest.yield_fixture(scope='module', autouse=True)
+@pytest.fixture(scope='module', autouse=True)
 def module_driver_fixture(request):
     previous_fails = request.session.testsfailed
     yield None
@@ -46,7 +46,7 @@ def module_driver_fixture(request):
                                      test_passed=request.session.testsfailed == previous_fails)
 
 
-@pytest.yield_fixture(scope='function', autouse=True)
+@pytest.fixture(scope='function', autouse=True)
 def driver_wrapper(request):
     default_driver_wrapper = DriverWrappersPool.connect_default_driver_wrapper()
     yield default_driver_wrapper

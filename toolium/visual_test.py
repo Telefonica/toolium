@@ -416,17 +416,17 @@ class VisualTest(object):
             return 'Image dimensions do not match'
 
         # Check pil engine message
-        m = re.search('\(by a distance of (.*)\)', message)
+        m = re.search(r'\(by a distance of (.*)\)', message)
         if m:
             return 'Distance of %0.8f' % (float(m.group(1)) / image_size)
 
         # Check perceptualdiff engine message
-        m = re.search('([0-9]*) pixels are different', message)
+        m = re.search(r'([0-9]*) pixels are different', message)
         if m:
             return 'Distance of %0.8f' % (float(m.group(1)) / image_size)
 
         # Check imagemagick engine message
-        m = re.search(':[\r\n](\d*\.?\d*) \((\d*\.?\d*)\) @', message)
+        m = re.search(r':[\r\n](\d*\.?\d*) \((\d*\.?\d*)\) @', message)
         if m:
             return 'Distance of %0.8f' % float(m.group(2))
 
