@@ -30,6 +30,7 @@ limitations under the License.
 # serve to show the default.
 
 import os
+import subprocess
 import sys
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -79,8 +80,6 @@ copyright = u'2015-2021, Telefónica I+D'
 # The short X.Y version.
 version = open('../VERSION').read().strip()
 # The full version, including alpha/beta/rc tags.
-import subprocess
-
 git_log = subprocess.check_output(["git", "log", "--pretty=oneline"])
 commits = git_log.split(b'\n')
 release = '{}-{}'.format(version, len(commits) - 1)

@@ -639,10 +639,3 @@ def test_wait_until_first_element_is_found_custom_timeout(driver_wrapper, utils)
     driver_wrapper.driver.find_element.assert_called_with(*element_locator)
     # Execution time must be greater than timeout
     assert end_time - start_time > 15
-
-
-def test_utils_compatibility():
-    # Check that utils works with old import
-    from toolium.utils import Utils
-    old_import_utils = Utils()
-    assert hasattr(old_import_utils, 'get_web_element')

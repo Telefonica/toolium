@@ -459,7 +459,7 @@ class Utils(object):
         :param timeout: max time to wait
         """
         return self._wait_until(self._expected_condition_ajax_request_completed, None, timeout)
-    
+
     def get_remote_node(self):
         """Return the remote node that it's executing the actual test session
 

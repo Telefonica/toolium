@@ -20,12 +20,6 @@ import os
 import pytest
 
 import toolium
-
-try:
-    from urllib import urlretrieve, urlopen  # Py2
-except ImportError:
-    from urllib.request import urlretrieve, urlopen  # Py3
-
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
