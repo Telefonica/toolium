@@ -216,9 +216,9 @@ class DynamicEnvironment:
                     context.execute_steps(u'''%s%s''' % (GIVEN_PREFIX, self.__remove_prefix(item)))
                     self.logger.debug(u'step defined in pre-actions: %s' % repr(item))
                 except Exception as exc:
-                    if action in [ACTIONS_BEFORE_FEATURE]:
+                    if action in [ACTIONS_BEFORE_FEATURE] or action in [ACTIONS_AFTER_FEATURE]:
                         self.feature_error = True
-                    elif action in [ACTIONS_BEFORE_SCENARIO]:
+                    elif action in [ACTIONS_BEFORE_SCENARIO] or action in [ACTIONS_AFTER_SCENARIO]:
                         self.scenario_error = True
                     self.logger.error(exc)
                     self.error_exception = exc
@@ -286,7 +286,8 @@ class DynamicEnvironment:
         if self.reset_error_status():
             context.feature.reset()
             for scenario in context.feature.walk_scenarios():
-                context.dyn_env.fail_first_step_precondition_exception(scenario)
+                if scenario.should_run(context.config):
+                    context.dyn_env.fail_first_step_precondition_exception(scenario)
             raise Exception("Preconditions failed during the execution")
 
     def fail_first_step_precondition_exception(self, scenario):
