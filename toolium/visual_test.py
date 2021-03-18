@@ -16,8 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from __future__ import division  # Python 2.7
-
 import datetime
 import itertools
 import logging
@@ -28,7 +26,6 @@ from io import BytesIO
 from os import path
 
 from selenium.common.exceptions import NoSuchElementException
-from six.moves import xrange  # Python 2 and 3 compatibility
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.path_utils import get_valid_filename, makedirs_safe
@@ -274,8 +271,8 @@ class VisualTest(object):
 
             for web_element in web_elements:
                 element_box = self.get_element_box(web_element)
-                for x, y in itertools.product(xrange(element_box[0], element_box[2]),
-                                              xrange(element_box[1], element_box[3])):
+                for x, y in itertools.product(range(element_box[0], element_box[2]),
+                                              range(element_box[1], element_box[3])):
                     try:
                         pixel_data[x, y] = (0, 0, 0, 255)
                     except IndexError:

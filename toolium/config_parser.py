@@ -17,11 +17,11 @@ limitations under the License.
 """
 
 import logging
+from configparser import ConfigParser, NoSectionError, NoOptionError
+from io import StringIO
 
-from six.moves import configparser, StringIO  # Python 2 and 3 compatibility
 
-
-class ExtendedConfigParser(configparser.ConfigParser):
+class ExtendedConfigParser(ConfigParser):
     def optionxform(self, optionstr):
         """Override default optionxform in ConfigParser"""
         return optionstr
@@ -37,7 +37,7 @@ class ExtendedConfigParser(configparser.ConfigParser):
         """
         try:
             return self.get(section, option)
-        except (configparser.NoSectionError, configparser.NoOptionError):
+        except (NoSectionError, NoOptionError):
             return default
 
     def getboolean_optional(self, section, option, default=False):
@@ -51,7 +51,7 @@ class ExtendedConfigParser(configparser.ConfigParser):
         """
         try:
             return self.getboolean(section, option)
-        except (configparser.NoSectionError, configparser.NoOptionError):
+        except (NoSectionError, NoOptionError):
             return default
 
     def deepcopy(self):
@@ -68,12 +68,7 @@ class ExtendedConfigParser(configparser.ConfigParser):
 
         # Create a new config object
         config_copy = ExtendedConfigParser()
-        try:
-            # Python 3
-            config_copy.read_file(config_string)
-        except AttributeError:
-            # Python 2.7
-            config_copy.readfp(config_string)
+        config_copy.read_file(config_string)
 
         return config_copy
 

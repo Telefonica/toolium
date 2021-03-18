@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9]
+        python-version: [3.5, 3.6, 3.7, 3.8, 3.9]
       fail-fast: false
 
     steps:
@@ -32,7 +32,6 @@ jobs:
       run: |
         coverage run --source=toolium -m pytest toolium/test
     - name: Publish on coveralls.io
-      if: ${{ matrix.python-version  != '2.7' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COVERALLS_FLAG_NAME: Python ${{ matrix.python-version }}
