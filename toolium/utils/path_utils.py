@@ -18,9 +18,9 @@ limitations under the License.
 
 from os import makedirs
 try:
-    from os import errno  # Py2, < Py3.7
+    from os import errno  # Py <3.7
 except ImportError:
-    import errno  # Py3.7
+    import errno  # Py 3.7+
 import re
 
 FILENAME_MAX_LENGTH = 100

@@ -17,14 +17,10 @@ limitations under the License.
 """
 
 import os
-try:
-    import Queue as queue  # Py2
-except ImportError:
-    import queue as queue  # Py3
+import pytest
+import queue as queue
 import threading
 import uuid
-
-import pytest
 
 from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 

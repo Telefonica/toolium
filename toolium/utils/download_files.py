@@ -18,21 +18,15 @@ limitations under the License.
 import difflib
 import filecmp
 import os
-import time
-
-try:
-    from urllib import urlretrieve, urlopen   # Py2
-    from urlparse import urljoin
-except ImportError:
-    from urllib.request import urlretrieve, urlopen  # Py3
-    from urllib.parse import urljoin
-
 import requests
+import time
+from urllib.parse import urljoin
+from urllib.request import urlretrieve, urlopen
+
 from lxml import html
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.path_utils import makedirs_safe
-
 
 DOWNLOADS_SERVICE_PORT = 8001
 DOWNLOADS_FOLDER = 'downloads'
