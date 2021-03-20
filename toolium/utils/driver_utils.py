@@ -234,8 +234,8 @@ class Utils(object):
             return False
 
     def _expected_condition_find_element_stopped(self, element_times):
-        """Tries to find the element and checks that it has stopped moving, but does not thrown an exception if the element
-            is not found
+        """Tries to find the element and checks that it has stopped moving, but does not thrown an exception if the
+            element is not found
 
         :param element_times: Tuple with 2 items where:
             [0] element: PageElement or element locator as a tuple (locator_type, locator_value) to be found
@@ -253,8 +253,8 @@ class Utils(object):
             return False
 
     def _expected_condition_find_element_containing_text(self, element_text_pair):
-        """Tries to find the element and checks that it contains the specified text, but does not thrown an exception if the element is
-            not found
+        """Tries to find the element and checks that it contains the specified text, but does not thrown an exception if
+            the element is not found
 
         :param element_text_pair: Tuple with 2 items where:
             [0] element: PageElement or element locator as a tuple (locator_type, locator_value) to be found

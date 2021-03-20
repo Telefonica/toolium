@@ -53,7 +53,7 @@ class Logger:
         msg = 'trying to execute a step in the environment: \n' \
               '           - Exception: %s' % exc
         if self.logger is not None:
-            self.logger.warn(msg)
+            self.logger.warning(msg)
         self.by_console('      WARN - %s' % msg)
 
     def error(self, exc):

@@ -17,9 +17,8 @@ limitations under the License.
 """
 
 import os
-import time
-
 import requests
+import time
 
 from toolium.utils.path_utils import makedirs_safe
 
@@ -104,9 +103,10 @@ class Selenoid(object):
                                                 'seconds' % (path_file, took))
                 return True
             except IOError as e:
-                self.driver_wrapper.logger.warn('Error writing downloaded file in "%s":\n %s' % (path_file, e))
+                self.driver_wrapper.logger.warning('Error writing downloaded file in "%s":\n %s' % (path_file, e))
         else:
-            self.driver_wrapper.logger.warn('File "%s" does not exist in the server after %s seconds' % (url, timeout))
+            self.driver_wrapper.logger.warning('File "%s" does not exist in the server after %s seconds' % (url,
+                                                                                                            timeout))
         return False
 
     def __remove_file(self, url):
@@ -202,8 +202,8 @@ class Selenoid(object):
         try:
             response = requests.get(host_url).json()['browsers'][self.browser]
         except Exception as e:
-            self.driver_wrapper.logger.warn('the GGR status request has failed: \nResponse:  %s \n'
-                                            'Error message: %s\n' % (response.content, e))
+            self.driver_wrapper.logger.warning('the GGR status request has failed: \nResponse:  %s \n'
+                                               'Error message: %s\n' % (response.content, e))
             return None
         for browser in response:
             if response[browser] != {}:
