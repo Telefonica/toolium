@@ -1,7 +1,5 @@
-requests>=2.12.4               # api tests
+requests>=2.12.4,<3            # api tests
 selenium>=2.53.6,<4            # web tests
 Appium-Python-Client>=0.24,<1  # mobile tests
-six>=1.10.0
 screeninfo==0.3.1
-typing==3.7.4.1
-lxml==4.6.2
+lxml==4.*

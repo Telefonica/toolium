@@ -19,12 +19,11 @@ limitations under the License.
 import ast
 import logging
 import os
-
 from appium import webdriver as appiumdriver
+from configparser import NoSectionError
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
-from six.moves.configparser import NoSectionError  # Python 2 and 3 compatibility
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 

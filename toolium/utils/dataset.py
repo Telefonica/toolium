@@ -21,9 +21,6 @@ import re
 import datetime
 import logging
 
-from six import string_types
-from six.moves import xrange
-
 logger = logging.getLogger(__name__)
 
 
@@ -49,7 +46,7 @@ def replace_param(param, language='es'):
     :param language: language to configure date format for NOW and TODAY
     :return: data with the correct replacements
     """
-    if not isinstance(param, string_types):
+    if not isinstance(param, str):
         return param
 
     new_param, is_replaced = _replace_param_type(param)
@@ -179,11 +176,11 @@ def _replace_param_fixed_length(param):
         if any(x in param for x in ['STRING_ARRAY_WITH_LENGTH_', 'INTEGER_ARRAY_WITH_LENGTH_']):
             seeds = {'STRING': 'a', 'INTEGER': 1}
             seed, length = param[1:-1].split('_ARRAY_WITH_LENGTH_')
-            new_param = list(seeds[seed] for x in xrange(int(length)))
+            new_param = list(seeds[seed] for x in range(int(length)))
             is_replaced = True
         elif 'JSON_WITH_LENGTH_' in param:
             length = int(param[1:-1].split('JSON_WITH_LENGTH_')[1])
-            new_param = dict((str(x), str(x)) for x in xrange(length))
+            new_param = dict((str(x), str(x)) for x in range(length))
             is_replaced = True
         elif any(x in param for x in ['STRING_WITH_LENGTH_', 'INTEGER_WITH_LENGTH_']):
             seeds = {'STRING': 'a', 'INTEGER': '1'}

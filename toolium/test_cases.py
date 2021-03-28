@@ -17,7 +17,6 @@ limitations under the License.
 """
 
 import logging
-import sys
 import unittest
 
 from toolium.config_driver import get_error_message_from_exception
@@ -65,19 +64,8 @@ class BasicTestCase(unittest.TestCase):
 
     def tearDown(self):
         # Get unit test exception
-        py2_exception = sys.exc_info()[1]
-        try:
-            # Python 3.4+
-            exception_info = self._outcome.errors[-1][1] if len(self._outcome.errors) > 0 else None
-            exception = exception_info[1] if exception_info else None
-        except AttributeError:
-            try:
-                # Python 3.3
-                exceptions_list = self._outcomeForDoCleanups.failures + self._outcomeForDoCleanups.errors
-                exception = exceptions_list[0][1] if exceptions_list else None
-            except AttributeError:
-                # Python 2.7
-                exception = py2_exception
+        exception_info = self._outcome.errors[-1][1] if len(self._outcome.errors) > 0 else None
+        exception = exception_info[1] if exception_info else None
 
         if not exception:
             self._test_passed = True

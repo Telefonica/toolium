@@ -94,8 +94,7 @@ class PageElements(CommonObject):
         return self._web_elements
 
     @property
-    def page_elements(self):
-        # type: () -> List[Any]
+    def page_elements(self) -> List[Any]:
         """Find multiple PageElement using element locator
 
         :returns: list of page element objects

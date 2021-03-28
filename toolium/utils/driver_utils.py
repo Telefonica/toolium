@@ -16,21 +16,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# Python 2.7
-from __future__ import division
-
 import logging
 import os
-import time
-from io import open
-
 import requests
+import time
 from datetime import datetime
+from io import open
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.action_chains import ActionChains
-from six.moves.urllib.parse import urlparse  # Python 2 and 3 compatibility
+from urllib.parse import urlparse
 
 from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 

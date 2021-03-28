@@ -110,12 +110,7 @@ def test_change_jira_status_attachments(logger):
         body_bytes = req_mock.last_request.body
 
     # Check requested url
-    try:
-        # Python 3
-        body = "".join(map(chr, body_bytes))
-    except TypeError:
-        # Python 2.7
-        body = body_bytes
+    body = "".join(map(chr, body_bytes))
     for partial_url in ['"jiraStatus"\r\n\r\nPass', '"jiraTestCaseId"\r\n\r\nTOOLIUM-1',
                         '"summaryPrefix"\r\n\r\nprefix', '"labels"\r\n\r\nlabel1 label2',
                         '"comments"\r\n\r\ncomment', '"version"\r\n\r\nRelease 1.0', '"build"\r\n\r\n453',
