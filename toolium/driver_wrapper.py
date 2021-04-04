@@ -278,7 +278,7 @@ class DriverWrapper(object):
                 bounds_x += monitor.x
                 bounds_y += monitor.y
             except NotImplementedError:
-                self.logger.warn('Current environment doesn\'t support get_monitors')
+                self.logger.warning('Current environment doesn\'t support get_monitors')
 
         return bounds_x, bounds_y
 

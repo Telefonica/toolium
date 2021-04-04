@@ -116,8 +116,8 @@ class PageElement(CommonObject):
                 # Element will be finded from parent element or from driver
                 base = self.utils.get_web_element(self.parent) if self.parent else self.driver
                 # Find elements and get the correct index or find a single element
-                self._web_element = base.find_elements(*self.locator)[self.order] if self.order else base.find_element(
-                    *self.locator)
+                self._web_element = base.find_elements(*self.locator)[self.order] if self.order \
+                    else base.find_element(*self.locator)
 
     def _android_automatic_context_selection(self):
         """Change context selection depending if the element is a webview for android devices"""
@@ -128,7 +128,8 @@ class PageElement(CommonObject):
             if self.webview_context_selection_callback:
                 context, window_handle = self.webview_context_selection_callback(*self.webview_csc_args)
             else:
-                app_web_context = "{}_{}".format(PageElement.webview_context_prefix, self.driver.capabilities['appPackage'])
+                app_web_context = "{}_{}".format(PageElement.webview_context_prefix,
+                                                 self.driver.capabilities['appPackage'])
                 contexts = self.driver.execute_script('mobile: getContexts')
                 context_dict = next(
                     (item for item in contexts if 'webviewName' in item and item['webviewName'] == app_web_context),
