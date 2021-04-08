@@ -1,6 +1,13 @@
 Toolium Changelog
 =================
 
+v1.9.2
+------
+
+*Release date: 2021-04-09*
+
+- Fix error in *deepcopy* method of *ExtendedConfigParser* class when two config properties have colon in name
+
 v1.9.1
 ------
 
@@ -18,7 +25,7 @@ v1.9.0
 
 - Added utilities to download files
 - Get text for InputText element in mobile tests
-- Add *translate_config_variables* method to config parser class to translate config variables in a string
+- Add *translate_config_variables* method to *ExtendedConfigParser* class to translate config variables in a string
 - Add dataset utilities
 - Manage multiples webviews for mobile tests
 
