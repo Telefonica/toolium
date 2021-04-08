@@ -66,7 +66,7 @@ command line instead of using the driver type defined in properties.cfg:
 Behave tags
 -----------
 
-Toolium defines two tags to configure driver:
+Toolium defines three tags to configure driver:
 
 * :code:`@reuse_driver`: feature tag to indicate that all scenarios in this feature should share the driver. The browser will not be closed between tests.
 * :code:`@reset_driver`: identifies a scenario that should not reuse the driver. The browser will be closed and reopen before this test.
