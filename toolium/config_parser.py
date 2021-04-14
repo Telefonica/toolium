@@ -140,3 +140,33 @@ class ExtendedConfigParser(ConfigParser):
             raise Exception(message)
 
         return config
+
+    # Overwrite ConfigParser methods to allow colon in options names
+    # To set a config property with colon in name
+    #    goog:loggingPrefs = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
+    # configure properties.cfg with:
+    #    goog___loggingPrefs: {'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}
+
+    def _encode_option(self, option):
+        return option.replace(':', '___')
+
+    def _decode_option(self, option):
+        return option.replace('___', ':')
+
+    def get(self, section, option, *args, **kwargs):
+        return super().get(section, self._encode_option(option), *args, **kwargs)
+
+    def set(self, section, option, *args):
+        super().set(section, self._encode_option(option), *args)
+
+    def options(self, section):
+        return [self._decode_option(option) for option in super().options(section)]
+
+    def has_option(self, section, option):
+        return super().has_option(section, self._encode_option(option))
+
+    def remove_option(self, section, option):
+        return super().remove_option(section, self._encode_option(option))
+
+    def items(self, *args):
+        return [(self._decode_option(item[0]), item[1]) for item in super().items(*args)]

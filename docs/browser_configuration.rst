@@ -271,3 +271,12 @@ Another examples showing how to use
     deviceMetrics: { "width": 360, "height": 640, "pixelRatio": 3.0 }
     userAgent: Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19
 
+**Capabilities section**
+
+Take in account that some Chrome capabilities contain a colon in their name, for example *goog:loggingPrefs*. As colon
+is not allowed in *ConfigParser* keys, it has been extended so they can be configured in *[Capabilities]* section
+replacing ':' with '___' in the key name::
+
+    [Capabilities]
+    goog___loggingPrefs: {'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}
+    goog___chromeOptions: {'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False}

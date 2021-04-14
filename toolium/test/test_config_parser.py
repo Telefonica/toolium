@@ -17,7 +17,6 @@ limitations under the License.
 """
 
 import os
-
 import pytest
 
 from toolium.config_parser import ExtendedConfigParser
@@ -66,6 +65,64 @@ def test_getboolean_optional(section, option, default, response, config):
         assert response == config.getboolean_optional(section, option)
 
 
+def test_get(config):
+    section = 'AppiumCapabilities'
+    option = 'automationName'
+    value = 'Appium'
+    assert value == config.get(section, option)
+
+
+def test_get_with_colon_in_option(config):
+    section = 'Capabilities'
+    option = 'goog:loggingPrefs'
+    value = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
+    assert value == config.get(section, option)
+
+
+def test_set_with_colon_in_option(config):
+    section = 'Capabilities'
+    option = 'goog:loggingPrefs'
+    orig_value = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
+    new_value = "{'performance': 'ALL', 'browser': 'ALL'}"
+
+    # Check previous value
+    assert orig_value == config.get(section, option)
+
+    # Modify property value and check new value
+    config.set(section, option, new_value)
+    assert new_value == config.get(section, option)
+
+
+def test_options_with_colon_in_option(config):
+    section = 'Capabilities'
+    options = ['goog:loggingPrefs', 'goog:chromeOptions']
+    assert options == config.options(section)
+
+
+def test_has_option_with_colon_in_option(config):
+    section = 'Capabilities'
+    option = 'goog:loggingPrefs'
+    wrong_option = 'goog:loggingPrefsWrong'
+    assert config.has_option(section, option) is True
+    assert config.has_option(section, wrong_option) is False
+
+
+def test_remove_option_with_colon_in_option(config):
+    section = 'Capabilities'
+    option = 'goog:loggingPrefs'
+    wrong_option = 'goog:loggingPrefsWrong'
+    assert config.remove_option(section, option) is True
+    assert config.remove_option(section, wrong_option) is False
+    assert config.get_optional(section, option, default=None) is None
+
+
+def test_items_with_colon_in_option(config):
+    section = 'Capabilities'
+    items = [('goog:loggingPrefs', "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"),
+             ('goog:chromeOptions', "{'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False}")]
+    assert items == config.items(section)
+
+
 def test_deepcopy(config):
     section = 'AppiumCapabilities'
     option = 'automationName'
@@ -75,9 +132,40 @@ def test_deepcopy(config):
     # Check previous value
     assert orig_value == config.get(section, option)
 
-    # Copy config object and modify a property
+    # Copy config object
     new_config = config.deepcopy()
+
+    # Check that both configs have the same property value
+    assert orig_value == config.get(section, option)
+    assert orig_value == new_config.get(section, option)
+
+    # Modify property value
     new_config.set(section, option, new_value)
+
+    # Check that the value has no changed in original config
+    assert orig_value == config.get(section, option)
+    assert new_value == new_config.get(section, option)
+
+
+def test_deepcopy_and_modify_option_with_colon(config):
+    section = 'Capabilities'
+    configured_option = 'goog___loggingPrefs'
+    option = 'goog:loggingPrefs'
+    orig_value = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
+    new_value = "{'performance': 'ALL', 'browser': 'ALL'}"
+
+    # Check previous value
+    assert orig_value == config.get(section, option)
+
+    # Copy config object
+    new_config = config.deepcopy()
+
+    # Check that both configs have the same property value
+    assert orig_value == config.get(section, option)
+    assert orig_value == new_config.get(section, option)
+
+    # Modify property value
+    new_config.set(section, configured_option, new_value)
 
     # Check that the value has no changed in original config
     assert orig_value == config.get(section, option)
