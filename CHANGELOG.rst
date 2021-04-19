@@ -27,6 +27,7 @@ v1.9.1
 - Move CI from Travis to Github Actions
 - Fix string conversion in dataset utilities
 - Add upper/lower conversion to replace param method
+- Fix report when an error happens in the Dynamic Environment
 
 v1.9.0
 ------
