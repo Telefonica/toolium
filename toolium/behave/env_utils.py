@@ -286,7 +286,8 @@ class DynamicEnvironment:
         if self.reset_error_status():
             context.feature.reset()
             for scenario in context.feature.walk_scenarios():
-                context.dyn_env.fail_first_step_precondition_exception(scenario)
+                if scenario.should_run(context.config):
+                    context.dyn_env.fail_first_step_precondition_exception(scenario)
             raise Exception("Preconditions failed during the execution")
 
     def fail_first_step_precondition_exception(self, scenario):
