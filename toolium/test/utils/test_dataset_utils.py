@@ -129,7 +129,7 @@ def test_replace_param_dict():
     assert param == {'a': 'test1', 'b': 'test2', 'c': 'test3'}
 
 
-def test_replace_param_datetime():
+def test_replace_param_timestamp():
     param = replace_param('[TIMESTAMP]')
     assert len(param) == 10
     assert datetime.datetime.strptime(str(datetime.datetime.fromtimestamp(int(param))), '%Y-%m-%d %H:%M:%S')
