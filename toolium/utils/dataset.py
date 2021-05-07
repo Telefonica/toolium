@@ -36,7 +36,8 @@ def replace_param(param, language='es'):
         [EMPTY] Empty string
         [B] Add Blank space
         [RANDOM] Generate random value
-        [DATETIME] Add a timestamp
+        [TIMESTAMP] Add a timestamp
+        [DATETIME] Add a Datetime now
         [NOW] Similar to DATETIME without milliseconds
         [NOW + 2 DAYS] Similar to NOW but two days later
         [NOW - 1 MINUTES] Similar to NOW but one minute earlier
@@ -101,6 +102,7 @@ def _replace_param_replacement(param, language):
         '[EMPTY]': '',
         '[B]': ' ',
         '[RANDOM]': uuid.uuid4().hex[0:8],
+        '[TIMESTAMP]': str(int(datetime.datetime.timestamp(datetime.datetime.utcnow()))),
         '[DATETIME]': str(datetime.datetime.utcnow()),
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),
         '[TODAY]': str(datetime.datetime.utcnow().strftime(date_day_format))
