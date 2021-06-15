@@ -4,14 +4,14 @@ Toolium Changelog
 v2.0.0
 ------
 
-*Release date: In development*
+*Release date: 2021-06-15*
 
 - Remove Python 2.7, 3.3 and 3.4 support
 - Update deprecated methods to fix warnings in python3 execution
 - Move *get_valid_filename* and *makedirs_safe* methods from *toolium.path_utils* to *toolium.utils.path_utils*
 - Move *Utils* class from *toolium.utils* to *toolium.utils.driver_utils*
 - Fix report when an error happens in the Dynamic Environment
-- New param [TIMESTAMP] to generate timestamp value of the actual moment
+- New param [TIMESTAMP] in *replace_param* method to generate timestamp value of the actual moment
 
 v1.9.2
 ------
