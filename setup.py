@@ -58,7 +58,7 @@ setup(
     keywords='selenium appium webdriver web_automation mobile_automation page_object visual_testing bdd lettuce behave'
              ' pytest',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Intended Audience :: Other Audience',
         'License :: OSI Approved :: Apache Software License',
