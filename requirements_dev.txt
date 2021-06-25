@@ -6,6 +6,6 @@ coveralls==3.*
 mock==3.*
 requests-mock==1.*
 needle==0.5.0
-docutils==0.*
+docutils==0.16
 Pygments==2.*
 flake8==3.*

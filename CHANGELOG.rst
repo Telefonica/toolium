@@ -1,10 +1,14 @@
 Toolium Changelog
 =================
 
-v2.0.1
+v2.1.0
 ------
 
 *Release date: In development*
+
+- Add type inference and improve replacement logic in *replace_param* function
+- Remove *generate_fixed_length_param* function, as all possible transformations are available in *replace_param*
+- Fix docutils development dependency to version 0.16
 
 v2.0.0
 ------
