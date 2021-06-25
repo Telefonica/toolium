@@ -85,9 +85,9 @@ def replace_param(param, language='es', infer_param_type=True):
 
     if param != new_param:
         if type(new_param) == str:
-            logger.debug(f'Replaced param from "{param}" to "{new_param}"')
+            logger.debug('Replaced param from "%s" to "%s"' % (param, new_param))
         else:
-            logger.debug(f'Replaced param from "{param}" to {new_param}')
+            logger.debug('Replaced param from "%s" to %s' % (param, new_param))
     return new_param
 
 
