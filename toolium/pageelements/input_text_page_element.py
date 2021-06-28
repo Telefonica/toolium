@@ -26,7 +26,7 @@ class InputText(PageElement):
 
         :returns: element text value
         """
-        if self.driver_wrapper.is_web_test():
+        if self.driver_wrapper.is_web_test() or self.webview:
             return self.web_element.get_attribute("value")
         elif self.driver_wrapper.is_ios_test():
             return self.web_element.get_attribute("label")
