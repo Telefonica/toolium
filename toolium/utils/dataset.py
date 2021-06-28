@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from ast import literal_eval
 u"""
 Copyright 2021 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -21,6 +20,9 @@ import uuid
 import re
 import datetime
 import logging
+import random
+import string
+from ast import literal_eval
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +55,7 @@ def replace_param(param, language='es', infer_param_type=True):
         [FLOAT:xxxx] Cast xxxx to a float
         [LIST:xxxx] Cast xxxx to a list
         [DICT:xxxx] Cast xxxx to a dict
-        [UPPPER:xxxx] Converts xxxx to upper case
+        [UPPER:xxxx] Converts xxxx to upper case
         [LOWER:xxxx] Converts xxxx to lower case
     If infer_param_type is True and the result of the replacement process is a string,
     this function also tries to infer and cast the result to the most appropriate data type.
@@ -123,10 +125,12 @@ def _replace_param_replacement(param, language):
     """
     date_format = '%d/%m/%Y %H:%M:%S' if language == 'es' else '%Y/%m/%d %H:%M:%S'
     date_day_format = '%d/%m/%Y' if language == 'es' else '%Y/%m/%d'
+    alphanums = ''.join([string.ascii_lowercase, string.digits])  # abcdefghijklmnopqrstuvwxyz0123456789
     replacements = {
         '[EMPTY]': '',
         '[B]': ' ',
-        '[RANDOM]': uuid.uuid4().hex[0:8],
+        # make sure random is not made up of digits only, by forcing the first char to be a letter
+        '[RANDOM]': ''.join([random.choice(string.ascii_lowercase), *(random.choice(alphanums) for i in range(7))]),
         '[TIMESTAMP]': str(int(datetime.datetime.timestamp(datetime.datetime.utcnow()))),
         '[DATETIME]': str(datetime.datetime.utcnow()),
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),
