@@ -4,11 +4,12 @@ Toolium Changelog
 v2.1.0
 ------
 
-*Release date: In development*
+*Release date: 2021-07-05*
 
 - Add type inference and improve replacement logic in *replace_param* function
 - Remove *generate_fixed_length_param* function, as all possible transformations are available in *replace_param*
 - Fix docutils development dependency to version 0.16
+- Fix InputText element class getting the text value for mobile apps in webview mode
 
 v2.0.0
 ------
