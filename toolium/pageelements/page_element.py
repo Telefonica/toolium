@@ -113,7 +113,7 @@ class PageElement(CommonObject):
                                                                'querySelector("%s")' % (self.shadowroot,
                                                                                         self.locator[1]))
             else:
-                # Element will be finded from parent element or from driver
+                # Element will be searched from parent element or from driver
                 base = self.utils.get_web_element(self.parent) if self.parent else self.driver
                 # Find elements and get the correct index or find a single element
                 self._web_element = base.find_elements(*self.locator)[self.order] if self.order \

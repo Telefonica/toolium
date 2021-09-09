@@ -31,7 +31,7 @@ class Column(Group):
     def init_page_elements(self):
         self.input = InputText(By.XPATH, './/input')
         self.link = Link(By.XPATH, './/a')
-        self.input_with_parent = InputText(By.XPATH, './/input', (By.XPATH, './/parent'))
+        self.input_with_parent = InputText(By.XPATH, './/input', parent=self.link)
 
 
 class Columns(PageElements):
@@ -108,15 +108,15 @@ def test_reset_object_page_elements_groups(driver_wrapper):
     assert column_21.input._web_element is not None
     assert column_21.link._web_element is not None
     assert column_21.input_with_parent._web_element is not None
-    # Check that the group elements have the group as parent
+    # Check that the group elements have the group as parent, except input_with_parent that has its custom parent
     assert column_11.parent == row_1
     assert column_21.parent == row_2
     assert column_11.input.parent == column_11
     assert column_11.link.parent == column_11
-    assert column_11.input_with_parent.parent == column_11
+    assert column_11.input_with_parent.parent == column_11.link
     assert column_21.input.parent == column_21
     assert column_21.link.parent == column_21
-    assert column_21.input_with_parent.parent == column_21
+    assert column_21.input_with_parent.parent == column_21.link
 
     table_page.reset_object()
 
@@ -137,12 +137,12 @@ def test_reset_object_page_elements_groups(driver_wrapper):
     assert column_21.input._web_element is None
     assert column_21.link._web_element is None
     assert column_21.input_with_parent._web_element is None
-    # Check that the group elements have the group as parent
+    # Check that the group elements have the group as parent, except input_with_parent that has its custom parent
     assert column_11.parent == row_1
     assert column_21.parent == row_2
     assert column_11.input.parent == column_11
     assert column_11.link.parent == column_11
-    assert column_11.input_with_parent.parent == column_11
+    assert column_11.input_with_parent.parent == column_11.link
     assert column_21.input.parent == column_21
     assert column_21.link.parent == column_21
-    assert column_21.input_with_parent.parent == column_21
+    assert column_21.input_with_parent.parent == column_21.link
