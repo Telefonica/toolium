@@ -40,13 +40,13 @@ class MenuGroup(Group):
 
 class RegisterPageObject(PageObject):
     username = PageElement(By.XPATH, '//input[0]')
-    password = PageElement(By.ID, 'password', username)
+    password = PageElement(By.ID, 'password', parent=username)
     menu_group = MenuGroup(By.ID, 'menu')
 
     def init_page_elements(self):
         self.language = PageElement(By.ID, 'language')
-        self.email = PageElement(By.ID, 'email', mock_element)
-        self.address = PageElement(By.ID, 'address', (By.ID, 'parent'))
+        self.email = PageElement(By.ID, 'email', parent=mock_element)
+        self.address = PageElement(By.ID, 'address', parent=(By.ID, 'parent'))
         self.address_shadowroot = PageElement(By.CSS_SELECTOR, '#address', shadowroot='shadowroot_css')
         self.address_shadowroot_by_id = PageElement(By.ID, 'address', shadowroot='shadowroot_css')
         self.element_webview = PageElement(By.ID, 'webview', webview=True)

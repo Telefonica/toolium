@@ -6,6 +6,8 @@ v2.1.1
 
 *Release date: In development*
 
+- Avoid to overwrite parent in group elements when a custom parent is defined
+
 v2.1.0
 ------
 

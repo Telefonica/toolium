@@ -34,7 +34,7 @@ class LoginPageObject(PageObject):
     def init_page_elements(self):
         self.inputs = PageElements(By.XPATH, '//input')
         self.links = PageElements(By.XPATH, '//a')
-        self.inputs_with_parent = PageElements(By.XPATH, '//input', (By.ID, 'parent'))
+        self.inputs_with_parent = PageElements(By.XPATH, '//input', parent=(By.ID, 'parent'))
 
 
 @pytest.fixture
