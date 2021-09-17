@@ -19,11 +19,12 @@ limitations under the License.
 import ast
 import logging
 import os
-from appium import webdriver as appiumdriver
 from configparser import NoSectionError
+
+from appium import webdriver as appiumdriver
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
@@ -88,16 +89,12 @@ class ConfigDriver(object):
             capabilities['opera.arguments'] = '-fullscreen'
         elif driver_name == 'firefox':
             capabilities['firefox_profile'] = self._create_firefox_profile().encoded
-        elif driver_name == 'chrome':
-            chrome_capabilities = self._create_chrome_options().to_capabilities()
-            try:
-                capabilities['goog:chromeOptions'] = chrome_capabilities["goog:chromeOptions"]
-            except KeyError:
-                # Selenium 3.5.3 and older
-                capabilities['chromeOptions'] = chrome_capabilities["chromeOptions"]
 
         # Add custom driver capabilities
         self._add_capabilities_from_properties(capabilities, 'Capabilities')
+
+        if driver_name == 'chrome':
+            self._add_chrome_options_to_capabilities(capabilities)
 
         if driver_name in ('android', 'ios', 'iphone'):
             # Create remote appium driver
@@ -199,7 +196,8 @@ class ConfigDriver(object):
         try:
             for cap, cap_value in dict(self.config.items(section)).items():
                 self.logger.debug("Added %s capability: %s = %s", cap_type[section], cap, cap_value)
-                capabilities[cap] = cap_value if cap == 'version' else self._convert_property_type(cap_value)
+                cap_value = cap_value if cap == 'version' else self._convert_property_type(cap_value)
+                self._update_dict(capabilities, {cap: cap_value}, initial_key=cap)
         except NoSectionError:
             pass
 
@@ -218,7 +216,7 @@ class ConfigDriver(object):
         # Get Firefox binary
         firefox_binary = self.config.get_optional('Firefox', 'binary')
 
-        firefox_options = Options()
+        firefox_options = FirefoxOptions()
 
         if self.config.getboolean_optional('Driver', 'headless'):
             self.logger.debug("Running Firefox in headless mode")
@@ -314,8 +312,8 @@ class ConfigDriver(object):
         """
         chrome_driver = self.config.get('Driver', 'chrome_driver_path')
         self.logger.debug("Chrome driver path given in properties: %s", chrome_driver)
-        return webdriver.Chrome(chrome_driver, chrome_options=self._create_chrome_options(),
-                                desired_capabilities=capabilities)
+        self._add_chrome_options_to_capabilities(capabilities)
+        return webdriver.Chrome(chrome_driver, desired_capabilities=capabilities)
 
     def _create_chrome_options(self):
         """Create and configure a chrome options object
@@ -374,6 +372,34 @@ class ConfigDriver(object):
                 options.add_argument('{}{}'.format(pref, self._convert_property_type(pref_value)))
         except NoSectionError:
             pass
+
+    def _add_chrome_options_to_capabilities(self, capabilities):
+        """Add Chrome options to capabilities
+
+        :param capabilities: dictionary with driver capabilities
+        """
+        chrome_capabilities = self._create_chrome_options().to_capabilities()
+        options_key = None
+        if 'goog:chromeOptions' in chrome_capabilities:
+            options_key = 'goog:chromeOptions'
+        elif 'chromeOptions' in chrome_capabilities:
+            # Selenium 3.5.3 and older
+            options_key = 'chromeOptions'
+        if options_key:
+            self._update_dict(capabilities, chrome_capabilities, initial_key=options_key)
+
+    def _update_dict(self, initial, update, initial_key=None):
+        """ Update a initial dict with another dict values recursively
+
+        :param initial: initial dict to be updated
+        :param update: new dict
+        :param initial_key: update only one key in initial dicts
+        :return: merged dict
+        """
+        for key, value in update.items():
+            if initial_key is None or key == initial_key:
+                initial[key] = self._update_dict(initial.get(key, {}), value) if isinstance(value, dict) else value
+        return initial
 
     def _setup_safari(self, capabilities):
         """Setup Safari webdriver

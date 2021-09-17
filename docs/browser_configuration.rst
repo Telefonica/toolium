@@ -280,3 +280,28 @@ replacing ':' with '___' in the key name::
     [Capabilities]
     goog___loggingPrefs: {'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}
     goog___chromeOptions: {'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False}
+
+In fact, all the settings in above Chrome sections can be also configured in *goog___chromeOptions*:
+
+- Chrome section::
+
+    [Capabilities]
+    goog___chromeOptions: {'binary': '/usr/local/chrome_beta/chrome'}
+
+- ChromePreferences section::
+
+    [Capabilities]
+    goog___chromeOptions: {'prefs': {'download.default_directory': 'C:\tmp'}}
+
+- ChromeArguments section::
+
+    [Capabilities]
+    goog___chromeOptions: {'args': {'user-data-dir': 'C:\Users\USERNAME\AppData\Local\Google\Chrome\User Data'}}
+
+- ChromeMobileEmulation section::
+
+    [Capabilities]
+    goog___chromeOptions: {'mobileEmulation': {'deviceName': 'Google Nexus 5'}}
+
+In case of defining the same setting both in its dedicated section and in the capabilities section, the dedicated
+section value will be used.
