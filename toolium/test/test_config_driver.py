@@ -16,8 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
 import os
+
+import mock
 import pytest
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
@@ -80,7 +81,7 @@ def test_create_driver_remote(config, utils):
     assert driver == 'remote driver mock'
 
 
-@mock.patch('toolium.config_driver.Options')
+@mock.patch('toolium.config_driver.FirefoxOptions')
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_firefox(webdriver_mock, options, config, utils):
     config.set('Driver', 'type', 'firefox')
@@ -99,7 +100,7 @@ def test_create_local_driver_firefox(webdriver_mock, options, config, utils):
                                                    firefox_options=options(), log_path='geckodriver.log')
 
 
-@mock.patch('toolium.config_driver.Options')
+@mock.patch('toolium.config_driver.FirefoxOptions')
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_firefox_gecko(webdriver_mock, options, config, utils):
     config.set('Driver', 'type', 'firefox')
@@ -150,10 +151,52 @@ def test_create_local_driver_chrome(webdriver_mock, config, utils):
     utils.get_driver_name.return_value = 'chrome'
     config_driver = ConfigDriver(config, utils)
     config_driver._create_chrome_options = lambda: 'chrome options'
+    config_driver._add_chrome_options_to_capabilities = lambda x: None
 
     config_driver._create_local_driver()
-    webdriver_mock.Chrome.assert_called_once_with('/tmp/driver', desired_capabilities=DesiredCapabilities.CHROME,
-                                                  chrome_options='chrome options')
+    webdriver_mock.Chrome.assert_called_once_with('/tmp/driver', desired_capabilities=DesiredCapabilities.CHROME)
+
+
+@mock.patch('toolium.config_driver.webdriver')
+def test_create_local_driver_chrome_multiple_options(webdriver_mock, config, utils):
+    # From goog:chromeOptions in Capabilities section
+    options_from_capabilities = {
+        'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False,
+        'prefs': {'download.default_directory': '/this_value_will_be_overwritten',
+                  'download.prompt_for_download': False}
+    }
+    # From ChromePreferences, ChromeMobileEmulation, ChromeArguments and Chrome sections
+    options_from_sections = {
+        'prefs': {'download.default_directory': '/tmp'},
+        'mobileEmulation': {'deviceName': 'Google Nexus 5'},
+        'args': ['user-data-dir=C:\\Users\\USERNAME\\AppData\\Local\\Google\\Chrome\\User Data'],
+        'binary': '/usr/local/chrome_beta/chrome'
+    }
+    # Merged chrome options
+    final_chrome_options = {
+        'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False,
+        'prefs': {'download.default_directory': '/tmp', 'download.prompt_for_download': False},
+        'mobileEmulation': {'deviceName': 'Google Nexus 5'},
+        'args': ['user-data-dir=C:\\Users\\USERNAME\\AppData\\Local\\Google\\Chrome\\User Data'],
+        'binary': '/usr/local/chrome_beta/chrome'
+    }
+
+    config.set('Driver', 'type', 'chrome')
+    config.set('Driver', 'chrome_driver_path', '/tmp/driver')
+    config.add_section('Capabilities')
+    config.set('Capabilities', 'goog:chromeOptions', str(options_from_capabilities))
+    utils.get_driver_name.return_value = 'chrome'
+    config_driver = ConfigDriver(config, utils)
+
+    # Chrome options mock
+    chrome_options = mock.MagicMock()
+    chrome_options.to_capabilities.return_value = {'goog:chromeOptions': options_from_sections}
+    config_driver._create_chrome_options = mock.MagicMock(return_value=chrome_options)
+
+    config_driver._create_local_driver()
+    capabilities = DesiredCapabilities.CHROME.copy()
+    capabilities['goog:chromeOptions'] = final_chrome_options
+    webdriver_mock.Chrome.assert_called_once_with('/tmp/driver', desired_capabilities=capabilities)
 
 
 @mock.patch('toolium.config_driver.webdriver')
@@ -252,7 +295,7 @@ def test_create_local_driver_unknown_driver(config, utils):
     assert 'Unknown driver unknown' == str(excinfo.value)
 
 
-@mock.patch('toolium.config_driver.Options')
+@mock.patch('toolium.config_driver.FirefoxOptions')
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_capabilities(webdriver_mock, options, config, utils):
     config.set('Driver', 'type', 'firefox')
@@ -310,6 +353,50 @@ def test_create_remote_driver_chrome(webdriver_mock, config, utils):
     config_driver._create_remote_driver()
     capabilities = DesiredCapabilities.CHROME.copy()
     capabilities['goog:chromeOptions'] = 'chrome options'
+    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
+                                                  desired_capabilities=capabilities)
+
+
+@mock.patch('toolium.config_driver.webdriver')
+def test_create_remote_driver_chrome_multiple_options(webdriver_mock, config, utils):
+    # From goog:chromeOptions in Capabilities section
+    options_from_capabilities = {
+        'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False,
+        'prefs': {'download.default_directory': '/this_value_will_be_overwritten',
+                  'download.prompt_for_download': False}
+    }
+    # From ChromePreferences, ChromeMobileEmulation, ChromeArguments and Chrome sections
+    options_from_sections = {
+        'prefs': {'download.default_directory': '/tmp'},
+        'mobileEmulation': {'deviceName': 'Google Nexus 5'},
+        'args': ['user-data-dir=C:\\Users\\USERNAME\\AppData\\Local\\Google\\Chrome\\User Data'],
+        'binary': '/usr/local/chrome_beta/chrome'
+    }
+    # Merged chrome options
+    final_chrome_options = {
+        'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False,
+        'prefs': {'download.default_directory': '/tmp', 'download.prompt_for_download': False},
+        'mobileEmulation': {'deviceName': 'Google Nexus 5'},
+        'args': ['user-data-dir=C:\\Users\\USERNAME\\AppData\\Local\\Google\\Chrome\\User Data'],
+        'binary': '/usr/local/chrome_beta/chrome'
+    }
+
+    config.set('Driver', 'type', 'chrome')
+    config.add_section('Capabilities')
+    config.set('Capabilities', 'goog:chromeOptions', str(options_from_capabilities))
+    server_url = 'http://10.20.30.40:5555'
+    utils.get_server_url.return_value = server_url
+    utils.get_driver_name.return_value = 'chrome'
+    config_driver = ConfigDriver(config, utils)
+
+    # Chrome options mock
+    chrome_options = mock.MagicMock()
+    chrome_options.to_capabilities.return_value = {'goog:chromeOptions': options_from_sections}
+    config_driver._create_chrome_options = mock.MagicMock(return_value=chrome_options)
+
+    config_driver._create_remote_driver()
+    capabilities = DesiredCapabilities.CHROME.copy()
+    capabilities['goog:chromeOptions'] = final_chrome_options
     webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=capabilities)
 

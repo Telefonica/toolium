@@ -7,6 +7,8 @@ v2.1.1
 *Release date: In development*
 
 - Avoid to overwrite parent in group elements when a custom parent is defined
+- Fix Chrome options to allow to configure them at the same time in *Chrome* sections and in *goog:chromeOptions*
+  capability
 
 v2.1.0
 ------
