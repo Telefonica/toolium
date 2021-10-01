@@ -231,14 +231,18 @@ def test_replace_param_lower():
 
 
 def test_replace_param_type_inference():
-    param = replace_param('1234')
+    param = replace_param('1234')  # int
     assert param == 1234
-    param = replace_param('0.5')
+    param = replace_param('0.5')  # float
     assert param == 0.5
-    param = replace_param("{'a':'test1','b':'test2','c':'test3'}")
-    assert param == {'a': 'test1', 'b': 'test2', 'c': 'test3'}
-    param = replace_param("['1','2','3']")
-    assert param == ['1', '2', '3']
+    param = replace_param("{'a':'test1', 'b':True, 'c':None}")  # dict
+    assert param == {'a': 'test1', 'b': True, 'c': None}
+    param = replace_param("['1', True,None]")  # list
+    assert param == ['1', True, None]
+    param = replace_param('{"a":"test1", "b":true, "c":null}')  # JSON object
+    assert param == {'a': 'test1', 'b': True, 'c': None}
+    param = replace_param('["1", true, null]')  # JSON list
+    assert param == ['1', True, None]
 
 
 def test_replace_param_type_inference_disabled():
@@ -246,7 +250,11 @@ def test_replace_param_type_inference_disabled():
     assert param == '1234'
     param = replace_param('0.5', infer_param_type=False)
     assert param == '0.5'
-    param = replace_param("{'a':'test1','b':'test2','c':'test3'}", infer_param_type=False)
-    assert param == "{'a':'test1','b':'test2','c':'test3'}"
-    param = replace_param("['1','2','3']", infer_param_type=False)
-    assert param == "['1','2','3']"
+    param = replace_param("{'a':'test1', 'b':True, 'c':None}", infer_param_type=False)
+    assert param == "{'a':'test1', 'b':True, 'c':None}"
+    param = replace_param("['1', True, None]", infer_param_type=False)
+    assert param == "['1', True, None]"
+    param = replace_param('{"a":"test1", "b":true, "c":null}', infer_param_type=False)
+    assert param == '{"a":"test1", "b":true, "c":null}'
+    param = replace_param('["1", true, null]', infer_param_type=False)
+    assert param == '["1", true, null]'

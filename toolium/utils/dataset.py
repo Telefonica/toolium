@@ -21,6 +21,7 @@ import datetime
 import logging
 import random
 import string
+import json
 from ast import literal_eval
 
 logger = logging.getLogger(__name__)
@@ -243,5 +244,8 @@ def _infer_param_type(param):
     try:
         new_param = literal_eval(param)
     except Exception:
-        pass
+        try:
+            new_param = json.loads(param)
+        except Exception:
+            pass
     return new_param
