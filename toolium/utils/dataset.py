@@ -60,7 +60,7 @@ def replace_param(param, language='es', infer_param_type=True):
     If infer_param_type is True and the result of the replacement process is a string,
     this function also tries to infer and cast the result to the most appropriate data type,
     attempting first the conversion to Python built-in data types and then, if not possible,
-    to a JSON object or a JSON list.
+    to a JSON object or list.
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY ('es' or other)
     :param infer_param_type: whether to infer and change the data type of the result or not
