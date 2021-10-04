@@ -1,10 +1,12 @@
 Toolium Changelog
 =================
 
-v2.1.2
+v2.2.0
 ------
 
 *Release date: In development*
+
+- Add JSON object/list conversion to Python dict/list in the type inference logic of the *replace_param* function
 
 v2.1.1
 ------

@@ -21,6 +21,7 @@ import datetime
 import logging
 import random
 import string
+import json
 from ast import literal_eval
 
 logger = logging.getLogger(__name__)
@@ -57,7 +58,9 @@ def replace_param(param, language='es', infer_param_type=True):
         [UPPER:xxxx] Converts xxxx to upper case
         [LOWER:xxxx] Converts xxxx to lower case
     If infer_param_type is True and the result of the replacement process is a string,
-    this function also tries to infer and cast the result to the most appropriate data type.
+    this function also tries to infer and cast the result to the most appropriate data type,
+    attempting first the conversion to Python built-in data types and then, if not possible,
+    to a JSON object or list.
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY ('es' or other)
     :param infer_param_type: whether to infer and change the data type of the result or not
@@ -243,5 +246,8 @@ def _infer_param_type(param):
     try:
         new_param = literal_eval(param)
     except Exception:
-        pass
+        try:
+            new_param = json.loads(param)
+        except Exception:
+            pass
     return new_param
