@@ -236,9 +236,9 @@ def test_replace_param_type_inference():
     param = replace_param('0.5')  # float
     assert param == 0.5
     param = replace_param('True')  # boolean
-    assert param == True
+    assert param is True
     param = replace_param('None')  # None
-    assert param == None
+    assert param is None
     param = replace_param("{'a':'test1', 'b':True, 'c':None}")  # dict
     assert param == {'a': 'test1', 'b': True, 'c': None}
     param = replace_param("['1', True,None]")  # list
