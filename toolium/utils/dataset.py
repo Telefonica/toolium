@@ -59,8 +59,8 @@ def replace_param(param, language='es', infer_param_type=True):
         [LOWER:xxxx] Converts xxxx to lower case
     If infer_param_type is True and the result of the replacement process is a string,
     this function also tries to infer and cast the result to the most appropriate data type,
-    attempting first the conversion to Python built-in data types and then, if not possible,
-    to a JSON object or list.
+    attempting first the direct conversion to a Python built-in data type and then,
+    if not possible, the conversion to a dict/list parsing the string as a JSON object/list.
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY ('es' or other)
     :param infer_param_type: whether to infer and change the data type of the result or not
@@ -236,18 +236,24 @@ def _replace_param_fixed_length(param):
 
 def _infer_param_type(param):
     """
-    Transform the param from string to the inferred data type
-    E.g. '1234' -> 1234, '0.50' -> 0.5, ["a", "b"]' -> ["a", "b"], '{"a": "b"}' -> {"a": "b"}
+    Transform the param from a string representing a built-in data type or a JSON object/list to the
+    corresponding built-in data type. If no conversion is possible, the original param is returned.
+    E.g. "1234" -> 1234, "0.50" -> 0.5, "True" -> True, "None" -> None,
+    "['a', None]" -> ['a', None], "{'a': None}" -> {'a': None},
+    '["a", null]' -> ["a", None], '{"a": null}' -> {"a": None}
 
     :param param: data to be transformed
     :return data with the inferred type
     """
     new_param = param
+    # attempt direct conversion to a built-in data type
     try:
         new_param = literal_eval(param)
     except Exception:
-        try:
-            new_param = json.loads(param)
-        except Exception:
-            pass
+        if param.startswith('{') or param.startswith('['):
+            # it may still be a JSON object/list that can be converted to a dict/list
+            try:
+                new_param = json.loads(param)
+            except Exception:
+                pass
     return new_param
