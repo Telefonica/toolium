@@ -250,10 +250,10 @@ def _infer_param_type(param):
     try:
         new_param = literal_eval(param)
     except Exception:
-        if param.startswith('{') or param.startswith('['):
-            # it may still be a JSON object/list that can be converted to a dict/list
-            try:
+        # it may still be a JSON object/list that can be converted to a dict/list
+        try:
+            if param.startswith('{') or param.startswith('['):
                 new_param = json.loads(param)
-            except Exception:
-                pass
+        except Exception:
+            pass
     return new_param
