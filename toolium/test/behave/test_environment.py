@@ -66,8 +66,9 @@ def test_before_all(create_and_configure_wrapper):
 
 
 properties = (
-    'env',
+    'TOOLIUM_CONFIG_ENVIRONMENT',
     'Config_environment',
+    'env'
 )
 
 
@@ -81,13 +82,14 @@ def test_before_all_config_environment(create_and_configure_wrapper, property_na
 
     before_all(context)
 
-    # Check that configuration folder is the same as environment folder and property 'Config_environment' is configured
+    # Check that configuration folder is the same as environment folder and property 'TOOLIUM_CONFIG_ENVIRONMENT' is
+    # configured
     expected_config_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'conf')
     assert context.config_files.config_directory == expected_config_directory
     assert context.config_files.config_properties_filenames == 'properties.cfg;os-properties.cfg;local-os-properties.cfg'
     assert context.config_files.config_log_filename is None
-    assert os.environ['Config_environment'] == 'os'
-    del os.environ["Config_environment"]
+    assert os.environ['TOOLIUM_CONFIG_ENVIRONMENT'] == 'os'
+    del os.environ['TOOLIUM_CONFIG_ENVIRONMENT']
 
 
 @mock.patch('toolium.behave.environment.start_driver')

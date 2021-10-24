@@ -24,6 +24,8 @@ import pytest
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
+environment_properties = []
+
 
 @pytest.fixture
 def driver_wrapper():
@@ -39,15 +41,26 @@ def driver_wrapper():
 
     yield new_driver_wrapper
 
-    # Remove environment properties after test
-    try:
-        del os.environ["Config_log_filename"]
-    except KeyError:
-        pass
+    # Remove used environment properties after test
+    global environment_properties
+    for env_property in environment_properties:
+        try:
+            del os.environ[env_property]
+        except KeyError:
+            pass
+    environment_properties = []
+
+
+def test_configure_logger_deprecated(driver_wrapper):
+    environment_properties.append('Config_log_filename')
+    os.environ['Config_log_filename'] = 'logging.conf'
+    driver_wrapper.configure_logger()
+    assert logging.getLevelName(driver_wrapper.logger.getEffectiveLevel()) == 'DEBUG'
 
 
 def test_configure_logger(driver_wrapper):
-    os.environ["Config_log_filename"] = 'logging.conf'
+    environment_properties.append('TOOLIUM_CONFIG_LOG_FILENAME')
+    os.environ['TOOLIUM_CONFIG_LOG_FILENAME'] = 'logging.conf'
     driver_wrapper.configure_logger()
     assert logging.getLevelName(driver_wrapper.logger.getEffectiveLevel()) == 'DEBUG'
 
@@ -58,14 +71,16 @@ def test_configure_logger_file_not_configured(driver_wrapper):
 
 
 def test_configure_logger_file_not_found(driver_wrapper):
-    os.environ["Config_log_filename"] = 'notfound-logging.conf'
+    environment_properties.append('TOOLIUM_CONFIG_LOG_FILENAME')
+    os.environ['TOOLIUM_CONFIG_LOG_FILENAME'] = 'notfound-logging.conf'
     driver_wrapper.configure_logger()
     driver_wrapper.logger.info('No error, default logging configuration')
 
 
 def test_configure_logger_no_changes(driver_wrapper):
     # Configure logger
-    os.environ["Config_log_filename"] = 'logging.conf'
+    environment_properties.append('TOOLIUM_CONFIG_LOG_FILENAME')
+    os.environ['TOOLIUM_CONFIG_LOG_FILENAME'] = 'logging.conf'
     driver_wrapper.configure_logger()
     logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
 
@@ -83,7 +98,8 @@ def test_configure_logger_no_changes(driver_wrapper):
 
 def test_configure_logger_change_configuration_file(driver_wrapper):
     # Configure logger
-    os.environ["Config_log_filename"] = 'logging.conf'
+    environment_properties.append('TOOLIUM_CONFIG_LOG_FILENAME')
+    os.environ['TOOLIUM_CONFIG_LOG_FILENAME'] = 'logging.conf'
     logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
 
     # Modify property
@@ -92,7 +108,7 @@ def test_configure_logger_change_configuration_file(driver_wrapper):
     assert logging.getLevelName(logger.level) == new_level
 
     # Change file and try to configure again
-    os.environ["Config_log_filename"] = 'warn-logging.conf'
+    os.environ['TOOLIUM_CONFIG_LOG_FILENAME'] = 'warn-logging.conf'
     driver_wrapper.configure_logger()
 
     # Check that configuration has been initialized

@@ -24,6 +24,8 @@ from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
+environment_properties = []
+
 
 @pytest.fixture
 def driver_wrapper():
@@ -45,19 +47,28 @@ def driver_wrapper():
 
     yield new_driver_wrapper
 
-    # Remove environment properties after test
-    try:
-        del os.environ["Config_prop_filenames"]
-    except KeyError:
-        pass
-    try:
-        del os.environ["Driver_type"]
-    except KeyError:
-        pass
+    # Remove used environment properties after test
+    global environment_properties
+    for env_property in environment_properties:
+        try:
+            del os.environ[env_property]
+        except KeyError:
+            pass
+    environment_properties = []
+
+
+def test_configure_properties_deprecated(driver_wrapper):
+    environment_properties.append('Config_prop_filenames')
+    os.environ['Config_prop_filenames'] = 'properties.cfg'
+    driver_wrapper.configure_properties()
+    assert driver_wrapper.config.get('Driver', 'type') == 'firefox'  # get last value
+    assert driver_wrapper.config.get_optional('Driver', 'implicitly_wait') == '5'  # only in properties
+    assert driver_wrapper.config.get_optional('AppiumCapabilities', 'app') is None  # only in android
 
 
 def test_configure_properties(driver_wrapper):
-    os.environ["Config_prop_filenames"] = 'properties.cfg'
+    environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
+    os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'properties.cfg'
     driver_wrapper.configure_properties()
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'  # get last value
     assert driver_wrapper.config.get_optional('Driver', 'implicitly_wait') == '5'  # only in properties
@@ -65,7 +76,8 @@ def test_configure_properties(driver_wrapper):
 
 
 def test_configure_properties_android(driver_wrapper):
-    os.environ["Config_prop_filenames"] = 'android-properties.cfg'
+    environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
+    os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'android-properties.cfg'
     driver_wrapper.configure_properties()
     assert driver_wrapper.config.get('Driver', 'type') == 'android'  # get last value
     assert driver_wrapper.config.get_optional('Driver', 'implicitly_wait') is None  # only in properties
@@ -74,7 +86,8 @@ def test_configure_properties_android(driver_wrapper):
 
 
 def test_configure_properties_two_files(driver_wrapper):
-    os.environ["Config_prop_filenames"] = 'properties.cfg;android-properties.cfg'
+    environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
+    os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'properties.cfg;android-properties.cfg'
     driver_wrapper.configure_properties()
     assert driver_wrapper.config.get('Driver', 'type') == 'android'  # get last value
     assert driver_wrapper.config.get_optional('Driver', 'implicitly_wait') == '5'  # only in properties
@@ -83,7 +96,8 @@ def test_configure_properties_two_files(driver_wrapper):
 
 
 def test_configure_properties_two_files_android_first(driver_wrapper):
-    os.environ["Config_prop_filenames"] = 'android-properties.cfg;properties.cfg'
+    environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
+    os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'android-properties.cfg;properties.cfg'
     driver_wrapper.configure_properties()
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'  # get last value
     assert driver_wrapper.config.get_optional('Driver', 'implicitly_wait') == '5'  # only in properties
@@ -92,8 +106,10 @@ def test_configure_properties_two_files_android_first(driver_wrapper):
 
 
 def test_configure_properties_system_property(driver_wrapper):
-    os.environ["Config_prop_filenames"] = 'properties.cfg'
-    os.environ["Driver_type"] = 'opera'
+    environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
+    environment_properties.append('TOOLIUM_DRIVER_TYPE')
+    os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'properties.cfg'
+    os.environ['TOOLIUM_DRIVER_TYPE'] = 'Driver_type=opera'
     driver_wrapper.configure_properties()
     assert driver_wrapper.config.get('Driver', 'type') == 'opera'
 
@@ -104,7 +120,8 @@ def test_configure_properties_file_default_file(driver_wrapper):
 
 
 def test_configure_properties_file_not_found(driver_wrapper):
-    os.environ["Config_prop_filenames"] = 'notfound-properties.cfg'
+    environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
+    os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'notfound-properties.cfg'
     with pytest.raises(Exception) as excinfo:
         driver_wrapper.configure_properties()
     assert 'Properties config file not found' in str(excinfo.value)
@@ -112,7 +129,8 @@ def test_configure_properties_file_not_found(driver_wrapper):
 
 def test_configure_properties_no_changes(driver_wrapper):
     # Configure properties
-    os.environ["Config_prop_filenames"] = 'properties.cfg'
+    environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
+    os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'properties.cfg'
     driver_wrapper.configure_properties()
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
 
@@ -130,7 +148,8 @@ def test_configure_properties_no_changes(driver_wrapper):
 
 def test_configure_properties_change_configuration_file(driver_wrapper):
     # Configure properties
-    os.environ["Config_prop_filenames"] = 'properties.cfg'
+    environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
+    os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'properties.cfg'
     driver_wrapper.configure_properties()
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
 
@@ -140,7 +159,8 @@ def test_configure_properties_change_configuration_file(driver_wrapper):
     assert driver_wrapper.config.get('Driver', 'type') == new_driver_type
 
     # Change file and try to configure again
-    os.environ["Config_prop_filenames"] = 'android-properties.cfg'
+    environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
+    os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'android-properties.cfg'
     driver_wrapper.configure_properties()
 
     # Check that configuration has been initialized
@@ -148,8 +168,10 @@ def test_configure_properties_change_configuration_file(driver_wrapper):
 
 
 def test_configure_properties_finalize_properties(driver_wrapper):
-    os.environ["Config_prop_filenames"] = 'properties.cfg'
-    os.environ["Driver_type"] = 'opera'
+    environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
+    environment_properties.append('TOOLIUM_DRIVER_TYPE')
+    os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'properties.cfg'
+    os.environ['TOOLIUM_DRIVER_TYPE'] = 'Driver_type=opera'
 
     # Modify properties after reading properties file and system properties
     def finalize_properties_configuration(self):

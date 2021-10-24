@@ -42,12 +42,14 @@ def before_all(context):
     # Use pytest asserts if behave_pytest is installed
     install_pytest_asserts()
 
-    # Get 'Config_environment' property from user input (e.g. -D Config_environment=ios)
-    env = context.config.userdata.get('Config_environment')
-    # Deprecated: Get 'env' property from user input (e.g. -D env=ios)
+    # Get 'TOOLIUM_CONFIG_ENVIRONMENT' property from user input (e.g. -D TOOLIUM_CONFIG_ENVIRONMENT=ios)
+    env = context.config.userdata.get('TOOLIUM_CONFIG_ENVIRONMENT')
+    # Deprecated: use TOOLIUM_CONFIG_ENVIRONMENT property
+    env = env if env else context.config.userdata.get('Config_environment')
+    # Deprecated: use TOOLIUM_CONFIG_ENVIRONMENT property
     env = env if env else context.config.userdata.get('env')
     if env:
-        os.environ['Config_environment'] = env
+        os.environ['TOOLIUM_CONFIG_ENVIRONMENT'] = env
 
     if not hasattr(context, 'config_files'):
         context.config_files = ConfigFiles()
@@ -91,14 +93,14 @@ def before_scenario(context, scenario):
     """
     # Configure reset properties from behave tags
     if 'no_reset_app' in scenario.tags:
-        os.environ["AppiumCapabilities_noReset"] = 'true'
-        os.environ["AppiumCapabilities_fullReset"] = 'false'
+        os.environ['TOOLIUM_APPIUMCAPABILITIES_NORESET'] = 'AppiumCapabilities_noReset=true'
+        os.environ['TOOLIUM_APPIUMCAPABILITIES_FULLRESET'] = 'AppiumCapabilities_fullReset=false'
     elif 'reset_app' in scenario.tags:
-        os.environ["AppiumCapabilities_noReset"] = 'false'
-        os.environ["AppiumCapabilities_fullReset"] = 'false'
+        os.environ['TOOLIUM_APPIUMCAPABILITIES_NORESET'] = 'AppiumCapabilities_noReset=false'
+        os.environ['TOOLIUM_APPIUMCAPABILITIES_FULLRESET'] = 'AppiumCapabilities_fullReset=false'
     elif 'full_reset_app' in scenario.tags:
-        os.environ["AppiumCapabilities_noReset"] = 'false'
-        os.environ["AppiumCapabilities_fullReset"] = 'true'
+        os.environ['TOOLIUM_APPIUMCAPABILITIES_NORESET'] = 'AppiumCapabilities_noReset=false'
+        os.environ['TOOLIUM_APPIUMCAPABILITIES_FULLRESET'] = 'AppiumCapabilities_fullReset=true'
 
     # Force to reset driver before each scenario if it has @reset_driver tag
     if 'reset_driver' in scenario.tags:
