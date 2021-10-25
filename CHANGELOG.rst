@@ -7,6 +7,8 @@ v2.2.0
 *Release date: In development*
 
 - Add JSON object/list conversion to Python dict/list in the type inference logic of the *replace_param* function
+- Add *finalize_properties_configuration* method in *DriverWrapper* class to allow to modify config properties
+  programmatically before driver creation
 
 v2.1.1
 ------

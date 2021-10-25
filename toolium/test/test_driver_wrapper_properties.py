@@ -142,3 +142,20 @@ def test_configure_properties_change_configuration_file(driver_wrapper):
 
     # Check that configuration has been initialized
     assert driver_wrapper.config.get('Driver', 'type') == 'android'
+
+
+def test_configure_properties_finalize_properties(driver_wrapper):
+    os.environ["Config_prop_filenames"] = 'properties.cfg'
+    os.environ["Driver_type"] = 'opera'
+
+    # Modify properties after reading properties file and system properties
+    def finalize_properties_configuration(self):
+        self.config.set('Driver', 'type', 'chrome')
+
+    DriverWrapper.finalize_properties_configuration = finalize_properties_configuration
+
+    driver_wrapper.configure_properties()
+    # properties file: firefox
+    # system property: opera
+    # finalize properties method: chrome
+    assert driver_wrapper.config.get('Driver', 'type') == 'chrome'
