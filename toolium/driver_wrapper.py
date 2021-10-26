@@ -130,6 +130,13 @@ class DriverWrapper(object):
         if behave_properties:
             self.config.update_properties(behave_properties)
 
+        # Modify config properties before driver creation
+        self.finalize_properties_configuration()
+
+    def finalize_properties_configuration(self):
+        # Override method if config properties (self.config object) need custom modifications before driver creation
+        pass
+
     def configure_visual_baseline(self):
         """Configure baseline directory"""
         # Get baseline name and translate config variables

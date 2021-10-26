@@ -85,7 +85,17 @@ def driver_wrapper():
     config_files.set_config_log_filename('logging.conf')
     new_driver_wrapper.configure(config_files)
 
-    return new_driver_wrapper
+    yield new_driver_wrapper
+
+    # Remove environment properties after test
+    try:
+        del os.environ["Config_prop_filenames"]
+    except KeyError:
+        pass
+    try:
+        del os.environ["Config_environment"]
+    except KeyError:
+        pass
 
 
 def test_multiple(driver_wrapper):
@@ -128,7 +138,6 @@ def test_configure_change_configuration_file(driver_wrapper):
     root_path = os.path.dirname(os.path.realpath(__file__))
     os.environ["Config_prop_filenames"] = os.path.join(root_path, 'conf', 'android-properties.cfg')
     driver_wrapper.configure(ConfigFiles())
-    del os.environ["Config_prop_filenames"]
 
     # Check that configuration has been initialized
     assert driver_wrapper.config.get('Driver', 'type') == 'android'
@@ -142,7 +151,6 @@ def test_configure_environment(driver_wrapper):
     os.environ["Config_environment"] = 'android'
     config_files = DriverWrappersPool.initialize_config_files(ConfigFiles())
     driver_wrapper.configure(config_files)
-    del os.environ["Config_environment"]
 
     # Check that configuration has been initialized
     assert driver_wrapper.config.get('Driver', 'type') == 'android'
@@ -194,7 +202,6 @@ def test_connect_api_from_file(driver_wrapper):
     root_path = os.path.dirname(os.path.realpath(__file__))
     os.environ["Config_prop_filenames"] = os.path.join(root_path, 'conf', 'api-properties.cfg')
     driver_wrapper.configure(ConfigFiles())
-    del os.environ["Config_prop_filenames"]
 
     # Connect and check that the returned driver is None
     assert driver_wrapper.connect(maximize=False) == expected_driver  # Check that the wrapper has been configured

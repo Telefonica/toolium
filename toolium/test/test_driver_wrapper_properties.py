@@ -50,6 +50,10 @@ def driver_wrapper():
         del os.environ["Config_prop_filenames"]
     except KeyError:
         pass
+    try:
+        del os.environ["Driver_type"]
+    except KeyError:
+        pass
 
 
 def test_configure_properties(driver_wrapper):
@@ -92,7 +96,6 @@ def test_configure_properties_system_property(driver_wrapper):
     os.environ["Driver_type"] = 'opera'
     driver_wrapper.configure_properties()
     assert driver_wrapper.config.get('Driver', 'type') == 'opera'
-    del os.environ["Driver_type"]
 
 
 def test_configure_properties_file_default_file(driver_wrapper):
@@ -142,3 +145,24 @@ def test_configure_properties_change_configuration_file(driver_wrapper):
 
     # Check that configuration has been initialized
     assert driver_wrapper.config.get('Driver', 'type') == 'android'
+
+
+def test_configure_properties_finalize_properties(driver_wrapper):
+    os.environ["Config_prop_filenames"] = 'properties.cfg'
+    os.environ["Driver_type"] = 'opera'
+
+    # Modify properties after reading properties file and system properties
+    def finalize_properties_configuration(self):
+        self.config.set('Driver', 'type', 'chrome')
+
+    original_method = DriverWrapper.finalize_properties_configuration
+    DriverWrapper.finalize_properties_configuration = finalize_properties_configuration
+
+    driver_wrapper.configure_properties()
+    # properties file: firefox
+    # system property: opera
+    # finalize properties method: chrome
+    assert driver_wrapper.config.get('Driver', 'type') == 'chrome'
+
+    # Restore monkey patching after test
+    DriverWrapper.finalize_properties_configuration = original_method
