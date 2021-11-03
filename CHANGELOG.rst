@@ -4,7 +4,7 @@ Toolium Changelog
 v2.2.0
 ------
 
-*Release date: In development*
+*Release date: 2021-11-03*
 
 - Add JSON object/list conversion to Python dict/list in the type inference logic of the *replace_param* function
 - Add *finalize_properties_configuration* method in *DriverWrapper* class to allow the modification of config properties
