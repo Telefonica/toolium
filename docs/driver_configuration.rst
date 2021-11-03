@@ -58,6 +58,17 @@ This system property means the same as having the following section in the confi
     [Driver]
     type: chrome
 
+Underscore is allowed in options, but not in sections, for instance:
+
+.. code:: console
+
+    $ TOOLIUM_SERVER_VIDEO_ENABLED=Server_video_enabled=true
+
+This is the same as having the following section in the configuration file::
+
+    [Server]
+    video_enabled: true
+
 To be cross-platform, section and option must be configured both in the property name and in the first token of the
 value because they are case sensitive and, in Windows, system properties names are case insensitive.
 

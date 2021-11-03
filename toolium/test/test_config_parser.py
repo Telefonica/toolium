@@ -218,12 +218,14 @@ def test_update_properties_environ_deprecated(config):
 toolium_system_properties = (
     # Update value
     ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', 'iOS'),
-    # Separator in value
+    # Underscore in value
     ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', 'a_b'),
     # Equal symbol in value
     ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', 'a=b'),
     # Empty value
     ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', ''),
+    # Underscore in option
+    ('TOOLIUM_SERVER_VIDEO_ENABLED', 'Server', 'video_enabled', 'false', 'true'),
     # New section
     ('TOOLIUM_CUSTOMCAPABILITIES_CUSTOMCAPABILITY', 'CustomCapabilities', 'customCapability', None, 'prueba'),
     # New option

@@ -109,8 +109,8 @@ class ExtendedConfigParser(ConfigParser):
         :param new_properties: dict with new properties values
         """
         for property_name, property_value in new_properties.items():
-            name_groups = re.match('^TOOLIUM_([^_]+)_([^_]+)$', property_name)
-            value_groups = re.match('^([^_=]+)_([^_=]+)=(.*)$', property_value)
+            name_groups = re.match('^TOOLIUM_([^_]+)_(.+)$', property_name)
+            value_groups = re.match('^([^_=]+)_([^=]+)=(.*)$', property_value)
             if (name_groups and value_groups
                     and name_groups.group(1).upper() == value_groups.group(1).upper()
                     and name_groups.group(2).upper() == value_groups.group(2).upper()):
