@@ -38,6 +38,7 @@ class Selenoid(object):
     # capabilities to selenoid
     enableVideo: true
     enableVNC: true
+    enableLog: true
 
     [Server]
     enabled: true            --> MANDATORY

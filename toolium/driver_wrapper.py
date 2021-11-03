@@ -85,14 +85,16 @@ class DriverWrapper(object):
         :param tc_output_log_filename: test case specific output logger file
         """
         # Get config logger filename
-        config_log_filename = DriverWrappersPool.get_configured_value('Config_log_filename', tc_config_log_filename,
+        config_log_filename = DriverWrappersPool.get_configured_value('TOOLIUM_CONFIG_LOG_FILENAME',
+                                                                      'Config_log_filename', tc_config_log_filename,
                                                                       'logging.conf')
         config_log_filename = os.path.join(DriverWrappersPool.config_directory, config_log_filename)
 
         # Configure logger only if logging filename has changed
         if self.config_log_filename != config_log_filename:
             # Get output logger filename
-            output_log_filename = DriverWrappersPool.get_configured_value('Output_log_filename', tc_output_log_filename,
+            output_log_filename = DriverWrappersPool.get_configured_value('TOOLIUM_OUTPUT_LOG_FILENAME',
+                                                                          'Output_log_filename', tc_output_log_filename,
                                                                           'toolium.log')
             output_log_filename = os.path.join(DriverWrappersPool.output_directory, output_log_filename)
             output_log_filename = output_log_filename.replace('\\', '\\\\')
@@ -111,7 +113,8 @@ class DriverWrapper(object):
         :param tc_config_prop_filenames: test case specific properties filenames
         :param behave_properties: dict with behave user data properties
         """
-        prop_filenames = DriverWrappersPool.get_configured_value('Config_prop_filenames', tc_config_prop_filenames,
+        prop_filenames = DriverWrappersPool.get_configured_value('TOOLIUM_CONFIG_PROPERTIES_FILENAMES',
+                                                                 'Config_prop_filenames', tc_config_prop_filenames,
                                                                  'properties.cfg;local-properties.cfg')
         prop_filenames = [os.path.join(DriverWrappersPool.config_directory, filename) for filename in
                           prop_filenames.split(';')]
@@ -123,8 +126,11 @@ class DriverWrapper(object):
             self.config = ExtendedConfigParser.get_config_from_file(prop_filenames)
             self.config_properties_filenames = prop_filenames
 
-        # Override properties with system properties
+        # Override properties with system properties [Deprecated: use toolium system properties]
         self.config.update_properties(os.environ)
+
+        # Override properties with toolium system properties
+        self.config.update_toolium_system_properties(os.environ)
 
         # Override properties with behave userdata properties
         if behave_properties:
