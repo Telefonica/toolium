@@ -6,6 +6,9 @@ v2.2.1
 
 *Release date: In development*
 
+- Add support for Python 3.10
+- Remove Python 3.5 support (Python 3.5 reached the end of its life on September 13th, 2020)
+
 v2.2.0
 ------
 
