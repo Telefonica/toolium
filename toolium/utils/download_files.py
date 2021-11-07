@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2020 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -181,18 +181,18 @@ def wait_until_remote_file_downloaded(context, filename, wait_sec=15):
     :param wait_sec: time to wait in seconds
     """
     url = _get_download_directory_url(context)
-    file_url = u'{url}/{filename}'.format(url=url, filename=filename)
+    file_url = '{url}/{filename}'.format(url=url, filename=filename)
 
-    response = u'ERROR'
+    response = 'ERROR'
     end_time = time.time() + wait_sec
     while 'ERROR' in response:
-        assert time.time() <= end_time, u'File "{}" has not been downloaded in {} seconds: {}' \
+        assert time.time() <= end_time, 'File "{}" has not been downloaded in {} seconds: {}' \
             .format(file_url, wait_sec, response)
         time.sleep(1)
         try:
             response = requests.get(file_url).text
         except Exception as e:
-            response = u'ERROR Exception in get method: \n %s' % e
+            response = 'ERROR Exception in get method: \n %s' % e
 
 
 def delete_remote_downloaded_file(context, file_dwn):
@@ -203,10 +203,10 @@ def delete_remote_downloaded_file(context, file_dwn):
     """
     if context.driver_wrapper.config.getboolean_optional('Server', 'enabled'):
         url = _get_download_directory_url(context)
-        file_dwn_url = u'{url}/{filename}'.format(url=url, filename=file_dwn)
+        file_dwn_url = '{url}/{filename}'.format(url=url, filename=file_dwn)
         r_dwn = requests.delete(file_dwn_url)
         print(r_dwn.status_code)
-        assert r_dwn.status_code == 200, u'ERROR deleting file "{}": "{}"'.format(file_dwn_url, r_dwn.text)
+        assert r_dwn.status_code == 200, 'ERROR deleting file "{}": "{}"'.format(file_dwn_url, r_dwn.text)
 
 
 def delete_retrieved_downloaded_file(context, file_dwn, file_retr):

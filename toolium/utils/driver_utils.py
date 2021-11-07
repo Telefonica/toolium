@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -134,11 +134,11 @@ class Utils(object):
             with open(log_file_name, 'a+', encoding='utf-8') as log_file:
                 driver_type = self.driver_wrapper.config.get('Driver', 'type')
                 log_file.write(
-                    u"\n{} '{}' test logs with driver = {}\n\n".format(datetime.now(), test_name, driver_type))
+                    "\n{} '{}' test logs with driver = {}\n\n".format(datetime.now(), test_name, driver_type))
                 for entry in logs:
                     timestamp = datetime.fromtimestamp(float(entry['timestamp']) / 1000.).strftime(
                         '%Y-%m-%d %H:%M:%S.%f')
-                    log_file.write(u'{}\t{}\t{}\n'.format(timestamp, entry['level'], entry['message'].rstrip()))
+                    log_file.write('{}\t{}\t{}\n'.format(timestamp, entry['level'], entry['message'].rstrip()))
 
     def discard_logcat_logs(self):
         """Discard previous logcat logs"""

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2021 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
