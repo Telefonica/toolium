@@ -8,6 +8,8 @@ v2.2.1
 
 - Add support for Python 3.10
 - Remove Python 3.5 support (Python 3.5 reached the end of its life on September 13th, 2020)
+- Move code quality check from codacy to codeclimate
+- Upgrade Sphinx version from 3.* to 4.* to fix doc compilation errors in readthedocs
 
 v2.2.0
 ------
