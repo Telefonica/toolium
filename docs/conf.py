@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -70,8 +70,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Toolium'
-copyright = u'2015-2021, Telefónica I+D'
+project = 'Toolium'
+copyright = '2015-2021, Telefónica I+D'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -224,8 +224,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'Toolium.tex', u'Toolium Documentation',
-     u'Rubén González Alonso, Telefónica I+D', 'manual'),
+    ('index', 'Toolium.tex', 'Toolium Documentation', 'Rubén González Alonso, Telefónica I+D', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -254,8 +253,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'Toolium', u'Toolium Documentation',
-     [u'Rubén González Alonso, Telefónica I+D'], 1)
+    ('index', 'Toolium', 'Toolium Documentation', ['Rubén González Alonso, Telefónica I+D'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -268,8 +266,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'Toolium', u'toolium Documentation',
-     u'Rubén González Alonso, Telefónica I+D', 'toolium',
+    ('index', 'Toolium', 'toolium Documentation', 'Rubén González Alonso, Telefónica I+D', 'toolium',
      'Wrapper tool of Selenium and Appium libraries to test web and mobile applications in a single project.',
      'Miscellaneous'),
 ]

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2019 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -25,9 +25,9 @@ from toolium.utils.path_utils import makedirs_safe
 # constants
 STATUS_OK = 200
 STATUS_PORT = '8888'
-DOWNLOADS_PATH = u'downloads'
-MP4_EXTENSION = u'mp4'
-LOG_EXTENSION = u'log'
+DOWNLOADS_PATH = 'downloads'
+MP4_EXTENSION = 'mp4'
+LOG_EXTENSION = 'log'
 
 
 class Selenoid(object):

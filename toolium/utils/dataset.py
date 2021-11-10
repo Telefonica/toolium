@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2021 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -165,8 +165,8 @@ def _replace_param_transform_string(param):
         if type_mapping_match_group.group(1) == 'STR':
             new_param = type_mapping_match_group.group(2)
         elif type_mapping_match_group.group(1) in ['LIST', 'DICT', 'INT', 'FLOAT']:
-            exec(u'exec_param = {type}({value})'.format(type=type_mapping_match_group.group(1).lower(),
-                                                        value=type_mapping_match_group.group(2)))
+            exec('exec_param = {type}({value})'.format(type=type_mapping_match_group.group(1).lower(),
+                                                       value=type_mapping_match_group.group(2)))
             new_param = locals()['exec_param']
         elif type_mapping_match_group.group(1) == 'UPPER':
             new_param = type_mapping_match_group.group(2).upper()
