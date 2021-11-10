@@ -4,9 +4,10 @@ Toolium Changelog
 v2.2.1
 ------
 
-*Release date: In development*
+*Release date: 2022-01-10*
 
 - Add support for Python 3.10
+- Add support for Appium-Python-Client 1.3.0
 - Remove Python 3.5 support (Python 3.5 reached the end of its life on September 13th, 2020)
 - Move code quality check from codacy to codeclimate
 - Upgrade Sphinx version from 3.* to 4.* to fix doc compilation errors in readthedocs
