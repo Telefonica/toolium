@@ -206,10 +206,9 @@ class DriverWrapper(object):
             DriverWrappersPool.configure_visual_directories(driver_info)
             self.configure_visual_baseline()
 
-    def connect(self, maximize=True):
+    def connect(self):
         """Set up the selenium driver and connect to the server
 
-        :param maximize: True if the driver should be maximized
         :returns: selenium driver
         """
         if not self.config.get('Driver', 'type') or self.config.get('Driver', 'type') in ['api', 'no_driver']:
@@ -220,31 +219,15 @@ class DriverWrapper(object):
         # Save session id and remote node to download video after the test execution
         self.session_id = self.driver.session_id
         self.server_type, self.remote_node = self.utils.get_remote_node()
-        if self.server_type == 'grid':
-            self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.remote_node)
-        else:
-            self.remote_node_video_enabled = True if self.server_type in ['ggr', 'selenoid'] else False
+        self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.server_type, self.remote_node)
 
-            # Save app_strings in mobile tests
-        if self.is_mobile_test() and not self.is_web_test() and self.config.getboolean_optional('Driver',
-                                                                                                'appium_app_strings'):
+        # Save app_strings in mobile tests
+        if (self.is_mobile_test() and not self.is_web_test()
+                and self.config.getboolean_optional('Driver', 'appium_app_strings')):
             self.app_strings = self.driver.app_strings()
 
-        if self.is_maximizable():
-            # Bounds and screen
-            bounds_x, bounds_y = self.get_config_window_bounds()
-            self.driver.set_window_position(bounds_x, bounds_y)
-            self.logger.debug('Window bounds: %s x %s', bounds_x, bounds_y)
-
-            # Maximize browser
-            if maximize:
-                # Set window size or maximize
-                window_width = self.config.get_optional('Driver', 'window_width')
-                window_height = self.config.get_optional('Driver', 'window_height')
-                if window_width and window_height:
-                    self.driver.set_window_size(window_width, window_height)
-                else:
-                    self.driver.maximize_window()
+        # Resize and move browser
+        self.resize_window()
 
         # Log window size
         window_size = self.utils.get_window_size()
@@ -260,6 +243,22 @@ class DriverWrapper(object):
         self.utils.set_implicitly_wait()
 
         return self.driver
+
+    def resize_window(self):
+        """Resize and move browser window"""
+        if self.is_maximizable():
+            # Configure window bounds
+            bounds_x, bounds_y = self.get_config_window_bounds()
+            self.driver.set_window_position(bounds_x, bounds_y)
+            self.logger.debug('Window bounds: %s x %s', bounds_x, bounds_y)
+
+            # Set window size or maximize
+            window_width = self.config.get_optional('Driver', 'window_width')
+            window_height = self.config.get_optional('Driver', 'window_height')
+            if window_width and window_height:
+                self.driver.set_window_size(window_width, window_height)
+            else:
+                self.driver.maximize_window()
 
     def get_config_window_bounds(self):
         """Reads bounds from config and, if monitor is specified, modify the values to match with the specified monitor

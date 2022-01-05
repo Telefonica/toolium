@@ -202,13 +202,15 @@ class DynamicEnvironment:
         :param action: action executed: see labels allowed above.
         """
         if len(self.actions[action]) > 0:
-            if action in [ACTIONS_BEFORE_FEATURE, ACTIONS_BEFORE_SCENARIO, ACTIONS_AFTER_FEATURE]:
+            if action == ACTIONS_BEFORE_SCENARIO:
                 self.logger.by_console('\n')
-                if action == ACTIONS_BEFORE_SCENARIO:
-                    self.scenario_counter += 1
-                    self.logger.by_console(
-                        "  ------------------ Scenario Nº: %d ------------------" % self.scenario_counter)
+                self.scenario_counter += 1
+                self.logger.by_console(
+                    "  ------------------ Scenario Nº: %d ------------------" % self.scenario_counter)
                 self.logger.by_console('  %s:' % action)
+            elif action in [ACTIONS_BEFORE_FEATURE, ACTIONS_AFTER_FEATURE]:
+                self.logger.by_console('\n')
+
             for item in self.actions[action]:
                 self.scenario_error = False
                 try:
@@ -216,10 +218,8 @@ class DynamicEnvironment:
                     context.execute_steps('''%s%s''' % (GIVEN_PREFIX, self.__remove_prefix(item)))
                     self.logger.debug('step defined in pre-actions: %s' % repr(item))
                 except Exception as exc:
-                    if action in [ACTIONS_BEFORE_FEATURE]:
-                        self.feature_error = True
-                    elif action in [ACTIONS_BEFORE_SCENARIO]:
-                        self.scenario_error = True
+                    self.feature_error = action in [ACTIONS_BEFORE_FEATURE]
+                    self.scenario_error = action in [ACTIONS_BEFORE_SCENARIO]
                     self.logger.error(exc)
                     self.error_exception = exc
                     break

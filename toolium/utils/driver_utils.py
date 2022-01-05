@@ -28,6 +28,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
 from urllib.parse import urlparse
 
+from toolium.selenoid import Selenoid
 from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 
 
@@ -513,24 +514,28 @@ class Utils(object):
         server_url = '{}://{}{}:{}'.format(server_ssl, server_auth, server_host, server_port)
         return server_url
 
-    def download_remote_video(self, remote_node, session_id, video_name):
-        """Download the video recorded in the remote node during the specified test session and save it in videos folder
+    def download_remote_video(self, server_type, video_name):
+        """Download the video recorded in the remote node and save it in videos folder
 
-        :param remote_node: remote node name
-        :param session_id: test session id
+        :param server_type: server type (grid, ggr, selenoid)
         :param video_name: video name
         """
-        try:
-            video_url = self._get_remote_video_url(remote_node, session_id)
-        except requests.exceptions.ConnectionError:
-            self.logger.warning("Remote server seems not to have video capabilities")
-            return
+        video_name = get_valid_filename(video_name)
+        if server_type == 'grid':
+            # Download video from Grid Extras
+            try:
+                video_url = self._get_remote_video_url(self.driver_wrapper.remote_node, self.driver_wrapper.session_id)
+            except requests.exceptions.ConnectionError:
+                self.logger.warning("Remote server seems not to have video capabilities")
+                return
 
-        if not video_url:
-            self.logger.warning("Test video not found in node '%s'", remote_node)
-            return
+            if not video_url:
+                self.logger.warning("Test video not found in node '%s'", self.driver_wrapper.remote_node)
+                return
 
-        self._download_video(video_url, video_name)
+            self._download_video(video_url, video_name)
+        elif server_type in ['ggr', 'selenoid']:
+            Selenoid(self.driver_wrapper).download_session_video(video_name)
 
     def _get_remote_node_url(self, remote_node):
         """Get grid-extras url of a node
@@ -579,14 +584,15 @@ class Utils(object):
         self.logger.info("Video saved in '%s'", filepath)
         DriverWrappersPool.videos_number += 1
 
-    def is_remote_video_enabled(self, remote_node):
+    def is_remote_video_enabled(self, server_type, remote_node):
         """Check if the remote node has the video recorder enabled
 
+        :param server_type: server type (grid, ggr, selenoid)
         :param remote_node: remote node name
         :returns: true if it has the video recorder enabled
         """
         enabled = False
-        if remote_node:
+        if server_type == 'grid' and remote_node:
             url = '{}/config'.format(self._get_remote_node_url(remote_node))
             try:
                 response = requests.get(url, timeout=5).json()
@@ -598,6 +604,8 @@ class Utils(object):
                 # Wait to the video recorder start
                 time.sleep(1)
                 enabled = True
+        elif server_type in ['ggr', 'selenoid']:
+            enabled = True
         return enabled
 
     def get_center(self, element):
