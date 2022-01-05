@@ -190,14 +190,7 @@ class DriverWrappersPool(object):
                 # Download video if necessary (error case or enabled video)
                 if (not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False)) \
                         and driver_wrapper.remote_node_video_enabled:
-                    if driver_wrapper.server_type in ['ggr', 'selenoid']:
-                        name = get_valid_filename(video_name.format(name, driver_index))
-                        Selenoid(driver_wrapper).download_session_video(name)
-                    elif driver_wrapper.server_type == 'grid':
-                        # Download video from Grid Extras
-                        driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node,
-                                                                   driver_wrapper.session_id,
-                                                                   video_name.format(name, driver_index))
+                    driver_wrapper.utils.download_remote_video(video_name.format(name, driver_index))
             except Exception as exc:
                 # Capture exceptions to avoid errors in teardown method due to session timeouts
                 driver_wrapper.logger.warning('Error downloading videos: %s' % exc)
