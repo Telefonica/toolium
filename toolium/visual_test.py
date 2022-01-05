@@ -414,13 +414,8 @@ class VisualTest(object):
             diff_message = 'Image dimensions do not match'
 
         if diff_message is None:
-            # Check pil engine message
-            m = re.search(r'\(by a distance of (.*)\)', message)
-            if m:
-                diff_message = 'Distance of %0.8f' % (float(m.group(1)) / image_size)
-        if diff_message is None:
-            # Check perceptualdiff engine message
-            m = re.search(r'([0-9]*) pixels are different', message)
+            # Check pil or perceptualdiff engine message
+            m = re.search(r'\(by a distance of (.*)\)', message) or re.search(r'([0-9]*) pixels are different', message)
             if m:
                 diff_message = 'Distance of %0.8f' % (float(m.group(1)) / image_size)
         if diff_message is None:
