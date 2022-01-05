@@ -405,26 +405,25 @@ class VisualTest(object):
         :param image_size: number of pixels to convert absolute distances
         :returns: formatted message
         """
+        diff_message = None
         if message is None:
             # Images are equal
-            return ''
+            diff_message = ''
         elif message == '' or 'Image dimensions do not match' in message:
             # Different sizes in pil (''), perceptualdiff or imagemagick engines
-            return 'Image dimensions do not match'
+            diff_message = 'Image dimensions do not match'
 
-        # Check pil engine message
-        m = re.search(r'\(by a distance of (.*)\)', message)
-        if m:
-            return 'Distance of %0.8f' % (float(m.group(1)) / image_size)
+        if diff_message is None:
+            # Check pil or perceptualdiff engine message
+            m = re.search(r'\(by a distance of (.*)\)', message) or re.search(r'([0-9]*) pixels are different', message)
+            if m:
+                diff_message = 'Distance of %0.8f' % (float(m.group(1)) / image_size)
+        if diff_message is None:
+            # Check imagemagick engine message
+            m = re.search(r':[\r\n](\d*\.?\d*) \((\d*\.?\d*)\) @', message)
+            if m:
+                diff_message = 'Distance of %0.8f' % float(m.group(2))
+        if diff_message is None:
+            diff_message = message
 
-        # Check perceptualdiff engine message
-        m = re.search(r'([0-9]*) pixels are different', message)
-        if m:
-            return 'Distance of %0.8f' % (float(m.group(1)) / image_size)
-
-        # Check imagemagick engine message
-        m = re.search(r':[\r\n](\d*\.?\d*) \((\d*\.?\d*)\) @', message)
-        if m:
-            return 'Distance of %0.8f' % float(m.group(2))
-
-        return message
+        return diff_message

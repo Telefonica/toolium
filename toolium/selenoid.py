@@ -243,11 +243,11 @@ class Selenoid(object):
     def download_session_log(self, scenario_name, timeout=5):
         """
         download the session log file from remote selenoid,
-        renaming the file to scenario name and removing the video file in the server.
+        renaming the file to scenario name and removing the log file in the server.
              GGR request: http://<username>:<password>@<ggr_host>:<ggr_port>/logs/<ggr_session_id>
         selenoid request: http://<username>:<password>@<ggr_host>:<ggr_port>/logs/<ggr_session_id>.log
         :param scenario_name: scenario name
-        :param timeout: threshold until the video file is downloaded
+        :param timeout: threshold until the log file is downloaded
         """
         # Download logs only in linux nodes with logs enabled
         if (self.driver_wrapper.get_driver_platform().lower() != 'linux' or
