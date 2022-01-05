@@ -199,22 +199,41 @@ class PageElement(CommonObject):
         """
         return self.is_present() and self.web_element.is_displayed()
 
+    def _wait_until_condition(self, condition, timeout=None):
+        """Search element and wait until it meets the condition
+
+        :param condition: name of condition that must meet the element (visible, not_visible, clickable)
+        :param timeout: max time to wait
+        :returns: page element instance
+        """
+        try:
+            condition_msg = ''
+            if condition == 'visible':
+                condition_msg = 'not found or is not visible'
+                self.utils.wait_until_element_visible(self, timeout)
+            elif condition == 'not_visible':
+                condition_msg = 'is still visible'
+                self.utils.wait_until_element_not_visible(self, timeout)
+            elif condition == 'clickable':
+                condition_msg = 'not found or is not clickable'
+                self.utils.wait_until_element_clickable(self, timeout)
+        except TimeoutException as exception:
+            parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
+            timeout = timeout if timeout else self.utils.get_explicitly_wait()
+            msg = "Page element of type '%s' with locator %s%s %s after %s seconds"
+            msg = msg % (type(self).__name__, self.locator, parent_msg, condition_msg, timeout)
+            self.logger.error(msg)
+            exception.msg += "\n  {}".format(msg)
+            raise exception
+        return self
+
     def wait_until_visible(self, timeout=None):
         """Search element and wait until it is visible
 
         :param timeout: max time to wait
         :returns: page element instance
         """
-        try:
-            self.utils.wait_until_element_visible(self, timeout)
-        except TimeoutException as exception:
-            parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
-            msg = "Page element of type '%s' with locator %s%s not found or is not visible after %s seconds"
-            timeout = timeout if timeout else self.utils.get_explicitly_wait()
-            self.logger.error(msg, type(self).__name__, self.locator, parent_msg, timeout)
-            exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg, timeout))
-            raise exception
-        return self
+        return self._wait_until_condition('visible', timeout)
 
     def wait_until_not_visible(self, timeout=None):
         """Search element and wait until it is not visible
@@ -222,16 +241,7 @@ class PageElement(CommonObject):
         :param timeout: max time to wait
         :returns: page element instance
         """
-        try:
-            self.utils.wait_until_element_not_visible(self, timeout)
-        except TimeoutException as exception:
-            parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
-            msg = "Page element of type '%s' with locator %s%s is still visible after %s seconds"
-            timeout = timeout if timeout else self.utils.get_explicitly_wait()
-            self.logger.error(msg, type(self).__name__, self.locator, parent_msg, timeout)
-            exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg, timeout))
-            raise exception
-        return self
+        return self._wait_until_condition('not_visible', timeout)
 
     def wait_until_clickable(self, timeout=None):
         """Search element and wait until it is clickable
@@ -239,16 +249,7 @@ class PageElement(CommonObject):
         :param timeout: max time to wait
         :returns: page element instance
         """
-        try:
-            self.utils.wait_until_element_clickable(self, timeout)
-        except TimeoutException as exception:
-            parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
-            msg = "Page element of type '%s' with locator %s%s not found or is not clickable after %s seconds"
-            timeout = timeout if timeout else self.utils.get_explicitly_wait()
-            self.logger.error(msg, type(self).__name__, self.locator, parent_msg, timeout)
-            exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg, timeout))
-            raise exception
-        return self
+        return self._wait_until_condition('clickable', timeout)
 
     def assert_screenshot(self, filename, threshold=0, exclude_elements=[], force=False):
         """Assert that a screenshot of the element is the same as a screenshot on disk, within a given threshold.

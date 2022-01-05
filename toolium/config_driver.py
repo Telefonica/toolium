@@ -146,22 +146,24 @@ class ConfigDriver(object):
         :returns: capabilities dictionary
         """
         if driver_name == 'firefox':
-            return DesiredCapabilities.FIREFOX.copy()
+            capabilities = DesiredCapabilities.FIREFOX.copy()
         elif driver_name == 'chrome':
-            return DesiredCapabilities.CHROME.copy()
+            capabilities = DesiredCapabilities.CHROME.copy()
         elif driver_name == 'safari':
-            return DesiredCapabilities.SAFARI.copy()
+            capabilities = DesiredCapabilities.SAFARI.copy()
         elif driver_name == 'opera':
-            return DesiredCapabilities.OPERA.copy()
+            capabilities = DesiredCapabilities.OPERA.copy()
         elif driver_name == 'iexplore':
-            return DesiredCapabilities.INTERNETEXPLORER.copy()
+            capabilities = DesiredCapabilities.INTERNETEXPLORER.copy()
         elif driver_name == 'edge':
-            return DesiredCapabilities.EDGE.copy()
+            capabilities = DesiredCapabilities.EDGE.copy()
         elif driver_name == 'phantomjs':
-            return DesiredCapabilities.PHANTOMJS.copy()
+            capabilities = DesiredCapabilities.PHANTOMJS.copy()
         elif driver_name in ('android', 'ios', 'iphone'):
-            return {}
-        raise Exception('Unknown driver {0}'.format(driver_name))
+            capabilities = {}
+        else:
+            raise Exception('Unknown driver {0}'.format(driver_name))
+        return capabilities
 
     def _add_capabilities_from_driver_type(self, capabilities):
         """Extract version and platform from driver type and add them to capabilities
@@ -291,18 +293,18 @@ class ConfigDriver(object):
         :returns: boolean, integer or string value
         """
         if value in ('true', 'True'):
-            return True
+            formatted_value = True
         elif value in ('false', 'False'):
-            return False
-        elif str(value).startswith('{') and str(value).endswith('}'):
-            return ast.literal_eval(value)
-        elif str(value).startswith('[') and str(value).endswith(']'):
-            return ast.literal_eval(value)
+            formatted_value = False
+        elif ((str(value).startswith('{') and str(value).endswith('}'))
+              or (str(value).startswith('[') and str(value).endswith(']'))):
+            formatted_value = ast.literal_eval(value)
         else:
             try:
-                return int(value)
+                formatted_value = int(value)
             except ValueError:
-                return value
+                formatted_value = value
+        return formatted_value
 
     def _setup_chrome(self, capabilities):
         """Setup Chrome webdriver
