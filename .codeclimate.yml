@@ -4,7 +4,7 @@ checks:
   argument-count:
     enabled: true
     config:
-      threshold: 5
+      threshold: 6
   complex-logic:
     enabled: true
     config:
@@ -12,7 +12,7 @@ checks:
   file-lines:
     enabled: true
     config:
-      threshold: 250
+      threshold: 420
   method-complexity:
     enabled: true
     config:
@@ -20,7 +20,7 @@ checks:
   method-count:
     enabled: true
     config:
-      threshold: 20
+      threshold: 25
   method-lines:
     enabled: true
     config:
