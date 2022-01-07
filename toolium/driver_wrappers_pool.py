@@ -34,7 +34,7 @@ class DriverWrappersPool(object):
     :type logger: logging.Logger
     :type output_directory: str
     :type screenshots_directory: str
-    :type screenshots_number: str
+    :type screenshots_number: int
     :type videos_directory: str
     :type logs_directory: str
     :type videos_number: int
