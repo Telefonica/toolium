@@ -1,10 +1,15 @@
 Toolium Changelog
 =================
 
+v2.2.2
+------
+
+*Release date: In development*
+
 v2.2.1
 ------
 
-*Release date: 2022-01-10*
+*Release date: 2022-01-11*
 
 - Add support for Python 3.10
 - Add support for Appium-Python-Client 1.3.0
