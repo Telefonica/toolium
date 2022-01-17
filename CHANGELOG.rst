@@ -6,6 +6,8 @@ v2.2.2
 
 *Release date: In development*
 
+- New param [RANDOM_PHONE_NUMBER] in *replace_param* method to generate random phone number
+
 v2.2.1
 ------
 
