@@ -290,4 +290,3 @@ def test_replace_param_type_inference_disabled():
     assert param == '{"a":"test1", "b":true, "c":null}'
     param = replace_param('["1", true, null]', infer_param_type=False)
     assert param == '["1", true, null]'
-
