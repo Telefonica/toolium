@@ -20,6 +20,7 @@ import uuid
 import re
 import datetime
 import logging
+import random as r
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ def replace_param(param, language='es'):
         [EMPTY] Empty string
         [B] Add Blank space
         [RANDOM] Generate random value
+        [RANDOM_PHONE_NUMBER] Generate random phone number +34654XXXXXX
         [DATETIME] Add a timestamp
         [NOW] Similar to DATETIME without milliseconds
         [NOW + 2 DAYS] Similar to NOW but two days later
@@ -101,6 +103,7 @@ def _replace_param_replacement(param, language):
         '[EMPTY]': '',
         '[B]': ' ',
         '[RANDOM]': uuid.uuid4().hex[0:8],
+        '[RANDOM_PHONE_NUMBER]': "".join(['+', '3', '4', '6', '5', '4'] + [str(r.randint(0, 9)) for i in range(1, 7)]),
         '[DATETIME]': str(datetime.datetime.utcnow()),
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),
         '[TODAY]': str(datetime.datetime.utcnow().strftime(date_day_format))

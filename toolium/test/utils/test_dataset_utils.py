@@ -223,3 +223,9 @@ def test_replace_param_lower():
     assert param == 'test'
     param = replace_param('[LOWER:TeSt]')
     assert param == 'test'
+
+
+def test_replace_param_random_phone_number():
+    param = replace_param('[RANDOM_PHONE_NUMBER]')
+    assert len(param) == 12
+
