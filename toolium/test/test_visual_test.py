@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -304,7 +304,7 @@ def test_get_scrolls_size(driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', 'chrome')
     visual = VisualTest(driver_wrapper)
 
-    # Check chrome scrolls
+    # Check scrolls
     assert visual.get_scrolls_size() == {'x': 17, 'y': 17}
 
 
@@ -315,7 +315,7 @@ def test_get_scrolls_size_y(driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', 'chrome')
     visual = VisualTest(driver_wrapper)
 
-    # Check chrome scrolls
+    # Check scrolls
     assert visual.get_scrolls_size() == {'x': 0, 'y': 17}
 
 
@@ -326,7 +326,7 @@ def test_get_scrolls_size_without_scrolls(driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', 'chrome')
     visual = VisualTest(driver_wrapper)
 
-    # Check chrome scrolls
+    # Check scrolls
     assert visual.get_scrolls_size() == {'x': 0, 'y': 0}
 
 
@@ -337,7 +337,7 @@ def test_get_scrolls_size_iexplore(driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', 'iexplore')
     visual = VisualTest(driver_wrapper)
 
-    # Check chrome scrolls
+    # Check scrolls
     assert visual.get_scrolls_size() == {'x': 21, 'y': 21}
 
 
@@ -346,7 +346,7 @@ def test_get_scrolls_size_firefox(driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', 'firefox')
     visual = VisualTest(driver_wrapper)
 
-    # Check chrome scrolls
+    # Check scrolls
     assert visual.get_scrolls_size() == {'x': 0, 'y': 0}
 
 

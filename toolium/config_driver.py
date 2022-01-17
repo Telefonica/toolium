@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -19,11 +19,12 @@ limitations under the License.
 import ast
 import logging
 import os
-from appium import webdriver as appiumdriver
 from configparser import NoSectionError
+
+from appium import webdriver as appiumdriver
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
@@ -88,16 +89,12 @@ class ConfigDriver(object):
             capabilities['opera.arguments'] = '-fullscreen'
         elif driver_name == 'firefox':
             capabilities['firefox_profile'] = self._create_firefox_profile().encoded
-        elif driver_name == 'chrome':
-            chrome_capabilities = self._create_chrome_options().to_capabilities()
-            try:
-                capabilities['goog:chromeOptions'] = chrome_capabilities["goog:chromeOptions"]
-            except KeyError:
-                # Selenium 3.5.3 and older
-                capabilities['chromeOptions'] = chrome_capabilities["chromeOptions"]
 
         # Add custom driver capabilities
         self._add_capabilities_from_properties(capabilities, 'Capabilities')
+
+        if driver_name == 'chrome':
+            self._add_chrome_options_to_capabilities(capabilities)
 
         if driver_name in ('android', 'ios', 'iphone'):
             # Create remote appium driver
@@ -149,22 +146,24 @@ class ConfigDriver(object):
         :returns: capabilities dictionary
         """
         if driver_name == 'firefox':
-            return DesiredCapabilities.FIREFOX.copy()
+            capabilities = DesiredCapabilities.FIREFOX.copy()
         elif driver_name == 'chrome':
-            return DesiredCapabilities.CHROME.copy()
+            capabilities = DesiredCapabilities.CHROME.copy()
         elif driver_name == 'safari':
-            return DesiredCapabilities.SAFARI.copy()
+            capabilities = DesiredCapabilities.SAFARI.copy()
         elif driver_name == 'opera':
-            return DesiredCapabilities.OPERA.copy()
+            capabilities = DesiredCapabilities.OPERA.copy()
         elif driver_name == 'iexplore':
-            return DesiredCapabilities.INTERNETEXPLORER.copy()
+            capabilities = DesiredCapabilities.INTERNETEXPLORER.copy()
         elif driver_name == 'edge':
-            return DesiredCapabilities.EDGE.copy()
+            capabilities = DesiredCapabilities.EDGE.copy()
         elif driver_name == 'phantomjs':
-            return DesiredCapabilities.PHANTOMJS.copy()
+            capabilities = DesiredCapabilities.PHANTOMJS.copy()
         elif driver_name in ('android', 'ios', 'iphone'):
-            return {}
-        raise Exception('Unknown driver {0}'.format(driver_name))
+            capabilities = {}
+        else:
+            raise Exception('Unknown driver {0}'.format(driver_name))
+        return capabilities
 
     def _add_capabilities_from_driver_type(self, capabilities):
         """Extract version and platform from driver type and add them to capabilities
@@ -199,7 +198,8 @@ class ConfigDriver(object):
         try:
             for cap, cap_value in dict(self.config.items(section)).items():
                 self.logger.debug("Added %s capability: %s = %s", cap_type[section], cap, cap_value)
-                capabilities[cap] = cap_value if cap == 'version' else self._convert_property_type(cap_value)
+                cap_value = cap_value if cap == 'version' else self._convert_property_type(cap_value)
+                self._update_dict(capabilities, {cap: cap_value}, initial_key=cap)
         except NoSectionError:
             pass
 
@@ -218,7 +218,7 @@ class ConfigDriver(object):
         # Get Firefox binary
         firefox_binary = self.config.get_optional('Firefox', 'binary')
 
-        firefox_options = Options()
+        firefox_options = FirefoxOptions()
 
         if self.config.getboolean_optional('Driver', 'headless'):
             self.logger.debug("Running Firefox in headless mode")
@@ -293,18 +293,18 @@ class ConfigDriver(object):
         :returns: boolean, integer or string value
         """
         if value in ('true', 'True'):
-            return True
+            formatted_value = True
         elif value in ('false', 'False'):
-            return False
-        elif str(value).startswith('{') and str(value).endswith('}'):
-            return ast.literal_eval(value)
-        elif str(value).startswith('[') and str(value).endswith(']'):
-            return ast.literal_eval(value)
+            formatted_value = False
+        elif ((str(value).startswith('{') and str(value).endswith('}'))
+              or (str(value).startswith('[') and str(value).endswith(']'))):
+            formatted_value = ast.literal_eval(value)
         else:
             try:
-                return int(value)
+                formatted_value = int(value)
             except ValueError:
-                return value
+                formatted_value = value
+        return formatted_value
 
     def _setup_chrome(self, capabilities):
         """Setup Chrome webdriver
@@ -314,8 +314,8 @@ class ConfigDriver(object):
         """
         chrome_driver = self.config.get('Driver', 'chrome_driver_path')
         self.logger.debug("Chrome driver path given in properties: %s", chrome_driver)
-        return webdriver.Chrome(chrome_driver, chrome_options=self._create_chrome_options(),
-                                desired_capabilities=capabilities)
+        self._add_chrome_options_to_capabilities(capabilities)
+        return webdriver.Chrome(chrome_driver, desired_capabilities=capabilities)
 
     def _create_chrome_options(self):
         """Create and configure a chrome options object
@@ -374,6 +374,34 @@ class ConfigDriver(object):
                 options.add_argument('{}{}'.format(pref, self._convert_property_type(pref_value)))
         except NoSectionError:
             pass
+
+    def _add_chrome_options_to_capabilities(self, capabilities):
+        """Add Chrome options to capabilities
+
+        :param capabilities: dictionary with driver capabilities
+        """
+        chrome_capabilities = self._create_chrome_options().to_capabilities()
+        options_key = None
+        if 'goog:chromeOptions' in chrome_capabilities:
+            options_key = 'goog:chromeOptions'
+        elif 'chromeOptions' in chrome_capabilities:
+            # Selenium 3.5.3 and older
+            options_key = 'chromeOptions'
+        if options_key:
+            self._update_dict(capabilities, chrome_capabilities, initial_key=options_key)
+
+    def _update_dict(self, initial, update, initial_key=None):
+        """ Update a initial dict with another dict values recursively
+
+        :param initial: initial dict to be updated
+        :param update: new dict
+        :param initial_key: update only one key in initial dicts
+        :return: merged dict
+        """
+        for key, value in update.items():
+            if initial_key is None or key == initial_key:
+                initial[key] = self._update_dict(initial.get(key, {}), value) if isinstance(value, dict) else value
+        return initial
 
     def _setup_safari(self, capabilities):
         """Setup Safari webdriver

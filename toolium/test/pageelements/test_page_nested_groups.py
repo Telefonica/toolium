@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2017 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -30,7 +30,7 @@ from toolium.pageobjects.page_object import PageObject
 class InnerGroup(Group):
     def init_page_elements(self):
         self.input = InputText(By.XPATH, './/input')
-        self.input_with_parent = InputText(By.XPATH, './/input', (By.XPATH, './/parent'))
+        self.input_with_parent = InputText(By.XPATH, './/input', parent=self.input)
 
 
 class OuterGroup(Group):
@@ -73,7 +73,7 @@ def test_reset_object_nested_groups(driver_wrapper):
     assert nested_page.outer.inner.input_with_parent._web_element is None
     assert nested_page.outer.inner.parent == nested_page.outer
     assert nested_page.outer.inner.input.parent == nested_page.outer.inner
-    assert nested_page.outer.inner.input_with_parent.parent == nested_page.outer.inner
+    assert nested_page.outer.inner.input_with_parent.parent == nested_page.outer.inner.input
 
     nested_page.outer.inner.input.web_element
     nested_page.outer.inner.input_with_parent.web_element
@@ -85,7 +85,7 @@ def test_reset_object_nested_groups(driver_wrapper):
     assert nested_page.outer.inner.input_with_parent._web_element is not None
     assert nested_page.outer.inner.parent == nested_page.outer
     assert nested_page.outer.inner.input.parent == nested_page.outer.inner
-    assert nested_page.outer.inner.input_with_parent.parent == nested_page.outer.inner
+    assert nested_page.outer.inner.input_with_parent.parent == nested_page.outer.inner.input
 
     nested_page.outer.reset_object()
 
@@ -96,4 +96,4 @@ def test_reset_object_nested_groups(driver_wrapper):
     assert nested_page.outer.inner.input_with_parent._web_element is None
     assert nested_page.outer.inner.parent == nested_page.outer
     assert nested_page.outer.inner.input.parent == nested_page.outer.inner
-    assert nested_page.outer.inner.input_with_parent.parent == nested_page.outer.inner
+    assert nested_page.outer.inner.input_with_parent.parent == nested_page.outer.inner.input

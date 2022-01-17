@@ -52,8 +52,8 @@ video_enabled
 | `GGR with Selenoid <https://github.com/aerokube/ggr>`_ as remote server, that allow recording videos of test
 | executions.
 |
-| *true*: remote video recording is enabled, a video of the test execution will be recorded and saved locally
-| *false*: remote video recording is disabled
+| *true*: remote video download is enabled even if the test passes, the test execution video will be saved locally
+| *false*: remote video download is disabled in passed tests, but it is always enabled if the test fails
 
 logs_enabled
 ~~~~~~~~~~~~

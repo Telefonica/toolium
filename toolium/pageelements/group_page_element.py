@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2016 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -70,6 +70,6 @@ class Group(PageObject, PageElement):
         self._web_element = None
         for element in self._get_page_elements():
             element.reset_object(driver_wrapper)
-            if isinstance(element, (PageElement, PageElements)):
-                # If element is not a page object, update element parent
+            if isinstance(element, (PageElement, PageElements)) and element.parent is None:
+                # If element is not a page object and it has not a custom parent, update element parent
                 element.parent = self

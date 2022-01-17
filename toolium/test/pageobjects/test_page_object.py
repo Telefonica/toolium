@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -46,12 +46,12 @@ class MenuGroup(Group):
 
 class RegisterPageObject(PageObject):
     username = PageElement(By.XPATH, '//input[0]', wait=True)
-    password = PageElement(By.ID, 'password', username)
+    password = PageElement(By.ID, 'password', parent=username)
 
     def init_page_elements(self):
         self.language = PageElement(By.ID, 'language')
-        self.email = PageElement(By.ID, 'email', mock_element)
-        self.address = PageElement(By.ID, 'address', (By.ID, 'parent'))
+        self.email = PageElement(By.ID, 'email', parent=mock_element)
+        self.address = PageElement(By.ID, 'address', parent=(By.ID, 'parent'))
         self.inputs = PageElements(By.XPATH, '//input')
         self.menu = MenuPageObject(wait=True)
         self.menu_group = MenuGroup(By.ID, 'menu', wait=True)

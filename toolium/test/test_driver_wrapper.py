@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -38,8 +38,7 @@ mobile_tests = (
 
 # (driver_type, appium_app, appium_browser_name, is_web, is_android_web, is_ios_web)
 web_tests = (
-    ('android-4.1.2-on-android', 'C:/Demo.apk', None, False, False,
-     False),
+    ('android-4.1.2-on-android', 'C:/Demo.apk', None, False, False, False),
     ('android', 'C:/Demo.apk', None, False, False, False),
     ('android', 'C:/Demo.apk', '', False, False, False),
     ('android', None, 'chrome', True, True, False),
@@ -67,6 +66,8 @@ maximizable_drivers = (
     ('iphone', False),
 )
 
+environment_properties = []
+
 
 @pytest.fixture
 def driver_wrapper():
@@ -85,7 +86,16 @@ def driver_wrapper():
     config_files.set_config_log_filename('logging.conf')
     new_driver_wrapper.configure(config_files)
 
-    return new_driver_wrapper
+    yield new_driver_wrapper
+
+    # Remove used environment properties after test
+    global environment_properties
+    for env_property in environment_properties:
+        try:
+            del os.environ[env_property]
+        except KeyError:
+            pass
+    environment_properties = []
 
 
 def test_multiple(driver_wrapper):
@@ -126,9 +136,9 @@ def test_configure_change_configuration_file(driver_wrapper):
 
     # Change properties file and try to configure again
     root_path = os.path.dirname(os.path.realpath(__file__))
-    os.environ["Config_prop_filenames"] = os.path.join(root_path, 'conf', 'android-properties.cfg')
+    environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
+    os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = os.path.join(root_path, 'conf', 'android-properties.cfg')
     driver_wrapper.configure(ConfigFiles())
-    del os.environ["Config_prop_filenames"]
 
     # Check that configuration has been initialized
     assert driver_wrapper.config.get('Driver', 'type') == 'android'
@@ -139,10 +149,24 @@ def test_configure_environment(driver_wrapper):
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
 
     # Change environment and try to configure again
-    os.environ["Config_environment"] = 'android'
+    environment_properties.append('TOOLIUM_CONFIG_ENVIRONMENT')
+    os.environ['TOOLIUM_CONFIG_ENVIRONMENT'] = 'android'
     config_files = DriverWrappersPool.initialize_config_files(ConfigFiles())
     driver_wrapper.configure(config_files)
-    del os.environ["Config_environment"]
+
+    # Check that configuration has been initialized
+    assert driver_wrapper.config.get('Driver', 'type') == 'android'
+
+
+def test_configure_environment_deprecated_property(driver_wrapper):
+    # Check previous values
+    assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
+
+    # Change environment and try to configure again
+    environment_properties.append('Config_environment')
+    os.environ['Config_environment'] = 'android'
+    config_files = DriverWrappersPool.initialize_config_files(ConfigFiles())
+    driver_wrapper.configure(config_files)
 
     # Check that configuration has been initialized
     assert driver_wrapper.config.get('Driver', 'type') == 'android'
@@ -157,7 +181,7 @@ def test_connect(create_driver, driver_wrapper):
     driver_wrapper.utils.get_remote_node.return_value = ('local', None)
 
     # Connect and check the returned driver
-    assert driver_wrapper.connect(maximize=False) == expected_driver
+    assert driver_wrapper.connect() == expected_driver
 
     # Check that the wrapper has been configured
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
@@ -179,7 +203,7 @@ def test_connect_api(driver_type, driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', driver_type)
 
     # Connect and check that the returned driver is None
-    assert driver_wrapper.connect(maximize=False) == expected_driver  # Check that the wrapper has been configured
+    assert driver_wrapper.connect() == expected_driver  # Check that the wrapper has been configured
     assert driver_wrapper.config.get('Driver', 'type') == driver_type
     assert driver_wrapper.config.get('Jira', 'enabled') == 'false'
     logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
@@ -192,12 +216,12 @@ def test_connect_api_from_file(driver_wrapper):
 
     # Change driver type to api and configure again
     root_path = os.path.dirname(os.path.realpath(__file__))
-    os.environ["Config_prop_filenames"] = os.path.join(root_path, 'conf', 'api-properties.cfg')
+    environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
+    os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = os.path.join(root_path, 'conf', 'api-properties.cfg')
     driver_wrapper.configure(ConfigFiles())
-    del os.environ["Config_prop_filenames"]
 
     # Connect and check that the returned driver is None
-    assert driver_wrapper.connect(maximize=False) == expected_driver  # Check that the wrapper has been configured
+    assert driver_wrapper.connect() == expected_driver  # Check that the wrapper has been configured
     assert driver_wrapper.config.get('Driver', 'type') == ''
     assert driver_wrapper.config.get('Jira', 'enabled') == 'false'
     logger = logging.getLogger('selenium.webdriver.remote.remote_connection')

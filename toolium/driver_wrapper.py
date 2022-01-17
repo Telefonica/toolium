@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -85,14 +85,16 @@ class DriverWrapper(object):
         :param tc_output_log_filename: test case specific output logger file
         """
         # Get config logger filename
-        config_log_filename = DriverWrappersPool.get_configured_value('Config_log_filename', tc_config_log_filename,
+        config_log_filename = DriverWrappersPool.get_configured_value('TOOLIUM_CONFIG_LOG_FILENAME',
+                                                                      'Config_log_filename', tc_config_log_filename,
                                                                       'logging.conf')
         config_log_filename = os.path.join(DriverWrappersPool.config_directory, config_log_filename)
 
         # Configure logger only if logging filename has changed
         if self.config_log_filename != config_log_filename:
             # Get output logger filename
-            output_log_filename = DriverWrappersPool.get_configured_value('Output_log_filename', tc_output_log_filename,
+            output_log_filename = DriverWrappersPool.get_configured_value('TOOLIUM_OUTPUT_LOG_FILENAME',
+                                                                          'Output_log_filename', tc_output_log_filename,
                                                                           'toolium.log')
             output_log_filename = os.path.join(DriverWrappersPool.output_directory, output_log_filename)
             output_log_filename = output_log_filename.replace('\\', '\\\\')
@@ -111,7 +113,8 @@ class DriverWrapper(object):
         :param tc_config_prop_filenames: test case specific properties filenames
         :param behave_properties: dict with behave user data properties
         """
-        prop_filenames = DriverWrappersPool.get_configured_value('Config_prop_filenames', tc_config_prop_filenames,
+        prop_filenames = DriverWrappersPool.get_configured_value('TOOLIUM_CONFIG_PROPERTIES_FILENAMES',
+                                                                 'Config_prop_filenames', tc_config_prop_filenames,
                                                                  'properties.cfg;local-properties.cfg')
         prop_filenames = [os.path.join(DriverWrappersPool.config_directory, filename) for filename in
                           prop_filenames.split(';')]
@@ -123,12 +126,22 @@ class DriverWrapper(object):
             self.config = ExtendedConfigParser.get_config_from_file(prop_filenames)
             self.config_properties_filenames = prop_filenames
 
-        # Override properties with system properties
+        # Override properties with system properties [Deprecated: use toolium system properties]
         self.config.update_properties(os.environ)
+
+        # Override properties with toolium system properties
+        self.config.update_toolium_system_properties(os.environ)
 
         # Override properties with behave userdata properties
         if behave_properties:
             self.config.update_properties(behave_properties)
+
+        # Modify config properties before driver creation
+        self.finalize_properties_configuration()
+
+    def finalize_properties_configuration(self):
+        # Override method if config properties (self.config object) need custom modifications before driver creation
+        pass
 
     def configure_visual_baseline(self):
         """Configure baseline directory"""
@@ -193,10 +206,9 @@ class DriverWrapper(object):
             DriverWrappersPool.configure_visual_directories(driver_info)
             self.configure_visual_baseline()
 
-    def connect(self, maximize=True):
+    def connect(self):
         """Set up the selenium driver and connect to the server
 
-        :param maximize: True if the driver should be maximized
         :returns: selenium driver
         """
         if not self.config.get('Driver', 'type') or self.config.get('Driver', 'type') in ['api', 'no_driver']:
@@ -207,31 +219,15 @@ class DriverWrapper(object):
         # Save session id and remote node to download video after the test execution
         self.session_id = self.driver.session_id
         self.server_type, self.remote_node = self.utils.get_remote_node()
-        if self.server_type == 'grid':
-            self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.remote_node)
-        else:
-            self.remote_node_video_enabled = True if self.server_type in ['ggr', 'selenoid'] else False
+        self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.server_type, self.remote_node)
 
-            # Save app_strings in mobile tests
-        if self.is_mobile_test() and not self.is_web_test() and self.config.getboolean_optional('Driver',
-                                                                                                'appium_app_strings'):
+        # Save app_strings in mobile tests
+        if (self.is_mobile_test() and not self.is_web_test()
+                and self.config.getboolean_optional('Driver', 'appium_app_strings')):
             self.app_strings = self.driver.app_strings()
 
-        if self.is_maximizable():
-            # Bounds and screen
-            bounds_x, bounds_y = self.get_config_window_bounds()
-            self.driver.set_window_position(bounds_x, bounds_y)
-            self.logger.debug('Window bounds: %s x %s', bounds_x, bounds_y)
-
-            # Maximize browser
-            if maximize:
-                # Set window size or maximize
-                window_width = self.config.get_optional('Driver', 'window_width')
-                window_height = self.config.get_optional('Driver', 'window_height')
-                if window_width and window_height:
-                    self.driver.set_window_size(window_width, window_height)
-                else:
-                    self.driver.maximize_window()
+        # Resize and move browser
+        self.resize_window()
 
         # Log window size
         window_size = self.utils.get_window_size()
@@ -247,6 +243,22 @@ class DriverWrapper(object):
         self.utils.set_implicitly_wait()
 
         return self.driver
+
+    def resize_window(self):
+        """Resize and move browser window"""
+        if self.is_maximizable():
+            # Configure window bounds
+            bounds_x, bounds_y = self.get_config_window_bounds()
+            self.driver.set_window_position(bounds_x, bounds_y)
+            self.logger.debug('Window bounds: %s x %s', bounds_x, bounds_y)
+
+            # Set window size or maximize
+            window_width = self.config.get_optional('Driver', 'window_width')
+            window_height = self.config.get_optional('Driver', 'window_height')
+            if window_width and window_height:
+                self.driver.set_window_size(window_width, window_height)
+            else:
+                self.driver.maximize_window()
 
     def get_config_window_bounds(self):
         """Reads bounds from config and, if monitor is specified, modify the values to match with the specified monitor

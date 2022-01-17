@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -34,7 +34,7 @@ class DriverWrappersPool(object):
     :type logger: logging.Logger
     :type output_directory: str
     :type screenshots_directory: str
-    :type screenshots_number: str
+    :type screenshots_number: int
     :type videos_directory: str
     :type logs_directory: str
     :type videos_number: int
@@ -190,14 +190,7 @@ class DriverWrappersPool(object):
                 # Download video if necessary (error case or enabled video)
                 if (not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False)) \
                         and driver_wrapper.remote_node_video_enabled:
-                    if driver_wrapper.server_type in ['ggr', 'selenoid']:
-                        name = get_valid_filename(video_name.format(name, driver_index))
-                        Selenoid(driver_wrapper).download_session_video(name)
-                    elif driver_wrapper.server_type == 'grid':
-                        # Download video from Grid Extras
-                        driver_wrapper.utils.download_remote_video(driver_wrapper.remote_node,
-                                                                   driver_wrapper.session_id,
-                                                                   video_name.format(name, driver_index))
+                    driver_wrapper.utils.download_remote_video(video_name.format(name, driver_index))
             except Exception as exc:
                 # Capture exceptions to avoid errors in teardown method due to session timeouts
                 driver_wrapper.logger.warning('Error downloading videos: %s' % exc)
@@ -254,10 +247,11 @@ class DriverWrappersPool(object):
             driver_index += 1
 
     @staticmethod
-    def get_configured_value(system_property_name, specific_value, default_value):
+    def get_configured_value(system_property_name, deprecated_system_property_name, specific_value, default_value):
         """Get configured value from system properties, method parameters or default value
 
         :param system_property_name: system property name
+        :param deprecated_system_property_name: deprecated system property name
         :param specific_value: test case specific value
         :param default_value: default value
         :returns: configured value
@@ -265,7 +259,10 @@ class DriverWrappersPool(object):
         try:
             return os.environ[system_property_name]
         except KeyError:
-            return specific_value if specific_value else default_value
+            try:
+                return os.environ[deprecated_system_property_name]
+            except KeyError:
+                return specific_value if specific_value else default_value
 
     @classmethod
     def configure_common_directories(cls, tc_config_files):
@@ -275,14 +272,15 @@ class DriverWrappersPool(object):
         """
         if cls.config_directory is None:
             # Get config directory from properties
-            config_directory = cls.get_configured_value('Config_directory', tc_config_files.config_directory, 'conf')
-            prop_filenames = cls.get_configured_value('Config_prop_filenames',
+            config_directory = cls.get_configured_value('TOOLIUM_CONFIG_DIRECTORY', 'Config_directory',
+                                                        tc_config_files.config_directory, 'conf')
+            prop_filenames = cls.get_configured_value('TOOLIUM_CONFIG_PROPERTIES_FILENAMES', 'Config_prop_filenames',
                                                       tc_config_files.config_properties_filenames, 'properties.cfg')
             cls.config_directory = cls._find_parent_directory(config_directory, prop_filenames.split(';')[0])
 
             # Get output directory from properties and create it
-            cls.output_directory = cls.get_configured_value('Output_directory', tc_config_files.output_directory,
-                                                            'output')
+            cls.output_directory = cls.get_configured_value('TOOLIUM_OUTPUT_DIRECTORY', 'Output_directory',
+                                                            tc_config_files.output_directory, 'output')
             if not os.path.isabs(cls.output_directory):
                 # If output directory is relative, we use the same path as config directory
                 cls.output_directory = os.path.join(os.path.dirname(cls.config_directory), cls.output_directory)
@@ -290,7 +288,8 @@ class DriverWrappersPool(object):
 
             # Get visual baseline directory from properties
             default_baseline = os.path.join(cls.output_directory, 'visualtests', 'baseline')
-            cls.visual_baseline_directory = cls.get_configured_value('Visual_baseline_directory',
+            cls.visual_baseline_directory = cls.get_configured_value('TOOLIUM_VISUAL_BASELINE_DIRECTORY',
+                                                                     'Visual_baseline_directory',
                                                                      tc_config_files.visual_baseline_directory,
                                                                      default_baseline)
             if not os.path.isabs(cls.visual_baseline_directory):
@@ -361,7 +360,7 @@ class DriverWrappersPool(object):
             tc_config_files = ConfigFiles()
 
         # Update properties and log file names if an environment is configured
-        env = DriverWrappersPool.get_configured_value('Config_environment', None, None)
+        env = DriverWrappersPool.get_configured_value('TOOLIUM_CONFIG_ENVIRONMENT', 'Config_environment', None, None)
         if env:
             # Update config properties filenames
             prop_filenames = tc_config_files.config_properties_filenames

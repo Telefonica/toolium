@@ -1,16 +1,80 @@
 Toolium Changelog
 =================
 
-v2.0.0
+v2.2.2
 ------
 
 *Release date: In development*
+
+v2.2.1
+------
+
+*Release date: 2022-01-11*
+
+- Add support for Python 3.10
+- Add support for Appium-Python-Client 1.3.0
+- Remove Python 3.5 support (Python 3.5 reached the end of its life on September 13th, 2020)
+- Move code quality check from codacy to codeclimate
+- Upgrade Sphinx version from 3.* to 4.* to fix doc compilation errors in readthedocs
+
+v2.2.0
+------
+
+*Release date: 2021-11-03*
+
+- Add JSON object/list conversion to Python dict/list in the type inference logic of the *replace_param* function
+- Add *finalize_properties_configuration* method in *DriverWrapper* class to allow the modification of config properties
+  upon initialization programmatically before driver creation
+- Properties values configured by properties files can be overridden with system properties named
+  *TOOLIUM_[SECTION]_[OPTION]*, moreover these system properties can be used to add new properties that do not exist in
+  properties files
+- Configuration system properties have been renamed. The old property names are deprecated but they can still be used.
+
+   | Deprecated property name -> New property name
+   | Config_environment -> TOOLIUM_CONFIG_ENVIRONMENT
+   | Output_directory -> TOOLIUM_OUTPUT_DIRECTORY
+   | Output_log_filename -> TOOLIUM_OUTPUT_LOG_FILENAME
+   | Config_directory -> TOOLIUM_CONFIG_DIRECTORY
+   | Config_log_filename -> TOOLIUM_CONFIG_LOG_FILENAME
+   | Config_prop_filenames -> TOOLIUM_CONFIG_PROPERTIES_FILENAMES
+   | Visual_baseline_directory -> TOOLIUM_VISUAL_BASELINE_DIRECTORY
+
+- Behave user property 'Config_environment' is deprecated, use 'TOOLIUM_CONFIG_ENVIRONMENT' instead:
+
+.. code:: console
+
+    $ behave -D TOOLIUM_CONFIG_ENVIRONMENT=android
+
+v2.1.1
+------
+
+*Release date: 2021-09-22*
+
+- Avoid to overwrite parent in group elements when a custom parent is defined
+- Fix Chrome options to allow to configure them at the same time in *Chrome* sections and in *goog:chromeOptions*
+  capability
+
+v2.1.0
+------
+
+*Release date: 2021-07-05*
+
+- Add type inference and improve replacement logic in *replace_param* function
+- Remove *generate_fixed_length_param* function, as all possible transformations are available in *replace_param*
+- Fix docutils development dependency to version 0.16
+- Fix InputText element class getting the text value for mobile apps in webview mode
+
+v2.0.0
+------
+
+*Release date: 2021-06-15*
 
 - Remove Python 2.7, 3.3 and 3.4 support
 - Update deprecated methods to fix warnings in python3 execution
 - Move *get_valid_filename* and *makedirs_safe* methods from *toolium.path_utils* to *toolium.utils.path_utils*
 - Move *Utils* class from *toolium.utils* to *toolium.utils.driver_utils*
 - Fix report when an error happens in the Dynamic Environment
+- New param [TIMESTAMP] in *replace_param* method to generate timestamp value of the actual moment
 
 v1.9.2
 ------
@@ -516,7 +580,7 @@ v0.10.0
 
    New config section [ChromeMobileEmulation] with mobile emulation options, e.g. 'deviceName = Google Nexus 5'
 
-- Configuration system properties has been renamed
+- Configuration system properties have been renamed
 
    | Old properties: Files_output_path, Files_log_filename, Files_properties, Files_logging
    | New properties: Output_directory, Output_log_filename, Config_directory, Config_prop_filenames, Config_log_filename

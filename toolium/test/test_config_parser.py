@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -16,10 +16,45 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import mock
 import os
 import pytest
 
 from toolium.config_parser import ExtendedConfigParser
+
+environment_properties = []
+
+
+@pytest.fixture
+def config():
+    root_path = os.path.dirname(os.path.realpath(__file__))
+    conf_properties_file = os.path.join(root_path, 'conf', 'properties.cfg')
+    config = ExtendedConfigParser()
+    config.read(conf_properties_file)
+
+    yield config
+
+    # Remove used environment properties after test
+    global environment_properties
+    for env_property in environment_properties:
+        try:
+            del os.environ[env_property]
+        except KeyError:
+            pass
+    environment_properties = []
+
+
+@pytest.fixture
+def logger():
+    # Configure logger mock
+    logger = mock.MagicMock()
+    logger_patch = mock.patch('toolium.config_parser.logger', logger)
+    logger_patch.start()
+
+    yield logger
+
+    logger_patch.stop()
+
 
 optional_values = (
     ('No section', 'No option', None, None),
@@ -38,15 +73,6 @@ optional_boolean_values = (
     ('Server', 'enabled', None, True),
     ('Server', 'enabled', False, True),
 )
-
-
-@pytest.fixture
-def config():
-    root_path = os.path.dirname(os.path.realpath(__file__))
-    conf_properties_file = os.path.join(root_path, 'conf', 'properties.cfg')
-    config = ExtendedConfigParser()
-    config.read(conf_properties_file)
-    return config
 
 
 @pytest.mark.parametrize("section, option, default, response", optional_values)
@@ -172,7 +198,7 @@ def test_deepcopy_and_modify_option_with_colon(config):
     assert new_value == new_config.get(section, option)
 
 
-def test_update_properties_environ(config):
+def test_update_properties_environ_deprecated(config):
     section = 'AppiumCapabilities'
     option = 'platformName'
     orig_value = 'Android'
@@ -187,6 +213,102 @@ def test_update_properties_environ(config):
 
     # Check the new config value
     assert new_value == config.get(section, option)
+
+
+toolium_system_properties = (
+    # Update value
+    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', 'iOS'),
+    # Underscore in value
+    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', 'a_b'),
+    # Equal symbol in value
+    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', 'a=b'),
+    # Empty value
+    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', ''),
+    # Underscore in option
+    ('TOOLIUM_SERVER_VIDEO_ENABLED', 'Server', 'video_enabled', 'false', 'true'),
+    # New section
+    ('TOOLIUM_CUSTOMCAPABILITIES_CUSTOMCAPABILITY', 'CustomCapabilities', 'customCapability', None, 'prueba'),
+    # New option
+    ('TOOLIUM_CAPABILITIES_CUSTOMCAPABILITY', 'Capabilities', 'customCapability', None, 'prueba'),
+    # Lowercase section in name
+    ('TOOLIUM_APPIUMCapabilities_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', 'iOS'),
+    # Lowercase option in name
+    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMName', 'AppiumCapabilities', 'platformName', 'Android', 'iOS'),
+)
+
+
+@pytest.mark.parametrize("property_name, section, option, value, new_value", toolium_system_properties)
+def test_update_toolium_system_properties(config, property_name, section, option, value, new_value):
+    # Check previous value
+    if value is None:
+        assert not config.has_option(section, option)
+    else:
+        assert value == config.get(section, option)
+
+    # Change system property and update config
+    environment_properties.append(property_name)
+    os.environ[property_name] = '{}_{}={}'.format(section, option, new_value)
+    config.update_toolium_system_properties(os.environ)
+
+    # Check the new config value
+    assert new_value == config.get(section, option)
+
+
+toolium_system_properties_wrong_format = (
+    # No section and option in name
+    ('TOOLIUM', 'AppiumCapabilities', 'platformName', 'Android', 'AppiumCapabilities_platformName=iOS'),
+    # No option in name
+    ('TOOLIUM_APPIUMCAPABILITIES', 'AppiumCapabilities', 'platformName', 'Android',
+     'AppiumCapabilities_platformName=iOS'),
+    # Option in name different from option in value
+    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORM', 'AppiumCapabilities', 'platformName', 'Android',
+     'AppiumCapabilities_platformName=iOS'),
+    # Additional param in name
+    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME_WRONG', 'AppiumCapabilities', 'platformName', 'Android',
+     'AppiumCapabilities_platformName=iOS'),
+    # No option in value
+    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android',
+     'AppiumCapabilities=iOS'),
+    # Additional param in value
+    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android',
+     'AppiumCapabilities_platformName_wrong=iOS'),
+    # No equal in value
+    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android',
+     'AppiumCapabilities_platformName iOS'),
+    # Empty section
+    ('TOOLIUM__PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', '_platformName=iOS'),
+    # Empty option
+    ('TOOLIUM_APPIUMCAPABILITIES_', 'AppiumCapabilities', 'platformName', 'Android', 'AppiumCapabilities_=iOS'),
+    # No toolium system property
+    ('WRONGNAME', 'AppiumCapabilities', 'platformName', 'Android', 'platformName_Android=iOS'),
+)
+
+
+@pytest.mark.parametrize("property_name, section, option, value, property_value",
+                         toolium_system_properties_wrong_format)
+def test_update_toolium_system_properties_wrong_format(config, logger, property_name, section, option, value,
+                                                       property_value):
+    # Check previous value
+    if value is None:
+        assert not config.has_option(section, option)
+    else:
+        assert value == config.get(section, option)
+
+    # Change system property and update config
+    environment_properties.append(property_name)
+    os.environ[property_name] = property_value
+    config.update_toolium_system_properties(os.environ)
+
+    # Check that config value has not changed
+    assert value == config.get(section, option)
+
+    # Check logging error message
+    if property_name.startswith('TOOLIUM'):
+        logger.warning.assert_called_once_with('A toolium system property is configured but its name does not math with'
+                                               ' section and option in value (use TOOLIUM_[SECTION]_[OPTION]=[Section]_'
+                                               '[option]=value): %s=%s' % (property_name, property_value))
+    else:
+        logger.warning.assert_not_called()
 
 
 def test_update_properties_behave(config):

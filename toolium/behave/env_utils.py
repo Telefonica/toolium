@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2017 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -22,15 +22,15 @@ from pkg_resources import parse_version
 
 # constants
 # pre-actions in feature files
-ACTIONS_BEFORE_FEATURE = u'actions before the feature'
-ACTIONS_BEFORE_SCENARIO = u'actions before each scenario'
-ACTIONS_AFTER_SCENARIO = u'actions after each scenario'
-ACTIONS_AFTER_FEATURE = u'actions after the feature'
-KEYWORDS = [u'Setup', u'Check', u'Given', u'When', u'Then', u'And', u'But']  # prefix in steps to actions
-GIVEN_PREFIX = u'Given'
-TABLE_SEPARATOR = u'|'
-STEP_TEXT_SEPARATORS = [u'"""', u"'''"]
-EMPTY = u''
+ACTIONS_BEFORE_FEATURE = 'actions before the feature'
+ACTIONS_BEFORE_SCENARIO = 'actions before each scenario'
+ACTIONS_AFTER_SCENARIO = 'actions after each scenario'
+ACTIONS_AFTER_FEATURE = 'actions after the feature'
+KEYWORDS = ['Setup', 'Check', 'Given', 'When', 'Then', 'And', 'But']  # prefix in steps to actions
+GIVEN_PREFIX = 'Given'
+TABLE_SEPARATOR = '|'
+STEP_TEXT_SEPARATORS = ['"""', "'''"]
+EMPTY = ''
 
 warnings.filterwarnings('ignore')
 
@@ -190,9 +190,9 @@ class DynamicEnvironment:
         print the step by console if the show variable is enabled
         :param step: step text
         """
-        step_list = step.split(u'\n')
+        step_list = step.split('\n')
         for s in step_list:
-            self.logger.by_console(u'    %s' % repr(s).replace("u'", "").replace("'", ""))
+            self.logger.by_console('    %s' % repr(s).replace("u'", "").replace("'", ""))
 
     def __execute_steps_by_action(self, context, action):
         """
@@ -202,24 +202,24 @@ class DynamicEnvironment:
         :param action: action executed: see labels allowed above.
         """
         if len(self.actions[action]) > 0:
-            if action in [ACTIONS_BEFORE_FEATURE, ACTIONS_BEFORE_SCENARIO, ACTIONS_AFTER_FEATURE]:
+            if action == ACTIONS_BEFORE_SCENARIO:
                 self.logger.by_console('\n')
-                if action == ACTIONS_BEFORE_SCENARIO:
-                    self.scenario_counter += 1
-                    self.logger.by_console(
-                        "  ------------------ Scenario Nº: %d ------------------" % self.scenario_counter)
+                self.scenario_counter += 1
+                self.logger.by_console(
+                    "  ------------------ Scenario Nº: %d ------------------" % self.scenario_counter)
                 self.logger.by_console('  %s:' % action)
+            elif action in [ACTIONS_BEFORE_FEATURE, ACTIONS_AFTER_FEATURE]:
+                self.logger.by_console('\n')
+
             for item in self.actions[action]:
                 self.scenario_error = False
                 try:
                     self.__print_step_by_console(item)
-                    context.execute_steps(u'''%s%s''' % (GIVEN_PREFIX, self.__remove_prefix(item)))
-                    self.logger.debug(u'step defined in pre-actions: %s' % repr(item))
+                    context.execute_steps('''%s%s''' % (GIVEN_PREFIX, self.__remove_prefix(item)))
+                    self.logger.debug('step defined in pre-actions: %s' % repr(item))
                 except Exception as exc:
-                    if action in [ACTIONS_BEFORE_FEATURE]:
-                        self.feature_error = True
-                    elif action in [ACTIONS_BEFORE_SCENARIO]:
-                        self.scenario_error = True
+                    self.feature_error = action in [ACTIONS_BEFORE_FEATURE]
+                    self.scenario_error = action in [ACTIONS_BEFORE_SCENARIO]
                     self.logger.error(exc)
                     self.error_exception = exc
                     break

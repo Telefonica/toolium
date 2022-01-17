@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -17,13 +17,16 @@ limitations under the License.
 """
 
 import logging
+import re
 from configparser import ConfigParser, NoSectionError, NoOptionError
 from io import StringIO
+
+logger = logging.getLogger(__name__)
 
 
 class ExtendedConfigParser(ConfigParser):
     def optionxform(self, optionstr):
-        """Override default optionxform in ConfigParser"""
+        """Override default optionxform in ConfigParser to allow case sensitive options"""
         return optionstr
 
     def get_optional(self, section, option, default=None):
@@ -94,6 +97,33 @@ class ExtendedConfigParser(ConfigParser):
             self.set(section, option, new_properties[property_name])
         except KeyError:
             pass
+
+    def update_toolium_system_properties(self, new_properties):
+        """ Update config properties values or add new values if property does not exist
+        Property name must be 'TOOLIUM_[SECTION]_[OPTION]' and property value must be '[Section]_[option]=value'
+        i.e. TOOLIUM_SERVER_ENABLED='Server_enabled=true'
+
+        Section and option can not be configured in property name because they must be case sensitive and, in Windows,
+        system properties are case insensitive
+
+        :param new_properties: dict with new properties values
+        """
+        for property_name, property_value in new_properties.items():
+            name_groups = re.match('^TOOLIUM_([^_]+)_(.+)$', property_name)
+            value_groups = re.match('^([^_=]+)_([^=]+)=(.*)$', property_value)
+            if (name_groups and value_groups
+                    and name_groups.group(1).upper() == value_groups.group(1).upper()
+                    and name_groups.group(2).upper() == value_groups.group(2).upper()):
+                section = value_groups.group(1)
+                option = value_groups.group(2)
+                value = value_groups.group(3)
+                if not self.has_section(section):
+                    self.add_section(section)
+                self.set(section, option, value)
+            elif property_name.startswith('TOOLIUM'):
+                logger.warning('A toolium system property is configured but its name does not math with section'
+                               ' and option in value (use TOOLIUM_[SECTION]_[OPTION]=[Section]_[option]=value):'
+                               ' %s=%s' % (property_name, property_value))
 
     def translate_config_variables(self, str_with_variables):
         """

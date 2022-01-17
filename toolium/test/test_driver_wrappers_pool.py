@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -159,11 +159,11 @@ def test_initialize_config_files_new():
 
 def test_initialize_config_files_new_environment():
     config_files = None
-    os.environ["Config_environment"] = 'android'
+    os.environ['TOOLIUM_CONFIG_ENVIRONMENT'] = 'android'
 
     # Initialize config files
     config_files = DriverWrappersPool.initialize_config_files(config_files)
-    del os.environ["Config_environment"]
+    del os.environ['TOOLIUM_CONFIG_ENVIRONMENT']
 
     # Check expected config files
     expected_properties_filenames = 'properties.cfg;android-properties.cfg;local-android-properties.cfg'
@@ -188,11 +188,11 @@ def test_initialize_config_files_configured_environment():
     config_files = ConfigFiles()
     config_files.set_config_properties_filenames('test.conf', 'local-test.conf')
     config_files.set_output_log_filename('test.log')
-    os.environ["Config_environment"] = 'android'
+    os.environ['TOOLIUM_CONFIG_ENVIRONMENT'] = 'android'
 
     # Initialize config files
     config_files = DriverWrappersPool.initialize_config_files(config_files)
-    del os.environ["Config_environment"]
+    del os.environ['TOOLIUM_CONFIG_ENVIRONMENT']
 
     # Check expected config files
     expected_properties_filenames = 'test.conf;local-test.conf;android-test.conf;local-android-test.conf'
@@ -204,11 +204,11 @@ def test_initialize_config_files_configured_environment_with_points():
     config_files = ConfigFiles()
     config_files.set_config_properties_filenames('test.new.conf', 'local-test.new.conf')
     config_files.set_output_log_filename('test.new.log')
-    os.environ["Config_environment"] = 'ios'
+    os.environ['TOOLIUM_CONFIG_ENVIRONMENT'] = 'ios'
 
     # Initialize config files
     config_files = DriverWrappersPool.initialize_config_files(config_files)
-    del os.environ["Config_environment"]
+    del os.environ['TOOLIUM_CONFIG_ENVIRONMENT']
 
     # Check expected config files
     expected_properties_filenames = 'test.new.conf;local-test.new.conf;ios-test.new.conf;local-ios-test.new.conf'

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-u"""
+"""
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
@@ -319,7 +319,7 @@ def test_get_remote_video_url_no_videos(utils):
         assert url == req_mock.request_history[0].url
 
 
-def test_is_remote_video_enabled(utils):
+def test_is_remote_video_enabled_grid(utils):
     # Configure mock
     url = 'http://{}:{}/config'.format('10.20.30.40', 3000)
     config_response_json = {'out': [], 'error': [], 'exit_code': 0,
@@ -333,11 +333,11 @@ def test_is_remote_video_enabled(utils):
         req_mock.get(url, json=config_response_json)
 
         # Get remote video configuration and check result
-        assert utils.is_remote_video_enabled('10.20.30.40') is True
+        assert utils.is_remote_video_enabled('grid', '10.20.30.40') is True
         assert url == req_mock.request_history[0].url
 
 
-def test_is_remote_video_enabled_disabled(utils):
+def test_is_remote_video_enabled_grid_disabled(utils):
     # Configure mock
     url = 'http://{}:{}/config'.format('10.20.30.40', 3000)
     config_response_json = {'out': [], 'error': [], 'exit_code': 0,
@@ -351,7 +351,7 @@ def test_is_remote_video_enabled_disabled(utils):
         req_mock.get(url, json=config_response_json)
 
         # Get remote video configuration and check result
-        assert utils.is_remote_video_enabled('10.20.30.40') is False
+        assert utils.is_remote_video_enabled('grid', '10.20.30.40') is False
         assert url == req_mock.request_history[0].url
 
 
@@ -361,7 +361,27 @@ def test_is_remote_video_enabled_non_grid_extras(req_get_mock, utils):
     req_get_mock.side_effect = ConnectionError('exception error')
 
     # Get remote video configuration and check result
-    assert utils.is_remote_video_enabled('10.20.30.40') is False
+    assert utils.is_remote_video_enabled('grid', '10.20.30.40') is False
+
+
+def test_is_remote_video_enabled_grid_empty_node(utils):
+    # Get remote video configuration and check result
+    assert utils.is_remote_video_enabled('grid', '') is False
+
+
+def test_is_remote_video_enabled_ggr(utils):
+    # Get remote video configuration and check result
+    assert utils.is_remote_video_enabled('ggr', '') is True
+
+
+def test_is_remote_video_enabled_selenoid(utils):
+    # Get remote video configuration and check result
+    assert utils.is_remote_video_enabled('selenoid', '') is True
+
+
+def test_is_remote_video_enabled_unknown_server(utils):
+    # Get remote video configuration and check result
+    assert utils.is_remote_video_enabled('unknown', '') is False
 
 
 @pytest.mark.parametrize("driver_type, appium_app, appium_browser_name, bar_height", navigation_bar_tests)
