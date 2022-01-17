@@ -43,7 +43,7 @@ def replace_param(param, language='es', infer_param_type=True):
         [EMPTY] Generates an empty string
         [B] Generates a blank space
         [RANDOM] Generates a random value
-        [RANDOM_PHONE_NUMBER] Generate random phone number +34654XXXXXX
+        [RANDOM_PHONE_NUMBER] Generates a random phone number following the pattern +34654XXXXXX
         [TIMESTAMP] Generates a timestamp from the current time
         [DATETIME] Generates a datetime from the current time
         [NOW] Similar to DATETIME without milliseconds; the format depends on the language
