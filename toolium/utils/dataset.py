@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
 import re
 import datetime
 import logging
@@ -23,6 +24,7 @@ import random
 import string
 import json
 from ast import literal_eval
+from copy import deepcopy
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +98,8 @@ def replace_param(param, language='es', infer_param_type=True):
 
 
 def _replace_param_type(param):
-    """Replace param to a new param type
+    """
+    Replace param to a new param type
 
     :param param: parameter value
     :return: tuple with replaced value and boolean to know if replacement has been done
@@ -118,7 +121,8 @@ def _replace_param_type(param):
 
 
 def _replace_param_replacement(param, language):
-    """Replace partial param value.
+    """
+    Replace partial param value.
     Available replacements: [EMPTY], [B], [RANDOM], [TIMESTAMP], [DATETIME], [NOW], [TODAY]
 
     :param param: parameter value
@@ -149,7 +153,8 @@ def _replace_param_replacement(param, language):
 
 
 def _replace_param_transform_string(param):
-    """Transform param value according to the specified prefix
+    """
+    Transform param value according to the specified prefix
     Available transformations: DICT, LIST, INT, FLOAT, STR, UPPER, LOWER
 
     :param param: parameter value
@@ -176,7 +181,8 @@ def _replace_param_transform_string(param):
 
 
 def _replace_param_date(param, language):
-    """Transform param value in a date after applying the specified delta
+    """
+    Transform param value in a date after applying the specified delta
     E.g. [TODAY - 2 DAYS], [NOW - 10 MINUTES]
 
     :param param: parameter value
@@ -200,7 +206,8 @@ def _replace_param_date(param, language):
 
 
 def _replace_param_fixed_length(param):
-    """Generate a fixed length data element if param matches the expression [<type>_WITH_LENGTH_<length>]
+    """
+    Generate a fixed length data element if param matches the expression [<type>_WITH_LENGTH_<length>]
     where <type> can be: STRING, INTEGER, STRING_ARRAY, INTEGER_ARRAY, JSON.
     E.g. [STRING_WITH_LENGTH_15]
 
@@ -257,3 +264,191 @@ def _infer_param_type(param):
         except Exception:
             pass
     return new_param
+
+
+def map_param(param, context=None):
+    """
+    Transform the given string by replacing specific patterns containing keys with their values,
+    which can be obtained from the Behave context or from environment files or variables.
+    See map_one_param function for a description of the available tags and replacement logic.
+
+    :param param: string parameter
+    :param context: Behave context object
+    :return: string with the applied replacements
+    """
+    if not isinstance(param, str):
+        return param
+
+    map_regex = "[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][a-zA-Z\.\:\/\_\-\ 0-9]*\]"
+    map_expressions = re.compile(map_regex)
+    for match in map_expressions.findall(param):
+        param = param.replace(match, str(map_one_param(match, context)))
+    return param
+
+
+def map_one_param(param, context=None):
+    """
+    Analyze the pattern in the given string and find out its transformed value.
+    Available tags and replacement values:
+        [CONF:xxxx] Value from the config dict in context.project_config for the key xxxx (dot notation is used
+        for keys, e.g. key_1.key_2.0.key_3)
+        [LANG:xxxx] String from the texts dict in context.language_dict for the key xxxx, using the language
+        specified in context.language (dot notation is used for keys, e.g. button.label)
+        [POE:xxxx] Definition(s) from the POEditor terms list in context.poeditor_terms for the term xxxx
+        [TOOLIUM:xxxx] Value from the toolium config in context.toolium_config for the key xxxx (key format is
+        section_option, e.g. Driver_type)
+        [CONTEXT:xxxx] Value from the context storage dict for the key xxxx, or value of the context attribute xxxx,
+        if the former does not exist
+        [ENV:xxxx] Value of the OS environment variable xxxx
+        [FILE:xxxx] String with the content of the file in the path xxxx
+        [BASE64:xxxx] String with the base64 representation of the file content in the path xxxx
+
+    :param param: string parameter
+    :param context: Behave context object
+    :return: transformed value or the original string if no transformation could be applied
+    """
+    if not isinstance(param, str):
+        return param
+
+    type, value = _get_mapping_type_and_value(param)
+    if value:
+        if type == "CONF":
+            return map_json_param(value, context.project_config)
+        elif type == "LANG":
+            return get_message_property(value)
+        elif type == "POE":
+            return get_translation_by_poeditor_reference(context, value)
+        elif type == "ENV":
+            return os.environ.get(value)
+        elif type == "BASE64":
+            return convert_file_to_base64(value)
+        elif type == "TOOLIUM":
+            return map_toolium_param(value)
+        elif type == "CONTEXT" and context:
+            return get_value_from_context(context, value)
+        elif type == "FILE":
+            file_path = value
+
+            if not os.path.exists(file_path):
+                raise Exception(' ERROR - Cannot read file "{filepath}". Does not exist.'.format(filepath=file_path))
+
+            with open(file_path, 'r') as f:
+                return f.read()
+    else:
+        return param
+
+
+def _get_mapping_type_and_value(param):
+    """
+    Get the type and the value of the given string parameter to be mapped to a different value.
+    :param param: string parameter to be parsed
+    :return: a tuple with the type and the value to be mapped
+    """
+    types = ["CONF", "LANG", "POE", "ENV", "BASE64", "TOOLIUM", "CONTEXT", "FILE"]
+    for type in types:
+        match_group = re.match("\[%s:(.*)\]" % type, param)
+        if match_group:
+            return type, match_group.group(1)
+    return None, None
+
+
+def map_json_param(param, config, copy=True):
+    """
+    Find the value of the given param using it as a key in the given dictionary. Dot notation is used for keys,
+    so for example service.vamps.user could be used to retrieve the email in the following config example:
+    {
+        "services":{
+            "vamps":{
+                "user": "cyber-sec-user@11paths.com",
+                "password": "MyPassword"
+            }
+        }
+    }
+
+    :param param: key to be searched (dot notation is used, e.g. service.vamps.user).
+    :param config: configuration dictionary
+    :param copy: boolean value to indicate whether to work with a copy of the given dictionary or not,
+    in which case, the dictionary content might be changed by this function (True by default)
+    :return: mapped value
+    """
+    properties_list = param.split(".")
+    aux_config_json = deepcopy(config) if copy else config
+    try:
+        for property in properties_list:
+            if type(aux_config_json) is list:
+                aux_config_json = aux_config_json[int(property)]
+            else:
+                aux_config_json = aux_config_json[property]
+
+        hidden_value = hide_passwords(param, aux_config_json)
+        logger.debug("Mapping param '%s' to its configured value '%s'", param, hidden_value)
+    except TypeError:
+        msg = "Mapping chain not found in the given configuration dictionary. '%s'" % param
+        logger.error(msg)
+        raise TypeError(msg)
+    except KeyError:
+        msg = "Mapping chain not found in the given configuration dictionary. '%s'" % param
+        logger.error(msg)
+        raise KeyError(msg)
+    except ValueError:
+        msg = "Specified value is not a valid index. '%s'" % param
+        logger.error(msg)
+        raise ValueError(msg)
+    except IndexError:
+        msg = "Mapping index not found in the given configuration dictionary. '%s'" % param
+        logger.error(msg)
+        raise IndexError(msg)
+    return os.path.expandvars(aux_config_json) \
+        if aux_config_json and type(aux_config_json) not in [int, bool, float, list, dict] else aux_config_json
+
+
+def hide_passwords(key, value):
+    """
+    Return asterisks when the given key is a password that should be hidden.
+
+    :param key: key name
+    :param value: value
+    :return: hidden value
+    """
+    hidden_keys = ['key', 'pass', 'secret', 'code', 'token']
+    hidden_value = '*****'
+    return hidden_value if any(hidden_key in key for hidden_key in hidden_keys) else value
+
+
+def get_translation_by_poeditor_reference(context, reference):
+    """
+    Return the translation(s) for the given POEditor reference.
+
+    :param context: behave context
+    :param reference: POEditor reference
+    :return: list of strings with the translations from POEditor or string with the translation if only one was found
+    """
+    if not context:
+        raise TypeError('Context parameter is mandatory')
+    try:
+        context.poeditor_terms = context.poeditor_export
+    except AttributeError:
+        raise Exception("POEditor texts haven't been correctly downloaded!")
+    poeditor_conf = context.project_config['poeditor'] if 'poeditor' in context.project_config else {}
+    key = poeditor_conf['key_field'] if 'key_field' in poeditor_conf else 'reference'
+    search_type = poeditor_conf['search_type'] if 'search_type' in poeditor_conf else 'contains'
+    # Get POEditor prefixes and add no prefix option
+    poeditor_prefixes = poeditor_conf['prefixes'] if 'prefixes' in poeditor_conf else []
+    poeditor_prefixes.append('')
+    for prefix in poeditor_prefixes:
+        if len(reference.split(':')) > 1 and prefix != '':
+            # If there are prefixes and the resource contains ':' apply prefix in the correct position
+            complete_reference = '%s:%s%s' % (reference.split(':')[0], prefix, reference.split(':')[1])
+        else:
+            complete_reference = '%s%s' % (prefix, reference)
+        if search_type == 'exact':
+            translation = [term['definition'] for term in context.poeditor_terms \
+                if complete_reference == term[key] and term['definition'] is not None]
+        else:
+            translation = [term['definition'] for term in context.poeditor_terms \
+                if complete_reference in term[key] and term['definition'] is not None]
+        if len(translation) > 0:
+            break
+    assert len(translation) > 0, 'No translations found in POEditor for reference %s' % reference
+    translation = translation[0] if len(translation) == 1 else translation
+    return translation
