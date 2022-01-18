@@ -112,6 +112,26 @@ def test_replace_param_random():
     assert type(param) == str
 
 
+def test_replace_param_random_phone_number_with_type_inference():
+    param = replace_param('[RANDOM_PHONE_NUMBER]')
+    assert type(param) == int
+    assert len(str(param)) == 11
+
+
+def test_replace_param_random_phone_number_without_type_inference():
+    param = replace_param('[RANDOM_PHONE_NUMBER]', infer_param_type=False)
+    assert type(param) == str
+    assert len(param) == 12
+    assert param.startswith('+34654')
+
+
+def test_replace_param_random_phone_number_with_type_inference_forcing_str():
+    param = replace_param('[STR:[RANDOM_PHONE_NUMBER]]')
+    assert type(param) == str
+    assert len(param) == 12
+    assert param.startswith('+34654')
+
+
 def test_replace_param_timestamp_with_type_inference():
     param = replace_param('[TIMESTAMP]')
     assert type(param) == int
