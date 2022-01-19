@@ -51,7 +51,7 @@ its value must be `[Section]_[option]=value`, as can be seen in the following ex
 
 .. code:: console
 
-    $ TOOLIUM_DRIVER_TYPE=Driver_type=chrome
+    $ export TOOLIUM_DRIVER_TYPE=Driver_type=chrome
 
 This system property means the same as having the following section in the configuration file::
 
@@ -62,7 +62,7 @@ Underscore is allowed in options, but not in sections, for instance:
 
 .. code:: console
 
-    $ TOOLIUM_SERVER_VIDEO_ENABLED=Server_video_enabled=true
+    $ export TOOLIUM_SERVER_VIDEO_ENABLED=Server_video_enabled=true
 
 This is the same as having the following section in the configuration file::
 
