@@ -23,6 +23,7 @@ import logging
 import random
 import string
 import json
+import base64
 from ast import literal_eval
 from copy import deepcopy
 
@@ -91,15 +92,16 @@ def replace_param(param, language='es', infer_param_type=True):
 
     if param != new_param:
         if type(new_param) == str:
-            logger.debug('Replaced param from "%s" to "%s"' % (param, new_param))
+            logger.debug(f'Replaced param from "{param}" to "{new_param}"')
         else:
-            logger.debug('Replaced param from "%s" to %s' % (param, new_param))
+            logger.debug(f'Replaced param from "{param}" to {new_param}')
     return new_param
 
 
 def _replace_param_type(param):
     """
-    Replace param to a new param type
+    Replace param with a new param type.
+    Available replacements: [MISSING_PARAM], [TRUE], [FALSE], [NULL]
 
     :param param: parameter value
     :return: tuple with replaced value and boolean to know if replacement has been done
@@ -122,7 +124,7 @@ def _replace_param_type(param):
 
 def _replace_param_replacement(param, language):
     """
-    Replace partial param value.
+    Replace param with a new param value.
     Available replacements: [EMPTY], [B], [RANDOM], [TIMESTAMP], [DATETIME], [NOW], [TODAY]
 
     :param param: parameter value
@@ -154,7 +156,7 @@ def _replace_param_replacement(param, language):
 
 def _replace_param_transform_string(param):
     """
-    Transform param value according to the specified prefix
+    Transform param value according to the specified prefix.
     Available transformations: DICT, LIST, INT, FLOAT, STR, UPPER, LOWER
 
     :param param: parameter value
@@ -182,7 +184,7 @@ def _replace_param_transform_string(param):
 
 def _replace_param_date(param, language):
     """
-    Transform param value in a date after applying the specified delta
+    Transform param value in a date after applying the specified delta.
     E.g. [TODAY - 2 DAYS], [NOW - 10 MINUTES]
 
     :param param: parameter value
@@ -310,39 +312,34 @@ def map_one_param(param, context=None):
     if not isinstance(param, str):
         return param
 
-    type, value = _get_mapping_type_and_value(param)
-    if value:
-        if type == "CONF":
-            return map_json_param(value, context.project_config)
-        elif type == "LANG":
-            return get_message_property(value)
-        elif type == "POE":
-            return get_translation_by_poeditor_reference(context, value)
-        elif type == "ENV":
-            return os.environ.get(value)
-        elif type == "BASE64":
-            return convert_file_to_base64(value)
-        elif type == "TOOLIUM":
-            return map_toolium_param(value)
+    type, key = _get_mapping_type_and_key(param)
+    if key:
+        if type == "CONF" and context and hasattr(context, "project_config"):
+            return map_json_param(key, context.project_config)
+        elif type == "TOOLIUM" and context:
+            return map_toolium_param(key, context)
         elif type == "CONTEXT" and context:
-            return get_value_from_context(context, value)
+            return get_value_from_context(key, context)
+        elif type == "LANG" and context:
+            return get_message_property(key, context)
+        elif type == "POE" and context:
+            return get_translation_by_poeditor_reference(key, context)
+        elif type == "ENV":
+            return os.environ.get(key)
         elif type == "FILE":
-            file_path = value
-
-            if not os.path.exists(file_path):
-                raise Exception(' ERROR - Cannot read file "{filepath}". Does not exist.'.format(filepath=file_path))
-
-            with open(file_path, 'r') as f:
-                return f.read()
+            return get_file(key)
+        elif type == "BASE64":
+            return convert_file_to_base64(key)
     else:
         return param
 
 
-def _get_mapping_type_and_value(param):
+def _get_mapping_type_and_key(param):
     """
-    Get the type and the value of the given string parameter to be mapped to a different value.
+    Get the type and the key of the given string parameter to be mapped to the appropriate value.
+
     :param param: string parameter to be parsed
-    :return: a tuple with the type and the value to be mapped
+    :return: a tuple with the type and the key to be mapped
     """
     types = ["CONF", "LANG", "POE", "ENV", "BASE64", "TOOLIUM", "CONTEXT", "FILE"]
     for type in types:
@@ -354,8 +351,8 @@ def _get_mapping_type_and_value(param):
 
 def map_json_param(param, config, copy=True):
     """
-    Find the value of the given param using it as a key in the given dictionary. Dot notation is used for keys,
-    so for example service.vamps.user could be used to retrieve the email in the following config example:
+    Find the value of the given param using it as a key in the given dictionary. Dot notation is used,
+    so for example "service.vamps.user" could be used to retrieve the email in the following config example:
     {
         "services":{
             "vamps":{
@@ -365,7 +362,7 @@ def map_json_param(param, config, copy=True):
         }
     }
 
-    :param param: key to be searched (dot notation is used, e.g. service.vamps.user).
+    :param param: key to be searched (dot notation is used, e.g. "service.vamps.user").
     :param config: configuration dictionary
     :param copy: boolean value to indicate whether to work with a copy of the given dictionary or not,
     in which case, the dictionary content might be changed by this function (True by default)
@@ -381,21 +378,21 @@ def map_json_param(param, config, copy=True):
                 aux_config_json = aux_config_json[property]
 
         hidden_value = hide_passwords(param, aux_config_json)
-        logger.debug("Mapping param '%s' to its configured value '%s'", param, hidden_value)
+        logger.debug(f"Mapping param '{param}' to its configured value '{hidden_value}'")
     except TypeError:
-        msg = "Mapping chain not found in the given configuration dictionary. '%s'" % param
+        msg = f"Mapping chain not found in the given configuration dictionary. '{param}'"
         logger.error(msg)
         raise TypeError(msg)
     except KeyError:
-        msg = "Mapping chain not found in the given configuration dictionary. '%s'" % param
+        msg = f"Mapping chain not found in the given configuration dictionary. '{param}'"
         logger.error(msg)
         raise KeyError(msg)
     except ValueError:
-        msg = "Specified value is not a valid index. '%s'" % param
+        msg = f"Specified value is not a valid index. '{param}'"
         logger.error(msg)
         raise ValueError(msg)
     except IndexError:
-        msg = "Mapping index not found in the given configuration dictionary. '%s'" % param
+        msg = f"Mapping index not found in the given configuration dictionary. '{param}'"
         logger.error(msg)
         raise IndexError(msg)
     return os.path.expandvars(aux_config_json) \
@@ -415,16 +412,92 @@ def hide_passwords(key, value):
     return hidden_value if any(hidden_key in key for hidden_key in hidden_keys) else value
 
 
-def get_translation_by_poeditor_reference(context, reference):
+def map_toolium_param(param, context):
     """
-    Return the translation(s) for the given POEditor reference.
+    Find the value of the given param using it as a key in the current toolium configuration (context.toolium_config).
+    The param is expected to be in the form <section>_<property>, so for example "TextExecution_environment" could be
+    used to retrieve the value of this toolium property (i.e. the string "QA"):
+    [TestExecution]
+    environment: QA
 
-    :param context: behave context
+    :param param: key to be searched (e.g. "TextExecution_environment")
+    :param context: Behave context object
+    :return: mapped value
+    """
+    try:
+        section = param.split("_", 1)[0]
+        property_name = param.split("_", 1)[1]
+    except IndexError:
+        msg = f"Invalid format in Toolium config param '{param}'. Valid format: 'Section_property'."
+        logger.error(msg)
+        raise IndexError(msg)
+
+    try:
+        mapped_value = context.toolium_config.get(section, property_name)
+        logger.info(f"Mapping Toolium config param 'param' to its configured value '{mapped_value}'")
+    except Exception:
+        msg = f"'{param}' param not found in Toolium config file"
+        logger.error(msg)
+        raise Exception(msg)
+    return mapped_value
+
+
+def get_value_from_context(param, context):
+    """
+    Find the value of the given param using it as a key in the context storage dictionary (context.storage) or in the
+    context object itself. So for example, in the former case, "last_request_result" could be used to retrieve the value
+    from context.storage["last_request_result"], if it exists, whereas, in the latter case, "last_request.result" could
+    be used to retrieve the value from context.last_request.result, if it exists.
+
+    :param param: key to be searched (e.g. "last_request_result" / "last_request.result")
+    :param context: Behave context object
+    :return: mapped value
+    """
+    if context.storage and param in context.storage:
+        return context.storage[param]
+    logger.info(f"'{param}' key not found in context storage, searching in context")
+    try:
+        value = context
+        for part in param.split('.'):
+            value = getattr(value, part)
+        return value
+    except AttributeError:
+        msg = f"'{param}' not found neither in context storage nor in context"
+        logger.error(msg)
+        raise AttributeError(msg)
+
+
+def get_message_property(param, context):
+    """
+    Return the message for the given param, using it as a key in the list of language properties previously loaded
+    in the context (context.language_dict). Dot notation is used (e.g. "home.button.send").
+    
+    :param param: message key
+    :param context: Behave context object
+    :return: the message mapped to the given key in the language set in the context (context.language)
+    """
+    key_list = param.split(".")
+    language_dict_copy = deepcopy(context.language_dict)
+    try:
+        for key in key_list:
+            language_dict_copy = language_dict_copy[key]
+        logger.info(f"Mapping language param '{param}' to its configured value '{language_dict_copy[context.language]}'")
+    except KeyError:
+        msg = f"Mapping chain '{param}' not found in the language properties file"
+        logger.error(msg)
+        raise KeyError(msg)
+
+    return language_dict_copy[context.language]
+
+
+def get_translation_by_poeditor_reference(reference, context):
+    """
+    Return the translation(s) for the given POEditor reference from the terms previously loaded in the context.
+
     :param reference: POEditor reference
+    :param context: Behave context object
     :return: list of strings with the translations from POEditor or string with the translation if only one was found
     """
-    if not context:
-        raise TypeError('Context parameter is mandatory')
     try:
         context.poeditor_terms = context.poeditor_export
     except AttributeError:
@@ -452,3 +525,39 @@ def get_translation_by_poeditor_reference(context, reference):
     assert len(translation) > 0, 'No translations found in POEditor for reference %s' % reference
     translation = translation[0] if len(translation) == 1 else translation
     return translation
+
+
+def get_file(file_path):
+    """
+    Return the content of a file given its path.
+
+    :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
+    :return: string with the file content
+    """
+    file_path_parts = file_path.split("/")
+    file_path = os.path.join(*file_path_parts)
+    if not os.path.exists(file_path):
+        raise Exception(f' ERROR - Cannot read file "{file_path}". Does not exist.')
+
+    with open(file_path, 'r') as f:
+        return f.read()
+
+
+def convert_file_to_base64(file_path):
+    """
+    Return the content of a file given its path encoded in Base64.
+
+    :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
+    :return: string with the file content encoded in Base64
+    """
+    file_path_parts = file_path.split("/")
+    file_path = os.path.join(*file_path_parts)
+    if not os.path.exists(file_path):
+        raise Exception(f' ERROR - Cannot read file "{file_path}". Does not exist.')
+
+    try:
+        with open(file_path, "rb") as f:
+            file_content = base64.b64encode(f.read()).decode()
+    except Exception as e:
+        raise Exception(f' ERROR - converting the "{file_path}" file to Base64...: {e}')
+    return file_content

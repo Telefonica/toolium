@@ -25,6 +25,7 @@ import requests
 from configparser import NoOptionError
 from urllib.request import URLopener
 from toolium.utils.dataset import map_param
+from toolium.driver_wrappers_pool import DriverWrappersPool
 
 """
 ====================
@@ -48,8 +49,8 @@ In your project configuration dictionary (context.project_config), add this entr
     "file_path": "output/poeditor_terms.json"
 }
 
-If the file_path property is not configured as above, the file name will default to "poeditor_terms.json" and
-the path will default to the value of context.config_files.output_directory (so this attribute would need to be set).
+If the file_path property is not configured as above, the file name will default to "poeditor_terms.json"
+and the path will default to DriverWrappersPool.output_directory ("output" by default).
 
 NOTE: The api_token can be generated from POEditor in this url: https://poeditor.com/account/api
 """
@@ -302,7 +303,7 @@ def get_poeditor_file_path(context):
         file_path = context.project_config['poeditor']['file_path']
     except KeyError:
         file_type = context.poeditor_file_type if hasattr(context, 'poeditor_file_type') else 'json'
-        file_path = os.path.join(context.config_files.output_directory, 'poeditor_terms.%s' % file_type)
+        file_path = os.path.join(DriverWrappersPool.output_directory, 'poeditor_terms.%s' % file_type)
     return file_path
 
 
