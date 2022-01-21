@@ -72,6 +72,26 @@ jira
     :undoc-members:
     :show-inheritance:
 
+.. _pytest_fixtures:
+
+pytest_fixtures
+---------------
+
+.. automodule:: toolium.pytest_fixtures
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. _selenoid:
+
+selenoid
+--------
+
+.. automodule:: toolium.selenoid
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. _test_cases:
 
 test_cases

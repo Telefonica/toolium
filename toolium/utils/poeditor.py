@@ -37,7 +37,7 @@ Set the language used to get the POEditor texts in the toolium config file ([Tes
 [TestExecution]
 language: es-es
 
-In your project configuration dictionary (context.project_config), add this entry:
+In your project configuration dictionary (context.project_config), add an entry like this:
 
 "poeditor": {
     "base_url": "https://api.poeditor.com",

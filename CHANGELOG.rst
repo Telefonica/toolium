@@ -6,6 +6,8 @@ v2.2.2
 
 *Release date: In development*
 
+- Add map_param function to dataset module
+
 v2.2.1
 ------
 

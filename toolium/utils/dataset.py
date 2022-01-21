@@ -283,6 +283,12 @@ def map_param(param, context=None):
 
     map_regex = "[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][a-zA-Z\.\:\/\_\-\ 0-9]*\]"
     map_expressions = re.compile(map_regex)
+
+    # The parameter is just one config value
+    if map_expressions.split(param) == ['', '']:
+        return map_one_param(param, context)
+
+    # The parameter is a combination of text and configuration parameters.
     for match in map_expressions.findall(param):
         param = param.replace(match, str(map_one_param(match, context)))
     return param

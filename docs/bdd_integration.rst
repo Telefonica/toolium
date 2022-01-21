@@ -144,6 +144,56 @@ When this happens, steps of the affected scenarios for that precondition are not
 first step defined in those scenarios will be automatically failed because of that precondition exception,
 in order to properly fail the execution and show the stats.
 
+Behave variables transformation
+-------------------------------
+
+Toolium provides a set of functions that allow the transformation of specific string tags into different values.
+These are the main ones, along with the list of tags they support and their associated replacement logic (click on the
+functions or check the `dataset <dataset>` module for more implementation details):
+
+:ref:`replace_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.replace_param>`:
+
+* :code:`[STRING_WITH_LENGTH_XX]`: Generates a fixed length string
+* :code:`[INTEGER_WITH_LENGTH_XX]`: Generates a fixed length integer
+* :code:`[STRING_ARRAY_WITH_LENGTH_XX]`: Generates a fixed length array of strings
+* :code:`[INTEGER_ARRAY_WITH_LENGTH_XX]`: Generates a fixed length array of integers
+* :code:`[JSON_WITH_LENGTH_XX]`: Generates a fixed length JSON
+* :code:`[MISSING_PARAM]`: Generates a None object
+* :code:`[NULL]`: Generates a None object
+* :code:`[TRUE]`: Generates a boolean True
+* :code:`[FALSE]`: Generates a boolean False
+* :code:`[EMPTY]`: Generates an empty string
+* :code:`[B]`: Generates a blank space
+* :code:`[RANDOM]`: Generates a random value
+* :code:`[TIMESTAMP]`: Generates a timestamp from the current time
+* :code:`[DATETIME]`: Generates a datetime from the current time
+* :code:`[NOW]`: Similar to DATETIME without milliseconds; the format depends on the language
+* :code:`[NOW + 2 DAYS]`: Similar to NOW but two days later
+* :code:`[NOW - 1 MINUTES]`: Similar to NOW but one minute earlier
+* :code:`[TODAY]`: Similar to NOW without time; the format depends on the language
+* :code:`[TODAY + 2 DAYS]`: Similar to NOW, but two days later
+* :code:`[STR:xxxx]`: Cast xxxx to a string
+* :code:`[INT:xxxx]`: Cast xxxx to an int
+* :code:`[FLOAT:xxxx]`: Cast xxxx to a float
+* :code:`[LIST:xxxx]`: Cast xxxx to a list
+* :code:`[DICT:xxxx]`: Cast xxxx to a dict
+* :code:`[UPPER:xxxx]`: Converts xxxx to upper case
+* :code:`[LOWER:xxxx]`: Converts xxxx to lower case
+
+:ref:`map_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.map_param>`:
+
+* :code:`[CONF:xxxx]`: Value from the config dict in context.project_config for the key xxxx
+* :code:`[LANG:xxxx]`: String from the texts dict in context.language_dict for the key xxxx,
+using the language specified in context.language
+* :code:`[POE:xxxx]`: Definition(s) from the POEditor terms list in context.poeditor_terms for the term xxxx
+(see `poeditor <poeditor>` module for details)
+* :code:`[TOOLIUM:xxxx]`: Value from the toolium config in context.toolium_config for the key xxxx
+* :code:`[CONTEXT:xxxx]`: Value from the context storage dict for the key xxxx, or value of the context attribute xxxx,
+if the former does not exist
+* :code:`[ENV:xxxx]`: Value of the OS environment variable xxxx
+* :code:`[FILE:xxxx]`: String with the content of the file in the path xxxx
+* :code:`[BASE64:xxxx]`: String with the base64 representation of the file content in the path xxxx
+
 
 Lettuce
 ~~~~~~~
