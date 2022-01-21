@@ -67,6 +67,7 @@ ENDPOINT_POEDITOR_DOWNLOAD_FILE = "v2/download/file"
 def download_poeditor_texts(context, file_type):
     """
     Executes all steps to download texts from POEditor and saves them to a file in output dir
+
     :param context: behave context
     :param file_type: only json supported in this first version
     :return: N/A
@@ -80,6 +81,7 @@ def download_poeditor_texts(context, file_type):
 def get_poeditor_project_info_by_name(context, project_name=None):
     """
     Get POEditor project info from project name from config or parameter
+
     :param context: behave context
     :param project_name: POEditor project name
     :return: N/A (saves it to context.poeditor_project)
@@ -96,6 +98,7 @@ def get_poeditor_project_info_by_name(context, project_name=None):
 def get_poeditor_language_codes(context):
     """
     Get language codes available for a given project ID
+
     :param context: behave context
     :return: N/A (saves it to context.poeditor_language_list)
     """
@@ -118,6 +121,7 @@ def get_poeditor_language_codes(context):
 def search_terms_with_string(context, lang=None):
     """
     Saves POEditor terms for a given existing language in that project
+
     :param context: behave context
     :param lang: a valid language existing in that POEditor project
     :return: N/A (saves it to context.poeditor_terms)
@@ -129,6 +133,7 @@ def search_terms_with_string(context, lang=None):
 def export_poeditor_project(context, file_type, lang=None):
     """
     Export all texts in project to a given file type
+
     :param context: behave context
     :param file_type: There are more available formats to download but only one is supported now: json
     :param lang: if provided, should be a valid language configured in POEditor project
@@ -159,6 +164,7 @@ def export_poeditor_project(context, file_type, lang=None):
 def save_downloaded_file(context):
     """
     Saves POEditor terms to a file in output dir
+
     :param context: behave context
     :return: N/A
     """
@@ -171,6 +177,7 @@ def save_downloaded_file(context):
 def assert_poeditor_response_code(response_data, status_code):
     """
     Check status code returned in POEditor response
+
     :param response_data: data received in poeditor API response as a dictionary
     :param status_code: expected status code 
     """
@@ -181,6 +188,7 @@ def assert_poeditor_response_code(response_data, status_code):
 def get_country_from_config_file(context):
     """
     Gets the country to use later from config checking if it's a valid one in POEditor
+
     :param context: behave context
     :return: country
     """
@@ -195,6 +203,7 @@ def get_country_from_config_file(context):
 def get_valid_lang(context, lang):
     """
     Check if language provided is a valid one configured and returns the POEditor matched lang
+
     :param context: behave context
     :param lang: a language from config or from lang parameter
     :return: lang matched from POEditor
@@ -212,6 +221,7 @@ def get_valid_lang(context, lang):
 def get_poeditor_projects(context):
     """
     Get the list of the projects configured in POEditor
+
     :param context: behave context
     :return: the list of the projects
     """
@@ -228,6 +238,7 @@ def get_poeditor_projects(context):
 def send_poeditor_request(context, endpoint, method, params, status_code):
     """
     Send a request to the POEditor API
+
     :param context: behave context
     :param endpoint: endpoint path
     :param method: HTTP method to be used in the request
@@ -245,6 +256,7 @@ def send_poeditor_request(context, endpoint, method, params, status_code):
 def get_all_terms(context, lang):
     """
     Get all terms for a given language configured in POEditor
+
     :param context: behave context
     :param lang: a valid language configured in POEditor project
     :return: the list of terms
@@ -266,6 +278,7 @@ def get_all_terms(context, lang):
 def load_poeditor_texts(context):
     """
     Download POEditor texts and save in output folder if the config exists or use previously downloaded texts
+
     :param context: behave context
     """
     if get_poeditor_api_token(context):
@@ -296,6 +309,7 @@ def load_poeditor_texts(context):
 def get_poeditor_file_path(context):
     """
     Get POEditor file path
+
     :param context: behave context
     :return: poeditor file path
     """
@@ -310,6 +324,7 @@ def get_poeditor_file_path(context):
 def get_poeditor_api_token(context):
     """
     Get POEditor api token from environment property or configuration property
+
     :return: poeditor api token
     """
     try:

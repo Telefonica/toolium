@@ -151,7 +151,7 @@ Toolium provides a set of functions that allow the transformation of specific st
 These are the main ones, along with the list of tags they support and their associated replacement logic (click on the
 functions or check the `dataset <dataset>` module for more implementation details):
 
-:ref:`replace_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.replace_param>`:
+`replace_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.replace_param>`_:
 
 * :code:`[STRING_WITH_LENGTH_XX]`: Generates a fixed length string
 * :code:`[INTEGER_WITH_LENGTH_XX]`: Generates a fixed length integer
@@ -180,16 +180,13 @@ functions or check the `dataset <dataset>` module for more implementation detail
 * :code:`[UPPER:xxxx]`: Converts xxxx to upper case
 * :code:`[LOWER:xxxx]`: Converts xxxx to lower case
 
-:ref:`map_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.map_param>`:
+`map_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.map_param>`_:
 
 * :code:`[CONF:xxxx]`: Value from the config dict in context.project_config for the key xxxx
-* :code:`[LANG:xxxx]`: String from the texts dict in context.language_dict for the key xxxx,
-using the language specified in context.language
-* :code:`[POE:xxxx]`: Definition(s) from the POEditor terms list in context.poeditor_terms for the term xxxx
-(see `poeditor <poeditor>` module for details)
+* :code:`[LANG:xxxx]`: String from the texts dict in context.language_dict for the key xxxx, using the language specified in context.language
+* :code:`[POE:xxxx]`: Definition(s) from the POEditor terms list in context.poeditor_terms for the term xxxx (see :ref:`poeditor <poeditor>` module for details)
 * :code:`[TOOLIUM:xxxx]`: Value from the toolium config in context.toolium_config for the key xxxx
-* :code:`[CONTEXT:xxxx]`: Value from the context storage dict for the key xxxx, or value of the context attribute xxxx,
-if the former does not exist
+* :code:`[CONTEXT:xxxx]`: Value from the context storage dict for the key xxxx, or value of the context attribute xxxx, if the former does not exist
 * :code:`[ENV:xxxx]`: Value of the OS environment variable xxxx
 * :code:`[FILE:xxxx]`: String with the content of the file in the path xxxx
 * :code:`[BASE64:xxxx]`: String with the base64 representation of the file content in the path xxxx
