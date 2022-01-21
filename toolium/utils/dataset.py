@@ -523,10 +523,10 @@ def get_translation_by_poeditor_reference(reference, context):
             complete_reference = '%s%s' % (prefix, reference)
         if search_type == 'exact':
             translation = [term['definition'] for term in context.poeditor_terms
-                if complete_reference == term[key] and term['definition'] is not None]
+                           if complete_reference == term[key] and term['definition'] is not None]
         else:
             translation = [term['definition'] for term in context.poeditor_terms
-                if complete_reference in term[key] and term['definition'] is not None]
+                           if complete_reference in term[key] and term['definition'] is not None]
         if len(translation) > 0:
             break
     assert len(translation) > 0, 'No translations found in POEditor for reference %s' % reference
