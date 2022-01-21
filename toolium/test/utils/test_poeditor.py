@@ -6,7 +6,7 @@
 
 import mock
 
-from toolium.utils.poeditor import *
+from toolium.utils.poeditor import get_valid_lang
 
 
 def test_poe_lang_param():

@@ -282,7 +282,7 @@ def map_param(param, context=None):
     if not isinstance(param, str):
         return param
 
-    map_regex = "[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][a-zA-Z\.\:\/\_\-\ 0-9]*\]"
+    map_regex = r"[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][a-zA-Z\.\:\/\_\-\ 0-9]*\]"
     map_expressions = re.compile(map_regex)
 
     # The parameter is just one config value
@@ -323,19 +323,19 @@ def map_one_param(param, context=None):
     if key:
         if type == "CONF" and context and hasattr(context, "project_config"):
             return map_json_param(key, context.project_config)
-        elif type == "TOOLIUM" and context:
+        if type == "TOOLIUM" and context:
             return map_toolium_param(key, context)
-        elif type == "CONTEXT" and context:
+        if type == "CONTEXT" and context:
             return get_value_from_context(key, context)
-        elif type == "LANG" and context:
+        if type == "LANG" and context:
             return get_message_property(key, context)
-        elif type == "POE" and context:
+        if type == "POE" and context:
             return get_translation_by_poeditor_reference(key, context)
-        elif type == "ENV":
+        if type == "ENV":
             return os.environ.get(key)
-        elif type == "FILE":
+        if type == "FILE":
             return get_file(key)
-        elif type == "BASE64":
+        if type == "BASE64":
             return convert_file_to_base64(key)
     else:
         return param
@@ -350,7 +350,7 @@ def _get_mapping_type_and_key(param):
     """
     types = ["CONF", "LANG", "POE", "ENV", "BASE64", "TOOLIUM", "CONTEXT", "FILE"]
     for type in types:
-        match_group = re.match("\[%s:(.*)\]" % type, param)
+        match_group = re.match(r"\[%s:(.*)\]" % type, param)
         if match_group:
             return type, match_group.group(1)
     return None, None
@@ -478,7 +478,7 @@ def get_message_property(param, context):
     """
     Return the message for the given param, using it as a key in the list of language properties previously loaded
     in the context (context.language_dict). Dot notation is used (e.g. "home.button.send").
-    
+
     :param param: message key
     :param context: Behave context object
     :return: the message mapped to the given key in the language set in the context (context.language)
@@ -522,10 +522,10 @@ def get_translation_by_poeditor_reference(reference, context):
         else:
             complete_reference = '%s%s' % (prefix, reference)
         if search_type == 'exact':
-            translation = [term['definition'] for term in context.poeditor_terms \
+            translation = [term['definition'] for term in context.poeditor_terms
                 if complete_reference == term[key] and term['definition'] is not None]
         else:
-            translation = [term['definition'] for term in context.poeditor_terms \
+            translation = [term['definition'] for term in context.poeditor_terms
                 if complete_reference in term[key] and term['definition'] is not None]
         if len(translation) > 0:
             break

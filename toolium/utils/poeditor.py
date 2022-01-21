@@ -17,7 +17,6 @@ limitations under the License.
 """
 
 import json
-import logging
 import os
 import time
 import requests
@@ -179,10 +178,10 @@ def assert_poeditor_response_code(response_data, status_code):
     Check status code returned in POEditor response
 
     :param response_data: data received in poeditor API response as a dictionary
-    :param status_code: expected status code 
+    :param status_code: expected status code
     """
     assert response_data['response']['code'] == status_code, f"{response_data['response']['code']} status code \
-        has been received instead of {status_code} in POEditor response body. Response body: {r.json()}"
+        has been received instead of {status_code} in POEditor response body. Response body: {response_data}"
 
 
 def get_country_from_config_file(context):

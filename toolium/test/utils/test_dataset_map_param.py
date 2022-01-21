@@ -76,7 +76,7 @@ def test_a_conf_param():
     assert expected == result
 
 
-def test_a_conf_param():
+def test_a_context_param():
     """
     Verification of a mapped parameter as CONTEXT
     """
@@ -130,7 +130,7 @@ def test_a_poe_param_prefix_with_no_definition():
     Verification of a POE mapped parameter with a single result for a reference
     """
     context = mock.MagicMock()
-    context.project_config= {'poeditor': {'key_field': 'reference', 'search_type': 'contains', 'prefixes': ['PRE.']}}
+    context.project_config = {'poeditor': {'key_field': 'reference', 'search_type': 'contains', 'prefixes': ['PRE.']}}
     context.poeditor_export = [
         {
             "term": "Hola, estoy aquí para ayudarte",
@@ -153,7 +153,7 @@ def test_a_poe_param_single_result_selecting_a_key_field():
     Verification of a POE mapped parameter with a single result for a term
     """
     context = mock.MagicMock()
-    context.project_config= {'poeditor': {'key_field': 'term'}}
+    context.project_config = {'poeditor': {'key_field': 'term'}}
     context.poeditor_export = [
         {
             "term": "loginSelectLine_text_subtitle",
@@ -174,7 +174,7 @@ def test_a_poe_param_multiple_results():
     Verification of a POE mapped parameter with several results for a reference
     """
     context = mock.MagicMock()
-    context.project_config= {'poeditor': {'key_field': 'reference'}}
+    context.project_config = {'poeditor': {'key_field': 'reference'}}
     context.poeditor_export = [
         {
             "term": "Hola, estoy aquí para ayudarte",
@@ -200,7 +200,7 @@ def test_a_poe_param_multiple_options_but_only_one_result():
     Verification of a POE mapped parameter with a single result from several options for a key
     """
     context = mock.MagicMock()
-    context.project_config= {'poeditor': {'key_field': 'term', 'search_type': 'exact'}}
+    context.project_config = {'poeditor': {'key_field': 'term', 'search_type': 'exact'}}
     context.poeditor_export = [
         {
             "term": "loginSelectLine_text_subtitle",
@@ -229,7 +229,7 @@ def test_a_poe_param_with_prefix():
     Verification of a POE mapped parameter with several results for a reference, filtered with a prefix
     """
     context = mock.MagicMock()
-    context.project_config= {'poeditor': {'key_field': 'reference', 'search_type': 'contains', 'prefixes': ['PRE.']}}
+    context.project_config = {'poeditor': {'key_field': 'reference', 'search_type': 'contains', 'prefixes': ['PRE.']}}
     context.poeditor_export = [
         {
             "term": "Hola, estoy aquí para ayudarte",
@@ -252,7 +252,7 @@ def test_a_poe_param_with_two_prefixes():
     Verification of a POE mapped parameter with several results for a reference, filtered with two prefixes
     """
     context = mock.MagicMock()
-    context.project_config= {'poeditor': {'prefixes': ['MH.', 'PRE.']}}
+    context.project_config = {'poeditor': {'prefixes': ['MH.', 'PRE.']}}
     context.poeditor_export = [
         {
             "term": "Hola, estoy aquí para ayudarte",
@@ -280,7 +280,7 @@ def test_a_poe_param_with_prefix_and_exact_resource():
     Verification of a POE mapped parameter that uses an exact resource name and has a prefix configured
     """
     context = mock.MagicMock()
-    context.project_config= {'poeditor': {'prefixes': ['PRE.']}}
+    context.project_config = {'poeditor': {'prefixes': ['PRE.']}}
     context.poeditor_export = [
         {
             "term": "Hola, estoy aquí para ayudarte",
