@@ -1,7 +1,7 @@
+.. _utils:
+
 utils
 =====
-
-.. _utils:
 
 .. _dataset:
 
