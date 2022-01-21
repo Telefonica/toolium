@@ -20,7 +20,7 @@ import os
 import re
 import datetime
 import logging
-import random
+import random as r
 import string
 import json
 import base64
@@ -46,6 +46,7 @@ def replace_param(param, language='es', infer_param_type=True):
         [EMPTY] Generates an empty string
         [B] Generates a blank space
         [RANDOM] Generates a random value
+        [RANDOM_PHONE_NUMBER] Generates a random phone number following the pattern +34654XXXXXX
         [TIMESTAMP] Generates a timestamp from the current time
         [DATETIME] Generates a datetime from the current time
         [NOW] Similar to DATETIME without milliseconds; the format depends on the language
@@ -139,7 +140,8 @@ def _replace_param_replacement(param, language):
         '[EMPTY]': '',
         '[B]': ' ',
         # make sure random is not made up of digits only, by forcing the first char to be a letter
-        '[RANDOM]': ''.join([random.choice(string.ascii_lowercase), *(random.choice(alphanums) for i in range(7))]),
+        '[RANDOM]': ''.join([r.choice(string.ascii_lowercase), *(r.choice(alphanums) for i in range(7))]),
+        '[RANDOM_PHONE_NUMBER]': ''.join(['+', '3', '4', '6', '5', '4'] + [str(r.randint(0, 9)) for i in range(1, 7)]),
         '[TIMESTAMP]': str(int(datetime.datetime.timestamp(datetime.datetime.utcnow()))),
         '[DATETIME]': str(datetime.datetime.utcnow()),
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),

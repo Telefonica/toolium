@@ -7,6 +7,7 @@ v2.2.2
 *Release date: In development*
 
 - Add map_param function to dataset module
+- New param [RANDOM_PHONE_NUMBER] in *replace_param* method to generate random phone number
 
 v2.2.1
 ------

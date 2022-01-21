@@ -20,7 +20,7 @@ Getting Started
 ---------------
 
 Run ``pip install toolium`` to install the latest version from `PyPi <https://pypi.org/project/toolium>`_. It's
-highly recommendable to use a virtualenv. The minimal python version to use Toolium is `Python 3.5 <http://www.python.org>`_.
+highly recommendable to use a virtualenv. The minimal python version to use Toolium is `Python 3.6 <http://www.python.org>`_.
 
 The main dependencies are:
 
