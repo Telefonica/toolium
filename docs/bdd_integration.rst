@@ -149,7 +149,7 @@ Behave variables transformation
 
 Toolium provides a set of functions that allow the transformation of specific string tags into different values.
 These are the main ones, along with the list of tags they support and their associated replacement logic (click on the
-functions or check the `dataset <dataset>` module for more implementation details):
+functions or check the :ref:`dataset <dataset>` module for more implementation details):
 
 `replace_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.replace_param>`_:
 
@@ -165,6 +165,7 @@ functions or check the `dataset <dataset>` module for more implementation detail
 * :code:`[EMPTY]`: Generates an empty string
 * :code:`[B]`: Generates a blank space
 * :code:`[RANDOM]`: Generates a random value
+* :code:`[RANDOM_PHONE_NUMBER]`: Generates a random phone number following the pattern +34654XXXXXX
 * :code:`[TIMESTAMP]`: Generates a timestamp from the current time
 * :code:`[DATETIME]`: Generates a datetime from the current time
 * :code:`[NOW]`: Similar to DATETIME without milliseconds; the format depends on the language
