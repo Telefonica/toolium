@@ -3,6 +3,8 @@ utils
 
 .. _utils:
 
+.. _dataset:
+
 dataset
 -------
 
@@ -11,7 +13,7 @@ dataset
     :undoc-members:
     :show-inheritance:
 
-.. _dataset:
+.. _download_files:
 
 download_files
 --------------
@@ -21,7 +23,7 @@ download_files
     :undoc-members:
     :show-inheritance:
 
-.. _download_files:
+.. _driver_utils:
 
 driver_utils
 ------------
@@ -31,7 +33,7 @@ driver_utils
     :undoc-members:
     :show-inheritance:
 
-.. _driver_utils:
+.. _driver_wait_utils:
 
 driver_wait_utils
 -----------------
@@ -41,7 +43,7 @@ driver_wait_utils
     :undoc-members:
     :show-inheritance:
 
-.. _driver_wait_utils:
+.. _path_utils:
 
 path_utils
 ----------
@@ -51,7 +53,7 @@ path_utils
     :undoc-members:
     :show-inheritance:
 
-.. _path_utils:
+.. _poeditor:
 
 poeditor
 --------
@@ -60,5 +62,3 @@ poeditor
     :members:
     :undoc-members:
     :show-inheritance:
-
-.. _poeditor:
