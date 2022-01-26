@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Copyright 2021 Telefónica Investigación y Desarrollo, S.A.U.
+Copyright 2022 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +41,7 @@ In your project configuration dictionary (context.project_config), add an entry 
 "poeditor": {
     "base_url": "https://api.poeditor.com",
     "api_token": "XXXXX",
-    "project_name": "Aura-Bot",
+    "project_name": "My-Bot",
     "prefixes": [],
     "key_field": "reference",
     "search_type": "contains",

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Copyright 2021 Telefónica Investigación y Desarrollo, S.A.U.
+Copyright 2022 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -322,23 +322,52 @@ def map_one_param(param, context=None):
         return param
 
     type, key = _get_mapping_type_and_key(param)
-    if key:
-        if type == "CONF" and context and hasattr(context, "project_config"):
-            return map_json_param(key, context.project_config)
-        if type == "TOOLIUM" and context:
-            return map_toolium_param(key, context)
-        if type == "CONTEXT" and context:
-            return get_value_from_context(key, context)
-        if type == "LANG" and context:
-            return get_message_property(key, context)
-        if type == "POE" and context:
-            return get_translation_by_poeditor_reference(key, context)
-        if type == "ENV":
-            return os.environ.get(key)
-        if type == "FILE":
-            return get_file(key)
-        if type == "BASE64":
-            return convert_file_to_base64(key)
+
+    mapping_functions = {
+        "CONF": {
+            "prerequisites": context and hasattr(context, "project_config"),
+            "function": map_json_param,
+            "args": [key, context.project_config if hasattr(context, "project_config") else None]
+        },
+        "TOOLIUM": {
+            "prerequisites": context,
+            "function": map_toolium_param,
+            "args": [key, context]
+        },
+        "CONTEXT": {
+            "prerequisites": context,
+            "function": get_value_from_context,
+            "args": [key, context]
+        },
+        "LANG": {
+            "prerequisites": context,
+            "function": get_message_property,
+            "args": [key, context]
+        },
+        "POE": {
+            "prerequisites": context,
+            "function": get_translation_by_poeditor_reference,
+            "args": [key, context]
+        },
+        "ENV": {
+            "prerequisites": True,
+            "function": os.environ.get,
+            "args": [key]
+        },
+        "FILE": {
+            "prerequisites": True,
+            "function": get_file,
+            "args": [key]
+        },
+        "BASE64": {
+            "prerequisites": True,
+            "function": convert_file_to_base64,
+            "args": [key]
+        }
+    }
+
+    if key and mapping_functions[type]["prerequisites"]:
+        return mapping_functions[type]["function"](*mapping_functions[type]["args"])
     else:
         return param
 
