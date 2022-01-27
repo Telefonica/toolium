@@ -6,6 +6,7 @@ v2.2.2
 
 *Release date: In development*
 
+- Add missing param in download_videos method to fix error downloading videos from a remote server
 - New param [RANDOM_PHONE_NUMBER] in *replace_param* method to generate random phone number
 
 v2.2.1
