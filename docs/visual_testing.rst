@@ -93,7 +93,45 @@ or
 How to configure it?
 --------------------
 
-Toolium properties related to Visual Testing are stored in properties.cfg ::
+Baseline folder
+~~~~~~~~~~~~~~~
+
+The baseline folder must contain the images that will be used as reference in visual testing asserts. Besides, when
+configuring `save: true`, the screenshots will be saved there.
+
+The baseline folder by default is `output/visualtests/baseline`, but it can be changed through a system property, as
+can be seen in the following example:
+
+.. code:: console
+
+    $ export TOOLIUM_VISUAL_BASELINE_DIRECTORY=resources/baseline
+
+When using behave, it can also be configured in `before_all` method:
+
+.. code:: python
+
+    from toolium.behave.environment import before_all as toolium_before_all
+
+    def before_all(context):
+        context.config_files = ConfigFiles()
+        context.config_files.set_visual_baseline_directory('resources/baseline')
+        toolium_before_all(context)
+
+When using nose, it can also be configured in `setUp` method:
+
+.. code:: python
+
+    from toolium import test_cases
+
+    class SeleniumTestCase(test_cases.SeleniumTestCase):
+        def setUp(self):
+            self.config_files.set_visual_baseline_directory('resources/baseline')
+            super(SeleniumTestCase, self).setUp()
+
+Visual Testing properties
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Toolium properties related to Visual Testing are stored in properties.cfg as ::
 
     [VisualTests]
     enabled: true
@@ -103,28 +141,23 @@ Toolium properties related to Visual Testing are stored in properties.cfg ::
     baseline_name: {Driver_type}
     engine: pil
 
-enabled
-~~~~~~~
+**enabled**
 | *true*: visual testing is enabled, screenshots are captured and compared
 | *false*: visual testing is disabled, no screenshots are captured
 
-fail
-~~~~
+**fail**
 | *true*: if a visual assertion fails, the test fails
 | *false*: although a visual assertion fails, the test passes
 
-save
-~~~~
+**save**
 | *true*: baseline images will be overwritten with new screenshots
 | *false*: screenshots will be compared with already saved baseline images
 
-complete_report
-~~~~~~~~~~~~~~~
+**complete_report**
 | *true*: html report will contain failed and passed visual assertions
 | *false*: html report will only contain failed visual assertions
 
-baseline_name
-~~~~~~~~~~~~~
+**baseline_name**
 | It contains the name of the images base to compare current execution screenshots with, and it might depends on the browser, the mobile device or resolution used in the execution.
 | The easiest way of generating a custom name per environment is to use the values of other configuration properties. To access a property value use the following format: {SectionName_optionName}.
 | Some examples of baseline_name values are:
@@ -136,8 +169,7 @@ baseline_name
 - *{Version}*: baseline_name will take the value of version capability, although it is not configured
 - *{RemoteNode}*: baseline_name will take the value of the remote node name
 
-engine
-~~~~~~
+**engine**
 | Needle can compare images using different libraries (or engines) underneath. Currently, it supports Pillow, PerceptualDiff and ImageMagick.
 
 - *pil*: uses Pillow to compare images. It's the default option and it's installed as a Toolium dependency.
