@@ -6,6 +6,9 @@
 target
 .pydevproject
 
+# VSCode IDE
+.vscode
+
 # Packages
 *.egg
 *.egg-info
