@@ -1,10 +1,10 @@
 Toolium Changelog
 =================
 
-v2.2.2
+v2.3.0
 ------
 
-*Release date: In development*
+*Release date: 2022-02-03*
 
 - Add missing param in download_videos method to fix error downloading videos from a remote server
 - Add map_param function to dataset module
