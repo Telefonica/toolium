@@ -457,5 +457,6 @@ class ConfigDriver(object):
         :returns: a new remote Appium driver
         """
         self.config.set('Server', 'host', '127.0.0.1')
-        self.config.set('Server', 'port', '4723')
+        port = self.config.get_optional('Server', 'port', default='4723')
+        self.config.set('Server', 'port', port)
         return self._create_remote_driver()
