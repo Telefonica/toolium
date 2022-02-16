@@ -26,6 +26,7 @@ import json
 import base64
 from ast import literal_eval
 from copy import deepcopy
+from .data_generator import DataGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +142,7 @@ def _replace_param_replacement(param, language):
         '[B]': ' ',
         # make sure random is not made up of digits only, by forcing the first char to be a letter
         '[RANDOM]': ''.join([r.choice(string.ascii_lowercase), *(r.choice(alphanums) for i in range(7))]),
-        '[RANDOM_PHONE_NUMBER]': ''.join(['+', '3', '4', '6', '5', '4'] + [str(r.randint(0, 9)) for i in range(1, 7)]),
+        '[RANDOM_PHONE_NUMBER]': DataGenerator().phone_number,
         '[TIMESTAMP]': str(int(datetime.datetime.timestamp(datetime.datetime.utcnow()))),
         '[DATETIME]': str(datetime.datetime.utcnow()),
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),
