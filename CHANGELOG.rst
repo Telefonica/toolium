@@ -1,10 +1,12 @@
 Toolium Changelog
 =================
 
-v2.3.1
+v2.4.0
 ------
 
 *Release date: In development*
+
+- Add set_file_path and set_base64_path functions to dataset module, to set base paths for FILE and BASE64 mappings
 
 v2.3.0
 ------

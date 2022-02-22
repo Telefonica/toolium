@@ -21,11 +21,10 @@ import os
 import pytest
 
 from toolium.config_parser import ExtendedConfigParser
-from toolium.utils.dataset import map_param
-from toolium.utils.dataset import hide_passwords
+from toolium.utils.dataset import map_param, set_base64_path, set_file_path, hide_passwords
 
 
-def test_a_env_param():
+def test_an_env_param():
     """
     Verification of a mapped parameter as ENV
     """
@@ -42,6 +41,9 @@ def test_a_file_param():
     result = map_param("[FILE:toolium/test/resources/document.txt]")
     expected = "Document used to verify functionalities in MSS "
     assert expected == result
+    set_file_path('toolium/test/resources/')
+    result = map_param("[FILE:document.txt]")
+    assert expected == result
 
 
 def test_a_base64_param():
@@ -50,6 +52,9 @@ def test_a_base64_param():
     """
     result = map_param("[BASE64:toolium/test/resources/document.txt]")
     expected = "RG9jdW1lbnQgdXNlZCB0byB2ZXJpZnkgZnVuY3Rpb25hbGl0aWVzIGluIE1TUyA="
+    assert expected == result
+    set_base64_path('toolium/test/resources/')
+    result = map_param("[BASE64:document.txt]")
     assert expected == result
 
 

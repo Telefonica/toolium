@@ -29,6 +29,10 @@ from copy import deepcopy
 
 logger = logging.getLogger(__name__)
 
+# Base path for BASE64 and FILE conversions
+base_base64_path = ''
+base_file_path = ''
+
 
 def replace_param(param, language='es', infer_param_type=True):
     """
@@ -565,15 +569,36 @@ def get_translation_by_poeditor_reference(reference, context):
     return translation
 
 
+def set_base64_path(path):
+    """
+    Set a relative path to be used as the base for the file path specified in the BASE64 mapping pattern.
+
+    :param path: relative path to be used as base for base64 mapping
+    """
+    global base_base64_path
+    base_base64_path = path
+
+
+def set_file_path(path):
+    """
+    Set a relative path to be used as the base for the file path specified in the FILE mapping pattern.
+
+    :param path: relative path to be used as base for file mapping
+    """
+    global base_file_path
+    base_file_path = path
+
+
 def get_file(file_path):
     """
-    Return the content of a file given its path.
+    Return the content of a file given its path. If a base path was previously set by using
+    the set_file_path() function, the file path specified must be relative to that path.
 
     :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content
     """
-    file_path_parts = file_path.split("/")
-    file_path = os.path.join(*file_path_parts)
+    file_path_parts = (base_file_path + file_path).split("/")
+    file_path = os.path.abspath(os.path.join(*file_path_parts))
     if not os.path.exists(file_path):
         raise Exception(f' ERROR - Cannot read file "{file_path}". Does not exist.')
 
@@ -583,13 +608,14 @@ def get_file(file_path):
 
 def convert_file_to_base64(file_path):
     """
-    Return the content of a file given its path encoded in Base64.
+    Return the content of a file given its path encoded in Base64. If a base path was previously set by using
+    the set_file_path() function, the file path specified must be relative to that path.
 
     :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content encoded in Base64
     """
-    file_path_parts = file_path.split("/")
-    file_path = os.path.join(*file_path_parts)
+    file_path_parts = (base_base64_path + file_path).split("/")
+    file_path = os.path.abspath(os.path.join(*file_path_parts))
     if not os.path.exists(file_path):
         raise Exception(f' ERROR - Cannot read file "{file_path}". Does not exist.')
 
