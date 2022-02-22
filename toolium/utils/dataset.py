@@ -30,8 +30,8 @@ from copy import deepcopy
 logger = logging.getLogger(__name__)
 
 # Base path for BASE64 and FILE conversions
-base_base64_path = 'resources/'
-base_file_path = 'resources/'
+base_base64_path = ''
+base_file_path = ''
 
 
 def replace_param(param, language='es', infer_param_type=True):
@@ -597,8 +597,8 @@ def get_file(file_path):
     :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content
     """
-    file_path_parts = [os.getcwd()] + (base_file_path + file_path).split("/")
-    file_path = os.path.join(*file_path_parts)
+    file_path_parts = (base_file_path + file_path).split("/")
+    file_path = os.path.abspath(os.path.join(*file_path_parts))
     if not os.path.exists(file_path):
         raise Exception(f' ERROR - Cannot read file "{file_path}". Does not exist.')
 
@@ -614,8 +614,8 @@ def convert_file_to_base64(file_path):
     :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content encoded in Base64
     """
-    file_path_parts = [os.getcwd()] + (base_base64_path + file_path).split("/")
-    file_path = os.path.join(*file_path_parts)
+    file_path_parts = (base_base64_path + file_path).split("/")
+    file_path = os.path.abspath(os.path.join(*file_path_parts))
     if not os.path.exists(file_path):
         raise Exception(f' ERROR - Cannot read file "{file_path}". Does not exist.')
 

@@ -38,9 +38,11 @@ def test_a_file_param():
     """
     Verification of a mapped parameter as FILE
     """
+    result = map_param("[FILE:toolium/test/resources/document.txt]")
+    expected = "Document used to verify functionalities in MSS "
+    assert expected == result
     set_file_path('toolium/test/resources/')
     result = map_param("[FILE:document.txt]")
-    expected = "Document used to verify functionalities in MSS "
     assert expected == result
 
 
@@ -48,9 +50,11 @@ def test_a_base64_param():
     """
     Verification of a mapped parameter as BASE64
     """
+    result = map_param("[BASE64:toolium/test/resources/document.txt]")
+    expected = "RG9jdW1lbnQgdXNlZCB0byB2ZXJpZnkgZnVuY3Rpb25hbGl0aWVzIGluIE1TUyA="
+    assert expected == result
     set_base64_path('toolium/test/resources/')
     result = map_param("[BASE64:document.txt]")
-    expected = "RG9jdW1lbnQgdXNlZCB0byB2ZXJpZnkgZnVuY3Rpb25hbGl0aWVzIGluIE1TUyA="
     assert expected == result
 
 
