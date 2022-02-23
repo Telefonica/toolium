@@ -18,7 +18,7 @@ limitations under the License.
 
 import mock
 
-from toolium.utils.poeditor import get_valid_lang
+from toolium.utils.poeditor import get_valid_lang, load_poeditor_texts
 
 
 def test_poe_lang_param():
@@ -31,3 +31,17 @@ def test_poe_lang_param():
     assert get_valid_lang(context, 'es') == 'es'
     assert get_valid_lang(context, 'es-es') == 'es'
     assert get_valid_lang(context, 'es-co') == 'es-co'
+
+
+class ContextLogger(object):
+    def __init__(self):
+        self.logger = mock.MagicMock()
+
+
+def test_poe_texts_load_without_api_token():
+    """
+    Verification of POEditor texts load abortion when api_token is not configured
+    """
+    context = ContextLogger()
+    load_poeditor_texts(context)
+    context.logger.info.assert_called_with("POEditor is not configured")
