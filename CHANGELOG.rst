@@ -7,6 +7,7 @@ v2.4.0
 *Release date: In development*
 
 - Add set_file_path and set_base64_path functions to dataset module, to set base paths for FILE and BASE64 mappings
+- Fix detection of POEditor configuration not available
 
 v2.3.0
 ------

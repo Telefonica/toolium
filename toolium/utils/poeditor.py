@@ -329,5 +329,8 @@ def get_poeditor_api_token(context):
     try:
         api_token = os.environ['poeditor_api_token']
     except KeyError:
-        api_token = map_param('[CONF:poeditor.api_token]', context)
+        try:
+            api_token = context.project_config['poeditor']['api_token']
+        except (AttributeError, KeyError):
+            api_token = None
     return api_token
