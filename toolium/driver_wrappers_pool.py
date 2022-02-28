@@ -143,6 +143,9 @@ class DriverWrappersPool(object):
                 context.dyn_env.execute_after_scenario_steps(context)
             # Save webdriver logs on error or if it is enabled
             cls.save_all_webdriver_logs(test_name, test_passed)
+        elif scope == 'session':
+            from toolium.visual_test import VisualTest
+            VisualTest.update_latest_report()
 
         # Close browser and stop driver if it must not be reused
         reuse_driver = cls.get_default_wrapper().should_reuse_driver(scope, test_passed, context)
