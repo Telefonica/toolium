@@ -175,3 +175,16 @@ Toolium properties related to Visual Testing are stored in properties.cfg as ::
 - *pil*: uses Pillow to compare images. It's the default option and it's installed as a Toolium dependency.
 - *perceptualdiff*:  uses `PerceptualDiff <http://pdiff.sourceforge.net>`_ to compare images. It is a faster library and besides generates a diff image, highlighting the differences between the baseline image and the new screenshot. It requires to be installed separately and depends on your host.
 - *imagemagick*:  uses `ImageMagick <http://www.imagemagick.org>`_ to compare images. It also generates a diff image, highlighting the differences in a more visual way than perceptualdiff. It requires to be installed separately and depends on your host.
+
+How to view Visual Testing report in Jenkins?
+---------------------------------------------
+
+The HTML report is generated in `output/visualtests/latest` folder together with screenshots and baseline images.
+One option to visualize this report in Jenkins is using `HTML Publisher <https://plugins.jenkins.io/htmlpublisher/>`_ plugin.
+Install it in your Jenkins instance, access to your Jenkins job configuration and add a new *Publish HTML Reports* Post-Built Action.
+Configure `output/visualtests/latest` as *HTML directory to archive* and `VisualTests.html` as *Index page*, as shown in the following image:
+
+.. image:: visual_testing_jenkins.jpg
+   :scale: 50%
+
+Take into account that the report could be not properly visualized in Chrome due to cookies management: https://stackoverflow.com/questions/69928196/chrome-not-sending-session-cookie-for-css-files-published-on-jenkins

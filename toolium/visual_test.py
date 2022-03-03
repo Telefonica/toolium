@@ -24,7 +24,6 @@ import re
 import shutil
 from io import BytesIO
 from os import path
-
 from selenium.common.exceptions import NoSuchElementException
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -321,7 +320,11 @@ class VisualTest(object):
         :param message: error message
         """
         self.results[result] += 1
-        row = self._get_html_row(result, report_name, image_file, baseline_file, message)
+        output_baseline_file = None
+        if baseline_file is not None:
+            output_baseline_file = os.path.join(self.output_directory, os.path.basename(baseline_file))
+            shutil.copyfile(baseline_file, output_baseline_file)
+        row = self._get_html_row(result, report_name, image_file, output_baseline_file, message)
         self._add_data_to_report_before_tag(row, '</tbody>')
         self._update_report_summary()
 
@@ -427,3 +430,14 @@ class VisualTest(object):
             diff_message = message
 
         return diff_message
+
+    @staticmethod
+    def update_latest_report():
+        """
+        Duplicate current visual testing report into latest folder
+        """
+        if os.path.exists(DriverWrappersPool.visual_output_directory):
+            latest_directory = os.path.join(os.path.dirname(DriverWrappersPool.visual_output_directory), 'latest')
+            if os.path.exists(latest_directory):
+                shutil.rmtree(latest_directory)
+            shutil.copytree(DriverWrappersPool.visual_output_directory, latest_directory)

@@ -8,6 +8,8 @@ v2.4.0
 
 - Add set_file_path and set_base64_path functions to dataset module, to set base paths for FILE and BASE64 mappings
 - Fix detection of POEditor configuration not available
+- Visual testing baseline images are copied to output folder to facilitate report visualization in Jenkins
+- Visual testing output folder is copied to *latest* folder to allow HTML Publisher Jenkins plugin to publish it
 
 v2.3.0
 ------
