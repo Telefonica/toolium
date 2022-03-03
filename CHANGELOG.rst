@@ -4,7 +4,7 @@ Toolium Changelog
 v2.4.0
 ------
 
-*Release date: In development*
+*Release date: 2022-03-04*
 
 - Add set_file_path and set_base64_path functions to dataset module, to set base paths for FILE and BASE64 mappings
 - Visual testing baseline images are copied to output folder to facilitate report visualization in Jenkins
