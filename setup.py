@@ -54,6 +54,7 @@ setup(
     author_email='ruben.gonzalezalonso@telefonica.com',
     url='https://github.com/telefonica/toolium',
     description='Wrapper tool of Selenium and Appium libraries to test web and mobile applications in a single project',
+    long_description_content_type='text/x-rst',
     long_description=get_long_description(),
     keywords='selenium appium webdriver web_automation mobile_automation page_object visual_testing bdd lettuce behave'
              ' pytest',
