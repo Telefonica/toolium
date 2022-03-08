@@ -33,6 +33,11 @@ logger = logging.getLogger(__name__)
 base_base64_path = ''
 base_file_path = ''
 
+language = None
+language_config = None
+project_config = None
+toolium_config = None
+
 
 def replace_param(param, language='es', infer_param_type=True):
     """
@@ -305,12 +310,12 @@ def map_one_param(param, context=None):
     """
     Analyze the pattern in the given string and find out its transformed value.
     Available tags and replacement values:
-        [CONF:xxxx] Value from the config dict in context.project_config for the key xxxx (dot notation is used
+        [CONF:xxxx] Value from the config dict in project_config global variable for the key xxxx (dot notation is used
         for keys, e.g. key_1.key_2.0.key_3)
-        [LANG:xxxx] String from the texts dict in context.language_dict for the key xxxx, using the language
-        specified in context.language (dot notation is used for keys, e.g. button.label)
+        [LANG:xxxx] String from the texts dict in language_config global variable for the key xxxx, using the language
+        specified in language global variable (dot notation is used for keys, e.g. button.label)
         [POE:xxxx] Definition(s) from the POEditor terms list in context.poeditor_terms for the term xxxx
-        [TOOLIUM:xxxx] Value from the toolium config in context.toolium_config for the key xxxx (key format is
+        [TOOLIUM:xxxx] Value from the toolium config in toolium_config global variable for the key xxxx (key format is
         section_option, e.g. Driver_type)
         [CONTEXT:xxxx] Value from the context storage dict for the key xxxx, or value of the context attribute xxxx,
         if the former does not exist
@@ -329,14 +334,14 @@ def map_one_param(param, context=None):
 
     mapping_functions = {
         "CONF": {
-            "prerequisites": context and hasattr(context, "project_config"),
+            "prerequisites": project_config,
             "function": map_json_param,
-            "args": [key, context.project_config if hasattr(context, "project_config") else None]
+            "args": [key, project_config]
         },
         "TOOLIUM": {
-            "prerequisites": context,
+            "prerequisites": toolium_config,
             "function": map_toolium_param,
-            "args": [key, context]
+            "args": [key, toolium_config]
         },
         "CONTEXT": {
             "prerequisites": context,
@@ -344,9 +349,9 @@ def map_one_param(param, context=None):
             "args": [key, context]
         },
         "LANG": {
-            "prerequisites": context,
+            "prerequisites": language_config and language,
             "function": get_message_property,
-            "args": [key, context]
+            "args": [key, language_config, language]
         },
         "POE": {
             "prerequisites": context,
@@ -454,16 +459,16 @@ def hide_passwords(key, value):
     return hidden_value if any(hidden_key in key for hidden_key in hidden_keys) else value
 
 
-def map_toolium_param(param, context):
+def map_toolium_param(param, config):
     """
-    Find the value of the given param using it as a key in the current toolium configuration (context.toolium_config).
+    Find the value of the given param using it as a key in the given toolium configuration.
     The param is expected to be in the form <section>_<property>, so for example "TextExecution_environment" could be
     used to retrieve the value of this toolium property (i.e. the string "QA"):
     [TestExecution]
     environment: QA
 
     :param param: key to be searched (e.g. "TextExecution_environment")
-    :param context: Behave context object
+    :param config: toolium config object
     :return: mapped value
     """
     try:
@@ -475,7 +480,7 @@ def map_toolium_param(param, context):
         raise IndexError(msg)
 
     try:
-        mapped_value = context.toolium_config.get(section, property_name)
+        mapped_value = config.get(section, property_name)
         logger.info(f"Mapping Toolium config param 'param' to its configured value '{mapped_value}'")
     except Exception:
         msg = f"'{param}' param not found in Toolium config file"
@@ -509,27 +514,28 @@ def get_value_from_context(param, context):
         raise AttributeError(msg)
 
 
-def get_message_property(param, context):
+def get_message_property(param, language_dict, language_key):
     """
-    Return the message for the given param, using it as a key in the list of language properties previously loaded
-    in the context (context.language_dict). Dot notation is used (e.g. "home.button.send").
+    Return the message for the given param, using it as a key in the list of language properties.
+    Dot notation is used (e.g. "home.button.send").
 
     :param param: message key
-    :param context: Behave context object
-    :return: the message mapped to the given key in the language set in the context (context.language)
+    :param language_dict: dict with language properties
+    :param language_key: language key
+    :return: the message mapped to the given key in the given language
     """
     key_list = param.split(".")
-    language_dict_copy = deepcopy(context.language_dict)
+    language_dict_copy = deepcopy(language_dict)
     try:
         for key in key_list:
             language_dict_copy = language_dict_copy[key]
-        logger.info(f"Mapping language param '{param}' to its configured value '{language_dict_copy[context.language]}'")
+        logger.info(f"Mapping language param '{param}' to its configured value '{language_dict_copy[language_key]}'")
     except KeyError:
         msg = f"Mapping chain '{param}' not found in the language properties file"
         logger.error(msg)
         raise KeyError(msg)
 
-    return language_dict_copy[context.language]
+    return language_dict_copy[language_key]
 
 
 def get_translation_by_poeditor_reference(reference, context):

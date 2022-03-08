@@ -21,6 +21,7 @@ import os
 import pytest
 
 from toolium.config_parser import ExtendedConfigParser
+from toolium.utils import dataset
 from toolium.utils.dataset import map_param, set_base64_path, set_file_path, hide_passwords
 
 
@@ -62,10 +63,9 @@ def test_a_lang_param():
     """
     Verification of a mapped parameter as LANG
     """
-    context = mock.MagicMock()
-    context.language_dict = {"home": {"button": {"send": {"es": "enviar", "en": "send"}}}}
-    context.language = "es"
-    result = map_param("[LANG:home.button.send]", context)
+    dataset.language_config = {"home": {"button": {"send": {"es": "enviar", "en": "send"}}}}
+    dataset.language = "es"
+    result = map_param("[LANG:home.button.send]")
     expected = "enviar"
     assert expected == result
 
@@ -74,10 +74,9 @@ def test_a_toolium_param():
     """
     Verification of a mapped parameter as TOOLIUM
     """
-    context = mock.MagicMock()
     config_file_path = os.path.join("toolium", "test", "resources", "toolium.cfg")
-    context.toolium_config = ExtendedConfigParser.get_config_from_file(config_file_path)
-    result = map_param("[TOOLIUM:TestExecution_environment]", context)
+    dataset.toolium_config = ExtendedConfigParser.get_config_from_file(config_file_path)
+    result = map_param("[TOOLIUM:TestExecution_environment]")
     expected = "QA"
     assert expected == result
 
@@ -86,9 +85,8 @@ def test_a_conf_param():
     """
     Verification of a mapped parameter as CONF
     """
-    context = mock.MagicMock()
-    context.project_config = {"service": {"port": 80}}
-    result = map_param("[CONF:service.port]", context)
+    dataset.project_config = {"service": {"port": 80}}
+    result = map_param("[CONF:service.port]")
     expected = 80
     assert expected == result
 
@@ -338,9 +336,8 @@ def test_a_combi_of_textplusconfig_integer():
     """
     Verification of a combination of text plus a config param
     """
-    context = mock.MagicMock()
-    context.project_config = {"service": {"port": 80}}
-    result = map_param("use port [CONF:service.port]", context)
+    dataset.project_config = {"service": {"port": 80}}
+    result = map_param("use port [CONF:service.port]")
     expected = "use port 80"
     assert expected == result
 
@@ -371,9 +368,8 @@ def test_a_conf_param_with_special_characters():
     """
     Verification of a combination of text plus a config param with special characters
     """
-    context = mock.MagicMock()
-    context.project_config = {"user": "user-1", "password": "p4:ssw0_rd"}
-    result = map_param("[CONF:user]-an:d_![CONF:password]", context)
+    dataset.project_config = {"user": "user-1", "password": "p4:ssw0_rd"}
+    result = map_param("[CONF:user]-an:d_![CONF:password]")
     expected = "user-1-an:d_!p4:ssw0_rd"
     assert expected == result
 
