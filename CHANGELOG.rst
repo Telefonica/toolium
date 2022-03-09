@@ -6,6 +6,8 @@ v2.4.1
 
 *Release date: In development*
 
+- Update map_param method to use dataset global variables instead of context parameter
+
 v2.4.0
 ------
 

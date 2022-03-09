@@ -63,7 +63,7 @@ def test_a_lang_param():
     """
     Verification of a mapped parameter as LANG
     """
-    dataset.language_config = {"home": {"button": {"send": {"es": "enviar", "en": "send"}}}}
+    dataset.language_terms = {"home": {"button": {"send": {"es": "enviar", "en": "send"}}}}
     dataset.language = "es"
     result = map_param("[LANG:home.button.send]")
     expected = "enviar"
@@ -98,7 +98,7 @@ def test_a_context_param():
     context = mock.MagicMock()
     context.attribute = "attribute value"
     context.storage = {"storage_key": "storage entry value"}
-    dataset.context = context
+    dataset.behave_context = context
 
     result_att = map_param("[CONTEXT:attribute]")
     expected_att = "attribute value"
@@ -112,7 +112,7 @@ def test_a_poe_param_single_result():
     """
     Verification of a POE mapped parameter with a single result for a reference
     """
-    dataset.poeditor_config = [
+    dataset.poeditor_terms = [
         {
             "term": "Poniendo mute",
             "definition": "Ahora la tele está silenciada",
@@ -128,7 +128,7 @@ def test_a_poe_param_no_result_assertion():
     """
     Verification of a POE mapped parameter without result
     """
-    dataset.poeditor_config = [
+    dataset.poeditor_terms = [
         {
             "term": "Poniendo mute",
             "definition": "Ahora la tele está silenciada",
@@ -145,7 +145,7 @@ def test_a_poe_param_prefix_with_no_definition():
     Verification of a POE mapped parameter with a single result for a reference
     """
     dataset.project_config = {'poeditor': {'key_field': 'reference', 'search_type': 'contains', 'prefixes': ['PRE.']}}
-    dataset.poeditor_config = [
+    dataset.poeditor_terms = [
         {
             "term": "Hola, estoy aquí para ayudarte",
             "definition": None,
@@ -167,7 +167,7 @@ def test_a_poe_param_single_result_selecting_a_key_field():
     Verification of a POE mapped parameter with a single result for a term
     """
     dataset.project_config = {'poeditor': {'key_field': 'term'}}
-    dataset.poeditor_config = [
+    dataset.poeditor_terms = [
         {
             "term": "loginSelectLine_text_subtitle",
             "definition": "Te damos la bienvenida",
@@ -187,7 +187,7 @@ def test_a_poe_param_multiple_results():
     Verification of a POE mapped parameter with several results for a reference
     """
     dataset.project_config = {'poeditor': {'key_field': 'reference'}}
-    dataset.poeditor_config = [
+    dataset.poeditor_terms = [
         {
             "term": "Hola, estoy aquí para ayudarte",
             "definition": "Hola, estoy aquí para ayudarte",
@@ -212,7 +212,7 @@ def test_a_poe_param_multiple_options_but_only_one_result():
     Verification of a POE mapped parameter with a single result from several options for a key
     """
     dataset.project_config = {'poeditor': {'key_field': 'term', 'search_type': 'exact'}}
-    dataset.poeditor_config = [
+    dataset.poeditor_terms = [
         {
             "term": "loginSelectLine_text_subtitle",
             "definition": "Te damos la bienvenida_1",
@@ -240,7 +240,7 @@ def test_a_poe_param_with_prefix():
     Verification of a POE mapped parameter with several results for a reference, filtered with a prefix
     """
     dataset.project_config = {'poeditor': {'key_field': 'reference', 'search_type': 'contains', 'prefixes': ['PRE.']}}
-    dataset.poeditor_config = [
+    dataset.poeditor_terms = [
         {
             "term": "Hola, estoy aquí para ayudarte",
             "definition": "Hola, estoy aquí para ayudarte",
@@ -262,7 +262,7 @@ def test_a_poe_param_with_two_prefixes():
     Verification of a POE mapped parameter with several results for a reference, filtered with two prefixes
     """
     dataset.project_config = {'poeditor': {'prefixes': ['MH.', 'PRE.']}}
-    dataset.poeditor_config = [
+    dataset.poeditor_terms = [
         {
             "term": "Hola, estoy aquí para ayudarte",
             "definition": "Hola, estoy aquí para ayudarte",
@@ -289,7 +289,7 @@ def test_a_poe_param_with_prefix_and_exact_resource():
     Verification of a POE mapped parameter that uses an exact resource name and has a prefix configured
     """
     dataset.project_config = {'poeditor': {'prefixes': ['PRE.']}}
-    dataset.poeditor_config = [
+    dataset.poeditor_terms = [
         {
             "term": "Hola, estoy aquí para ayudarte",
             "definition": "Hola, estoy aquí para ayudarte",
