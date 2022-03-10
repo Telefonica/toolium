@@ -33,6 +33,13 @@ logger = logging.getLogger(__name__)
 base_base64_path = ''
 base_file_path = ''
 
+language = None
+language_terms = None
+project_config = None
+toolium_config = None
+poeditor_terms = None
+behave_context = None
+
 
 def replace_param(param, language='es', infer_param_type=True):
     """
@@ -257,7 +264,7 @@ def _infer_param_type(param):
     E.g. "1234" -> 1234, "0.50" -> 0.5, "True" -> True, "None" -> None,
     "['a', None]" -> ['a', None], "{'a': None}" -> {'a': None},
     '["a", null]' -> ["a", None], '{"a": null}' -> {"a": None}
-
+v
     :param param: data to be transformed
     :return data with the inferred type
     """
@@ -282,9 +289,20 @@ def map_param(param, context=None):
     See map_one_param function for a description of the available tags and replacement logic.
 
     :param param: string parameter
-    :param context: Behave context object
+    :param context: Behave context object (deprecated parameter)
     :return: string with the applied replacements
     """
+    if context:
+        context.logger.warning('Deprecated context parameter used in map_param method. Please, configure '
+                               'dataset global variables instead of passing context to map_param.')
+        global language, language_terms, project_config, toolium_config, poeditor_terms, behave_context
+        language = context.language if hasattr(context, 'language') else None
+        language_terms = context.language_dict if hasattr(context, 'language_dict') else None
+        project_config = context.project_config if hasattr(context, 'project_config') else None
+        toolium_config = context.toolium_config if hasattr(context, 'toolium_config') else None
+        poeditor_terms = context.poeditor_export if hasattr(context, 'poeditor_export') else None
+        behave_context = context
+
     if not isinstance(param, str):
         return param
 
@@ -293,33 +311,32 @@ def map_param(param, context=None):
 
     # The parameter is just one config value
     if map_expressions.split(param) == ['', '']:
-        return map_one_param(param, context)
+        return map_one_param(param)
 
     # The parameter is a combination of text and configuration parameters.
     for match in map_expressions.findall(param):
-        param = param.replace(match, str(map_one_param(match, context)))
+        param = param.replace(match, str(map_one_param(match)))
     return param
 
 
-def map_one_param(param, context=None):
+def map_one_param(param):
     """
     Analyze the pattern in the given string and find out its transformed value.
     Available tags and replacement values:
-        [CONF:xxxx] Value from the config dict in context.project_config for the key xxxx (dot notation is used
+        [CONF:xxxx] Value from the config dict in project_config global variable for the key xxxx (dot notation is used
         for keys, e.g. key_1.key_2.0.key_3)
-        [LANG:xxxx] String from the texts dict in context.language_dict for the key xxxx, using the language
-        specified in context.language (dot notation is used for keys, e.g. button.label)
-        [POE:xxxx] Definition(s) from the POEditor terms list in context.poeditor_terms for the term xxxx
-        [TOOLIUM:xxxx] Value from the toolium config in context.toolium_config for the key xxxx (key format is
+        [LANG:xxxx] String from the texts dict in language_terms global variable for the key xxxx, using the language
+        specified in language global variable (dot notation is used for keys, e.g. button.label)
+        [POE:xxxx] Definition(s) from the POEditor terms list in poeditor_terms global variable for the term xxxx
+        [TOOLIUM:xxxx] Value from the toolium config in toolium_config global variable for the key xxxx (key format is
         section_option, e.g. Driver_type)
-        [CONTEXT:xxxx] Value from the context storage dict for the key xxxx, or value of the context attribute xxxx,
-        if the former does not exist
+        [CONTEXT:xxxx] Value from the behave context storage dict in behave_context global variable for the key xxxx, or
+        value of the behave context attribute xxxx, if the former does not exist
         [ENV:xxxx] Value of the OS environment variable xxxx
         [FILE:xxxx] String with the content of the file in the path xxxx
         [BASE64:xxxx] String with the base64 representation of the file content in the path xxxx
 
     :param param: string parameter
-    :param context: Behave context object
     :return: transformed value or the original string if no transformation could be applied
     """
     if not isinstance(param, str):
@@ -329,29 +346,29 @@ def map_one_param(param, context=None):
 
     mapping_functions = {
         "CONF": {
-            "prerequisites": context and hasattr(context, "project_config"),
+            "prerequisites": project_config,
             "function": map_json_param,
-            "args": [key, context.project_config if hasattr(context, "project_config") else None]
+            "args": [key, project_config]
         },
         "TOOLIUM": {
-            "prerequisites": context,
+            "prerequisites": toolium_config,
             "function": map_toolium_param,
-            "args": [key, context]
+            "args": [key, toolium_config]
         },
         "CONTEXT": {
-            "prerequisites": context,
+            "prerequisites": behave_context,
             "function": get_value_from_context,
-            "args": [key, context]
+            "args": [key, behave_context]
         },
         "LANG": {
-            "prerequisites": context,
+            "prerequisites": language_terms and language,
             "function": get_message_property,
-            "args": [key, context]
+            "args": [key, language_terms, language]
         },
         "POE": {
-            "prerequisites": context,
+            "prerequisites": poeditor_terms,
             "function": get_translation_by_poeditor_reference,
-            "args": [key, context]
+            "args": [key, poeditor_terms]
         },
         "ENV": {
             "prerequisites": True,
@@ -454,16 +471,16 @@ def hide_passwords(key, value):
     return hidden_value if any(hidden_key in key for hidden_key in hidden_keys) else value
 
 
-def map_toolium_param(param, context):
+def map_toolium_param(param, config):
     """
-    Find the value of the given param using it as a key in the current toolium configuration (context.toolium_config).
+    Find the value of the given param using it as a key in the given toolium configuration.
     The param is expected to be in the form <section>_<property>, so for example "TextExecution_environment" could be
     used to retrieve the value of this toolium property (i.e. the string "QA"):
     [TestExecution]
     environment: QA
 
     :param param: key to be searched (e.g. "TextExecution_environment")
-    :param context: Behave context object
+    :param config: toolium config object
     :return: mapped value
     """
     try:
@@ -475,7 +492,7 @@ def map_toolium_param(param, context):
         raise IndexError(msg)
 
     try:
-        mapped_value = context.toolium_config.get(section, property_name)
+        mapped_value = config.get(section, property_name)
         logger.info(f"Mapping Toolium config param 'param' to its configured value '{mapped_value}'")
     except Exception:
         msg = f"'{param}' param not found in Toolium config file"
@@ -509,47 +526,45 @@ def get_value_from_context(param, context):
         raise AttributeError(msg)
 
 
-def get_message_property(param, context):
+def get_message_property(param, language_terms, language_key):
     """
-    Return the message for the given param, using it as a key in the list of language properties previously loaded
-    in the context (context.language_dict). Dot notation is used (e.g. "home.button.send").
+    Return the message for the given param, using it as a key in the list of language properties.
+    Dot notation is used (e.g. "home.button.send").
 
     :param param: message key
-    :param context: Behave context object
-    :return: the message mapped to the given key in the language set in the context (context.language)
+    :param language_terms: dict with language terms
+    :param language_key: language key
+    :return: the message mapped to the given key in the given language
     """
     key_list = param.split(".")
-    language_dict_copy = deepcopy(context.language_dict)
+    language_terms_aux = deepcopy(language_terms)
     try:
         for key in key_list:
-            language_dict_copy = language_dict_copy[key]
-        logger.info(f"Mapping language param '{param}' to its configured value '{language_dict_copy[context.language]}'")
+            language_terms_aux = language_terms_aux[key]
+        logger.info(f"Mapping language param '{param}' to its configured value '{language_terms_aux[language_key]}'")
     except KeyError:
         msg = f"Mapping chain '{param}' not found in the language properties file"
         logger.error(msg)
         raise KeyError(msg)
 
-    return language_dict_copy[context.language]
+    return language_terms_aux[language_key]
 
 
-def get_translation_by_poeditor_reference(reference, context):
+def get_translation_by_poeditor_reference(reference, poeditor_config):
     """
-    Return the translation(s) for the given POEditor reference from the terms previously loaded in the context.
+    Return the translation(s) for the given POEditor reference from the given terms in poeditor_terms.
 
     :param reference: POEditor reference
-    :param context: Behave context object
+    :param poeditor_config: poeditor terms
     :return: list of strings with the translations from POEditor or string with the translation if only one was found
     """
-    try:
-        context.poeditor_terms = context.poeditor_export
-    except AttributeError:
-        raise Exception("POEditor texts haven't been correctly downloaded!")
-    poeditor_conf = context.project_config['poeditor'] if 'poeditor' in context.project_config else {}
+    poeditor_conf = project_config['poeditor'] if 'poeditor' in project_config else {}
     key = poeditor_conf['key_field'] if 'key_field' in poeditor_conf else 'reference'
     search_type = poeditor_conf['search_type'] if 'search_type' in poeditor_conf else 'contains'
     # Get POEditor prefixes and add no prefix option
     poeditor_prefixes = poeditor_conf['prefixes'] if 'prefixes' in poeditor_conf else []
     poeditor_prefixes.append('')
+    translation = []
     for prefix in poeditor_prefixes:
         if len(reference.split(':')) > 1 and prefix != '':
             # If there are prefixes and the resource contains ':' apply prefix in the correct position
@@ -557,10 +572,10 @@ def get_translation_by_poeditor_reference(reference, context):
         else:
             complete_reference = '%s%s' % (prefix, reference)
         if search_type == 'exact':
-            translation = [term['definition'] for term in context.poeditor_terms
+            translation = [term['definition'] for term in poeditor_config
                            if complete_reference == term[key] and term['definition'] is not None]
         else:
-            translation = [term['definition'] for term in context.poeditor_terms
+            translation = [term['definition'] for term in poeditor_config
                            if complete_reference in term[key] and term['definition'] is not None]
         if len(translation) > 0:
             break

@@ -183,11 +183,11 @@ functions or check the :ref:`dataset <dataset>` module for more implementation d
 
 `map_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.map_param>`_:
 
-* :code:`[CONF:xxxx]`: Value from the config dict in context.project_config for the key xxxx
-* :code:`[LANG:xxxx]`: String from the texts dict in context.language_dict for the key xxxx, using the language specified in context.language
-* :code:`[POE:xxxx]`: Definition(s) from the POEditor terms list in context.poeditor_terms for the term xxxx (see :ref:`poeditor <poeditor>` module for details)
-* :code:`[TOOLIUM:xxxx]`: Value from the toolium config in context.toolium_config for the key xxxx
-* :code:`[CONTEXT:xxxx]`: Value from the context storage dict for the key xxxx, or value of the context attribute xxxx, if the former does not exist
+* :code:`[CONF:xxxx]`: Value from the config dict in dataset.project_config for the key xxxx
+* :code:`[LANG:xxxx]`: String from the texts dict in dataset.language_terms for the key xxxx, using the language specified in dataset.language
+* :code:`[POE:xxxx]`: Definition(s) from the POEditor terms list in dataset.poeditor_terms for the term xxxx (see :ref:`poeditor <poeditor>` module for details)
+* :code:`[TOOLIUM:xxxx]`: Value from the toolium config in dataset.toolium_config for the key xxxx
+* :code:`[CONTEXT:xxxx]`: Value from the behave context storage dict in dataset.behave_context for the key xxxx, or value of the behave context attribute xxxx, if the former does not exist
 * :code:`[ENV:xxxx]`: Value of the OS environment variable xxxx
 * :code:`[FILE:xxxx]`: String with the content of the file in the path xxxx
 * :code:`[BASE64:xxxx]`: String with the base64 representation of the file content in the path xxxx
