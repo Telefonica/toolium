@@ -8,6 +8,8 @@ v2.5.0
 
 - Update map_param method to use dataset global variables instead of context parameter
 - Dataset variables needed for TOOLIUM, CONTEXT and POE replacements are set automatically
+- Make POEditor methods independent of behave context
+- Fix POEditor bug writing to file when terms contain slashes: from 'http:\/\/www.example.com' to 'http://www.example.com'
 
 v2.4.0
 ------

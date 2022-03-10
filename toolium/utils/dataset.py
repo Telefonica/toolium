@@ -269,7 +269,7 @@ def _infer_param_type(param):
     E.g. "1234" -> 1234, "0.50" -> 0.5, "True" -> True, "None" -> None,
     "['a', None]" -> ['a', None], "{'a': None}" -> {'a': None},
     '["a", null]' -> ["a", None], '{"a": null}' -> {"a": None}
-v
+
     :param param: data to be transformed
     :return data with the inferred type
     """
@@ -298,8 +298,8 @@ def map_param(param, context=None):
     :return: string with the applied replacements
     """
     if context:
-        context.logger.warning('Deprecated context parameter used in map_param method. Please, configure '
-                               'dataset global variables instead of passing context to map_param.')
+        logger.warning('Deprecated context parameter has been sent to map_param method. Please, configure dataset'
+                       ' global variables instead of passing context to map_param.')
         global language, language_terms, project_config, toolium_config, poeditor_terms, behave_context
         if hasattr(context, 'language'):
             language = context.language
@@ -560,19 +560,19 @@ def get_message_property(param, language_terms, language_key):
     return language_terms_aux[language_key]
 
 
-def get_translation_by_poeditor_reference(reference, poeditor_config):
+def get_translation_by_poeditor_reference(reference, poeditor_terms):
     """
     Return the translation(s) for the given POEditor reference from the given terms in poeditor_terms.
 
     :param reference: POEditor reference
-    :param poeditor_config: poeditor terms
+    :param poeditor_terms: poeditor terms
     :return: list of strings with the translations from POEditor or string with the translation if only one was found
     """
-    poeditor_conf = project_config['poeditor'] if 'poeditor' in project_config else {}
-    key = poeditor_conf['key_field'] if 'key_field' in poeditor_conf else 'reference'
-    search_type = poeditor_conf['search_type'] if 'search_type' in poeditor_conf else 'contains'
+    poeditor_config = project_config['poeditor'] if 'poeditor' in project_config else {}
+    key = poeditor_config['key_field'] if 'key_field' in poeditor_config else 'reference'
+    search_type = poeditor_config['search_type'] if 'search_type' in poeditor_config else 'contains'
     # Get POEditor prefixes and add no prefix option
-    poeditor_prefixes = poeditor_conf['prefixes'] if 'prefixes' in poeditor_conf else []
+    poeditor_prefixes = poeditor_config['prefixes'] if 'prefixes' in poeditor_config else []
     poeditor_prefixes.append('')
     translation = []
     for prefix in poeditor_prefixes:
@@ -582,10 +582,10 @@ def get_translation_by_poeditor_reference(reference, poeditor_config):
         else:
             complete_reference = '%s%s' % (prefix, reference)
         if search_type == 'exact':
-            translation = [term['definition'] for term in poeditor_config
+            translation = [term['definition'] for term in poeditor_terms
                            if complete_reference == term[key] and term['definition'] is not None]
         else:
-            translation = [term['definition'] for term in poeditor_config
+            translation = [term['definition'] for term in poeditor_terms
                            if complete_reference in term[key] and term['definition'] is not None]
         if len(translation) > 0:
             break

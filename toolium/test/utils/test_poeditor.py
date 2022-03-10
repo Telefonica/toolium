@@ -17,31 +17,69 @@ limitations under the License.
 """
 
 import mock
+import os
+import pytest
 
+from toolium.config_parser import ExtendedConfigParser
+from toolium.utils import dataset, poeditor
 from toolium.utils.poeditor import get_valid_lang, load_poeditor_texts
 
 
-def test_poe_lang_param():
+def test_get_valid_lang():
     """
     Verification of a POEditor language param
     """
-    context = mock.MagicMock()
-    context.poeditor_language_list = ['en-gb', 'de', 'pt-br', 'es', 'es-ar', 'es-cl', 'es-co', 'es-ec']
-    assert get_valid_lang(context, 'pt-br') == 'pt-br'
-    assert get_valid_lang(context, 'es') == 'es'
-    assert get_valid_lang(context, 'es-es') == 'es'
-    assert get_valid_lang(context, 'es-co') == 'es-co'
+    language_codes = ['en-gb', 'de', 'pt-br', 'es', 'es-ar', 'es-cl', 'es-co', 'es-ec']
+    assert get_valid_lang(language_codes, 'pt-br') == 'pt-br'
+    assert get_valid_lang(language_codes, 'es') == 'es'
+    assert get_valid_lang(language_codes, 'es-es') == 'es'
+    assert get_valid_lang(language_codes, 'es-co') == 'es-co'
 
 
-class ContextLogger(object):
-    def __init__(self):
-        self.logger = mock.MagicMock()
+def test_get_valid_lang_wrong_lang():
+    """
+    Verification of a POEditor language param
+    """
+    language_codes = ['en-gb', 'de', 'pt-br']
+    with pytest.raises(Exception) as excinfo:
+        get_valid_lang(language_codes, 'en-en')
+    assert "Language en-en is not included in valid codes: en-gb, de, pt-br" == str(excinfo.value)
 
 
-def test_poe_texts_load_without_api_token():
+def test_poe_lang_param_from_project_config():
+    """
+    Verification of a POEditor language param getting language from project config
+    """
+    config_file_path = os.path.join("toolium", "test", "resources", "toolium.cfg")
+    dataset.toolium_config = ExtendedConfigParser.get_config_from_file(config_file_path)
+    language_codes = ['en-gb', 'de', 'pt-br', 'es', 'es-ar', 'es-cl', 'es-co', 'es-ec', 'en']
+    assert get_valid_lang(language_codes) == 'en'
+
+
+def test_load_poeditor_texts_without_api_token():
     """
     Verification of POEditor texts load abortion when api_token is not configured
     """
-    context = ContextLogger()
+    dataset.project_config = {
+        "poeditor": {
+            "project_name": "My-Bot"
+        }
+    }
+    poeditor.logger = mock.MagicMock()
+
+    load_poeditor_texts()
+    poeditor.logger.info.assert_called_with("POEditor is not configured")
+
+
+def test_load_poeditor_texts_without_api_token_deprecated():
+    """
+    Verification of POEditor texts load abortion when api_token is not configured and deprecated message is logged
+    """
+    context = mock.MagicMock()
+    poeditor.logger = mock.MagicMock()
+
     load_poeditor_texts(context)
-    context.logger.info.assert_called_with("POEditor is not configured")
+    poeditor.logger.info.assert_called_with("POEditor is not configured")
+    poeditor.logger.warning.assert_called_with("Deprecated context parameter has been sent to load_poeditor_texts "
+                                               "method. Please, configure POEditor global variables instead of passing "
+                                               "context to load_poeditor_texts.")
