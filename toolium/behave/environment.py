@@ -26,6 +26,7 @@ except ImportError:
     def install_pytest_asserts():
         pass
 
+from toolium.utils import dataset
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.jira import add_jira_status, change_all_jira_status, save_jira_conf
@@ -64,6 +65,10 @@ def before_all(context):
 
     # Behave dynamic environment
     context.dyn_env = DynamicEnvironment(logger=context.logger)
+
+    # Initialize dataset behave variables
+    dataset.behave_context = context
+    dataset.toolium_config = context.toolium_config
 
 
 def before_feature(context, feature):
