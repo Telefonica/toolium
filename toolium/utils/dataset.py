@@ -16,14 +16,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os
-import re
-import datetime
-import logging
-import random as r
-import string
-import json
 import base64
+import datetime
+import json
+import logging
+import os
+import random as r
+import re
+import string
 from ast import literal_eval
 from copy import deepcopy
 
@@ -33,12 +33,17 @@ logger = logging.getLogger(__name__)
 base_base64_path = ''
 base_file_path = ''
 
+# Global variables used in map_param replacements
+
+# Language terms and project config are not set by toolium, they must be set from test project
 language = None
 language_terms = None
 project_config = None
+# Toolium config and behave context are set when toolium before_all method is called in behave tests
 toolium_config = None
-poeditor_terms = None
 behave_context = None
+# POEditor terms are set when load_poeditor_texts or export_poeditor_project poeditor.py methods are called
+poeditor_terms = None
 
 
 def replace_param(param, language='es', infer_param_type=True):
@@ -296,11 +301,16 @@ def map_param(param, context=None):
         context.logger.warning('Deprecated context parameter used in map_param method. Please, configure '
                                'dataset global variables instead of passing context to map_param.')
         global language, language_terms, project_config, toolium_config, poeditor_terms, behave_context
-        language = context.language if hasattr(context, 'language') else None
-        language_terms = context.language_dict if hasattr(context, 'language_dict') else None
-        project_config = context.project_config if hasattr(context, 'project_config') else None
-        toolium_config = context.toolium_config if hasattr(context, 'toolium_config') else None
-        poeditor_terms = context.poeditor_export if hasattr(context, 'poeditor_export') else None
+        if hasattr(context, 'language'):
+            language = context.language
+        if hasattr(context, 'language_dict'):
+            language_terms = context.language_dict
+        if hasattr(context, 'project_config'):
+            project_config = context.project_config
+        if hasattr(context, 'toolium_config'):
+            toolium_config = context.toolium_config
+        if hasattr(context, 'poeditor_export'):
+            poeditor_terms = context.poeditor_export
         behave_context = context
 
     if not isinstance(param, str):

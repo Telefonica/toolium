@@ -23,6 +23,7 @@ import requests
 
 from configparser import NoOptionError
 from urllib.request import URLopener
+from toolium.utils import dataset
 from toolium.utils.dataset import map_param
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
@@ -86,7 +87,7 @@ def get_poeditor_project_info_by_name(context, project_name=None):
     :return: N/A (saves it to context.poeditor_project)
     """
     projects = get_poeditor_projects(context)
-    project_name = project_name if project_name else map_param('[CONF:poeditor.project_name]', context)
+    project_name = project_name if project_name else map_param('[CONF:poeditor.project_name]')
     projects_by_name = [project for project in projects if project['name'] == project_name]
 
     assert len(projects_by_name) == 1, "ERROR: Project name %s not found, available projects: %s" % \
@@ -136,7 +137,7 @@ def export_poeditor_project(context, file_type, lang=None):
     :param context: behave context
     :param file_type: There are more available formats to download but only one is supported now: json
     :param lang: if provided, should be a valid language configured in POEditor project
-    :return: N/A (saves it to context.poeditor_export)
+    :return: N/A (saves it to dataset.poeditor_terms)
     """
     lang = get_valid_lang(context, lang)
     assert file_type in ['json'], "Only json file type is supported at this moment"
@@ -155,9 +156,11 @@ def export_poeditor_project(context, file_type, lang=None):
     filename = context.poeditor_download_url.split('/')[-1]
 
     r = send_poeditor_request(context, ENDPOINT_POEDITOR_DOWNLOAD_FILE + '/' + filename, "GET", {}, 200)
-    context.poeditor_export = r.json()
+    dataset.poeditor_terms = r.json()
+    # For backwards compatibility
+    context.poeditor_export = dataset.poeditor_terms
     context.logger.info('POEditor terms in "%s" project with "%s" language: %s' % (context.poeditor_project['name'],
-                                                                                   lang, len(context.poeditor_export)))
+                                                                                   lang, len(dataset.poeditor_terms)))
 
 
 def save_downloaded_file(context):
@@ -192,7 +195,7 @@ def get_country_from_config_file(context):
     :return: country
     """
     try:
-        country = context.toolium_config.get('TestExecution', 'language').lower()
+        country = dataset.toolium_config.get('TestExecution', 'language').lower()
     except NoOptionError:
         assert False, "There is no language configured in test, add it to config or use step with parameter lang_id"
 
@@ -245,7 +248,7 @@ def send_poeditor_request(context, endpoint, method, params, status_code):
     :param code: expected status code
     :return: response
     """
-    url = "/".join([map_param('[CONF:poeditor.base_url]', context), endpoint])
+    url = "/".join([map_param('[CONF:poeditor.base_url]'), endpoint])
     r = requests.request(method, url, data=params)
     assert r.status_code == status_code, f"{r.status_code} status code has been received instead of {status_code} \
         in POEditor response. Response body: {r.json()}"
@@ -282,10 +285,10 @@ def load_poeditor_texts(context):
     """
     if get_poeditor_api_token(context):
         # Try to get poeditor mode param from toolium config first
-        poeditor_mode = context.toolium_config.get_optional('TestExecution', 'poeditor_mode')
+        poeditor_mode = dataset.toolium_config.get_optional('TestExecution', 'poeditor_mode')
         if poeditor_mode:
-            context.project_config['poeditor']['mode'] = poeditor_mode
-        if 'mode' in context.project_config['poeditor'] and map_param('[CONF:poeditor.mode]', context) == 'offline':
+            dataset.project_config['poeditor']['mode'] = poeditor_mode
+        if 'mode' in dataset.project_config['poeditor'] and map_param('[CONF:poeditor.mode]') == 'offline':
             file_path = get_poeditor_file_path(context)
 
             # With offline POEditor mode, file must exist
@@ -296,7 +299,9 @@ def load_poeditor_texts(context):
                 assert False, error_message
 
             with open(file_path, 'r') as f:
-                context.poeditor_export = json.load(f)
+                dataset.poeditor_terms = json.load(f)
+                # For backwards compatibility
+                context.poeditor_export = dataset.poeditor_terms
                 last_mod_time = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(file_path)))
                 context.logger.info('Using local POEditor file "%s" with date: %s' % (file_path, last_mod_time))
         else:  # without mode configured or mode = 'online'
@@ -313,7 +318,7 @@ def get_poeditor_file_path(context):
     :return: poeditor file path
     """
     try:
-        file_path = context.project_config['poeditor']['file_path']
+        file_path = dataset.project_config['poeditor']['file_path']
     except KeyError:
         file_type = context.poeditor_file_type if hasattr(context, 'poeditor_file_type') else 'json'
         file_path = os.path.join(DriverWrappersPool.output_directory, 'poeditor_terms.%s' % file_type)
@@ -330,7 +335,7 @@ def get_poeditor_api_token(context):
         api_token = os.environ['poeditor_api_token']
     except KeyError:
         try:
-            api_token = context.project_config['poeditor']['api_token']
+            api_token = dataset.project_config['poeditor']['api_token']
         except (AttributeError, KeyError):
             api_token = None
     return api_token

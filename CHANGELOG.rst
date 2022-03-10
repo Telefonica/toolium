@@ -1,12 +1,13 @@
 Toolium Changelog
 =================
 
-v2.4.1
+v2.5.0
 ------
 
 *Release date: In development*
 
 - Update map_param method to use dataset global variables instead of context parameter
+- Dataset variables needed for TOOLIUM, CONTEXT and POE replacements are set automatically
 
 v2.4.0
 ------
