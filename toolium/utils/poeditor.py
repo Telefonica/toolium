@@ -17,15 +17,15 @@ limitations under the License.
 """
 
 import json
+import logging
 import os
-import time
 import requests
-
+import time
 from configparser import NoOptionError
-from urllib.request import URLopener
+
+from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils import dataset
 from toolium.utils.dataset import map_param
-from toolium.driver_wrappers_pool import DriverWrappersPool
 
 """
 ====================
@@ -37,7 +37,7 @@ Set the language used to get the POEditor texts in the toolium config file ([Tes
 [TestExecution]
 language: es-es
 
-In your project configuration dictionary (dataset.project_config), add an entry like this:
+In your project configuration dictionary (saved in dataset.project_config), add an entry like this:
 
 "poeditor": {
     "base_url": "https://api.poeditor.com",
@@ -46,11 +46,17 @@ In your project configuration dictionary (dataset.project_config), add an entry 
     "prefixes": [],
     "key_field": "reference",
     "search_type": "contains",
-    "file_path": "output/poeditor_terms.json"
+    "file_path": "output/poeditor_terms.json",
+    "mode": "online"
 }
+
+Only api_token and project_name parameters are mandatory.
 
 If the file_path property is not configured as above, the file name will default to "poeditor_terms.json"
 and the path will default to DriverWrappersPool.output_directory ("output" by default).
+
+Call to load_poeditor_texts method to load POEditor terms. The method will download terms from POEditor or load them
+from file, and save them in dataset.poeditor_terms.
 
 NOTE: The api_token can be generated from POEditor in this url: https://poeditor.com/account/api
 """
@@ -63,117 +69,129 @@ ENDPOINT_POEDITOR_LIST_TERMS = "v2/terms/list"
 ENDPOINT_POEDITOR_EXPORT_PROJECT = "v2/projects/export"
 ENDPOINT_POEDITOR_DOWNLOAD_FILE = "v2/download/file"
 
+# Configure logger
+logger = logging.getLogger(__name__)
 
-def download_poeditor_texts(context, file_type):
+
+def download_poeditor_texts(context=None, file_type='json'):
     """
     Executes all steps to download texts from POEditor and saves them to a file in output dir
 
-    :param context: behave context
-    :param file_type: only json supported in this first version
+    :param context: behave context (deprecated)
+    :param file_type: file type (only json supported)
     :return: N/A
     """
-    get_poeditor_project_info_by_name(context)
-    get_poeditor_language_codes(context)
-    export_poeditor_project(context, file_type)
-    save_downloaded_file(context)
+    if context:
+        logger.warning('Deprecated context parameter has been sent to download_poeditor_texts method. Please, configure'
+                       ' dataset global variables instead of passing context to download_poeditor_texts.')
+    project_info = get_poeditor_project_info_by_name()
+    language_codes = get_poeditor_language_codes(project_info)
+    language = get_valid_lang(language_codes)
+    poeditor_terms = export_poeditor_project(project_info, language, file_type)
+    save_downloaded_file(poeditor_terms)
+    # Save terms in dataset to be used in [POE:] map_param replacements
+    dataset.poeditor_terms = poeditor_terms
+    if context:
+        # Save terms in context for backwards compatibility
+        context.poeditor_export = dataset.poeditor_terms
 
 
-def get_poeditor_project_info_by_name(context, project_name=None):
+def get_poeditor_project_info_by_name(project_name=None):
     """
     Get POEditor project info from project name from config or parameter
 
-    :param context: behave context
     :param project_name: POEditor project name
-    :return: N/A (saves it to context.poeditor_project)
+    :return: project info
     """
-    projects = get_poeditor_projects(context)
+    projects = get_poeditor_projects()
     project_name = project_name if project_name else map_param('[CONF:poeditor.project_name]')
     projects_by_name = [project for project in projects if project['name'] == project_name]
 
     assert len(projects_by_name) == 1, "ERROR: Project name %s not found, available projects: %s" % \
                                        (project_name, [project['name'] for project in projects])
-    context.poeditor_project = projects_by_name[0]
+    return projects_by_name[0]
 
 
-def get_poeditor_language_codes(context):
+def get_poeditor_language_codes(project_info):
     """
     Get language codes available for a given project ID
 
-    :param context: behave context
-    :return: N/A (saves it to context.poeditor_language_list)
+    :param project_info: project info
+    :return: project language codes
     """
-    params = {"api_token": get_poeditor_api_token(context),
-              "id": context.poeditor_project['id']}
+    params = {"api_token": get_poeditor_api_token(),
+              "id": project_info['id']}
 
-    r = send_poeditor_request(context, ENDPOINT_POEDITOR_LIST_LANGUAGES, "POST", params, 200)
+    r = send_poeditor_request(ENDPOINT_POEDITOR_LIST_LANGUAGES, "POST", params, 200)
     response_data = r.json()
     assert_poeditor_response_code(response_data, "200")
 
-    poeditor_language_list = [lang['code'] for lang in response_data['result']['languages']]
-    assert not len(poeditor_language_list) == 0, "ERROR: Not languages found in POEditor"
-    context.logger.info('POEditor languages in "%s" project: %s %s' % (context.poeditor_project['name'],
-                                                                       len(poeditor_language_list),
-                                                                       poeditor_language_list))
-
-    context.poeditor_language_list = poeditor_language_list
+    language_codes = [lang['code'] for lang in response_data['result']['languages']]
+    assert not len(language_codes) == 0, "ERROR: Not languages found in POEditor"
+    logger.info('POEditor languages in "%s" project: %s %s' % (project_info['name'], len(language_codes),
+                                                               language_codes))
+    return language_codes
 
 
-def search_terms_with_string(context, lang=None):
+def search_terms_with_string(context=None, lang=None):
     """
     Saves POEditor terms for a given existing language in that project
 
-    :param context: behave context
+    :param context: behave context (deprecated)
     :param lang: a valid language existing in that POEditor project
     :return: N/A (saves it to context.poeditor_terms)
     """
-    lang = get_valid_lang(context, lang)
-    context.poeditor_terms = get_all_terms(context, lang)
+    if context:
+        logger.warning('Deprecated context parameter has been sent to search_terms_with_string method. Please, '
+                       'configure dataset global variables instead of passing context to search_terms_with_string.')
+    project_info = get_poeditor_project_info_by_name()
+    language_codes = get_poeditor_language_codes(project_info)
+    language = get_valid_lang(language_codes, lang)
+    dataset.poeditor_terms = get_all_terms(project_info, language)
+    if context:
+        # Save terms in context for backwards compatibility
+        context.poeditor_terms = dataset.poeditor_terms
 
 
-def export_poeditor_project(context, file_type, lang=None):
+def export_poeditor_project(project_info, lang, file_type):
     """
     Export all texts in project to a given file type
 
-    :param context: behave context
+    :param project_info: project info
+    :param lang: language configured in POEditor project that will be exported
     :param file_type: There are more available formats to download but only one is supported now: json
-    :param lang: if provided, should be a valid language configured in POEditor project
-    :return: N/A (saves it to dataset.poeditor_terms)
+    :return: poeditor terms
     """
-    lang = get_valid_lang(context, lang)
     assert file_type in ['json'], "Only json file type is supported at this moment"
-    context.poeditor_file_type = file_type
 
-    params = {"api_token": get_poeditor_api_token(context),
-              "id": context.poeditor_project['id'],
+    params = {"api_token": get_poeditor_api_token(),
+              "id": project_info['id'],
               "language": lang,
               "type": file_type}
 
-    r = send_poeditor_request(context, ENDPOINT_POEDITOR_EXPORT_PROJECT, "POST", params, 200)
+    r = send_poeditor_request(ENDPOINT_POEDITOR_EXPORT_PROJECT, "POST", params, 200)
     response_data = r.json()
     assert_poeditor_response_code(response_data, "200")
 
-    context.poeditor_download_url = response_data['result']['url']
-    filename = context.poeditor_download_url.split('/')[-1]
+    filename = response_data['result']['url'].split('/')[-1]
 
-    r = send_poeditor_request(context, ENDPOINT_POEDITOR_DOWNLOAD_FILE + '/' + filename, "GET", {}, 200)
-    dataset.poeditor_terms = r.json()
-    # For backwards compatibility
-    context.poeditor_export = dataset.poeditor_terms
-    context.logger.info('POEditor terms in "%s" project with "%s" language: %s' % (context.poeditor_project['name'],
-                                                                                   lang, len(dataset.poeditor_terms)))
+    r = send_poeditor_request(ENDPOINT_POEDITOR_DOWNLOAD_FILE + '/' + filename, "GET", {}, 200)
+    poeditor_terms = r.json()
+    logger.info('POEditor terms in "%s" project with "%s" language: %s' % (project_info['name'], lang,
+                                                                           len(poeditor_terms)))
+    return poeditor_terms
 
 
-def save_downloaded_file(context):
+def save_downloaded_file(poeditor_terms):
     """
     Saves POEditor terms to a file in output dir
 
-    :param context: behave context
-    :return: N/A
+    :param poeditor_terms: POEditor terms
     """
-    file_path = get_poeditor_file_path(context)
-    saved_file = URLopener()
-    saved_file.retrieve(context.poeditor_download_url, file_path)
-    context.logger.info('POEditor terms have been saved in "%s" file' % file_path)
+    file_path = get_poeditor_file_path()
+    with open(file_path, 'w') as f:
+        json.dump(poeditor_terms, f, indent=4)
+    logger.info('POEditor terms have been saved in "%s" file' % file_path)
 
 
 def assert_poeditor_response_code(response_data, status_code):
@@ -187,149 +205,150 @@ def assert_poeditor_response_code(response_data, status_code):
         has been received instead of {status_code} in POEditor response body. Response body: {response_data}"
 
 
-def get_country_from_config_file(context):
+def get_country_from_config_file():
     """
     Gets the country to use later from config checking if it's a valid one in POEditor
 
-    :param context: behave context
     :return: country
     """
     try:
         country = dataset.toolium_config.get('TestExecution', 'language').lower()
     except NoOptionError:
         assert False, "There is no language configured in test, add it to config or use step with parameter lang_id"
-
     return country
 
 
-def get_valid_lang(context, lang):
+def get_valid_lang(language_codes, lang=None):
     """
     Check if language provided is a valid one configured and returns the POEditor matched lang
 
-    :param context: behave context
+    :param language_codes: valid POEditor language codes
     :param lang: a language from config or from lang parameter
     :return: lang matched from POEditor
     """
-    lang = lang if lang else get_country_from_config_file(context)
-    if lang in context.poeditor_language_list:
+    lang = lang if lang else get_country_from_config_file()
+    if lang in language_codes:
         matching_lang = lang
-    elif lang.split('-')[0] in context.poeditor_language_list:
+    elif lang.split('-')[0] in language_codes:
         matching_lang = lang.split('-')[0]
     else:
-        assert False, "Language %s in config is not valid, use one of %s:" % (lang, context.poeditor_language_list)
+        assert False, f"Language {lang} is not included in valid codes: {', '.join(language_codes)}"
     return matching_lang
 
 
-def get_poeditor_projects(context):
+def get_poeditor_projects():
     """
     Get the list of the projects configured in POEditor
 
-    :param context: behave context
-    :return: the list of the projects
+    :return: POEditor projects list
     """
-    params = {"api_token": get_poeditor_api_token(context)}
-    r = send_poeditor_request(context, ENDPOINT_POEDITOR_LIST_PROJECTS, "POST", params, 200)
+    params = {"api_token": get_poeditor_api_token()}
+    r = send_poeditor_request(ENDPOINT_POEDITOR_LIST_PROJECTS, "POST", params, 200)
     response_data = r.json()
     assert_poeditor_response_code(response_data, "200")
     projects = response_data['result']['projects']
     projects_names = [project['name'] for project in projects]
-    context.logger.info('POEditor projects: %s %s' % (len(projects_names), projects_names))
+    logger.info('POEditor projects: %s %s' % (len(projects_names), projects_names))
     return projects
 
 
-def send_poeditor_request(context, endpoint, method, params, status_code):
+def send_poeditor_request(endpoint, method, params, status_code):
     """
     Send a request to the POEditor API
 
-    :param context: behave context
     :param endpoint: endpoint path
     :param method: HTTP method to be used in the request
     :param params: parameters to be sent in the request
     :param code: expected status code
     :return: response
     """
-    url = "/".join([map_param('[CONF:poeditor.base_url]'), endpoint])
+    try:
+        base_url = dataset.project_config['poeditor']['base_url']
+    except KeyError:
+        base_url = 'https://api.poeditor.com'
+    url = f'{base_url}/{endpoint}'
     r = requests.request(method, url, data=params)
     assert r.status_code == status_code, f"{r.status_code} status code has been received instead of {status_code} \
-        in POEditor response. Response body: {r.json()}"
+        in POEditor response calling to {url}. Response body: {r.json()}"
     return r
 
 
-def get_all_terms(context, lang):
+def get_all_terms(project_info, lang):
     """
     Get all terms for a given language configured in POEditor
 
-    :param context: behave context
+    :param project_info: project_info
     :param lang: a valid language configured in POEditor project
     :return: the list of terms
     """
-    params = {"api_token": get_poeditor_api_token(context),
-              "id": context.poeditor_project['id'],
+    params = {"api_token": get_poeditor_api_token(),
+              "id": project_info['id'],
               "language": lang}
 
-    r = send_poeditor_request(context, ENDPOINT_POEDITOR_LIST_TERMS, "POST", params, 200)
+    r = send_poeditor_request(ENDPOINT_POEDITOR_LIST_TERMS, "POST", params, 200)
     response_data = r.json()
     assert_poeditor_response_code(response_data, "200")
     terms = response_data['result']['terms']
-    context.logger.info('POEditor terms in "%s" project with "%s" language: %s' % (context.poeditor_project['name'],
-                                                                                   lang, len(terms)))
-
+    logger.info('POEditor terms in "%s" project with "%s" language: %s' % (project_info['name'], lang, len(terms)))
     return terms
 
 
-def load_poeditor_texts(context):
+def load_poeditor_texts(context=None):
     """
     Download POEditor texts and save in output folder if the config exists or use previously downloaded texts
 
-    :param context: behave context
+    :param context: behave context (deprecated parameter)
     """
-    if get_poeditor_api_token(context):
+    if context:
+        logger.warning('Deprecated context parameter has been sent to load_poeditor_texts method. Please, '
+                       'configure POEditor global variables instead of passing context to load_poeditor_texts.')
+
+    if get_poeditor_api_token():
         # Try to get poeditor mode param from toolium config first
         poeditor_mode = dataset.toolium_config.get_optional('TestExecution', 'poeditor_mode')
         if poeditor_mode:
             dataset.project_config['poeditor']['mode'] = poeditor_mode
         if 'mode' in dataset.project_config['poeditor'] and map_param('[CONF:poeditor.mode]') == 'offline':
-            file_path = get_poeditor_file_path(context)
+            file_path = get_poeditor_file_path()
 
             # With offline POEditor mode, file must exist
             if not os.path.exists(file_path):
                 error_message = 'You are using offline POEditor mode but poeditor file has not been found in %s' % \
                                 file_path
-                context.logger.error(error_message)
+                logger.error(error_message)
                 assert False, error_message
 
             with open(file_path, 'r') as f:
                 dataset.poeditor_terms = json.load(f)
-                # For backwards compatibility
-                context.poeditor_export = dataset.poeditor_terms
+                if context:
+                    # Workaround for backwards compatibility
+                    context.poeditor_export = dataset.poeditor_terms
                 last_mod_time = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(file_path)))
-                context.logger.info('Using local POEditor file "%s" with date: %s' % (file_path, last_mod_time))
+                logger.info('Using local POEditor file "%s" with date: %s' % (file_path, last_mod_time))
         else:  # without mode configured or mode = 'online'
-            download_poeditor_texts(context, 'json')
+            download_poeditor_texts(context)
     else:
-        context.logger.info("POEditor is not configured")
+        logger.info("POEditor is not configured")
 
 
-def get_poeditor_file_path(context):
+def get_poeditor_file_path():
     """
-    Get POEditor file path
+    Get configured POEditor file path or default file path
 
-    :param context: behave context
-    :return: poeditor file path
+    :return: POEditor file path
     """
     try:
         file_path = dataset.project_config['poeditor']['file_path']
     except KeyError:
-        file_type = context.poeditor_file_type if hasattr(context, 'poeditor_file_type') else 'json'
-        file_path = os.path.join(DriverWrappersPool.output_directory, 'poeditor_terms.%s' % file_type)
+        file_path = os.path.join(DriverWrappersPool.output_directory, 'poeditor_terms.json')
     return file_path
 
 
-def get_poeditor_api_token(context):
+def get_poeditor_api_token():
     """
-    Get POEditor api token from environment property or configuration property
+    Get POEditor API token from environment property or configuration property
 
-    :return: poeditor api token
+    :return: POEditor API token
     """
     try:
         api_token = os.environ['poeditor_api_token']
