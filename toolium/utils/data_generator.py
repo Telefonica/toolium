@@ -1,15 +1,28 @@
 # -*- coding: utf-8 -*-
+"""
+Copyright 2022 Telefónica Investigación y Desarrollo, S.A.U.
+This file is part of Toolium.
 
-# Copyright (c) Telefónica Digital.
-# CDO QA Team <qacdo@telefonica.com>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 
 import logging
+import phonenumbers
 import random
 import re
 import uuid
 
 from faker import Faker
-from faker_e164.providers import E164Provider
 from .dataset import map_param
 
 __logger__ = logging.getLogger(__name__)
@@ -57,19 +70,20 @@ class DataGenerator(object):
     @property
     def phone_number(self):
         """
-        Generate random phone_number for an OB.
+        Generate random phone_number for a country in international format.
+        For example: '+448081570270'
         If locale is not defined, return phone number from anywhere.
         """
-        if self._provider: # es_ES
+        if self._provider: # Example: en_GB
             region_code = self._provider.split('_')[-1]
-            self._fake.add_provider(E164Provider)
-            return self._fake.e164(region_code=region_code, valid=True)
+            raw_phone_number = phonenumbers.parse(self._fake.phone_number(), region_code)
+            return phonenumbers.format_number(raw_phone_number, phonenumbers.PhoneNumberFormat.E164)
         return self._fake.phone_number()
 
     @property
     def postal_code(self):
         """
-        Generate a random OB postal code.
+        Generate a random country postal code.
         """
         while True:
             postal_code = self._fake.postcode()
@@ -96,9 +110,9 @@ class DataGenerator(object):
         return ''.join(["{}".format(random.randint(0, 9)) for _ in range(0, int(length))])
 
     @staticmethod
-    def _get_ob_locale():
+    def _get_locale():
         """
-        Return the OB locale.
+        Return the locale.
         If property is not defined, 'es_ES' is set.
         """
         try:
@@ -111,7 +125,7 @@ class DataGenerator(object):
     def _is_valid_postcode(provider, postal_code):
         """
         Validate postal codes by locale.
-        Can be added custom validations for OB.
+        Can be added custom validations for the country.
         """
         if provider == 'es_ES':
             return re.match('(?:0[1-9]|[1-4]\d|5[0-2])\d{3}$', postal_code)
