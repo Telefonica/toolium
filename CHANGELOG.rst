@@ -7,6 +7,7 @@ v2.5.1
 *Release date: In development*
 
 - Update Selenium version to 4.1.3
+- Update Appium version to 2.1.4
 
 v2.5.0
 ------
