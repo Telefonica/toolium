@@ -6,6 +6,8 @@ v2.5.1
 
 *Release date: In development*
 
+- Update Selenium version to 4.1.3
+
 v2.5.0
 ------
 
