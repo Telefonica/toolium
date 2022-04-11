@@ -6,6 +6,8 @@ v2.5.1
 
 *Release date: In development*
 
+- Update map_param method to allow recursive replacements
+
 v2.5.0
 ------
 

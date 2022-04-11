@@ -287,6 +287,8 @@ def _infer_param_type(param):
     return new_param
 
 
+# Ignore flake8 warning until deprecated context parameter is removed
+# flake8: noqa: C901
 def map_param(param, context=None):
     """
     Transform the given string by replacing specific patterns containing keys with their values,
@@ -319,14 +321,20 @@ def map_param(param, context=None):
     map_regex = r"[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][a-zA-Z\.\:\/\_\-\ 0-9]*\]"
     map_expressions = re.compile(map_regex)
 
-    # The parameter is just one config value
+    mapped_param = param
     if map_expressions.split(param) == ['', '']:
-        return map_one_param(param)
+        # The parameter is just one config value
+        mapped_param = map_one_param(param)
+    else:
+        # The parameter is a combination of text and configuration parameters.
+        for match in map_expressions.findall(param):
+            mapped_param = mapped_param.replace(match, str(map_one_param(match)))
 
-    # The parameter is a combination of text and configuration parameters.
-    for match in map_expressions.findall(param):
-        param = param.replace(match, str(map_one_param(match)))
-    return param
+    if mapped_param != param:
+        # Calling to map_param recursively to replace parameters that include another parameters
+        mapped_param = map_param(mapped_param, context)
+
+    return mapped_param
 
 
 def map_one_param(param):
@@ -398,9 +406,8 @@ def map_one_param(param):
     }
 
     if key and mapping_functions[type]["prerequisites"]:
-        return mapping_functions[type]["function"](*mapping_functions[type]["args"])
-    else:
-        return param
+        param = mapping_functions[type]["function"](*mapping_functions[type]["args"])
+    return param
 
 
 def _get_mapping_type_and_key(param):
