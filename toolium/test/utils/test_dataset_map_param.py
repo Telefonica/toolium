@@ -395,6 +395,30 @@ def test_a_combi_of_config_plustext_plusconfig():
     assert expected == result
 
 
+def test_a_combi_of_config_inside_config():
+    """
+    Verification of a combination of a config param inside another config param
+    """
+    dataset.project_config = {"var_name": "NAME2"}
+    os.environ['MY_VAR_NAME1'] = "name1 value"
+    os.environ['MY_VAR_NAME2'] = "name2 value"
+    result = map_param("[ENV:MY_VAR_[CONF:var_name]]")
+    expected = "name2 value"
+    assert expected == result
+
+
+def test_a_combi_of_config_inside_config_recursively():
+    """
+    Verification of a combination of a config param inside another config param recursively
+    """
+    dataset.project_config = {"var_number": 2, "var_name_1": "A", "var_name_2": "B"}
+    os.environ['MY_VAR_A'] = "A value"
+    os.environ['MY_VAR_B'] = "B value"
+    result = map_param("[CONF:var_number] some text [ENV:MY_VAR_[CONF:var_name_[CONF:var_number]]]")
+    expected = "2 some text B value"
+    assert expected == result
+
+
 def test_a_conf_param_with_special_characters():
     """
     Verification of a combination of text plus a config param with special characters
