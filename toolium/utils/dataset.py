@@ -140,6 +140,19 @@ def _replace_param_type(param):
     return new_param, param_replaced
 
 
+def _find_param_date_expressions(param):
+    """
+    Finds in a param a date expression. 
+    For example, for a param like "it happened on [NOW - 1 MONTH] of the last year", this method returns
+    the string "[NOW - 1 MONTH]"
+    
+    :param param: parameter value
+    :param language: language to configure date format for NOW and TODAY
+    :return: the specific text within the param holding a date expression
+    """
+    return re.findall(r'\[(?:NOW|TODAY)\s*[\+|-]\s*\d+\s*\w+\s*\]', param)
+
+
 def _replace_param_replacement(param, language):
     """
     Replace param with a new param value.
@@ -163,6 +176,12 @@ def _replace_param_replacement(param, language):
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),
         '[TODAY]': str(datetime.datetime.utcnow().strftime(date_day_format))
     }
+    
+    # append date expressions found in param to the replacement dict 
+    date_expressions = _find_param_date_expressions(param)
+    for date_expr in date_expressions:
+        replacements[date_expr] = _replace_param_date(date_expr, language)[0]
+        
     new_param = param
     param_replaced = False
     for key in replacements.keys():
