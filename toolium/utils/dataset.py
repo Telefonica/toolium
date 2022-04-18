@@ -98,8 +98,6 @@ def replace_param(param, language='es', infer_param_type=True):
     if not param_replaced:
         # Replacements that return new strings that can be transformed later
         new_param, param_replaced = _replace_param_replacement(new_param, language)
-        if not param_replaced:
-            new_param, param_replaced = _replace_param_date(new_param, language)
 
         # String transformations that do not allow type inference
         new_param, param_replaced = _replace_param_transform_string(new_param)
@@ -185,10 +183,9 @@ def _replace_param_replacement(param, language):
     new_param = param
     param_replaced = False
     for key in replacements.keys():
-        if key in param:
-            new_param = param.replace(key, replacements[key])
+        if key in new_param:
+            new_param = new_param.replace(key, replacements[key])
             param_replaced = True
-            break
     return new_param, param_replaced
 
 

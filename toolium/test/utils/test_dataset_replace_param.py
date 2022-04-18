@@ -243,6 +243,15 @@ def test_replace_param_today_offset_and_more_at_the_beginning():
     assert param == f'{offset_date} is yesterday'
 
 
+def test_replace_param_today_offsets_and_more():
+    param = replace_param('The day [TODAY - 1 DAYS] was yesterday and I have an appointment at [NOW + 10 MINUTES]', language='es')
+    offset_date = datetime.datetime.strftime(
+        datetime.datetime.today() - datetime.timedelta(days=1), '%d/%m/%Y')
+    offset_datetime = datetime.datetime.strftime(
+        datetime.datetime.utcnow() + datetime.timedelta(minutes=10), '%d/%m/%Y %H:%M:%S')
+    assert param == f'The day {offset_date} was yesterday and I have an appointment at {offset_datetime}'
+
+
 def test_replace_param_str_int():
     param = replace_param('[STR:28]')
     assert type(param) == str
