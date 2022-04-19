@@ -7,6 +7,7 @@ v2.5.1
 *Release date: In development*
 
 - Update map_param method to allow recursive replacements
+- Resolve multiple expressions in the same param
 
 v2.5.0
 ------
