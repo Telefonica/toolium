@@ -97,9 +97,7 @@ def replace_param(param, language='es', infer_param_type=True):
 
     if not param_replaced:
         # Replacements that return new strings that can be transformed later
-        new_param, param_replaced = _replace_param_replacement(new_param, language)
-        if not param_replaced:
-            new_param, param_replaced = _replace_param_date(new_param, language)
+        new_param, _ = _replace_param_replacement(new_param, language)
 
         # String transformations that do not allow type inference
         new_param, param_replaced = _replace_param_transform_string(new_param)
@@ -140,6 +138,19 @@ def _replace_param_type(param):
     return new_param, param_replaced
 
 
+def _find_param_date_expressions(param):
+    """
+    Finds in a param a date expression. 
+    For example, for a param like "it happened on [NOW - 1 MONTH] of the last year", this method returns
+    the string "[NOW - 1 MONTH]"
+    
+    :param param: parameter value
+    :param language: language to configure date format for NOW and TODAY
+    :return: the specific text within the param holding a date expression
+    """
+    return re.findall(r'\[(?:NOW|TODAY)\s*[\+|-]\s*\d+\s*\w+\s*\]', param)
+
+
 def _replace_param_replacement(param, language):
     """
     Replace param with a new param value.
@@ -163,13 +174,18 @@ def _replace_param_replacement(param, language):
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),
         '[TODAY]': str(datetime.datetime.utcnow().strftime(date_day_format))
     }
+    
+    # append date expressions found in param to the replacement dict 
+    date_expressions = _find_param_date_expressions(param)
+    for date_expr in date_expressions:
+        replacements[date_expr] = _replace_param_date(date_expr, language)[0]
+        
     new_param = param
     param_replaced = False
     for key in replacements.keys():
-        if key in param:
-            new_param = param.replace(key, replacements[key])
+        if key in new_param:
+            new_param = new_param.replace(key, replacements[key])
             param_replaced = True
-            break
     return new_param, param_replaced
 
 
