@@ -65,13 +65,11 @@ def replace_param(param, language='es', infer_param_type=True):
         [RANDOM_PHONE_NUMBER] Generates a random phone number following the pattern +34654XXXXXX
         [TIMESTAMP] Generates a timestamp from the current time
         [DATETIME] Generates a datetime from the current time
-        [DATETIME('ISO')] Same as DATETIME but using the ISO-8601 extended local date format with zulu offset
         [NOW] Similar to DATETIME without milliseconds; the format depends on the language
-        [NOW('ISO')] Same as NOW but using the ISO-8601 extended local date format with zulu offset
+        [NOW('%Y-%m-%dT%H:%M:%SZ')] Same as NOW but using an specific ISO-8601 extended local date format
         [NOW + 2 DAYS] Similar to NOW but two days later
         [NOW - 1 MINUTES] Similar to NOW but one minute earlier
         [TODAY] Similar to NOW without time; the format depends on the language
-        [TODAY('ISO')] Same as TODAY but using the ISO-8601 extended local date format with zulu offset
         [TODAY + 2 DAYS] Similar to NOW, but two days later
         [STR:xxxx] Cast xxxx to a string
         [INT:xxxx] Cast xxxx to an int
