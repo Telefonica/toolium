@@ -65,10 +65,13 @@ def replace_param(param, language='es', infer_param_type=True):
         [RANDOM_PHONE_NUMBER] Generates a random phone number following the pattern +34654XXXXXX
         [TIMESTAMP] Generates a timestamp from the current time
         [DATETIME] Generates a datetime from the current time
+        [DATETIME('ISO')] Same as DATETIME but using the ISO-8601 extended local date format with zulu offset
         [NOW] Similar to DATETIME without milliseconds; the format depends on the language
+        [NOW('ISO')] Same as NOW but using the ISO-8601 extended local date format with zulu offset
         [NOW + 2 DAYS] Similar to NOW but two days later
         [NOW - 1 MINUTES] Similar to NOW but one minute earlier
         [TODAY] Similar to NOW without time; the format depends on the language
+        [TODAY('ISO')] Same as TODAY but using the ISO-8601 extended local date format with zulu offset
         [TODAY + 2 DAYS] Similar to NOW, but two days later
         [STR:xxxx] Cast xxxx to a string
         [INT:xxxx] Cast xxxx to an int
@@ -140,15 +143,30 @@ def _replace_param_type(param):
 
 def _find_param_date_expressions(param):
     """
-    Finds in a param a date expression. 
-    For example, for a param like "it happened on [NOW - 1 MONTH] of the last year", this method returns
-    the string "[NOW - 1 MONTH]"
-    
+    Finds in a param one or several date expressions. 
+    For example, for a param like "it happened on [NOW - 1 MONTH] of the last year and will happen [TODAY('%d/%m')]",
+    this method returns an array with two string elements: "[NOW - 1 MONTH]" and [TODAY('%d/%m')]"
+    The kind of expressions to search are based on these rules:
+    - expression is sorrounded by [ and ]
+    - first word of the expression is either NOW or TODAY
+    - when first word is NOW, it can have an addtional format for the date between parenthesis, 
+        like NOW('%Y-%m-%dT%H:%M:%SZ'). The definition of the format is the same as considered by the
+        python strftime function of the datetime module
+    - and optional offset can be given by indicating how many days, hours, etc.. to add or remove to the current datetime.
+        This part of the expression includes a +/- symbol plus a number and a unit
+
+    Some valid expressions are:
+        [NOW]
+        [TODAY]
+        [NOW('%Y-%m-%dT%H:%M:%SZ')]
+        [NOW('%Y-%m-%dT%H:%M:%SZ') - 180 DAYS]
+        [NOW('%H:%M:%S') + 4 MINUTES]
+
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY
-    :return: the specific text within the param holding a date expression
+    :return: An array with all the matching date expressions found in the param
     """
-    return re.findall(r'\[(?:NOW|TODAY)\s*[\+|-]\s*\d+\s*\w+\s*\]', param)
+    return re.findall(r"\[(?:NOW(?:\('(?:[^']*)'\))?|TODAY)(?:\s*[\+|-]\s*\d+\s*\w+\s*)?\]", param)
 
 
 def _replace_param_replacement(param, language):
@@ -179,7 +197,7 @@ def _replace_param_replacement(param, language):
     date_expressions = _find_param_date_expressions(param)
     for date_expr in date_expressions:
         replacements[date_expr] = _replace_param_date(date_expr, language)[0]
-        
+
     new_param = param
     param_replaced = False
     for key in replacements.keys():
@@ -221,25 +239,51 @@ def _replace_param_date(param, language):
     """
     Transform param value in a date after applying the specified delta.
     E.g. [TODAY - 2 DAYS], [NOW - 10 MINUTES]
+    An specific format could be defined in the case of NOW this way: NOW('THEFORMAT')
+    where THEFORMAT is any valid format accepted by the python 
+    [datetime.strftime](https://docs.python.org/3/library/datetime.html#datetime.date.strftime) function 
 
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY
     :return: tuple with replaced value and boolean to know if replacement has been done
     """
-    date_format = '%d/%m/%Y %H:%M:%S' if language == 'es' else '%Y/%m/%d %H:%M:%S'
-    date_day_format = '%d/%m/%Y' if language == 'es' else '%Y/%m/%d'
-    date_matcher = re.match(r'\[(NOW|TODAY)\s*([\+|-]\s*\d+)\s*(\w+)\s*\]', param)
-    new_param = param
-    param_replaced = False
+    def _split_param():
+        date_matcher = re.match(r'\[(NOW(?:\((?:\'.*\'|".*")\)|)|TODAY)(?:\s*([\+|-]\s*\d+)\s*(\w+)\s*)?\]', param)
+        if date_matcher:
+            return list(date_matcher.groups())
 
-    if date_matcher and len(date_matcher.groups()) == 3:
-        configuration = dict([(date_matcher.group(3).lower(), int(date_matcher.group(2).replace(' ', '')))])
-        now = (date_matcher.group(1) == 'NOW')
-        reference_date = datetime.datetime.utcnow() if now else datetime.datetime.utcnow().date()
-        replace_value = reference_date + datetime.timedelta(**configuration)
-        new_param = replace_value.strftime(date_format) if now else replace_value.strftime(date_day_format)
-        param_replaced = True
-    return new_param, param_replaced
+    def _offset_datetime(amount, units):
+        now = datetime.datetime.utcnow()
+        if not amount:
+            return now
+        if not units:
+            return now
+        the_amount = int(amount.replace(' ',''))
+        the_units = units.lower()
+        return now + datetime.timedelta(**dict([(the_units, the_amount)]))
+
+    def _is_only_date(base):
+        return 'TODAY' in base
+
+    def _default_format(base):
+        if _is_only_date(base):
+            return '%d/%m/%Y' if language == 'es' else '%Y/%m/%d'
+        return '%d/%m/%Y %H:%M:%S' if language == 'es' else '%Y/%m/%d %H:%M:%S'
+
+    def _get_format(base):
+        format_matcher = re.match(r'.*\'(.*)\'.*', base)    
+        if format_matcher and len(format_matcher.groups()) == 1:
+            return format_matcher.group(1)
+
+        return _default_format(base)
+
+    base, amount, units = _split_param()
+    if not base:
+        return param, False
+
+    format_str = _get_format(base)
+    date = _offset_datetime(amount, units)
+    return date.strftime(format_str), True
 
 
 def _replace_param_fixed_length(param):

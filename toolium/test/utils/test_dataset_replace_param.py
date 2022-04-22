@@ -188,10 +188,21 @@ def test_replace_param_now_not_spanish():
     assert param == datetime.datetime.utcnow().strftime('%Y/%m/%d %H:%M:%S')
 
 
+def test_replace_param_now_with_format():
+    param = replace_param('[NOW(\'%Y-%m-%dT%H:%M:%SZ\')]')
+    assert param == datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+
 def test_replace_param_now_offset():
     param = replace_param('[NOW + 5 MINUTES]', language='es')
     assert param == datetime.datetime.strftime(
         datetime.datetime.utcnow() + datetime.timedelta(minutes=5), '%d/%m/%Y %H:%M:%S')
+
+
+def test_replace_param_now_offset_with_format():
+    param = replace_param('[NOW(\'%Y-%m-%dT%H:%M:%SZ\') + 5 MINUTES]')
+    assert param == datetime.datetime.strftime(
+        datetime.datetime.utcnow() + datetime.timedelta(minutes=5), '%Y-%m-%dT%H:%M:%SZ')
 
 
 def test_replace_param_today_offset_and_more():
@@ -220,6 +231,27 @@ def test_replace_param_now_offset_and_more_not_spanish():
     offset_datetime = datetime.datetime.strftime(
         datetime.datetime.utcnow() + datetime.timedelta(minutes=10), '%Y/%m/%d %H:%M:%S')
     assert param == f'I will arrive at {offset_datetime} tomorrow'
+
+
+def test_replace_param_now_offset_with_format_and_more():
+    param = replace_param('I will arrive at [NOW(\'%Y-%m-%dT%H:%M:%SZ\') + 10 MINUTES] tomorrow')
+    offset_datetime = datetime.datetime.strftime(
+        datetime.datetime.utcnow() + datetime.timedelta(minutes=10), '%Y-%m-%dT%H:%M:%SZ')
+    assert param == f'I will arrive at {offset_datetime} tomorrow'
+
+
+def test_replace_param_now_offset_with_format_and_more_language_is_irrelevant():
+    param = replace_param('I will arrive at [NOW(\'%Y-%m-%dT%H:%M:%SZ\') + 10 MINUTES] tomorrow', language='ru')
+    offset_datetime = datetime.datetime.strftime(
+        datetime.datetime.utcnow() + datetime.timedelta(minutes=10), '%Y-%m-%dT%H:%M:%SZ')
+    assert param == f'I will arrive at {offset_datetime} tomorrow'
+
+
+def test_replace_param_today_offset_with_format_and_more_with_extra_spaces():
+    param = replace_param('The date [NOW(\'%Y-%m-%dT%H:%M:%SZ\')   - 1    DAYS ] was yesterday')
+    offset_date = datetime.datetime.strftime(
+        datetime.datetime.utcnow() - datetime.timedelta(days=1), '%Y-%m-%dT%H:%M:%SZ')
+    assert param == f'The date {offset_date} was yesterday'
 
 
 def test_replace_param_today_offset_and_more_with_extra_spaces():
@@ -251,6 +283,28 @@ def test_replace_param_today_offsets_and_more():
     offset_datetime = datetime.datetime.strftime(
         datetime.datetime.utcnow() + datetime.timedelta(minutes=10), '%d/%m/%Y %H:%M:%S')
     assert param == f'The day {offset_date} was yesterday and I have an appointment at {offset_datetime}'
+
+
+def test_replace_param_now_offsets_with_format_and_more():
+    param = replace_param(
+        'The date [NOW(\'%Y-%m-%dT%H:%M:%SZ\') - 1 DAYS] was yesterday '
+        'and I have an appointment at [NOW(\'%Y-%m-%dT%H:%M:%SZ\') + 10 MINUTES]')
+    offset_date = datetime.datetime.strftime(
+        datetime.datetime.utcnow() - datetime.timedelta(days=1), '%Y-%m-%dT%H:%M:%SZ')
+    offset_datetime = datetime.datetime.strftime(
+        datetime.datetime.utcnow() + datetime.timedelta(minutes=10), '%Y-%m-%dT%H:%M:%SZ')
+    assert param == f'The date {offset_date} was yesterday and I have an appointment at {offset_datetime}'
+
+
+def test_replace_param_now_offsets_with_and_without_format_and_more():
+    param = replace_param(
+        'The date [NOW(\'%Y-%m-%dT%H:%M:%SZ\') - 1 DAYS] was yesterday '
+        'and I have an appointment at [NOW + 10 MINUTES]', language='es')
+    offset_date = datetime.datetime.strftime(
+        datetime.datetime.utcnow() - datetime.timedelta(days=1), '%Y-%m-%dT%H:%M:%SZ')
+    offset_datetime = datetime.datetime.strftime(
+        datetime.datetime.utcnow() + datetime.timedelta(minutes=10), '%d/%m/%Y %H:%M:%S')
+    assert param == f'The date {offset_date} was yesterday and I have an appointment at {offset_datetime}'
 
 
 def test_replace_param_str_int():
