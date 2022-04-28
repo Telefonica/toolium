@@ -66,7 +66,7 @@ def replace_param(param, language='es', infer_param_type=True):
         [TIMESTAMP] Generates a timestamp from the current time
         [DATETIME] Generates a datetime from the current time
         [NOW] Similar to DATETIME without milliseconds; the format depends on the language
-        [NOW('%Y-%m-%dT%H:%M:%SZ')] Same as NOW but using an specific format by the python strftime function of the datetime module
+        [NOW(%Y-%m-%dT%H:%M:%SZ)] Same as NOW but using an specific format by the python strftime function of the datetime module
         [NOW + 2 DAYS] Similar to NOW but two days later
         [NOW - 1 MINUTES] Similar to NOW but one minute earlier
         [TODAY] Similar to NOW without time; the format depends on the language
@@ -148,7 +148,7 @@ def _find_param_date_expressions(param):
     - expression is sorrounded by [ and ]
     - first word of the expression is either NOW or TODAY
     - when first word is NOW, it can have an addtional format for the date between parenthesis, 
-        like NOW('%Y-%m-%dT%H:%M:%SZ'). The definition of the format is the same as considered by the
+        like NOW(%Y-%m-%dT%H:%M:%SZ). The definition of the format is the same as considered by the
         python strftime function of the datetime module
     - and optional offset can be given by indicating how many days, hours, etc.. to add or remove to the current datetime.
         This part of the expression includes a +/- symbol plus a number and a unit
@@ -156,15 +156,15 @@ def _find_param_date_expressions(param):
     Some valid expressions are:
         [NOW]
         [TODAY]
-        [NOW('%Y-%m-%dT%H:%M:%SZ')]
-        [NOW('%Y-%m-%dT%H:%M:%SZ') - 180 DAYS]
-        [NOW('%H:%M:%S') + 4 MINUTES]
+        [NOW(%Y-%m-%dT%H:%M:%SZ)]
+        [NOW(%Y-%m-%dT%H:%M:%SZ) - 180 DAYS]
+        [NOW(%H:%M:%S) + 4 MINUTES]
 
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY
     :return: An array with all the matching date expressions found in the param
     """
-    return re.findall(r"\[(?:NOW(?:\('(?:[^']*)'\))?|TODAY)(?:\s*[\+|-]\s*\d+\s*\w+\s*)?\]", param)
+    return re.findall(r"\[(?:NOW(?:\((?:[^\(\)]*)\))?|TODAY)(?:\s*[\+|-]\s*\d+\s*\w+\s*)?\]", param)
 
 
 def _replace_param_replacement(param, language):
@@ -246,7 +246,7 @@ def _replace_param_date(param, language):
     :return: tuple with replaced value and boolean to know if replacement has been done
     """
     def _date_matcher():
-        return re.match(r'\[(NOW(?:\((?:\'.*\'|".*")\)|)|TODAY)(?:\s*([\+|-]\s*\d+)\s*(\w+)\s*)?\]', param)
+        return re.match(r'\[(NOW(?:\((?:.*)\)|)|TODAY)(?:\s*([\+|-]\s*\d+)\s*(\w+)\s*)?\]', param)
 
     def _offset_datetime(amount, units):
         now = datetime.datetime.utcnow()
@@ -266,7 +266,7 @@ def _replace_param_date(param, language):
         return f'{date_format} %H:%M:%S'
 
     def _get_format(base):
-        format_matcher = re.match(r'.*\'(.*)\'.*', base)    
+        format_matcher = re.match(r'.*\((.*)\).*', base)
         if format_matcher and len(format_matcher.groups()) == 1:
             return format_matcher.group(1)
         return _default_format(base)
