@@ -66,7 +66,7 @@ def replace_param(param, language='es', infer_param_type=True):
         [TIMESTAMP] Generates a timestamp from the current time
         [DATETIME] Generates a datetime from the current time
         [NOW] Similar to DATETIME without milliseconds; the format depends on the language
-        [NOW('%Y-%m-%dT%H:%M:%SZ')] Same as NOW but using an specific ISO-8601 extended local date format
+        [NOW('%Y-%m-%dT%H:%M:%SZ')] Same as NOW but using an specific format by the python strftime function of the datetime module
         [NOW + 2 DAYS] Similar to NOW but two days later
         [NOW - 1 MINUTES] Similar to NOW but one minute earlier
         [TODAY] Similar to NOW without time; the format depends on the language
@@ -245,16 +245,12 @@ def _replace_param_date(param, language):
     :param language: language to configure date format for NOW and TODAY
     :return: tuple with replaced value and boolean to know if replacement has been done
     """
-    def _split_param():
-        date_matcher = re.match(r'\[(NOW(?:\((?:\'.*\'|".*")\)|)|TODAY)(?:\s*([\+|-]\s*\d+)\s*(\w+)\s*)?\]', param)
-        if date_matcher:
-            return list(date_matcher.groups())
+    def _date_matcher():
+        return re.match(r'\[(NOW(?:\((?:\'.*\'|".*")\)|)|TODAY)(?:\s*([\+|-]\s*\d+)\s*(\w+)\s*)?\]', param)
 
     def _offset_datetime(amount, units):
         now = datetime.datetime.utcnow()
-        if not amount:
-            return now
-        if not units:
+        if not amount or not units:
             return now
         the_amount = int(amount.replace(' ',''))
         the_units = units.lower()
@@ -264,21 +260,22 @@ def _replace_param_date(param, language):
         return 'TODAY' in base
 
     def _default_format(base):
+        date_format = '%d/%m/%Y' if language == 'es' else '%Y/%m/%d'
         if _is_only_date(base):
-            return '%d/%m/%Y' if language == 'es' else '%Y/%m/%d'
-        return '%d/%m/%Y %H:%M:%S' if language == 'es' else '%Y/%m/%d %H:%M:%S'
+            return date_format
+        return f'{date_format} %H:%M:%S'
 
     def _get_format(base):
         format_matcher = re.match(r'.*\'(.*)\'.*', base)    
         if format_matcher and len(format_matcher.groups()) == 1:
             return format_matcher.group(1)
-
         return _default_format(base)
 
-    base, amount, units = _split_param()
-    if not base:
+    matcher = _date_matcher()
+    if not matcher:
         return param, False
 
+    base, amount, units = list(matcher.groups())
     format_str = _get_format(base)
     date = _offset_datetime(amount, units)
     return date.strftime(format_str), True
