@@ -1,10 +1,10 @@
 Toolium Changelog
 =================
 
-v2.5.1
+v2.6.0
 ------
 
-*Release date: In development*
+*Release date: 2022-04-29*
 
 - Update map_param method to allow recursive replacements
 - Update replace_param function to allow multiple date expressions in the same param
