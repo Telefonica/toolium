@@ -9,6 +9,7 @@ v2.5.1
 - Update map_param method to allow recursive replacements
 - Update replace_param function to allow multiple date expressions in the same param
 - Fix error message to show parent locator instead of object reference when an element is not found
+- Update replace_param function to allow NOW datetime expressions with arbitrary formats accepted by datetime.strftime
 
 v2.5.0
 ------
