@@ -69,6 +69,7 @@ def replace_param(param, language='es', infer_param_type=True):
         [NOW(%Y-%m-%dT%H:%M:%SZ)] Same as NOW but using an specific format by the python strftime function of the datetime module
         [NOW + 2 DAYS] Similar to NOW but two days later
         [NOW - 1 MINUTES] Similar to NOW but one minute earlier
+        [NOW(%Y-%m-%dT%H:%M:%SZ) - 7 DAYS] Similar to NOW but seven days before and with the indicated format
         [TODAY] Similar to NOW without time; the format depends on the language
         [TODAY + 2 DAYS] Similar to NOW, but two days later
         [STR:xxxx] Cast xxxx to a string
