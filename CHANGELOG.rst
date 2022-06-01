@@ -6,6 +6,8 @@ v2.6.1
 
 *Release date: In development*
 
+- Reference dotted keys when saving objects in context storage using [CONTEXT:a.b.c] formula
+
 v2.6.0
 ------
 
