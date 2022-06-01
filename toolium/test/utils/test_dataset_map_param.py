@@ -115,6 +115,7 @@ def test_a_context_param_with_dots():
     context = mock.MagicMock()
     class Obj(object):
         pass
+
     one = Obj()
     one.two = "the value"
 
@@ -133,6 +134,7 @@ def test_a_context_param_with_dots_in_storage():
     context = mock.MagicMock()
     class Obj(object):
         pass
+
     one = Obj()
     one.two = "the value"
 
