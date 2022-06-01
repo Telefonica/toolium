@@ -207,6 +207,15 @@ class VisualTest(object):
             img = img.crop((0, 0, new_image_width, new_image_height))
         return img
 
+    def get_inner_width(self):
+        """Return window width and height by js
+
+        :returns: dict with window size
+        """
+        width = self.driver_wrapper.driver.execute_script("return window.innerWidth")
+        height = self.driver_wrapper.driver.execute_script("return window.innerHeight")
+        return {'width': width, 'height': height}
+
     def mobile_resize(self, img):
         """Resize image in iOS (native and web) and Android (web) to fit window size
 
@@ -214,10 +223,31 @@ class VisualTest(object):
         :returns: modified image object
         """
         if self.driver_wrapper.is_ios_test() or self.driver_wrapper.is_android_web_test():
+            scale = img.size[0] / self.get_inner_width()['width']
+            img = self.base_resize(scale=scale, img=img)
+        return img
+
+    def desktop_resize(self, img):
+        """Resize image in MacOs Retina to fit window size
+
+        :param img: image object
+        :returns: modified image object
+        """
+        if self.driver_wrapper.is_mac_test():
             scale = img.size[0] / self.utils.get_window_size()['width']
-            if scale != 1:
-                new_image_size = (int(img.size[0] / scale), int(img.size[1] / scale))
-                img = img.resize(new_image_size, Image.ANTIALIAS)
+            img = self.base_resize(scale=scale, img=img)
+        return img
+
+    def base_resize(self, scale, img):
+        """Base method for resize image
+
+        :param scale: scale of resizing
+        :param img: image object
+        :returns: modified image object
+        """
+        if scale != 1:
+            new_image_size = (int(img.size[0] / scale), int(img.size[1] / scale))
+            img = img.resize(new_image_size, Image.ANTIALIAS)
         return img
 
     def get_element_box(self, web_element):
