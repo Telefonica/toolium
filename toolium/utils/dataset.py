@@ -582,10 +582,9 @@ def get_value_from_context(param, context):
     So, for example, in the basic case, "last_request_result" could be used as key that would be searched into context
     storage or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
     in the context storage or as a property of the context object whose name is last_request. In both cases, when found,
-    "result" is considered (and resolved) as a property into the returned value. There is not limit in the nested
-    levels of dotted tokens.
-
-    a key like a.b.c.d is considered like this:
+    "result" is considered (and resolved) as a property into the returned value.
+    
+    There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
 
     context.storage['a'].b.c.d
         or
