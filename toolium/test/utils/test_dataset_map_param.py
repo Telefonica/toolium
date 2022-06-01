@@ -113,6 +113,7 @@ def test_a_context_param_with_dots():
     Verification of a mapped parameter with dots as CONTEXT
     """
     context = mock.MagicMock()
+    
     class Obj(object):
         pass
 
@@ -132,6 +133,7 @@ def test_a_context_param_with_dots_in_storage():
     Verification of a mapped parameter with dots into the storage as CONTEXT
     """
     context = mock.MagicMock()
+    
     class Obj(object):
         pass
 
