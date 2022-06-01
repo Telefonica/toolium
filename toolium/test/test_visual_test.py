@@ -40,6 +40,7 @@ file_v2 = os.path.join(root_path, 'resources', 'register_v2.png')
 file_small = os.path.join(root_path, 'resources', 'register_small.png')
 file_scroll = os.path.join(root_path, 'resources', 'register_chrome_scroll.png')
 file_ios = os.path.join(root_path, 'resources', 'ios.png')
+file_mac = os.path.join(root_path, 'resources', 'mac_os_retina.png')
 
 
 def visual_mock(driver_wrapper):
@@ -401,6 +402,34 @@ def test_mobile_no_resize(driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', 'ios')
     visual = visual_mock(driver_wrapper)
     visual.get_inner_width.return_value = {'width': 750, 'height': 1334}
+
+    # Resize image
+    orig_img = Image.open(file_ios)
+    img = visual.mobile_resize(orig_img)
+
+    # Assert that image object has not been modified
+    assert orig_img == img
+
+
+def test_desktop_resize(driver_wrapper):
+    # Update conf and create a new VisualTest instance
+    driver_wrapper.is_mac_test = mock.MagicMock(return_value=True)
+    driver_wrapper.driver.get_window_size.return_value = {'width': 1280, 'height': 1024}
+    visual = VisualTest(driver_wrapper)
+
+    # Resize image
+    img = Image.open(file_mac)
+    img = visual.desktop_resize(img)
+
+    # Assert output image
+    assert_image(visual, img, 'report_name', 'mac_os_retina_resized')
+
+
+def test_desktop_no_resize(driver_wrapper):
+    # Update conf and create a new VisualTest instance
+    driver_wrapper.is_mac_test = mock.MagicMock(return_value=True)
+    driver_wrapper.driver.get_window_size.return_value = {'width': 3840, 'height': 2102}
+    visual = VisualTest(driver_wrapper)
 
     # Resize image
     orig_img = Image.open(file_ios)

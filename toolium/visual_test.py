@@ -151,6 +151,7 @@ class VisualTest(object):
         img = Image.open(BytesIO(self.driver_wrapper.driver.get_screenshot_as_png()))
         img = self.remove_scrolls(img)
         img = self.mobile_resize(img)
+        img = self.desktop_resize(img)
         img = self.exclude_elements(img, exclude_web_elements)
         img = self.crop_element(img, web_element)
         img.save(output_file)
