@@ -577,7 +577,7 @@ def map_toolium_param(param, config):
 def get_value_from_context(param, context):
     """
     Find the value of the given param using it as a key in the context storage dictionary (context.storage) or in the
-    context object itself. The key might be comprissed of dotted tokens. In such case, the searched key is the first
+    context object itself. The key might be comprised of dotted tokens. In such case, the searched key is the first
     token. The rest of the tokens are considered nested properties/objects.
     So, for example, in the basic case, "last_request_result" could be used as key that would be searched into context
     storage or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
