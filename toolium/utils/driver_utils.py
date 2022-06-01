@@ -300,7 +300,8 @@ class Utils(WaitUtils):
         :returns: dict with window width and height
         """
         if not self._window_size:
-            if self.driver_wrapper.is_android_web_test() and self.driver_wrapper.driver.current_context != 'NATIVE_APP':
+            is_mobile_web = self.driver_wrapper.is_android_web_test() or self.driver_wrapper.is_ios_web_test()
+            if is_mobile_web and self.driver_wrapper.driver.current_context != 'NATIVE_APP':
                 window_width = self.driver_wrapper.driver.execute_script("return window.innerWidth")
                 window_height = self.driver_wrapper.driver.execute_script("return window.innerHeight")
                 self._window_size = {'width': window_width, 'height': window_height}
