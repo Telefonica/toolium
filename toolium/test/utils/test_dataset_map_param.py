@@ -126,23 +126,14 @@ def test_a_context_param_with_dots():
     expected_att = "the value"
     assert expected_att == result_att
 
+    three = Obj()
+    three.four = "the other value"
 
-def test_a_context_param_with_dots_in_storage():
-    """
-    Verification of a mapped parameter with dots into the storage as CONTEXT
-    """
-    context = mock.MagicMock()
-
-    class Obj(object):
-        pass
-    one = Obj()
-    one.two = "the value"
-
-    context.storage = {"one": one}
+    context.storage = {"three": three}
     dataset.behave_context = context
 
-    result_att = map_param("[CONTEXT:one.two]")
-    expected_att = "the value"
+    result_att = map_param("[CONTEXT:three.four]")
+    expected_att = "the other value"
     assert expected_att == result_att
 
 
