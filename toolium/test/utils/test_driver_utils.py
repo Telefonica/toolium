@@ -429,7 +429,7 @@ def test_get_window_size_android_web(driver_wrapper, utils):
 
     assert utils.get_window_size() == window_size
     driver_wrapper.driver.execute_script.assert_has_calls(
-        [mock.call('return window.innerWidth'), mock.call('return window.innerHeight')])
+        [mock.call('return window.screen.width'), mock.call('return window.screen.height')])
 
 
 def test_get_window_size_android_web_two_times(driver_wrapper, utils):
@@ -444,7 +444,7 @@ def test_get_window_size_android_web_two_times(driver_wrapper, utils):
     assert utils.get_window_size() == window_size
     # Check that window size is calculated only one time
     driver_wrapper.driver.execute_script.assert_has_calls(
-        [mock.call('return window.innerWidth'), mock.call('return window.innerHeight')])
+        [mock.call('return window.screen.width'), mock.call('return window.screen.height')])
 
 
 def test_get_native_coords_android_web(driver_wrapper, utils):
