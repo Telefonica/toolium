@@ -43,12 +43,6 @@ file_ios = os.path.join(root_path, 'resources', 'ios.png')
 file_mac = os.path.join(root_path, 'resources', 'mac_os_retina.png')
 
 
-def visual_mock(driver_wrapper):
-    mocker = VisualTest(driver_wrapper)
-    mocker.get_inner_width = mock.MagicMock()
-    return mocker
-
-
 @pytest.fixture
 def driver_wrapper():
     # Remove previous visual path
