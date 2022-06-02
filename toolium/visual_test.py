@@ -219,7 +219,7 @@ class VisualTest(object):
         return img
 
     def desktop_resize(self, img):
-        """Resize image in MacOs Retina to fit window size
+        """Resize image in Mac with Retina to fit window size
 
         :param img: image object
         :returns: modified image object
