@@ -108,6 +108,35 @@ def test_a_context_param():
     assert expected_st == result_st
 
 
+def test_a_context_param_with_dots():
+    """
+    Verification of a mapped parameter with dots as CONTEXT
+    """
+    context = mock.MagicMock()
+
+    class Obj(object):
+        pass
+    one = Obj()
+    one.two = "the value"
+
+    context.one = one
+    dataset.behave_context = context
+
+    result_att = map_param("[CONTEXT:one.two]")
+    expected_att = "the value"
+    assert expected_att == result_att
+
+    three = Obj()
+    three.four = "the other value"
+
+    context.storage = {"three": three}
+    dataset.behave_context = context
+
+    result_att = map_param("[CONTEXT:three.four]")
+    expected_att = "the other value"
+    assert expected_att == result_att
+
+
 def test_a_context_param_deprecated():
     """
     Verification of a mapped parameter as CONTEXT and check that deprecated message is logged

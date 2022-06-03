@@ -577,26 +577,47 @@ def map_toolium_param(param, config):
 def get_value_from_context(param, context):
     """
     Find the value of the given param using it as a key in the context storage dictionary (context.storage) or in the
-    context object itself. So for example, in the former case, "last_request_result" could be used to retrieve the value
-    from context.storage["last_request_result"], if it exists, whereas, in the latter case, "last_request.result" could
-    be used to retrieve the value from context.last_request.result, if it exists.
+    context object itself. The key might be comprised of dotted tokens. In such case, the searched key is the first
+    token. The rest of the tokens are considered nested properties/objects.
+    So, for example, in the basic case, "last_request_result" could be used as key that would be searched into context
+    storage or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
+    in the context storage or as a property of the context object whose name is last_request. In both cases, when found,
+    "result" is considered (and resolved) as a property into the returned value.
+    
+    There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
+
+    context.storage['a'].b.c.d
+        or
+    context.a.b.c.d
 
     :param param: key to be searched (e.g. "last_request_result" / "last_request.result")
     :param context: Behave context object
     :return: mapped value
     """
-    if context.storage and param in context.storage:
-        return context.storage[param]
-    logger.info(f"'{param}' key not found in context storage, searching in context")
-    try:
-        value = context
-        for part in param.split('.'):
-            value = getattr(value, part)
-        return value
-    except AttributeError:
-        msg = f"'{param}' not found neither in context storage nor in context"
-        logger.error(msg)
-        raise AttributeError(msg)
+    parts = param.split('.')
+    value = None
+    if context.storage and parts[0] in context.storage:
+        value = context.storage[parts[0]]
+    else:
+        logger.info(f"'{parts[0]}' key not found in context storage, searching in context")
+        try:
+            value = getattr(context, parts[0])
+        except AttributeError:
+            msg = f"'{parts[0]}' not found neither in context storage nor in context"
+            logger.error(msg)
+            raise AttributeError(msg)
+
+    if len(parts) > 1:
+        try:
+            for part in parts[1:]:
+                value = getattr(value, part)
+        except AttributeError:
+            msg = f"'{part}' is not an attribute of {value}"
+            logger.error(msg)
+            raise AttributeError(msg)
+
+    return value
+
 
 
 def get_message_property(param, language_terms, language_key):
