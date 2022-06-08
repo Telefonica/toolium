@@ -295,14 +295,15 @@ class Utils(WaitUtils):
         return status_bar_height
 
     def get_window_size(self):
-        """Generic method to get window size using a javascript workaround for Android web tests
+        """Generic method to get window size using a javascript workaround for mobile web tests
 
         :returns: dict with window width and height
         """
         if not self._window_size:
-            if self.driver_wrapper.is_android_web_test() and self.driver_wrapper.driver.current_context != 'NATIVE_APP':
-                window_width = self.driver_wrapper.driver.execute_script("return window.innerWidth")
-                window_height = self.driver_wrapper.driver.execute_script("return window.innerHeight")
+            is_mobile_web = self.driver_wrapper.is_android_web_test() or self.driver_wrapper.is_ios_web_test()
+            if is_mobile_web and self.driver_wrapper.driver.current_context != 'NATIVE_APP':
+                window_width = self.driver_wrapper.driver.execute_script("return window.screen.width")
+                window_height = self.driver_wrapper.driver.execute_script("return window.screen.height")
                 self._window_size = {'width': window_width, 'height': window_height}
             else:
                 self._window_size = self.driver_wrapper.driver.get_window_size()

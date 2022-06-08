@@ -293,6 +293,13 @@ class DriverWrapper(object):
         """
         return self.utils.get_driver_name() in ('ios', 'iphone')
 
+    def is_mac_test(self):
+        """Check if actual test must be executed in Mac desktop
+
+        :returns: True if test must be executed in Mac desktop
+        """
+        return 'mac os' in self.get_driver_platform().lower()
+
     def is_mobile_test(self):
         """Check if actual test must be executed in a mobile
 

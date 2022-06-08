@@ -151,6 +151,7 @@ class VisualTest(object):
         img = Image.open(BytesIO(self.driver_wrapper.driver.get_screenshot_as_png()))
         img = self.remove_scrolls(img)
         img = self.mobile_resize(img)
+        img = self.desktop_resize(img)
         img = self.exclude_elements(img, exclude_web_elements)
         img = self.crop_element(img, web_element)
         img.save(output_file)
@@ -214,10 +215,29 @@ class VisualTest(object):
         :returns: modified image object
         """
         if self.driver_wrapper.is_ios_test() or self.driver_wrapper.is_android_web_test():
-            scale = img.size[0] / self.utils.get_window_size()['width']
-            if scale != 1:
-                new_image_size = (int(img.size[0] / scale), int(img.size[1] / scale))
-                img = img.resize(new_image_size, Image.ANTIALIAS)
+            img = self.base_resize(img=img)
+        return img
+
+    def desktop_resize(self, img):
+        """Resize image in Mac with Retina to fit window size
+
+        :param img: image object
+        :returns: modified image object
+        """
+        if self.driver_wrapper.is_mac_test():
+            img = self.base_resize(img=img)
+        return img
+
+    def base_resize(self, img):
+        """Base method for resize image
+
+        :param img: image object
+        :returns: modified image object
+        """
+        scale = img.size[0] / self.utils.get_window_size()['width']
+        if scale != 1:
+            new_image_size = (int(img.size[0] / scale), int(img.size[1] / scale))
+            img = img.resize(new_image_size, Image.ANTIALIAS)
         return img
 
     def get_element_box(self, web_element):

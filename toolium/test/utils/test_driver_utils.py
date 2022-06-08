@@ -429,7 +429,7 @@ def test_get_window_size_android_web(driver_wrapper, utils):
 
     assert utils.get_window_size() == window_size
     driver_wrapper.driver.execute_script.assert_has_calls(
-        [mock.call('return window.innerWidth'), mock.call('return window.innerHeight')])
+        [mock.call('return window.screen.width'), mock.call('return window.screen.height')])
 
 
 def test_get_window_size_android_web_two_times(driver_wrapper, utils):
@@ -444,7 +444,7 @@ def test_get_window_size_android_web_two_times(driver_wrapper, utils):
     assert utils.get_window_size() == window_size
     # Check that window size is calculated only one time
     driver_wrapper.driver.execute_script.assert_has_calls(
-        [mock.call('return window.innerWidth'), mock.call('return window.innerHeight')])
+        [mock.call('return window.screen.width'), mock.call('return window.screen.height')])
 
 
 def test_get_native_coords_android_web(driver_wrapper, utils):
@@ -466,7 +466,8 @@ def test_get_native_coords_ios_web(driver_wrapper, utils):
     # Configure driver mock
     web_window_size = {'width': 500, 'height': 667}
     native_window_size = {'width': 250, 'height': 450}
-    driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
+    driver_wrapper.driver.get_window_size.return_value = native_window_size
+    utils.get_window_size = mock.MagicMock(return_value=web_window_size)
     driver_wrapper.config.set('Driver', 'type', 'ios')
     driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
 
@@ -529,7 +530,8 @@ def test_swipe_ios_web(driver_wrapper, utils):
     # Configure driver mock
     web_window_size = {'width': 500, 'height': 667}
     native_window_size = {'width': 250, 'height': 450}
-    driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
+    driver_wrapper.driver.get_window_size.return_value = native_window_size
+    utils.get_window_size = mock.MagicMock(return_value=web_window_size)
     driver_wrapper.config.set('Driver', 'type', 'ios')
     driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
 

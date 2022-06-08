@@ -40,6 +40,7 @@ file_v2 = os.path.join(root_path, 'resources', 'register_v2.png')
 file_small = os.path.join(root_path, 'resources', 'register_small.png')
 file_scroll = os.path.join(root_path, 'resources', 'register_chrome_scroll.png')
 file_ios = os.path.join(root_path, 'resources', 'ios.png')
+file_mac = os.path.join(root_path, 'resources', 'mac_os_retina.png')
 
 
 @pytest.fixture
@@ -56,6 +57,7 @@ def driver_wrapper():
 
     # Create a new wrapper
     driver_wrapper = DriverWrappersPool.get_default_wrapper()
+    driver_wrapper.utils.get_window_size = mock.MagicMock()
     driver_wrapper.driver = mock.MagicMock()
 
     # Configure properties
@@ -378,8 +380,8 @@ def test_remove_scrolls_without_scroll(driver_wrapper):
 
 def test_mobile_resize(driver_wrapper):
     # Update conf and create a new VisualTest instance
-    driver_wrapper.driver.get_window_size.return_value = {'width': 375, 'height': 667}
     driver_wrapper.config.set('Driver', 'type', 'ios')
+    driver_wrapper.utils.get_window_size.return_value = {'width': 375, 'height': 667}
     visual = VisualTest(driver_wrapper)
 
     # Resize image
@@ -392,8 +394,36 @@ def test_mobile_resize(driver_wrapper):
 
 def test_mobile_no_resize(driver_wrapper):
     # Update conf and create a new VisualTest instance
-    driver_wrapper.driver.get_window_size.return_value = {'width': 750, 'height': 1334}
     driver_wrapper.config.set('Driver', 'type', 'ios')
+    driver_wrapper.utils.get_window_size.return_value = {'width': 750, 'height': 1334}
+    visual = VisualTest(driver_wrapper)
+
+    # Resize image
+    orig_img = Image.open(file_ios)
+    img = visual.mobile_resize(orig_img)
+
+    # Assert that image object has not been modified
+    assert orig_img == img
+
+
+def test_desktop_resize(driver_wrapper):
+    # Update conf and create a new VisualTest instance
+    driver_wrapper.is_mac_test = mock.MagicMock(return_value=True)
+    driver_wrapper.utils.get_window_size.return_value = {'width': 1280, 'height': 1024}
+    visual = VisualTest(driver_wrapper)
+
+    # Resize image
+    img = Image.open(file_mac)
+    img = visual.desktop_resize(img)
+
+    # Assert output image
+    assert_image(visual, img, 'report_name', 'mac_os_retina_resized')
+
+
+def test_desktop_no_resize(driver_wrapper):
+    # Update conf and create a new VisualTest instance
+    driver_wrapper.is_mac_test = mock.MagicMock(return_value=True)
+    driver_wrapper.utils.get_window_size.return_value = {'width': 3840, 'height': 2102}
     visual = VisualTest(driver_wrapper)
 
     # Resize image
@@ -609,8 +639,8 @@ def test_assert_screenshot_mobile_resize_and_exclude(driver_wrapper):
     # Configure driver mock
     with open(file_ios, "rb") as f:
         image_data = f.read()
+    driver_wrapper.utils.get_window_size.return_value = {'width': 375, 'height': 667}
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
-    driver_wrapper.driver.get_window_size.return_value = {'width': 375, 'height': 667}
 
     # Update conf and create a new VisualTest instance
     driver_wrapper.config.set('Driver', 'type', 'ios')
@@ -642,8 +672,8 @@ def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
     file_ios_web = os.path.join(root_path, 'resources', 'ios_web.png')
     with open(file_ios_web, "rb") as f:
         image_data = f.read()
+    driver_wrapper.utils.get_window_size.return_value = {'width': 375, 'height': 667}
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
-    driver_wrapper.driver.get_window_size.return_value = {'width': 375, 'height': 667}
 
     # Update conf and create a new VisualTest instance
     driver_wrapper.config.set('Driver', 'type', 'ios')
