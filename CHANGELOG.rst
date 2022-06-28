@@ -4,9 +4,10 @@ Toolium Changelog
 v2.6.1
 ------
 
-*Release date: In development*
+*Release date: 2022-06-28*
 
 - Reference dotted keys when saving objects in context storage using [CONTEXT:a.b.c] formula
+- Fix Visual testing image size for MacOS Retina and mobile layout
 
 v2.6.0
 ------
