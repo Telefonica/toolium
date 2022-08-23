@@ -26,6 +26,7 @@ import re
 import string
 from ast import literal_eval
 from copy import deepcopy
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,7 @@ def replace_param(param, language='es', infer_param_type=True):
         [FALSE] Generates a boolean False
         [EMPTY] Generates an empty string
         [B] Generates a blank space
+        [UUID] Generates a v4 UUID
         [RANDOM] Generates a random value
         [RANDOM_PHONE_NUMBER] Generates a random phone number following the pattern +34654XXXXXX
         [TIMESTAMP] Generates a timestamp from the current time
@@ -171,7 +173,8 @@ def _find_param_date_expressions(param):
 def _replace_param_replacement(param, language):
     """
     Replace param with a new param value.
-    Available replacements: [EMPTY], [B], [RANDOM], [TIMESTAMP], [DATETIME], [NOW], [TODAY]
+    Available replacements: [EMPTY], [B], [UUID], [RANDOM], [RANDOM_PHONE_NUMBER],
+                            [TIMESTAMP], [DATETIME], [NOW], [TODAY]
 
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY
@@ -183,6 +186,7 @@ def _replace_param_replacement(param, language):
     replacements = {
         '[EMPTY]': '',
         '[B]': ' ',
+        '[UUID]': str(uuid.uuid4()),
         # make sure random is not made up of digits only, by forcing the first char to be a letter
         '[RANDOM]': ''.join([r.choice(string.ascii_lowercase), *(r.choice(alphanums) for i in range(7))]),
         '[RANDOM_PHONE_NUMBER]': ''.join(['+', '3', '4', '6', '5', '4'] + [str(r.randint(0, 9)) for i in range(1, 7)]),
