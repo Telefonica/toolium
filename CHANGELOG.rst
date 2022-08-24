@@ -6,6 +6,7 @@ v2.6.2
 
 *Release date: In development*
 
+- New param [UUID] in *replace_param* method to generate a v4 UUID
 
 v2.6.1
 ------

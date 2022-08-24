@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import datetime
+from uuid import UUID
 
 from toolium.utils.dataset import replace_param
 
@@ -104,6 +105,11 @@ def test_replace_param_empty():
 def test_replace_param_blank():
     param = replace_param('[B]')
     assert param == ' '
+
+
+def test_replace_param_uuid():
+    param = replace_param('[UUID]')
+    assert UUID(param).version == 4
 
 
 def test_replace_param_random():
