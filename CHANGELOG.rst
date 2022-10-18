@@ -7,6 +7,7 @@ v2.6.2
 *Release date: In development*
 
 - New param [UUID] in *replace_param* method to generate a v4 UUID
+- Improve POEditor error message when there are more than one project
 
 v2.6.1
 ------
