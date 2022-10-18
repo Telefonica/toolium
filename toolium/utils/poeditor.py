@@ -107,8 +107,13 @@ def get_poeditor_project_info_by_name(project_name=None):
     project_name = project_name if project_name else map_param('[CONF:poeditor.project_name]')
     projects_by_name = [project for project in projects if project['name'] == project_name]
 
-    assert len(projects_by_name) == 1, "ERROR: Project name %s not found, available projects: %s" % \
-                                       (project_name, [project['name'] for project in projects])
+    if len(projects_by_name) != 1:
+        project_names = [project['name'] for project in projects]
+        if len(projects_by_name) > 1:
+            message = f"There are more than one POEditor project with name \"{project_name}\": {project_names}"
+        else:
+            message = f"There are no POEditor projects with name \"{project_name}\": {project_names}"
+        raise Exception(message)
     return projects_by_name[0]
 
 
