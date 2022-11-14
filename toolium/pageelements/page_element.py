@@ -86,7 +86,7 @@ class PageElement(CommonObject):
         try:
             self._find_web_element()
         except NoSuchElementException as exception:
-            parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
+            parent_msg = f" and parent locator {self.parent_locator_str()}" if self.parent else ''
             msg = "Page element of type '%s' with locator %s%s not found"
             self.logger.error(msg, type(self).__name__, self.locator, parent_msg)
             exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg))
@@ -169,6 +169,19 @@ class PageElement(CommonObject):
             if self.driver.context != PageElement.native_context:
                 self.driver.switch_to.context(PageElement.native_context)
 
+    def parent_locator_str(self):
+        """Return string with locator tuple for parent element
+
+        :returns: parent element locator
+        """
+        if isinstance(self.parent, PageElement):
+            parent_locator = str(self.parent.locator)
+        elif isinstance(self.parent, tuple):
+            parent_locator = str(self.parent)
+        else:
+            parent_locator = '[WebElement without locator]'
+        return parent_locator
+
     def scroll_element_into_view(self):
         """Scroll element into view
 
@@ -218,7 +231,7 @@ class PageElement(CommonObject):
                 condition_msg = 'not found or is not clickable'
                 self.utils.wait_until_element_clickable(self, timeout)
         except TimeoutException as exception:
-            parent_msg = " and parent locator '{}'".format(self.parent) if self.parent else ''
+            parent_msg = f" and parent locator {self.parent_locator_str()}" if self.parent else ''
             timeout = timeout if timeout else self.utils.get_explicitly_wait()
             msg = "Page element of type '%s' with locator %s%s %s after %s seconds"
             msg = msg % (type(self).__name__, self.locator, parent_msg, condition_msg, timeout)

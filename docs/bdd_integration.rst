@@ -164,13 +164,16 @@ functions or check the :ref:`dataset <dataset>` module for more implementation d
 * :code:`[FALSE]`: Generates a boolean False
 * :code:`[EMPTY]`: Generates an empty string
 * :code:`[B]`: Generates a blank space
+* :code:`[UUID]`: Generates a v4 UUID
 * :code:`[RANDOM]`: Generates a random value
 * :code:`[RANDOM_PHONE_NUMBER]`: Generates a random phone number following the pattern +34654XXXXXX
 * :code:`[TIMESTAMP]`: Generates a timestamp from the current time
 * :code:`[DATETIME]`: Generates a datetime from the current time
 * :code:`[NOW]`: Similar to DATETIME without milliseconds; the format depends on the language
+* :code:`[NOW(%Y-%m-%dT%H:%M:%SZ)]`: Same as NOW but using an specific format by the python strftime function of the datetime module
 * :code:`[NOW + 2 DAYS]`: Similar to NOW but two days later
 * :code:`[NOW - 1 MINUTES]`: Similar to NOW but one minute earlier
+* :code:`[NOW(%Y-%m-%dT%H:%M:%SZ) - 7 DAYS]`: Similar to NOW but seven days before and with the indicated format
 * :code:`[TODAY]`: Similar to NOW without time; the format depends on the language
 * :code:`[TODAY + 2 DAYS]`: Similar to NOW, but two days later
 * :code:`[STR:xxxx]`: Cast xxxx to a string
@@ -183,11 +186,11 @@ functions or check the :ref:`dataset <dataset>` module for more implementation d
 
 `map_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.map_param>`_:
 
-* :code:`[CONF:xxxx]`: Value from the config dict in context.project_config for the key xxxx
-* :code:`[LANG:xxxx]`: String from the texts dict in context.language_dict for the key xxxx, using the language specified in context.language
-* :code:`[POE:xxxx]`: Definition(s) from the POEditor terms list in context.poeditor_terms for the term xxxx (see :ref:`poeditor <poeditor>` module for details)
-* :code:`[TOOLIUM:xxxx]`: Value from the toolium config in context.toolium_config for the key xxxx
-* :code:`[CONTEXT:xxxx]`: Value from the context storage dict for the key xxxx, or value of the context attribute xxxx, if the former does not exist
+* :code:`[CONF:xxxx]`: Value from the config dict in dataset.project_config for the key xxxx
+* :code:`[LANG:xxxx]`: String from the texts dict in dataset.language_terms for the key xxxx, using the language specified in dataset.language
+* :code:`[POE:xxxx]`: Definition(s) from the POEditor terms list in dataset.poeditor_terms for the term xxxx (see :ref:`poeditor <poeditor>` module for details)
+* :code:`[TOOLIUM:xxxx]`: Value from the toolium config in dataset.toolium_config for the key xxxx
+* :code:`[CONTEXT:xxxx]`: Value from the behave context storage dict in dataset.behave_context for the key xxxx, or value of the behave context attribute xxxx, if the former does not exist
 * :code:`[ENV:xxxx]`: Value of the OS environment variable xxxx
 * :code:`[FILE:xxxx]`: String with the content of the file in the path xxxx
 * :code:`[BASE64:xxxx]`: String with the base64 representation of the file content in the path xxxx

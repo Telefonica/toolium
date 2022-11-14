@@ -16,19 +16,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os
-import re
-import datetime
-import logging
-import random as r
-import string
-import json
 import base64
+import datetime
+import json
+import logging
+import os
+import random as r
+import re
+import string
 from ast import literal_eval
 from copy import deepcopy
-from .data_generator import DataGenerator
+import uuid
+from toolium.utils.data_generator import DataGenerator
 
 logger = logging.getLogger(__name__)
+
+# Base path for BASE64 and FILE conversions
+base_base64_path = ''
+base_file_path = ''
+
+# Global variables used in map_param replacements
+
+# Language terms and project config are not set by toolium, they must be set from test project
+language = None
+language_terms = None
+project_config = None
+# Toolium config and behave context are set when toolium before_all method is called in behave tests
+toolium_config = None
+behave_context = None
+# POEditor terms are set when load_poeditor_texts or export_poeditor_project poeditor.py methods are called
+poeditor_terms = None
 
 
 def replace_param(param, language='es', infer_param_type=True):
@@ -46,13 +63,16 @@ def replace_param(param, language='es', infer_param_type=True):
         [FALSE] Generates a boolean False
         [EMPTY] Generates an empty string
         [B] Generates a blank space
+        [UUID] Generates a v4 UUID
         [RANDOM] Generates a random value
         [RANDOM_PHONE_NUMBER] Generates a random phone number following the pattern +34654XXXXXX
         [TIMESTAMP] Generates a timestamp from the current time
         [DATETIME] Generates a datetime from the current time
         [NOW] Similar to DATETIME without milliseconds; the format depends on the language
+        [NOW(%Y-%m-%dT%H:%M:%SZ)] Same as NOW but using an specific format by the python strftime function of the datetime module
         [NOW + 2 DAYS] Similar to NOW but two days later
         [NOW - 1 MINUTES] Similar to NOW but one minute earlier
+        [NOW(%Y-%m-%dT%H:%M:%SZ) - 7 DAYS] Similar to NOW but seven days before and with the indicated format
         [TODAY] Similar to NOW without time; the format depends on the language
         [TODAY + 2 DAYS] Similar to NOW, but two days later
         [STR:xxxx] Cast xxxx to a string
@@ -82,9 +102,7 @@ def replace_param(param, language='es', infer_param_type=True):
 
     if not param_replaced:
         # Replacements that return new strings that can be transformed later
-        new_param, param_replaced = _replace_param_replacement(new_param, language)
-        if not param_replaced:
-            new_param, param_replaced = _replace_param_date(new_param, language)
+        new_param, _ = _replace_param_replacement(new_param, language)
 
         # String transformations that do not allow type inference
         new_param, param_replaced = _replace_param_transform_string(new_param)
@@ -125,10 +143,39 @@ def _replace_param_type(param):
     return new_param, param_replaced
 
 
+def _find_param_date_expressions(param):
+    """
+    Finds in a param one or several date expressions. 
+    For example, for a param like "it happened on [NOW - 1 MONTH] of the last year and will happen [TODAY('%d/%m')]",
+    this method returns an array with two string elements: "[NOW - 1 MONTH]" and [TODAY('%d/%m')]"
+    The kind of expressions to search are based on these rules:
+    - expression is sorrounded by [ and ]
+    - first word of the expression is either NOW or TODAY
+    - when first word is NOW, it can have an addtional format for the date between parenthesis, 
+        like NOW(%Y-%m-%dT%H:%M:%SZ). The definition of the format is the same as considered by the
+        python strftime function of the datetime module
+    - and optional offset can be given by indicating how many days, hours, etc.. to add or remove to the current datetime.
+        This part of the expression includes a +/- symbol plus a number and a unit
+
+    Some valid expressions are:
+        [NOW]
+        [TODAY]
+        [NOW(%Y-%m-%dT%H:%M:%SZ)]
+        [NOW(%Y-%m-%dT%H:%M:%SZ) - 180 DAYS]
+        [NOW(%H:%M:%S) + 4 MINUTES]
+
+    :param param: parameter value
+    :param language: language to configure date format for NOW and TODAY
+    :return: An array with all the matching date expressions found in the param
+    """
+    return re.findall(r"\[(?:NOW(?:\((?:[^\(\)]*)\))?|TODAY)(?:\s*[\+|-]\s*\d+\s*\w+\s*)?\]", param)
+
+
 def _replace_param_replacement(param, language):
     """
     Replace param with a new param value.
-    Available replacements: [EMPTY], [B], [RANDOM], [TIMESTAMP], [DATETIME], [NOW], [TODAY]
+    Available replacements: [EMPTY], [B], [UUID], [RANDOM], [RANDOM_PHONE_NUMBER],
+                            [TIMESTAMP], [DATETIME], [NOW], [TODAY]
 
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY
@@ -140,6 +187,7 @@ def _replace_param_replacement(param, language):
     replacements = {
         '[EMPTY]': '',
         '[B]': ' ',
+        '[UUID]': str(uuid.uuid4()),
         # make sure random is not made up of digits only, by forcing the first char to be a letter
         '[RANDOM]': ''.join([r.choice(string.ascii_lowercase), *(r.choice(alphanums) for i in range(7))]),
         '[RANDOM_PHONE_NUMBER]': DataGenerator().phone_number,
@@ -148,13 +196,18 @@ def _replace_param_replacement(param, language):
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),
         '[TODAY]': str(datetime.datetime.utcnow().strftime(date_day_format))
     }
+    
+    # append date expressions found in param to the replacement dict 
+    date_expressions = _find_param_date_expressions(param)
+    for date_expr in date_expressions:
+        replacements[date_expr] = _replace_param_date(date_expr, language)[0]
+
     new_param = param
     param_replaced = False
     for key in replacements.keys():
-        if key in param:
-            new_param = param.replace(key, replacements[key])
+        if key in new_param:
+            new_param = new_param.replace(key, replacements[key])
             param_replaced = True
-            break
     return new_param, param_replaced
 
 
@@ -190,25 +243,48 @@ def _replace_param_date(param, language):
     """
     Transform param value in a date after applying the specified delta.
     E.g. [TODAY - 2 DAYS], [NOW - 10 MINUTES]
+    An specific format could be defined in the case of NOW this way: NOW('THEFORMAT')
+    where THEFORMAT is any valid format accepted by the python 
+    [datetime.strftime](https://docs.python.org/3/library/datetime.html#datetime.date.strftime) function 
 
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY
     :return: tuple with replaced value and boolean to know if replacement has been done
     """
-    date_format = '%d/%m/%Y %H:%M:%S' if language == 'es' else '%Y/%m/%d %H:%M:%S'
-    date_day_format = '%d/%m/%Y' if language == 'es' else '%Y/%m/%d'
-    date_matcher = re.match(r'\[(NOW|TODAY)\s*([\+|-]\s*\d+)\s*(\w+)\s*\]', param)
-    new_param = param
-    param_replaced = False
+    def _date_matcher():
+        return re.match(r'\[(NOW(?:\((?:.*)\)|)|TODAY)(?:\s*([\+|-]\s*\d+)\s*(\w+)\s*)?\]', param)
 
-    if date_matcher and len(date_matcher.groups()) == 3:
-        configuration = dict([(date_matcher.group(3).lower(), int(date_matcher.group(2).replace(' ', '')))])
-        now = (date_matcher.group(1) == 'NOW')
-        reference_date = datetime.datetime.utcnow() if now else datetime.datetime.utcnow().date()
-        replace_value = reference_date + datetime.timedelta(**configuration)
-        new_param = replace_value.strftime(date_format) if now else replace_value.strftime(date_day_format)
-        param_replaced = True
-    return new_param, param_replaced
+    def _offset_datetime(amount, units):
+        now = datetime.datetime.utcnow()
+        if not amount or not units:
+            return now
+        the_amount = int(amount.replace(' ',''))
+        the_units = units.lower()
+        return now + datetime.timedelta(**dict([(the_units, the_amount)]))
+
+    def _is_only_date(base):
+        return 'TODAY' in base
+
+    def _default_format(base):
+        date_format = '%d/%m/%Y' if language == 'es' else '%Y/%m/%d'
+        if _is_only_date(base):
+            return date_format
+        return f'{date_format} %H:%M:%S'
+
+    def _get_format(base):
+        format_matcher = re.match(r'.*\((.*)\).*', base)
+        if format_matcher and len(format_matcher.groups()) == 1:
+            return format_matcher.group(1)
+        return _default_format(base)
+
+    matcher = _date_matcher()
+    if not matcher:
+        return param, False
+
+    base, amount, units = list(matcher.groups())
+    format_str = _get_format(base)
+    date = _offset_datetime(amount, units)
+    return date.strftime(format_str), True
 
 
 def _replace_param_fixed_length(param):
@@ -272,6 +348,8 @@ def _infer_param_type(param):
     return new_param
 
 
+# Ignore flake8 warning until deprecated context parameter is removed
+# flake8: noqa: C901
 def map_param(param, context=None):
     """
     Transform the given string by replacing specific patterns containing keys with their values,
@@ -279,44 +357,65 @@ def map_param(param, context=None):
     See map_one_param function for a description of the available tags and replacement logic.
 
     :param param: string parameter
-    :param context: Behave context object
+    :param context: Behave context object (deprecated parameter)
     :return: string with the applied replacements
     """
+    if context:
+        logger.warning('Deprecated context parameter has been sent to map_param method. Please, configure dataset'
+                       ' global variables instead of passing context to map_param.')
+        global language, language_terms, project_config, toolium_config, poeditor_terms, behave_context
+        if hasattr(context, 'language'):
+            language = context.language
+        if hasattr(context, 'language_dict'):
+            language_terms = context.language_dict
+        if hasattr(context, 'project_config'):
+            project_config = context.project_config
+        if hasattr(context, 'toolium_config'):
+            toolium_config = context.toolium_config
+        if hasattr(context, 'poeditor_export'):
+            poeditor_terms = context.poeditor_export
+        behave_context = context
+
     if not isinstance(param, str):
         return param
 
     map_regex = r"[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][a-zA-Z\.\:\/\_\-\ 0-9]*\]"
     map_expressions = re.compile(map_regex)
 
-    # The parameter is just one config value
+    mapped_param = param
     if map_expressions.split(param) == ['', '']:
-        return map_one_param(param, context)
+        # The parameter is just one config value
+        mapped_param = map_one_param(param)
+    else:
+        # The parameter is a combination of text and configuration parameters.
+        for match in map_expressions.findall(param):
+            mapped_param = mapped_param.replace(match, str(map_one_param(match)))
 
-    # The parameter is a combination of text and configuration parameters.
-    for match in map_expressions.findall(param):
-        param = param.replace(match, str(map_one_param(match, context)))
-    return param
+    if mapped_param != param:
+        # Calling to map_param recursively to replace parameters that include another parameters
+        mapped_param = map_param(mapped_param, context)
+
+    return mapped_param
 
 
-def map_one_param(param, context=None):
+def map_one_param(param):
     """
     Analyze the pattern in the given string and find out its transformed value.
     Available tags and replacement values:
-        [CONF:xxxx] Value from the config dict in context.project_config for the key xxxx (dot notation is used
+        [CONF:xxxx] Value from the config dict in project_config global variable for the key xxxx (dot notation is used
         for keys, e.g. key_1.key_2.0.key_3)
-        [LANG:xxxx] String from the texts dict in context.language_dict for the key xxxx, using the language
-        specified in context.language (dot notation is used for keys, e.g. button.label)
-        [POE:xxxx] Definition(s) from the POEditor terms list in context.poeditor_terms for the term xxxx
-        [TOOLIUM:xxxx] Value from the toolium config in context.toolium_config for the key xxxx (key format is
+        [LANG:xxxx] String from the texts dict in language_terms global variable for the key xxxx, using the language
+        specified in language global variable (dot notation is used for keys, e.g. button.label)
+        [POE:xxxx] Definition(s) from the POEditor terms list in poeditor_terms global variable for the term xxxx
+        [TOOLIUM:xxxx] Value from the toolium config in toolium_config global variable for the key xxxx (key format is
         section_option, e.g. Driver_type)
-        [CONTEXT:xxxx] Value from the context storage dict for the key xxxx, or value of the context attribute xxxx,
-        if the former does not exist
+        [CONTEXT:xxxx] Value from the behave context storage dict in behave_context global variable for the key xxxx, or
+        value of the behave context attribute xxxx, if the former does not exist
         [ENV:xxxx] Value of the OS environment variable xxxx
         [FILE:xxxx] String with the content of the file in the path xxxx
         [BASE64:xxxx] String with the base64 representation of the file content in the path xxxx
 
     :param param: string parameter
-    :param context: Behave context object
     :return: transformed value or the original string if no transformation could be applied
     """
     if not isinstance(param, str):
@@ -326,29 +425,29 @@ def map_one_param(param, context=None):
 
     mapping_functions = {
         "CONF": {
-            "prerequisites": context and hasattr(context, "project_config"),
+            "prerequisites": project_config,
             "function": map_json_param,
-            "args": [key, context.project_config if hasattr(context, "project_config") else None]
+            "args": [key, project_config]
         },
         "TOOLIUM": {
-            "prerequisites": context,
+            "prerequisites": toolium_config,
             "function": map_toolium_param,
-            "args": [key, context]
+            "args": [key, toolium_config]
         },
         "CONTEXT": {
-            "prerequisites": context,
+            "prerequisites": behave_context,
             "function": get_value_from_context,
-            "args": [key, context]
+            "args": [key, behave_context]
         },
         "LANG": {
-            "prerequisites": context,
+            "prerequisites": language_terms and language,
             "function": get_message_property,
-            "args": [key, context]
+            "args": [key, language_terms, language]
         },
         "POE": {
-            "prerequisites": context,
+            "prerequisites": poeditor_terms,
             "function": get_translation_by_poeditor_reference,
-            "args": [key, context]
+            "args": [key, poeditor_terms]
         },
         "ENV": {
             "prerequisites": True,
@@ -368,9 +467,8 @@ def map_one_param(param, context=None):
     }
 
     if key and mapping_functions[type]["prerequisites"]:
-        return mapping_functions[type]["function"](*mapping_functions[type]["args"])
-    else:
-        return param
+        param = mapping_functions[type]["function"](*mapping_functions[type]["args"])
+    return param
 
 
 def _get_mapping_type_and_key(param):
@@ -451,16 +549,16 @@ def hide_passwords(key, value):
     return hidden_value if any(hidden_key in key for hidden_key in hidden_keys) else value
 
 
-def map_toolium_param(param, context):
+def map_toolium_param(param, config):
     """
-    Find the value of the given param using it as a key in the current toolium configuration (context.toolium_config).
+    Find the value of the given param using it as a key in the given toolium configuration.
     The param is expected to be in the form <section>_<property>, so for example "TextExecution_environment" could be
     used to retrieve the value of this toolium property (i.e. the string "QA"):
     [TestExecution]
     environment: QA
 
     :param param: key to be searched (e.g. "TextExecution_environment")
-    :param context: Behave context object
+    :param config: toolium config object
     :return: mapped value
     """
     try:
@@ -472,7 +570,7 @@ def map_toolium_param(param, context):
         raise IndexError(msg)
 
     try:
-        mapped_value = context.toolium_config.get(section, property_name)
+        mapped_value = config.get(section, property_name)
         logger.info(f"Mapping Toolium config param 'param' to its configured value '{mapped_value}'")
     except Exception:
         msg = f"'{param}' param not found in Toolium config file"
@@ -484,69 +582,88 @@ def map_toolium_param(param, context):
 def get_value_from_context(param, context):
     """
     Find the value of the given param using it as a key in the context storage dictionary (context.storage) or in the
-    context object itself. So for example, in the former case, "last_request_result" could be used to retrieve the value
-    from context.storage["last_request_result"], if it exists, whereas, in the latter case, "last_request.result" could
-    be used to retrieve the value from context.last_request.result, if it exists.
+    context object itself. The key might be comprised of dotted tokens. In such case, the searched key is the first
+    token. The rest of the tokens are considered nested properties/objects.
+    So, for example, in the basic case, "last_request_result" could be used as key that would be searched into context
+    storage or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
+    in the context storage or as a property of the context object whose name is last_request. In both cases, when found,
+    "result" is considered (and resolved) as a property into the returned value.
+    
+    There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
+
+    context.storage['a'].b.c.d
+        or
+    context.a.b.c.d
 
     :param param: key to be searched (e.g. "last_request_result" / "last_request.result")
     :param context: Behave context object
     :return: mapped value
     """
-    if context.storage and param in context.storage:
-        return context.storage[param]
-    logger.info(f"'{param}' key not found in context storage, searching in context")
-    try:
-        value = context
-        for part in param.split('.'):
-            value = getattr(value, part)
-        return value
-    except AttributeError:
-        msg = f"'{param}' not found neither in context storage nor in context"
-        logger.error(msg)
-        raise AttributeError(msg)
+    parts = param.split('.')
+    value = None
+    if context.storage and parts[0] in context.storage:
+        value = context.storage[parts[0]]
+    else:
+        logger.info(f"'{parts[0]}' key not found in context storage, searching in context")
+        try:
+            value = getattr(context, parts[0])
+        except AttributeError:
+            msg = f"'{parts[0]}' not found neither in context storage nor in context"
+            logger.error(msg)
+            raise AttributeError(msg)
+
+    if len(parts) > 1:
+        try:
+            for part in parts[1:]:
+                value = getattr(value, part)
+        except AttributeError:
+            msg = f"'{part}' is not an attribute of {value}"
+            logger.error(msg)
+            raise AttributeError(msg)
+
+    return value
 
 
-def get_message_property(param, context):
+
+def get_message_property(param, language_terms, language_key):
     """
-    Return the message for the given param, using it as a key in the list of language properties previously loaded
-    in the context (context.language_dict). Dot notation is used (e.g. "home.button.send").
+    Return the message for the given param, using it as a key in the list of language properties.
+    Dot notation is used (e.g. "home.button.send").
 
     :param param: message key
-    :param context: Behave context object
-    :return: the message mapped to the given key in the language set in the context (context.language)
+    :param language_terms: dict with language terms
+    :param language_key: language key
+    :return: the message mapped to the given key in the given language
     """
     key_list = param.split(".")
-    language_dict_copy = deepcopy(context.language_dict)
+    language_terms_aux = deepcopy(language_terms)
     try:
         for key in key_list:
-            language_dict_copy = language_dict_copy[key]
-        logger.info(f"Mapping language param '{param}' to its configured value '{language_dict_copy[context.language]}'")
+            language_terms_aux = language_terms_aux[key]
+        logger.info(f"Mapping language param '{param}' to its configured value '{language_terms_aux[language_key]}'")
     except KeyError:
         msg = f"Mapping chain '{param}' not found in the language properties file"
         logger.error(msg)
         raise KeyError(msg)
 
-    return language_dict_copy[context.language]
+    return language_terms_aux[language_key]
 
 
-def get_translation_by_poeditor_reference(reference, context):
+def get_translation_by_poeditor_reference(reference, poeditor_terms):
     """
-    Return the translation(s) for the given POEditor reference from the terms previously loaded in the context.
+    Return the translation(s) for the given POEditor reference from the given terms in poeditor_terms.
 
     :param reference: POEditor reference
-    :param context: Behave context object
+    :param poeditor_terms: poeditor terms
     :return: list of strings with the translations from POEditor or string with the translation if only one was found
     """
-    try:
-        context.poeditor_terms = context.poeditor_export
-    except AttributeError:
-        raise Exception("POEditor texts haven't been correctly downloaded!")
-    poeditor_conf = context.project_config['poeditor'] if 'poeditor' in context.project_config else {}
-    key = poeditor_conf['key_field'] if 'key_field' in poeditor_conf else 'reference'
-    search_type = poeditor_conf['search_type'] if 'search_type' in poeditor_conf else 'contains'
+    poeditor_config = project_config['poeditor'] if 'poeditor' in project_config else {}
+    key = poeditor_config['key_field'] if 'key_field' in poeditor_config else 'reference'
+    search_type = poeditor_config['search_type'] if 'search_type' in poeditor_config else 'contains'
     # Get POEditor prefixes and add no prefix option
-    poeditor_prefixes = poeditor_conf['prefixes'] if 'prefixes' in poeditor_conf else []
+    poeditor_prefixes = poeditor_config['prefixes'] if 'prefixes' in poeditor_config else []
     poeditor_prefixes.append('')
+    translation = []
     for prefix in poeditor_prefixes:
         if len(reference.split(':')) > 1 and prefix != '':
             # If there are prefixes and the resource contains ':' apply prefix in the correct position
@@ -554,10 +671,10 @@ def get_translation_by_poeditor_reference(reference, context):
         else:
             complete_reference = '%s%s' % (prefix, reference)
         if search_type == 'exact':
-            translation = [term['definition'] for term in context.poeditor_terms
+            translation = [term['definition'] for term in poeditor_terms
                            if complete_reference == term[key] and term['definition'] is not None]
         else:
-            translation = [term['definition'] for term in context.poeditor_terms
+            translation = [term['definition'] for term in poeditor_terms
                            if complete_reference in term[key] and term['definition'] is not None]
         if len(translation) > 0:
             break
@@ -566,15 +683,36 @@ def get_translation_by_poeditor_reference(reference, context):
     return translation
 
 
+def set_base64_path(path):
+    """
+    Set a relative path to be used as the base for the file path specified in the BASE64 mapping pattern.
+
+    :param path: relative path to be used as base for base64 mapping
+    """
+    global base_base64_path
+    base_base64_path = path
+
+
+def set_file_path(path):
+    """
+    Set a relative path to be used as the base for the file path specified in the FILE mapping pattern.
+
+    :param path: relative path to be used as base for file mapping
+    """
+    global base_file_path
+    base_file_path = path
+
+
 def get_file(file_path):
     """
-    Return the content of a file given its path.
+    Return the content of a file given its path. If a base path was previously set by using
+    the set_file_path() function, the file path specified must be relative to that path.
 
     :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content
     """
-    file_path_parts = file_path.split("/")
-    file_path = os.path.join(*file_path_parts)
+    file_path_parts = (base_file_path + file_path).split("/")
+    file_path = os.path.abspath(os.path.join(*file_path_parts))
     if not os.path.exists(file_path):
         raise Exception(f' ERROR - Cannot read file "{file_path}". Does not exist.')
 
@@ -584,13 +722,14 @@ def get_file(file_path):
 
 def convert_file_to_base64(file_path):
     """
-    Return the content of a file given its path encoded in Base64.
+    Return the content of a file given its path encoded in Base64. If a base path was previously set by using
+    the set_file_path() function, the file path specified must be relative to that path.
 
     :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content encoded in Base64
     """
-    file_path_parts = file_path.split("/")
-    file_path = os.path.join(*file_path_parts)
+    file_path_parts = (base_base64_path + file_path).split("/")
+    file_path = os.path.abspath(os.path.join(*file_path_parts))
     if not os.path.exists(file_path):
         raise Exception(f' ERROR - Cannot read file "{file_path}". Does not exist.')
 

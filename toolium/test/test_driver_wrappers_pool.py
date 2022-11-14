@@ -24,6 +24,7 @@ import pytest
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
+from toolium.visual_test import VisualTest
 
 
 @pytest.fixture
@@ -102,16 +103,22 @@ close_drivers_scopes = (
 @pytest.mark.parametrize("scope", close_drivers_scopes)
 def test_close_drivers_function(scope, driver_wrapper):
     DriverWrappersPool.save_all_webdriver_logs = mock.MagicMock()
+    VisualTest.update_latest_report = mock.MagicMock()
 
     # Close drivers
     DriverWrappersPool.close_drivers(scope, 'test_name')
 
+    # Check that save_all_webdriver_logs method has been called only in function scope
+    # Check that update_latest_report method has been called only in session scope
     if scope == 'function':
-        # Check that save_all_webdriver_logs has been called
         DriverWrappersPool.save_all_webdriver_logs.assert_called_once_with('test_name', True)
-    else:
-        # Check that save_all_webdriver_logs has not been called
+        VisualTest.update_latest_report.assert_not_called()
+    elif scope == 'module':
         DriverWrappersPool.save_all_webdriver_logs.assert_not_called()
+        VisualTest.update_latest_report.assert_not_called()
+    elif scope == 'session':
+        DriverWrappersPool.save_all_webdriver_logs.assert_not_called()
+        VisualTest.update_latest_report.assert_called_once_with()
 
 
 def test_find_parent_directory_relative():

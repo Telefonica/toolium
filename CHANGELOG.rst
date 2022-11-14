@@ -1,10 +1,57 @@
 Toolium Changelog
 =================
 
-v2.3.1
+v2.6.3
 ------
 
 *Release date: In development*
+
+v2.6.2
+------
+
+*Release date: 2022-10-18*
+
+- New param [UUID] in *replace_param* method to generate a v4 UUID
+- Improve POEditor error message when there are more than one project
+
+v2.6.1
+------
+
+*Release date: 2022-06-28*
+
+- Reference dotted keys when saving objects in context storage using [CONTEXT:a.b.c] formula
+- Fix Visual testing image size for MacOS Retina and mobile layout
+
+v2.6.0
+------
+
+*Release date: 2022-04-29*
+
+- Update map_param method to allow recursive replacements
+- Update replace_param function to allow multiple date expressions in the same param
+- Fix error message to show parent locator instead of object reference when an element is not found
+- Update replace_param function to allow NOW datetime expressions with arbitrary formats accepted by datetime.strftime
+
+v2.5.0
+------
+
+*Release date: 2022-03-16*
+
+- Update map_param method to use dataset global variables instead of context parameter
+- Dataset variables needed for TOOLIUM, CONTEXT and POE replacements are set automatically
+- Make POEditor methods independent of behave context
+- Fix POEditor bug writing to file when terms contain slashes: from 'http:\/\/www.example.com' to 'http://www.example.com'
+
+v2.4.0
+------
+
+*Release date: 2022-03-04*
+
+- Add set_file_path and set_base64_path functions to dataset module, to set base paths for FILE and BASE64 mappings
+- Visual testing baseline images are copied to output folder to facilitate report visualization in Jenkins
+- Visual testing output folder is copied to *latest* folder to allow HTML Publisher Jenkins plugin to publish it
+- Fix detection of POEditor configuration not available
+- Fix indent error in Driver Configuration documentation
 
 v2.3.0
 ------
