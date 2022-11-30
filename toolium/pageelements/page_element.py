@@ -134,7 +134,7 @@ class PageElement(CommonObject):
                 context_dict = next(
                     (item for item in contexts if 'webviewName' in item and item['webviewName'] == app_web_context),
                     None)
-                if context_dict:
+                if context_dict and 'pages' in context_dict:
                     context = app_web_context
                     window_handle = 'CDwindow-{}'.format(context_dict['pages'][0]['id'])
             if context:
