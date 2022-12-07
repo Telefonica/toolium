@@ -4,7 +4,9 @@ Toolium Changelog
 v2.6.3
 ------
 
-*Release date: In development*
+*Release date: 2022-12-09*
+
+- Fix error in Android automatic context selection when context does not contain pages
 
 v2.6.2
 ------
