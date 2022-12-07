@@ -7,6 +7,7 @@ v2.6.3
 *Release date: 2022-12-09*
 
 - Fix error in Android automatic context selection when context does not contain pages
+- Remove Python 3.6 support (Python 3.6 reached the end of its life on December 23th, 2021)
 
 v2.6.2
 ------
