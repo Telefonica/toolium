@@ -6,3 +6,4 @@ screeninfo~=0.8
 lxml~=4.9
 Faker~=18.3
 phonenumbers~=8.13
+jira==3.5.0
