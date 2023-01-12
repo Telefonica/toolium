@@ -251,6 +251,18 @@ For example, to use a predefined chrome profile::
     [ChromeArguments]
     user-data-dir: C:\Users\USERNAME\AppData\Local\Google\Chrome\User Data
 
+**ChromeExtensions section**
+
+Chrome plugins can also be installed adding their file paths to *[ChromeExtensions]* configuration section.
+
+For example, the following configuration install firebug lite extension in Chrome::
+
+    [Driver]
+    type: chrome
+
+    [ChromeExtensions]
+    firebug: resources/firebug-lite.crx
+
 **ChromeMobileEmulation section**
 
 Another examples showing how to use
