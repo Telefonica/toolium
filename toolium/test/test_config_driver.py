@@ -660,6 +660,8 @@ def test_create_chrome_options(webdriver_mock, config, utils):
     config.set('ChromeMobileEmulation', 'deviceName', 'Google Nexus 5')
     config.add_section('ChromeArguments')
     config.set('ChromeArguments', 'lang', 'es')
+    config.add_section('ChromeExtensions')
+    config.set('ChromeExtensions', 'firebug', 'resources/firebug-lite.crx')
     config_driver = ConfigDriver(config, utils)
 
     config_driver._create_chrome_options()
@@ -669,6 +671,7 @@ def test_create_chrome_options(webdriver_mock, config, utils):
          mock.call('mobileEmulation', {'deviceName': 'Google Nexus 5'})]
     )
     webdriver_mock.ChromeOptions().add_argument.assert_called_once_with('lang=es')
+    webdriver_mock.ChromeOptions().add_extension.assert_called_once_with('resources/firebug-lite.crx')
 
 
 @mock.patch('toolium.config_driver.webdriver')

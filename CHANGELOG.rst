@@ -1,10 +1,14 @@
 Toolium Changelog
 =================
 
-v2.6.4
+v2.7.0
 ------
 
 *Release date: In development*
+
+- Allow to add extensions to chrome options from properties file
+
+   New config section [ChromeExtensions] with extensions file paths, e.g. 'firebug: resources/firebug-lite.crx'
 
 v2.6.3
 ------

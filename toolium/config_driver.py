@@ -337,10 +337,11 @@ class ConfigDriver(object):
         if chrome_binary is not None:
             options.binary_location = chrome_binary
 
-        # Add Chrome preferences, mobile emulation options and chrome arguments
+        # Add Chrome preferences, arguments, extensions and mobile emulation options
         self._add_chrome_options(options, 'prefs')
         self._add_chrome_options(options, 'mobileEmulation')
         self._add_chrome_arguments(options)
+        self._add_chrome_extensions(options)
 
         return options
 
@@ -372,6 +373,18 @@ class ConfigDriver(object):
                 pref_value = '={}'.format(pref_value) if pref_value else ''
                 self.logger.debug("Added chrome argument: %s%s", pref, pref_value)
                 options.add_argument('{}{}'.format(pref, self._convert_property_type(pref_value)))
+        except NoSectionError:
+            pass
+
+    def _add_chrome_extensions(self, options):
+        """Add Chrome extensions from properties file
+
+        :param options: chrome options object
+        """
+        try:
+            for pref, pref_value in dict(self.config.items('ChromeExtensions')).items():
+                self.logger.debug("Added chrome extension: %s = %s", pref, pref_value)
+                options.add_extension(pref_value)
         except NoSectionError:
             pass
 
