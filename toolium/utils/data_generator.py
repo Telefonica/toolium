@@ -23,7 +23,6 @@ import re
 import uuid
 
 from faker import Faker
-from .dataset import map_param
 
 __logger__ = logging.getLogger(__name__)
 
@@ -35,9 +34,8 @@ class DataGenerator(object):
     """
 
     def __init__(self):
-        self._provider = self._get_ob_locale()
+        self._provider = DataGenerator.get_locale()
         self._fake = Faker(self._provider)
-
 
     @property
     def street_address(self):
@@ -87,7 +85,7 @@ class DataGenerator(object):
         """
         while True:
             postal_code = self._fake.postcode()
-            if self._is_valid_postcode(self._provider, postal_code):
+            if DataGenerator.is_valid_postcode(self._provider, postal_code):
                 return postal_code
 
     @property
@@ -110,19 +108,19 @@ class DataGenerator(object):
         return ''.join(["{}".format(random.randint(0, 9)) for _ in range(0, int(length))])
 
     @staticmethod
-    def _get_locale():
+    def get_locale():
         """
         Return the locale.
         If property is not defined, 'es_ES' is set.
         """
         try:
-            #TODO pending to implement
+            from toolium.utils.dataset import map_param
             return f"{map_param('[CONF:LANG]')}_{map_param('[CONF:COUNTRY]')}"
         except Exception:
             return 'es_ES'
 
     @staticmethod
-    def _is_valid_postcode(provider, postal_code):
+    def is_valid_postcode(provider, postal_code):
         """
         Validate postal codes by locale.
         Can be added custom validations for the country.
