@@ -202,7 +202,8 @@ def test_diff_message_size_pil():
 
 
 def test_diff_message_size_perceptualdiff():
-    message = """The new screenshot 'C:\\...\\01_login_form__test_login.png' did not match the baseline 'C:\\...\\login_form.png':
+    filename = 'C:\\...\\01_login_form__test_login.png'
+    message = f"""The new screenshot '{filename}' did not match the baseline 'C:\\...\\login_form.png':
         FAIL: Image dimensions do not match"""
     expected_message = 'Image dimensions do not match'
     assert expected_message == VisualTest._get_diff_message(message, 1000000)
