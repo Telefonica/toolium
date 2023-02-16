@@ -6,8 +6,8 @@ v3.0.0
 
 *Release date: In development*
 
-- Add support for Selenium 4
-- Add support for Appium-Python-Client 2
+- Add support for Selenium 4 (WIP)
+- Add support for Appium-Python-Client 2 (WIP)
 - Allow to add extensions to chrome options from properties file
 
    New config section [ChromeExtensions] with extensions file paths, e.g. 'firebug: resources/firebug-lite.crx'
