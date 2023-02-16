@@ -29,6 +29,8 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.ie.service import Service as IEService
+from selenium.webdriver.safari.service import Service as SafariService
+from selenium.webdriver.safari.options import Options as SafariOptions
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
@@ -417,7 +419,12 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Safari driver
         """
-        return webdriver.Safari(desired_capabilities=capabilities)
+        safari_driver = self.config.get('Driver', 'safari_driver_path')
+        self.logger.debug("Safari driver path given in properties: %s", safari_driver)
+        service = SafariService(executable_path=safari_driver)
+        safari_options = SafariOptions()
+        self._update_dict(safari_options.capabilities, capabilities)
+        return webdriver.Safari(service=service, options=safari_options)
 
     def _setup_explorer(self, capabilities):
         """Setup Internet Explorer webdriver
