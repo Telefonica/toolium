@@ -1,5 +1,6 @@
 requests~=2.27            # api tests
 selenium~=4.0             # web tests
 Appium-Python-Client~=2.0 # mobile tests
+Pillow~=9.4.0             # visual testing
 screeninfo~=0.8
 lxml~=4.9
