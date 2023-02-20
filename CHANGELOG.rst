@@ -6,6 +6,7 @@ v2.7.0
 
 *Release date: In development*
 
+- Fix drivers not being closed in `after_feature` when errors occur during `before_feature` steps execution
 - Allow to add extensions to chrome options from properties file
 
    New config section [ChromeExtensions] with extensions file paths, e.g. 'firebug: resources/firebug-lite.crx'
