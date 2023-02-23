@@ -19,15 +19,17 @@ limitations under the License.
 import ast
 import logging
 import os
-from configparser import NoSectionError
 
 from appium import webdriver as appiumdriver
+from appium.options.common.base import AppiumOptions
+from configparser import NoSectionError
 from selenium import webdriver
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.common.options import ArgOptions as RemoteOptions
 from selenium.webdriver.edge.service import Service as EdgeService
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.ie.service import Service as IEService
 from selenium.webdriver.safari.service import Service as SafariService
 from selenium.webdriver.safari.options import Options as SafariOptions
@@ -89,25 +91,30 @@ class ConfigDriver(object):
         # Add version and platform capabilities
         self._add_capabilities_from_driver_type(capabilities)
 
-        if driver_name == 'opera':
-            capabilities['opera.autostart'] = True
-            capabilities['opera.arguments'] = '-fullscreen'
-        elif driver_name == 'firefox':
-            capabilities['firefox_profile'] = self._create_firefox_profile().encoded
+        options = RemoteOptions()
+        self._update_dict(options.capabilities, capabilities)
+
+        if driver_name == 'firefox':
+            options = FirefoxOptions()
+            options.profile = self._create_firefox_profile()
+            self._update_dict(options.capabilities, capabilities)
 
         # Add custom driver capabilities
         self._add_capabilities_from_properties(capabilities, 'Capabilities')
 
         if driver_name == 'chrome':
-            self._add_chrome_options_to_capabilities(capabilities)
+            options = self._create_chrome_options()
+            self._update_dict(options.capabilities, capabilities)
 
         if driver_name in ('android', 'ios', 'iphone'):
             # Create remote appium driver
             self._add_capabilities_from_properties(capabilities, 'AppiumCapabilities')
-            return appiumdriver.Remote(command_executor=server_url, desired_capabilities=capabilities)
+            options = AppiumOptions()
+            self._update_dict(options.capabilities, capabilities)
+            return appiumdriver.Remote(command_executor=server_url, options=options)
         else:
             # Create remote web driver
-            return webdriver.Remote(command_executor=server_url, desired_capabilities=capabilities)
+            return webdriver.Remote(command_executor=server_url, options=options)
 
     def _create_local_driver(self):
         """Create a driver in local machine
@@ -231,6 +238,7 @@ class ConfigDriver(object):
         log_path = os.path.join(DriverWrappersPool.output_directory, 'geckodriver.log')
 
         self._update_dict(firefox_options.capabilities, capabilities)
+        firefox_options.profile = self._create_firefox_profile()
         service = FirefoxService(executable_path=gecko_driver, log_path=log_path)
         return webdriver.Firefox(service=service, options=firefox_options)
 
@@ -384,21 +392,6 @@ class ConfigDriver(object):
                 options.add_extension(pref_value)
         except NoSectionError:
             pass
-
-    def _add_chrome_options_to_capabilities(self, capabilities):
-        """Add Chrome options to capabilities
-
-        :param capabilities: dictionary with driver capabilities
-        """
-        chrome_capabilities = self._create_chrome_options().to_capabilities()
-        options_key = None
-        if 'goog:chromeOptions' in chrome_capabilities:
-            options_key = 'goog:chromeOptions'
-        elif 'chromeOptions' in chrome_capabilities:
-            # Selenium 3.5.3 and older
-            options_key = 'chromeOptions'
-        if options_key:
-            self._update_dict(capabilities, chrome_capabilities, initial_key=options_key)
 
     def _update_dict(self, initial, update, initial_key=None):
         """ Update a initial dict with another dict values recursively
