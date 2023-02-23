@@ -28,7 +28,6 @@ from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
-
 @pytest.fixture
 def config():
     config_parser = ExtendedConfigParser()
