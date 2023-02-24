@@ -194,7 +194,7 @@ def test_compare_files_diff_fail(driver_wrapper):
     with pytest.raises(AssertionError) as exc:
         visual.compare_files(current_method_name(), file_v2, file_v1, 0)
     assert str(exc.value) == f"The new screenshot '{file_v2}' did not match the baseline '{file_v1}' " \
-                              "(by a distance of 0.00520373, more than 0 threshold)"
+                             f"(by a distance of 0.00520373, more than 0 threshold)"
 
 
 def test_compare_files_diff_fail_with_threshold(driver_wrapper):
@@ -205,7 +205,7 @@ def test_compare_files_diff_fail_with_threshold(driver_wrapper):
     with pytest.raises(AssertionError) as exc:
         visual.compare_files(current_method_name(), file_v2, file_v1, 0.005)
     assert str(exc.value) == f"The new screenshot '{file_v2}' did not match the baseline '{file_v1}' " \
-                              "(by a distance of 0.00520373, more than 0.005 threshold)"
+                             f"(by a distance of 0.00520373, more than 0.005 threshold)"
 
 
 def test_compare_files_size(driver_wrapper):
@@ -494,7 +494,7 @@ def test_assert_screenshot_no_enabled_force_fail(driver_wrapper):
         visual.assert_screenshot(None, filename=filename, file_suffix=current_method_name())
     driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
     assert str(exc.value).endswith(f"did not match the baseline '{file_v1}' (by a distance of 0.00520373,"
-                                    " more than 0 threshold)")
+                                   f" more than 0 threshold)")
 
 
 def test_assert_screenshot_full_and_save_baseline(driver_wrapper):
