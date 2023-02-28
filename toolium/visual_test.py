@@ -300,16 +300,16 @@ class VisualTest(object):
 
         # Count different pixels (black pixels in diff/mask image are equal pixels)
         equal_pixels = sum([1 for pixel in differences_mask.getdata() if pixel == 0])
-        diff_pixels_porcentage = 1 - equal_pixels / (max_size[0] * max_size[1])
+        diff_pixels_percentage = 1 - equal_pixels / (max_size[0] * max_size[1])
 
         # Check differences and add to report
-        if diff_pixels_porcentage <= threshold:
+        if diff_pixels_percentage <= threshold:
             # Images are equal or similar
             result = 'equal'
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'complete_report'):
-                if diff_pixels_porcentage > 0:
+                if diff_pixels_percentage > 0:
                     # Show diff file also in similar images
-                    diff_message = f'Distance is {diff_pixels_porcentage:.8f}, less than {threshold} threshold'
+                    diff_message = f'Distance is {diff_pixels_percentage:.8f}, less than {threshold} threshold'
                     result = f'equal-{diff_message}'
                 else:
                     diff_file = diff_message = None
@@ -323,9 +323,9 @@ class VisualTest(object):
                                     f" baseline '{baseline_file}' size '{baseline_size}'"
             else:
                 # Same size, different pixels
-                diff_message = f'Distance is {diff_pixels_porcentage:.8f}, more than {threshold} threshold'
+                diff_message = f'Distance is {diff_pixels_percentage:.8f}, more than {threshold} threshold'
                 exception_message = f"The new screenshot '{image_file}' did not match the baseline '{baseline_file}'" \
-                                    f" (by a distance of {diff_pixels_porcentage:.8f}, more than {threshold} threshold)"
+                                    f" (by a distance of {diff_pixels_percentage:.8f}, more than {threshold} threshold)"
             self._add_result_to_report('diff', report_name, image_file, baseline_file, diff_file, diff_message)
             result = f'diff-{diff_message}'
             self.logger.warning(f"Visual error in '{os.path.splitext(os.path.basename(baseline_file))[0]}':"
