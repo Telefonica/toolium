@@ -20,10 +20,6 @@ As web pages and mobile applications look different when using different browser
 Toolium provides you with a way of storing different base images, called baselines, through a configuration property
 called *baseline_name*.
 
-The libraries used to make the comparisons of the images are `Needle <https://github.com/bfirsh/needle>`_, another
-python tool for visual testing with Selenium, and `Pillow <https://github.com/python-pillow/Pillow>`_, the basic
-python library for image management.
-
 After every execution, the tool generates a HTML report with the screenshots and the resulting comparisons. The
 following figure shows an example of this report. As can be seen, there's a row per assert in your tests, with its
 background in green or red, depending on the comparison.
@@ -139,7 +135,6 @@ Toolium properties related to Visual Testing are stored in properties.cfg as ::
     save: false
     complete_report: true
     baseline_name: {Driver_type}
-    engine: pil
 
 **enabled**
 | *true*: visual testing is enabled, screenshots are captured and compared
@@ -168,13 +163,6 @@ Toolium properties related to Visual Testing are stored in properties.cfg as ::
 - *{PlatformVersion}*: baseline_name will take the value of the mobile platform version, instead of the platformVersion configuration property
 - *{Version}*: baseline_name will take the value of version capability, although it is not configured
 - *{RemoteNode}*: baseline_name will take the value of the remote node name
-
-**engine**
-| Needle can compare images using different libraries (or engines) underneath. Currently, it supports Pillow, PerceptualDiff and ImageMagick.
-
-- *pil*: uses Pillow to compare images. It's the default option and it's installed as a Toolium dependency.
-- *perceptualdiff*:  uses `PerceptualDiff <http://pdiff.sourceforge.net>`_ to compare images. It is a faster library and besides generates a diff image, highlighting the differences between the baseline image and the new screenshot. It requires to be installed separately and depends on your host.
-- *imagemagick*:  uses `ImageMagick <http://www.imagemagick.org>`_ to compare images. It also generates a diff image, highlighting the differences in a more visual way than perceptualdiff. It requires to be installed separately and depends on your host.
 
 How to view Visual Testing report in Jenkins?
 ---------------------------------------------
