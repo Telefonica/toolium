@@ -4,7 +4,7 @@ Tests Result Analysis
 =====================
 
 Toolium does not create a custom tests execution report. This is delegated to your favourite test framework (unittest,
-nose, pytest, lettuce, behave, ...). But Toolium provides some useful features to analyze tests results.
+nose, pytest, behave, ...). But Toolium provides some useful features to analyze tests results.
 
 Logs
 ----

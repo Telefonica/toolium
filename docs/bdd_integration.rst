@@ -3,8 +3,6 @@
 BDD Integration
 ===============
 
-Toolium can be also used with behave and lettuce tests.
-
 Behave
 ~~~~~~
 
@@ -194,41 +192,3 @@ functions or check the :ref:`dataset <dataset>` module for more implementation d
 * :code:`[ENV:xxxx]`: Value of the OS environment variable xxxx
 * :code:`[FILE:xxxx]`: String with the content of the file in the path xxxx
 * :code:`[BASE64:xxxx]`: String with the base64 representation of the file content in the path xxxx
-
-
-Lettuce
-~~~~~~~
-
-Lettuce tests should be developed as usual, only *terrain.py* file should be modified to initialize driver and the rest
-of Toolium configuration.
-
-Terrain methods should call to the corresponding Toolium terrain methods, as can be seen in the following example:
-
-.. code-block:: python
-
-    from lettuce import after, before
-    from toolium.lettuce.terrain import (setup_driver as toolium_setup_driver, teardown_driver as toolium_teardown_driver,
-                                         teardown_driver_all as toolium_teardown_driver_all)
-
-
-    @before.each_scenario
-    def setup_driver(scenario):
-        toolium_setup_driver(scenario)
-
-
-    @after.each_scenario
-    def teardown_driver(scenario):
-        toolium_teardown_driver(scenario)
-
-
-    @after.all
-    def teardown_driver_all(total):
-        toolium_teardown_driver_all(total)
-
-
-After initialization, the following attributes will be available in world object:
-
-- :code:`world.toolium_config`: dictionary with Toolium configuration, readed from properties.cfg
-- :code:`world.driver_wrapper`: :ref:`DriverWrapper <driver_wrapper>` instance
-- :code:`world.driver`: Selenium or Appium driver instance
-- :code:`world.utils`: :ref:`Utils <utils>` instance

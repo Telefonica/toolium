@@ -4,7 +4,6 @@ toolium packages
 .. toctree::
 
     toolium.behave
-    toolium.lettuce
     toolium.pageelements
     toolium.pageobjects
     toolium.utils
