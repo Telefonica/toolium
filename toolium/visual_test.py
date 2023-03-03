@@ -291,16 +291,8 @@ class VisualTest(object):
                 baseline_max.paste(baseline.convert('RGB'))
 
         # Generate and save diff image
-        differences_mask = ImageChops.difference(image_max, baseline_max).convert('L').point(lambda x: 255 if x else 0)
-        red_image = Image.new('RGB', baseline_max.size, (255, 0, 0))
-        baseline_max.putalpha(127)
-        baseline_max.paste(red_image, (0, 0), differences_mask)
         diff_file = image_file.replace('.png', '.diff.png')
-        baseline_max.save(diff_file)
-
-        # Count different pixels (black pixels in diff/mask image are equal pixels)
-        equal_pixels = sum([1 for pixel in differences_mask.getdata() if pixel == 0])
-        diff_pixels_percentage = 1 - equal_pixels / (max_size[0] * max_size[1])
+        diff_pixels_percentage = self.save_differences_image(image_max, baseline_max, diff_file)
 
         # Check differences and add to report
         if diff_pixels_percentage <= threshold:
@@ -333,6 +325,33 @@ class VisualTest(object):
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'fail') or self.force:
                 raise AssertionError(exception_message)
         return result
+
+    @staticmethod
+    def save_differences_image(image, baseline, diff_file_path):
+        """Create and save an image showing differences between both images
+
+        :param image: image object
+        :param baseline: reference baseline image object
+        :param diff_file_path: file path where difference image will be saved
+        :returns: percentage of pixels that are different between both images
+        """
+        # Create a mask with differences
+        mask = ImageChops.difference(image, baseline).convert('L').point(lambda x: 255 if x else 0)
+        # Create a White base
+        white_image = Image.new('RGB', baseline.size, (255, 255, 255))
+        # Add baseline with 50% opacity
+        baseline.putalpha(127)
+        white_image.paste(baseline, (0, 0), baseline)
+        # Add red points in different pixels
+        red_image = Image.new('RGB', baseline.size, (255, 0, 0))
+        white_image.paste(red_image, (0, 0), mask)
+        # Save file
+        white_image.save(diff_file_path)
+
+        # Count different pixels (black pixels in mask image are equal pixels)
+        equal_pixels = sum([1 for pixel in mask.getdata() if pixel == 0])
+        diff_pixels_percentage = 1 - equal_pixels / (baseline.width * baseline.height)
+        return diff_pixels_percentage
 
     def _add_result_to_report(self, result, report_name, image_file, baseline_file, diff_file, message):
         """Add the result of a visual test to the html report
