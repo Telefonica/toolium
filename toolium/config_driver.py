@@ -172,7 +172,7 @@ class ConfigDriver(object):
         """
         driver_type = self.config.get('Driver', 'type')
         try:
-            capabilities['version'] = driver_type.split('-')[1]
+            capabilities['browserVersion'] = driver_type.split('-')[1]
         except IndexError:
             pass
 
@@ -184,7 +184,7 @@ class ConfigDriver(object):
                               'linux': 'LINUX',
                               'android': 'ANDROID',
                               'mac': 'MAC'}
-            capabilities['platform'] = platforms_list.get(driver_type.split('-')[3], driver_type.split('-')[3])
+            capabilities['platformName'] = platforms_list.get(driver_type.split('-')[3], driver_type.split('-')[3])
         except IndexError:
             pass
 
@@ -198,7 +198,7 @@ class ConfigDriver(object):
         try:
             for cap, cap_value in dict(self.config.items(section)).items():
                 self.logger.debug("Added %s capability: %s = %s", cap_type[section], cap, cap_value)
-                cap_value = cap_value if cap == 'version' else self._convert_property_type(cap_value)
+                cap_value = cap_value if cap == 'browserVersion' else self._convert_property_type(cap_value)
                 self._update_dict(capabilities, {cap: cap_value}, initial_key=cap)
         except NoSectionError:
             pass

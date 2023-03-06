@@ -153,9 +153,9 @@ class Selenoid(object):
                         "browserName": "chrome",
                         "enableVNC": true,
                         "enableVideo": true,
-                        "platform": "ANY",
+                        "platformName": "ANY",
                         "screenResolution": "1280x1024x24",
-                        "version": "latest",
+                        'browserVersion': "latest",
                         "videoName": "selenoide952e551bb9395e16d060f28c54e5d31.mp4",
                         "videoScreenSize": "1280x1024"
                       },
