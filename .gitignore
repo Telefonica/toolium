@@ -89,5 +89,3 @@ output
 
 # Tests
 */test/output
-*/test/resources/*.diff.png
-*/test/resources/*.tmp.png
