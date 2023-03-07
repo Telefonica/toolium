@@ -8,6 +8,7 @@ v3.0.0
 
 - Add support for Selenium 4 (WIP)
 - Add support for Appium-Python-Client 2 (WIP)
+- Remove support to lettuce tests
 - Visual testing comparison has changed
 
    | It only needs PIL library to compare images and generate the differences images

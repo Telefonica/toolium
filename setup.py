@@ -43,8 +43,7 @@ def get_long_description():
 setup(
     name='toolium',
     version=read_file('VERSION').strip(),
-    packages=['toolium', 'toolium.pageobjects', 'toolium.pageelements', 'toolium.lettuce', 'toolium.behave',
-              'toolium.utils'],
+    packages=['toolium', 'toolium.pageobjects', 'toolium.pageelements', 'toolium.behave', 'toolium.utils'],
     package_data={'': ['resources/VisualTestsTemplate.html', 'resources/VisualTests.js', 'resources/VisualTests.css']},
     install_requires=read_file('requirements.txt').splitlines(),
     setup_requires=['pytest-runner'],
@@ -56,8 +55,7 @@ setup(
     description='Wrapper tool of Selenium and Appium libraries to test web and mobile applications in a single project',
     long_description_content_type='text/x-rst',
     long_description=get_long_description(),
-    keywords='selenium appium webdriver web_automation mobile_automation page_object visual_testing bdd lettuce behave'
-             ' pytest',
+    keywords='selenium appium webdriver web_automation mobile_automation page_object visual_testing bdd behave pytest',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
