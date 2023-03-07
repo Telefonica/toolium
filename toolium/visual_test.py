@@ -109,11 +109,11 @@ class VisualTest(object):
             except NoSuchElementException as e:
                 self.logger.warning("Element to be excluded not found: %s", str(e))
 
-        baseline_file = os.path.join(self.baseline_directory, '{}.png'.format(filename))
+        baseline_path = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
         unique_name = '{0:0=2d}_{1}'.format(DriverWrappersPool.visual_number, filename_with_suffix)
         unique_name = '{}.png'.format(get_valid_filename(unique_name))
-        output_file = os.path.join(self.output_directory, unique_name)
+        output_path = os.path.join(self.output_directory, unique_name)
         report_name = '{}<br>({})'.format(file_suffix, filename) if file_suffix else '-<br>({})'.format(filename)
 
         # Get screenshot and modify it
@@ -123,29 +123,29 @@ class VisualTest(object):
         img = self.desktop_resize(img)
         img = self.exclude_elements(img, exclude_web_elements)
         img = self.crop_element(img, web_element)
-        img.save(output_file)
+        img.save(output_path)
         DriverWrappersPool.visual_number += 1
 
         # Determine whether we should save the baseline image
         if self.save_baseline:
             # Copy screenshot to baseline
-            shutil.copyfile(output_file, baseline_file)
+            shutil.copyfile(output_path, baseline_path)
 
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'complete_report'):
-                self._add_result_to_report('baseline', report_name, output_file, None, None,
+                self._add_result_to_report('baseline', report_name, output_path, None, None,
                                            'Screenshot added to baseline')
 
             self.logger.debug("Visual screenshot '%s' saved in visualtests/baseline folder", filename)
-        elif not os.path.exists(baseline_file):
+        elif not os.path.exists(baseline_path):
             # Baseline should exist if save mode is not enabled
-            error_message = "Baseline file not found: %s" % baseline_file
+            error_message = f'Baseline file not found: {baseline_path}'
             self.logger.warning(error_message)
-            self._add_result_to_report('diff', report_name, output_file, None, None, 'Baseline file not found')
+            self._add_result_to_report('diff', report_name, output_path, None, None, 'Baseline file not found')
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'fail') or self.force:
                 raise AssertionError(error_message)
         else:
             # Compare the screenshots
-            self.compare_files(report_name, output_file, baseline_file, threshold)
+            self.compare_files(report_name, output_path, baseline_path, threshold)
 
     def get_scrolls_size(self):
         """Return Chrome and Explorer scrolls sizes if they are visible
@@ -269,20 +269,20 @@ class VisualTest(object):
 
         return img
 
-    def compare_files(self, report_name, image_file, baseline_file, threshold):
+    def compare_files(self, report_name, image_path, baseline_path, threshold):
         """Compare two image files, generate a new image file with highlighted differences,
            calculate the percentage of pixels that are different between both images and add result to the html report
 
         :param report_name: name to show in html report
-        :param image_file: image file path
-        :param baseline_file: baseline image file path
+        :param image_path: image file path
+        :param baseline_path: baseline image file path
         :param threshold: percentage threshold
         :returns: result message
         """
         # Make two new images with same size
-        with Image.open(image_file) as image:
+        with Image.open(image_path) as image:
             image_size = image.size
-            with Image.open(baseline_file) as baseline:
+            with Image.open(baseline_path) as baseline:
                 baseline_size = baseline.size
                 max_size = (max(image.width, baseline.width), max(image.height, baseline.height))
                 image_max = Image.new('RGB', max_size)
@@ -291,16 +291,8 @@ class VisualTest(object):
                 baseline_max.paste(baseline.convert('RGB'))
 
         # Generate and save diff image
-        differences_mask = ImageChops.difference(image_max, baseline_max).convert('L').point(lambda x: 255 if x else 0)
-        red_image = Image.new('RGB', baseline_max.size, (255, 0, 0))
-        baseline_max.putalpha(127)
-        baseline_max.paste(red_image, (0, 0), differences_mask)
-        diff_file = image_file.replace('.png', '.diff.png')
-        baseline_max.save(diff_file)
-
-        # Count different pixels (black pixels in diff/mask image are equal pixels)
-        equal_pixels = sum([1 for pixel in differences_mask.getdata() if pixel == 0])
-        diff_pixels_percentage = 1 - equal_pixels / (max_size[0] * max_size[1])
+        diff_path = image_path.replace('.png', '.diff.png')
+        diff_pixels_percentage = self.save_differences_image(image_max, baseline_max, diff_path)
 
         # Check differences and add to report
         if diff_pixels_percentage <= threshold:
@@ -312,44 +304,71 @@ class VisualTest(object):
                     diff_message = f'Distance is {diff_pixels_percentage:.8f}, less than {threshold} threshold'
                     result = f'equal-{diff_message}'
                 else:
-                    diff_file = diff_message = None
-                self._add_result_to_report('equal', report_name, image_file, baseline_file, diff_file, diff_message)
+                    diff_path = diff_message = None
+                self._add_result_to_report('equal', report_name, image_path, baseline_path, diff_path, diff_message)
         else:
             # Images are different
             if image_size != baseline_size:
                 # Different size
                 diff_message = f"Image dimensions {image_size} do not match baseline size {baseline_size}"
-                exception_message = f"The new screenshot '{image_file}' size '{image_size}' did not match the" \
-                                    f" baseline '{baseline_file}' size '{baseline_size}'"
+                exception_message = f"The new screenshot '{image_path}' size '{image_size}' did not match the" \
+                                    f" baseline '{baseline_path}' size '{baseline_size}'"
             else:
                 # Same size, different pixels
                 diff_message = f'Distance is {diff_pixels_percentage:.8f}, more than {threshold} threshold'
-                exception_message = f"The new screenshot '{image_file}' did not match the baseline '{baseline_file}'" \
+                exception_message = f"The new screenshot '{image_path}' did not match the baseline '{baseline_path}'" \
                                     f" (by a distance of {diff_pixels_percentage:.8f}, more than {threshold} threshold)"
-            self._add_result_to_report('diff', report_name, image_file, baseline_file, diff_file, diff_message)
+            self._add_result_to_report('diff', report_name, image_path, baseline_path, diff_path, diff_message)
             result = f'diff-{diff_message}'
-            self.logger.warning(f"Visual error in '{os.path.splitext(os.path.basename(baseline_file))[0]}':"
+            self.logger.warning(f"Visual error in '{os.path.splitext(os.path.basename(baseline_path))[0]}':"
                                 f" {diff_message}")
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'fail') or self.force:
                 raise AssertionError(exception_message)
         return result
 
-    def _add_result_to_report(self, result, report_name, image_file, baseline_file, diff_file, message):
+    @staticmethod
+    def save_differences_image(image, baseline, diff_path):
+        """Create and save an image showing differences between both images
+
+        :param image: image object
+        :param baseline: reference baseline image object
+        :param diff_path: file path where difference image will be saved
+        :returns: percentage of pixels that are different between both images
+        """
+        # Create a mask with differences
+        mask = ImageChops.difference(image, baseline).convert('L').point(lambda x: 255 if x else 0)
+        # Create a White base
+        white_image = Image.new('RGB', baseline.size, (255, 255, 255))
+        # Add baseline with 50% opacity
+        baseline.putalpha(127)
+        white_image.paste(baseline, (0, 0), baseline)
+        # Add red points in different pixels
+        red_image = Image.new('RGB', baseline.size, (255, 0, 0))
+        white_image.paste(red_image, (0, 0), mask)
+        # Save file
+        white_image.save(diff_path)
+
+        # Count different pixels (black pixels in mask image are equal pixels)
+        equal_pixels = sum([1 for pixel in mask.getdata() if pixel == 0])
+        diff_pixels_percentage = 1 - equal_pixels / (baseline.width * baseline.height)
+        return diff_pixels_percentage
+
+    def _add_result_to_report(self, result, report_name, image_path, baseline_path, diff_path, message):
         """Add the result of a visual test to the html report
 
         :param result: comparation result (equal, diff, baseline)
         :param report_name: name to show in html report
-        :param image_file: image file path
-        :param baseline_file: baseline image file path
-        :param diff_file: differences image file path
+        :param image_path: image file path
+        :param baseline_path: baseline image file path
+        :param diff_path: differences image file path
         :param message: error message
         """
         self.results[result] += 1
-        output_baseline_file = None
-        if baseline_file is not None:
-            output_baseline_file = os.path.join(self.output_directory, os.path.basename(baseline_file))
-            shutil.copyfile(baseline_file, output_baseline_file)
-        row = self._get_html_row(result, report_name, image_file, output_baseline_file, diff_file, message)
+        output_baseline_path = None
+        if baseline_path is not None:
+            output_baseline_path = os.path.join(self.output_directory, os.path.basename(baseline_path))
+            shutil.copyfile(baseline_path, output_baseline_path)
+        row = self._get_html_row(result, report_name, image_path, output_baseline_path, diff_path, message)
         self._add_data_to_report_before_tag(row, '</tbody>')
         self._update_report_summary()
 
@@ -383,14 +402,14 @@ class VisualTest(object):
                                                                          self.results['diff'])
         self._add_data_to_report_before_tag(summary, '</div>')
 
-    def _get_html_row(self, result, report_name, image_file, baseline_file, diff_file, message):
+    def _get_html_row(self, result, report_name, image_path, baseline_path, diff_path, message):
         """Create the html row with the result of a visual test
 
         :param result: comparation result (equal, diff, baseline)
         :param report_name: name to show in html report
-        :param image_file: image file path
-        :param baseline_file: baseline image file path
-        :param diff_file: differences image file path
+        :param image_path: image file path
+        :param baseline_path: baseline image file path
+        :param diff_path: differences image file path
         :param message: error message
         :returns: str with the html row
         """
@@ -398,32 +417,32 @@ class VisualTest(object):
         row += '<td>' + report_name + '</td>'
 
         # Create baseline column
-        baseline_col = self._get_img_element(baseline_file, 'Baseline image')
+        baseline_col = self._get_img_element(baseline_path, 'Baseline image')
         row += '<td>' + baseline_col + '</td>'
 
         # Create image column
-        image_col = self._get_img_element(image_file, 'Screenshot image')
+        image_col = self._get_img_element(image_path, 'Screenshot image')
         row += '<td>' + image_col + '</td>'
 
         # Create diff column
         message = '' if message is None else message
-        diff_col = self._get_img_element(diff_file, message) if diff_file and os.path.exists(diff_file) else message
+        diff_col = self._get_img_element(diff_path, message) if diff_path and os.path.exists(diff_path) else message
 
         row += '<td>' + diff_col + '</td>'
         row += '</tr>'
         return row
 
-    def _get_img_element(self, image_file, image_title):
+    def _get_img_element(self, image_path, image_title):
         """Create an img html element
 
-        :param image_file: filename of the image
+        :param image_path: image file path
         :param image_title: image title
         :returns: str with the img element
         """
         img_element = ''
-        if image_file:
-            image_file_path = path.relpath(image_file, self.output_directory).replace('\\', '/')
-            img_element = f'<img src="{image_file_path}" title="{image_title}"/>'
+        if image_path:
+            image_relative_path = path.relpath(image_path, self.output_directory).replace('\\', '/')
+            img_element = f'<img src="{image_relative_path}" title="{image_title}"/>'
         return img_element
 
     @staticmethod

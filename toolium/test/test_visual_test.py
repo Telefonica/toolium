@@ -44,16 +44,16 @@ orig_file_ios_web = os.path.join(root_path, 'resources', 'ios_web.png')
 orig_file_mac = os.path.join(root_path, 'resources', 'mac_os_retina.png')
 
 # Baseline file paths
-baseline_path = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox')
-file_v1 = os.path.join(baseline_path, 'register.png')
-file_v2 = os.path.join(baseline_path, 'register_v2.png')
-file_v2_diff = os.path.join(baseline_path, 'register_v2_diff.png')
-file_small = os.path.join(baseline_path, 'register_small.png')
-file_scroll = os.path.join(baseline_path, 'register_chrome_scroll.png')
-file_cropped = os.path.join(baseline_path, 'register_cropped_element.png')
-file_ios = os.path.join(baseline_path, 'ios.png')
-file_ios_web = os.path.join(baseline_path, 'ios_web.png')
-file_mac = os.path.join(baseline_path, 'mac_os_retina.png')
+baselines_path = os.path.join(root_path, 'output', 'visualtests', 'baseline', 'firefox')
+file_v1 = os.path.join(baselines_path, 'register.png')
+file_v2 = os.path.join(baselines_path, 'register_v2.png')
+file_v2_diff = os.path.join(baselines_path, 'register_v2_diff.png')
+file_small = os.path.join(baselines_path, 'register_small.png')
+file_scroll = os.path.join(baselines_path, 'register_chrome_scroll.png')
+file_cropped = os.path.join(baselines_path, 'register_cropped_element.png')
+file_ios = os.path.join(baselines_path, 'ios.png')
+file_ios_web = os.path.join(baselines_path, 'ios_web.png')
+file_mac = os.path.join(baselines_path, 'mac_os_retina.png')
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -64,7 +64,7 @@ def initiliaze_files():
         shutil.rmtree(visual_path)
 
     # Copy files to baseline folder
-    makedirs_safe(baseline_path)
+    makedirs_safe(baselines_path)
     shutil.copyfile(orig_file_v1, file_v1)
     shutil.copyfile(orig_file_v2, file_v2)
     shutil.copyfile(orig_file_v2_diff, file_v2_diff)
@@ -508,12 +508,12 @@ def test_assert_screenshot_full_and_save_baseline(driver_wrapper):
     # Assert screenshot
     filename = current_method_name()
     visual.assert_screenshot(None, filename=filename, file_suffix=current_method_name())
-    output_file = os.path.join(visual.output_directory, f'01_{filename}__{current_method_name()}.png')
+    output_path = os.path.join(visual.output_directory, f'01_{filename}__{current_method_name()}.png')
     driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
     # Output image and new baseline image must be equal
-    baseline_file = os.path.join(baseline_path, f'{filename}.png')
-    compare_image_files(visual, current_method_name(), output_file, baseline_file)
+    baseline_path = os.path.join(baselines_path, f'{filename}.png')
+    compare_image_files(visual, current_method_name(), output_path, baseline_path)
 
 
 def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
@@ -534,13 +534,13 @@ def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
     driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
     # Check cropped image
-    output_file = os.path.join(visual.output_directory, f'01_{filename}__{current_method_name()}.png')
-    compare_image_files(visual, current_method_name(), output_file, orig_file_cropped)
+    output_path = os.path.join(visual.output_directory, f'01_{filename}__{current_method_name()}.png')
+    compare_image_files(visual, current_method_name(), output_path, orig_file_cropped)
 
     # Output image and new baseline image must be equal
-    output_file_2 = os.path.join(visual.output_directory, f'02_{filename}__{current_method_name()}.png')
-    shutil.copyfile(output_file, output_file_2)
-    compare_image_files(visual, current_method_name(), output_file_2, file_cropped)
+    output_path_2 = os.path.join(visual.output_directory, f'02_{filename}__{current_method_name()}.png')
+    shutil.copyfile(output_path, output_path_2)
+    compare_image_files(visual, current_method_name(), output_path_2, file_cropped)
 
 
 def test_assert_screenshot_full_and_compare(driver_wrapper):
@@ -587,8 +587,8 @@ def test_assert_screenshot_full_without_baseline(driver_wrapper):
     with pytest.raises(AssertionError) as exc:
         visual.assert_screenshot(None, filename='screenshot_does_not_exist', file_suffix=current_method_name())
     driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
-    baseline_file = os.path.join(baseline_path, 'screenshot_does_not_exist.png')
-    assert str(exc.value) == 'Baseline file not found: %s' % baseline_file
+    baseline_path = os.path.join(baselines_path, 'screenshot_does_not_exist.png')
+    assert str(exc.value) == f'Baseline file not found: {baseline_path}'
 
 
 def test_assert_screenshot_element_without_baseline(driver_wrapper):
@@ -609,8 +609,8 @@ def test_assert_screenshot_element_without_baseline(driver_wrapper):
     with pytest.raises(AssertionError) as exc:
         visual.assert_screenshot(web_element, filename='screenshot_does_not_exist', file_suffix=current_method_name())
     driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
-    baseline_file = os.path.join(baseline_path, 'screenshot_does_not_exist.png')
-    assert str(exc.value) == 'Baseline file not found: %s' % baseline_file
+    baseline_path = os.path.join(baselines_path, 'screenshot_does_not_exist.png')
+    assert str(exc.value) == f'Baseline file not found: {baseline_path}'
 
 
 def test_assert_screenshot_mobile_resize_and_exclude(driver_wrapper):
@@ -636,15 +636,15 @@ def test_assert_screenshot_mobile_resize_and_exclude(driver_wrapper):
 
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'ios_excluded.png')
-    output_file = os.path.join(visual.output_directory, f'01_screenshot_ios__{current_method_name()}.png')
-    compare_image_files(visual, current_method_name(), output_file, expected_image,
+    output_path = os.path.join(visual.output_directory, f'01_screenshot_ios__{current_method_name()}.png')
+    compare_image_files(visual, current_method_name(), output_path, expected_image,
                         expected_result='equal-Distance is 0.00062769, less than 0.001 threshold', threshold=0.001)
 
     # Output image and new baseline image must be equal
-    baseline_file = os.path.join(baseline_path, 'screenshot_ios.png')
-    output_file_2 = os.path.join(visual.output_directory, f'02_screenshot_ios__{current_method_name()}.png')
-    shutil.copyfile(output_file, output_file_2)
-    compare_image_files(visual, current_method_name(), output_file_2, baseline_file)
+    baseline_path = os.path.join(baselines_path, 'screenshot_ios.png')
+    output_path_2 = os.path.join(visual.output_directory, f'02_screenshot_ios__{current_method_name()}.png')
+    shutil.copyfile(output_path, output_path_2)
+    compare_image_files(visual, current_method_name(), output_path_2, baseline_path)
 
 
 def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
@@ -672,15 +672,15 @@ def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
 
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'ios_web_exclude.png')
-    output_file = os.path.join(visual.output_directory, f'01_screenshot_ios_web__{current_method_name()}.png')
-    compare_image_files(visual, current_method_name(), output_file, expected_image,
+    output_path = os.path.join(visual.output_directory, f'01_screenshot_ios_web__{current_method_name()}.png')
+    compare_image_files(visual, current_method_name(), output_path, expected_image,
                         expected_result='equal-Distance is 0.00018128, less than 0.001 threshold', threshold=0.001)
 
     # Output image and new baseline image must be equal
-    baseline_file = os.path.join(baseline_path, 'screenshot_ios_web.png')
-    output_file_2 = os.path.join(visual.output_directory, f'02_screenshot_ios_web__{current_method_name()}.png')
-    shutil.copyfile(output_file, output_file_2)
-    compare_image_files(visual, current_method_name(), output_file_2, baseline_file)
+    baseline_path = os.path.join(baselines_path, 'screenshot_ios_web.png')
+    output_path_2 = os.path.join(visual.output_directory, f'02_screenshot_ios_web__{current_method_name()}.png')
+    shutil.copyfile(output_path, output_path_2)
+    compare_image_files(visual, current_method_name(), output_path_2, baseline_path)
 
 
 def test_assert_screenshot_str_threshold(driver_wrapper):
