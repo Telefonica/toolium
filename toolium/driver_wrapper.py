@@ -359,9 +359,5 @@ class DriverWrapper(object):
         Get driver platform where tests are running
         :return: platform name
         """
-        platform = ''
-        if 'platformName' in self.driver.desired_capabilities:
-            platform = self.driver.desired_capabilities['platformName']
-        elif 'platformName' in self.driver.desired_capabilities:
-            platform = self.driver.desired_capabilities['platformName']
+        platform = self.driver.desired_capabilities['platformName']
         return platform
