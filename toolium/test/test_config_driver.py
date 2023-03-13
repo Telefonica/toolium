@@ -29,6 +29,7 @@ from toolium.driver_wrappers_pool import DriverWrappersPool
 
 pytest.skip("DesiredCapabilities must be updated to be compatible with Selenium 4", allow_module_level=True)
 
+
 @pytest.fixture
 def config():
     config_parser = ExtendedConfigParser()
