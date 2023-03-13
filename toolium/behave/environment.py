@@ -256,12 +256,13 @@ def after_feature(context, feature):
     :param context: behave context
     :param feature: running feature
     """
-    # Behave dynamic environment
-    context.dyn_env.execute_after_feature_steps(context)
-
-    # Close drivers
-    DriverWrappersPool.close_drivers(scope='module', test_name=feature.name,
-                                     test_passed=context.global_status['test_passed'])
+    try:
+        # Behave dynamic environment
+        context.dyn_env.execute_after_feature_steps(context)
+    finally:
+        # Close drivers regardless of an Exception being raised due to failed preconditions
+        DriverWrappersPool.close_drivers(scope='module', test_name=feature.name,
+                                         test_passed=context.global_status['test_passed'])
 
 
 def after_all(context):

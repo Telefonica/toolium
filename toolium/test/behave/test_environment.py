@@ -266,6 +266,25 @@ def test_after_feature(DriverWrappersPool):
 
 
 @mock.patch('toolium.behave.environment.DriverWrappersPool')
+def test_after_feature_with_failed_preconditions(DriverWrappersPool):
+    # Create context mock
+    context = mock.MagicMock()
+    context.global_status = {'test_passed': True}
+    feature = mock.MagicMock()
+    feature.name = 'name'
+    context.dyn_env = mock.MagicMock()
+    context.dyn_env.execute_after_feature_steps.side_effect = Exception('Preconditions failed')
+
+    try:
+        after_feature(context, feature)
+    except Exception:
+        pass
+
+    # Check that close_drivers is called
+    DriverWrappersPool.close_drivers.assert_called_once_with(scope='module', test_name='name', test_passed=True)
+
+
+@mock.patch('toolium.behave.environment.DriverWrappersPool')
 def test_after_all(DriverWrappersPool):
     # Create context mock
     context = mock.MagicMock()

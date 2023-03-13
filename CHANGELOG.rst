@@ -6,6 +6,7 @@ v3.0.0
 
 *Release date: In development*
 
+
 - Add support for Selenium 4 (WIP)
 - Add support for Appium-Python-Client 2 (WIP)
 - Remove support to lettuce tests

@@ -303,7 +303,7 @@ def test_create_local_driver_capabilities(webdriver_mock, options, config, utils
     config.set('Driver', 'type', 'firefox')
     config.add_section('Capabilities')
     config.set('Capabilities', 'marionette', 'false')
-    config.set('Capabilities', 'version', '45')
+    config.set('Capabilities', 'browserVersion', '45')
     utils.get_driver_name.return_value = 'firefox'
     config_driver = ConfigDriver(config, utils)
     config_driver._create_firefox_profile = lambda: 'firefox profile'
@@ -312,7 +312,7 @@ def test_create_local_driver_capabilities(webdriver_mock, options, config, utils
     config_driver._create_local_driver()
     expected_capabilities = DesiredCapabilities.FIREFOX.copy()
     expected_capabilities['marionette'] = False
-    expected_capabilities['version'] = '45'
+    expected_capabilities['browserVersion'] = '45'
     webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path=None,
                                                    firefox_options=options(), log_path='geckodriver.log')
@@ -553,8 +553,8 @@ def test_create_remote_driver_version_platform(webdriver_mock, config, utils):
 
     config_driver._create_remote_driver()
     capabilities = DesiredCapabilities.INTERNETEXPLORER
-    capabilities['version'] = '11'
-    capabilities['platform'] = 'WIN10'
+    capabilities['browserVersion'] = '11'
+    capabilities['platformName'] = 'WIN10'
     webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=capabilities)
 
@@ -569,7 +569,7 @@ def test_create_remote_driver_version(webdriver_mock, config, utils):
 
     config_driver._create_remote_driver()
     capabilities = DesiredCapabilities.INTERNETEXPLORER.copy()
-    capabilities['version'] = '11'
+    capabilities['browserVersion'] = '11'
     webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=capabilities)
 
@@ -578,7 +578,7 @@ def test_create_remote_driver_version(webdriver_mock, config, utils):
 def test_create_remote_driver_capabilities(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'iexplore-11')
     config.add_section('Capabilities')
-    config.set('Capabilities', 'version', '11')
+    config.set('Capabilities', 'browserVersion', '11')
     server_url = 'http://10.20.30.40:5555'
     utils.get_server_url.return_value = server_url
     utils.get_driver_name.return_value = 'iexplore'
@@ -586,7 +586,7 @@ def test_create_remote_driver_capabilities(webdriver_mock, config, utils):
 
     config_driver._create_remote_driver()
     capabilities = DesiredCapabilities.INTERNETEXPLORER.copy()
-    capabilities['version'] = '11'
+    capabilities['browserVersion'] = '11'
     webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=capabilities)
 
