@@ -94,13 +94,13 @@ class ConfigDriver(object):
         options = RemoteOptions()
         self._update_dict(options.capabilities, capabilities)
 
+        # Add custom driver capabilities
+        self._add_capabilities_from_properties(capabilities, 'Capabilities')
+
         if driver_name == 'firefox':
             options = FirefoxOptions()
             options.profile = self._create_firefox_profile()
             self._update_dict(options.capabilities, capabilities)
-
-        # Add custom driver capabilities
-        self._add_capabilities_from_properties(capabilities, 'Capabilities')
 
         if driver_name == 'chrome':
             options = self._create_chrome_options()
