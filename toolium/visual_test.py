@@ -295,35 +295,39 @@ class VisualTest(object):
         diff_pixels_percentage = self.save_differences_image(image_max, baseline_max, diff_path)
 
         # Check differences and add to report
-        if diff_pixels_percentage <= threshold:
-            # Images are equal or similar
+        if image_size != baseline_size:
+            # Different size
+            diff_message = f"Image dimensions {image_size} do not match baseline size {baseline_size}"
+            exception_message = f"The new screenshot '{image_path}' size '{image_size}' did not match the" \
+                                f" baseline '{baseline_path}' size '{baseline_size}'"
+            result = 'diff'
+        elif diff_pixels_percentage == 0:
+            # Equal images
+            diff_path = diff_message = None
             result = 'equal'
-            if self.driver_wrapper.config.getboolean_optional('VisualTests', 'complete_report'):
-                if diff_pixels_percentage > 0:
-                    # Show diff file also in similar images
-                    diff_message = f'Distance is {diff_pixels_percentage:.8f}, less than {threshold} threshold'
-                    result = f'equal-{diff_message}'
-                else:
-                    diff_path = diff_message = None
-                self._add_result_to_report('equal', report_name, image_path, baseline_path, diff_path, diff_message)
+        elif 0 < diff_pixels_percentage <= threshold:
+            # Similar images
+            diff_message = f'Distance is {diff_pixels_percentage:.8f}, less than {threshold} threshold'
+            result = 'equal'
         else:
-            # Images are different
-            if image_size != baseline_size:
-                # Different size
-                diff_message = f"Image dimensions {image_size} do not match baseline size {baseline_size}"
-                exception_message = f"The new screenshot '{image_path}' size '{image_size}' did not match the" \
-                                    f" baseline '{baseline_path}' size '{baseline_size}'"
-            else:
-                # Same size, different pixels
-                diff_message = f'Distance is {diff_pixels_percentage:.8f}, more than {threshold} threshold'
-                exception_message = f"The new screenshot '{image_path}' did not match the baseline '{baseline_path}'" \
-                                    f" (by a distance of {diff_pixels_percentage:.8f}, more than {threshold} threshold)"
-            self._add_result_to_report('diff', report_name, image_path, baseline_path, diff_path, diff_message)
-            result = f'diff-{diff_message}'
+            # Different images
+            diff_message = f'Distance is {diff_pixels_percentage:.8f}, more than {threshold} threshold'
+            exception_message = f"The new screenshot '{image_path}' did not match the baseline '{baseline_path}'" \
+                                f" (by a distance of {diff_pixels_percentage:.8f}, more than {threshold} threshold)"
+            result = 'diff'
+
+        if (result == 'equal' and self.driver_wrapper.config.getboolean_optional('VisualTests', 'complete_report')
+                or result == 'diff'):
+            self._add_result_to_report(result, report_name, image_path, baseline_path, diff_path, diff_message)
+            # Add message to result to be used in unittests
+            result = f'{result}-{diff_message}' if diff_message is not None else result
+
+        if result.startswith('diff'):
             self.logger.warning(f"Visual error in '{os.path.splitext(os.path.basename(baseline_path))[0]}':"
                                 f" {diff_message}")
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'fail') or self.force:
                 raise AssertionError(exception_message)
+
         return result
 
     @staticmethod
