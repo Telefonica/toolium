@@ -26,8 +26,8 @@ Mandatory Configuration
 
 Besides selecting the browser, some specific configuration is needed when running locally.
 
-Firefox (with Selenium 3)
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Firefox
+~~~~~~~
 
 - Download `geckodriver-*.zip <https://github.com/mozilla/geckodriver/releases>`_
 - Unzip file and save the executable in a local folder
@@ -36,30 +36,6 @@ Firefox (with Selenium 3)
     [Driver]
     type: firefox
     gecko_driver_path: C:\Drivers\geckodriver.exe
-
-Firefox 48+ (with Selenium 2)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-- Download `geckodriver-*.zip <https://github.com/mozilla/geckodriver/releases>`_
-- Unzip file and save the executable in a local folder
-- Configure driver path in *[Driver]* section in properties.cfg file ::
-
-    [Driver]
-    type: firefox
-    gecko_driver_path: C:\Drivers\geckodriver.exe
-
-- Enable Gecko/Marionette driver in *[Capabilities]* section in properties.cfg file ::
-
-    [Capabilities]
-    marionette: true
-
-Firefox 47 (with Selenium 2)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-- No extra configuration is needed ::
-
-    [Driver]
-    type: firefox
 
 Chrome
 ~~~~~~
