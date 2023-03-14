@@ -7,7 +7,7 @@ Common Configuration
 --------------------
 
 To choose the browser in which Selenium will execute the tests, configure *type* property in *[Driver]* section in
-properties.cfg file with one of these values: firefox, chrome, iexplore, edge, safari, opera or phantomjs.
+properties.cfg file with one of these values: firefox, chrome, iexplore, edge or safari.
 
 The following example shows how to choose Firefox::
 
@@ -20,87 +20,6 @@ properties in *[Driver]* section::
     [Driver]
     window_width: 1024
     window_height: 768
-
-Mandatory Configuration
------------------------
-
-Besides selecting the browser, some specific configuration is needed when running locally.
-
-Firefox
-~~~~~~~
-
-- Download `geckodriver-*.zip <https://github.com/mozilla/geckodriver/releases>`_
-- Unzip file and save the executable in a local folder
-- Configure driver path in *[Driver]* section in properties.cfg file ::
-
-    [Driver]
-    type: firefox
-    gecko_driver_path: C:\Drivers\geckodriver.exe
-
-Chrome
-~~~~~~
-
-- Download `chromedriver_*.zip <http://chromedriver.storage.googleapis.com/index.html>`_
-- Unzip file and save the executable in a local folder
-- Configure driver path in *[Driver]* section in properties.cfg file ::
-
-    [Driver]
-    type: chrome
-    chrome_driver_path: C:\Drivers\chromedriver.exe
-
-Internet Explorer
-~~~~~~~~~~~~~~~~~
-
-- Download `IEDriverServer_Win32_*.zip <http://selenium-release.storage.googleapis.com/index.html>`_
-- It's recommended to use Win32 version, because x64 version is very slow
-- Unzip file and save the executable in a local folder
-- Configure driver path in *[Driver]* section in properties.cfg file ::
-
-    [Driver]
-    type: iexplore
-    explorer_driver_path: C:\Drivers\IEDriverServer.exe
-
-Edge
-~~~~
-
-- Download `MicrosoftWebDriver.msi <https://www.microsoft.com/en-us/download/details.aspx?id=48212>`_
-- Install MicrosoftWebDriver.msi
-- Configure driver path in *[Driver]* section in properties.cfg file ::
-
-    [Driver]
-    type: edge
-    edge_driver_path: C:\Drivers\MicrosoftWebDriver.exe
-
-Safari
-~~~~~~
-
-- Download `SafariDriver.safariextz <http://selenium-release.storage.googleapis.com/index.html>`_
-- Open file in Safari and install it ::
-
-    [Driver]
-    type: safari
-
-Opera
-~~~~~
-
-- Download `operadriver_*.zip <https://github.com/operasoftware/operachromiumdriver/releases>`_
-- Unzip file and save the executable in a local folder
-- Configure driver path in *[Driver]* section in properties.cfg file ::
-
-    [Driver]
-    type: opera
-    opera_driver_path: C:\Drivers\operadriver.exe
-
-PhantomJS
-~~~~~~~~~
-
-- Download `phantomjs-*.zip <http://phantomjs.org/download.html>`_
-- Unzip file and save the executable in a local folder
-- Configure driver path in *[Driver]* section in properties.cfg file ::
-
-    [Driver]
-    type: phantomjs
-    phantomjs_driver_path: C:\Drivers\phantomjs.exe
 
 Additional Configuration
 ------------------------
@@ -293,3 +212,63 @@ In fact, all the settings in above Chrome sections can be also configured in *go
 
 In case of defining the same setting both in its dedicated section and in the capabilities section, the dedicated
 section value will be used.
+
+Driver Download
+---------------
+
+Since Selenium 4, Selenium Manager downloads automatically the corresponding browser driver, when running the tests
+locally. But if it is still needed to be downloaded, just follow these instructions:
+
+Firefox
+~~~~~~~
+
+- Download `geckodriver-*.zip <https://github.com/mozilla/geckodriver/releases>`_
+- Unzip file and save the executable in a local folder
+- Configure driver path in *[Driver]* section in properties.cfg file ::
+
+    [Driver]
+    type: firefox
+    gecko_driver_path: C:\Drivers\geckodriver.exe
+
+Chrome
+~~~~~~
+
+- Download `chromedriver_*.zip <http://chromedriver.storage.googleapis.com/index.html>`_
+- Unzip file and save the executable in a local folder
+- Configure driver path in *[Driver]* section in properties.cfg file ::
+
+    [Driver]
+    type: chrome
+    chrome_driver_path: C:\Drivers\chromedriver.exe
+
+Internet Explorer
+~~~~~~~~~~~~~~~~~
+
+- Download `IEDriverServer_Win32_*.zip <https://github.com/SeleniumHQ/selenium/releases>`_
+- It's recommended to use Win32 version, because x64 version is very slow
+- Unzip file and save the executable in a local folder
+- Configure driver path in *[Driver]* section in properties.cfg file ::
+
+    [Driver]
+    type: iexplore
+    explorer_driver_path: C:\Drivers\IEDriverServer.exe
+
+Edge
+~~~~
+
+- Download `edgedriver_win64.zip <https://developer.microsoft.com/es-es/microsoft-edge/tools/webdriver/>`_
+- Unzip file and save the executable in a local folder
+- Configure driver path in *[Driver]* section in properties.cfg file ::
+
+    [Driver]
+    type: edge
+    edge_driver_path: C:\Drivers\msedgedriver.exe
+
+Safari
+~~~~~~
+
+- Configure driver path in *[Driver]* section in properties.cfg file ::
+
+    [Driver]
+    type: safari
+    safari_driver_path: /usr/bin/safaridriver

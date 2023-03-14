@@ -204,18 +204,6 @@ def test_create_local_driver_safari(webdriver_mock, config, utils):
 
 
 @mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_opera(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'opera')
-    config.set('Driver', 'opera_driver_path', '/tmp/driver')
-    utils.get_driver_name.return_value = 'opera'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_local_driver()
-    webdriver_mock.Opera.assert_called_once_with(desired_capabilities=DesiredCapabilities.OPERA,
-                                                 executable_path='/tmp/driver')
-
-
-@mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_iexplore(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'iexplore')
     config.set('Driver', 'explorer_driver_path', '/tmp/driver')
@@ -235,18 +223,6 @@ def test_create_local_driver_edge(webdriver_mock, config, utils):
 
     config_driver._create_local_driver()
     webdriver_mock.Edge.assert_called_once_with('/tmp/driver', capabilities=DesiredCapabilities.EDGE)
-
-
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_phantomjs(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'phantomjs')
-    config.set('Driver', 'phantomjs_driver_path', '/tmp/driver')
-    utils.get_driver_name.return_value = 'phantomjs'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_local_driver()
-    webdriver_mock.PhantomJS.assert_called_once_with(desired_capabilities=DesiredCapabilities.PHANTOMJS,
-                                                     executable_path='/tmp/driver')
 
 
 def test_create_local_driver_android(config, utils):
@@ -427,22 +403,6 @@ def test_create_remote_driver_safari(webdriver_mock, config, utils):
 
 
 @mock.patch('toolium.config_driver.webdriver')
-def test_create_remote_driver_opera(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'opera')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'opera'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.OPERA
-    capabilities['opera.autostart'] = True
-    capabilities['opera.arguments'] = '-fullscreen'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                  desired_capabilities=capabilities)
-
-
-@mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_iexplore(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'iexplore')
     server_url = 'http://10.20.30.40:5555'
@@ -466,19 +426,6 @@ def test_create_remote_driver_edge(webdriver_mock, config, utils):
     config_driver._create_remote_driver()
     webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=DesiredCapabilities.EDGE)
-
-
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_remote_driver_phantomjs(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'phantomjs')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'phantomjs'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_remote_driver()
-    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                  desired_capabilities=DesiredCapabilities.PHANTOMJS)
 
 
 @mock.patch('toolium.config_driver.appiumdriver')

@@ -58,8 +58,6 @@ web_tests = (
 maximizable_drivers = (
     ('firefox-4.1.2-on-android', True),
     ('firefox', True),
-    ('opera-12.12-on-xp', True),
-    ('opera', True),
     ('edge', True),
     ('android', False),
     ('ios', False),
@@ -104,7 +102,7 @@ def test_multiple(driver_wrapper):
 
     # Modify new wrapper
     first_driver_type = 'firefox'
-    new_driver_type = 'opera'
+    new_driver_type = 'edge'
     new_wrapper.config.set('Driver', 'type', new_driver_type)
 
     # Check that wrapper and new_wrapper are different
@@ -118,13 +116,13 @@ def test_configure_no_changes(driver_wrapper):
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
 
     # Modify wrapper
-    driver_wrapper.config.set('Driver', 'type', 'opera')
+    driver_wrapper.config.set('Driver', 'type', 'edge')
 
     # Trying to configure again
     driver_wrapper.configure(ConfigFiles())
 
     # Configuration has not been initialized
-    assert driver_wrapper.config.get('Driver', 'type') == 'opera'
+    assert driver_wrapper.config.get('Driver', 'type') == 'edge'
 
 
 def test_configure_change_configuration_file(driver_wrapper):
@@ -132,7 +130,7 @@ def test_configure_change_configuration_file(driver_wrapper):
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
 
     # Modify wrapper
-    driver_wrapper.config.set('Driver', 'type', 'opera')
+    driver_wrapper.config.set('Driver', 'type', 'edge')
 
     # Change properties file and try to configure again
     root_path = os.path.dirname(os.path.realpath(__file__))
