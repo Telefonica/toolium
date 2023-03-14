@@ -228,6 +228,34 @@ def test_connect_api_from_file(driver_wrapper):
     assert logging.getLevelName(logger.level) == 'DEBUG'
 
 
+def test_get_config_window_bounds(driver_wrapper):
+    assert driver_wrapper.get_config_window_bounds() == (0, 0)
+
+
+def test_get_config_window_bounds_with_bounds(driver_wrapper):
+    # Mock data
+    driver_wrapper.config.set('Driver', 'bounds_x', '1000')
+    driver_wrapper.config.set('Driver', 'bounds_y', '200')
+
+    assert driver_wrapper.get_config_window_bounds() == (1000, 200)
+
+
+@mock.patch('toolium.driver_wrapper.screeninfo')
+def test_get_config_window_bounds_with_monitor(screeninfo, driver_wrapper):
+    # Mock data
+    driver_wrapper.config.set('Driver', 'monitor', '0')
+    driver_wrapper.config.set('Driver', 'bounds_x', '1000')
+    driver_wrapper.config.set('Driver', 'bounds_y', '200')
+
+    class Monitor(object):
+        x = 50
+        y = 20
+
+    screeninfo.get_monitors.return_value = [Monitor()]
+
+    assert driver_wrapper.get_config_window_bounds() == (1050, 220)
+
+
 @pytest.mark.parametrize("driver_type, is_mobile, is_android, is_ios", mobile_tests)
 def test_is_mobile_test(driver_type, is_mobile, is_android, is_ios, driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', driver_type)
