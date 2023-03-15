@@ -19,6 +19,7 @@ limitations under the License.
 import ast
 import logging
 import os
+import re
 
 from appium import webdriver as appiumdriver
 from appium.options.common.base import AppiumOptions
@@ -46,6 +47,21 @@ def get_error_message_from_exception(exception):
         return str(exception).split('\n', 1)[0]
     except Exception:
         return ''
+
+
+def get_error_message_from_traceback(traceback):
+    """Extract first line of exception message inside traceback
+
+    :param traceback: exception traceback
+    :returns: first line of exception message
+    """
+    # The second line not tabbed of the traceback is the exception message
+    lines = traceback.split('\n')[1:]
+    for line in lines:
+        match = re.match('\\S+: (.*)', line)
+        if match:
+            return match.group(1)
+    return ''
 
 
 class ConfigDriver(object):
