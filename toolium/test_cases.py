@@ -76,7 +76,10 @@ class BasicTestCase(unittest.TestCase):
             self.logger.info("The test '%s' has passed", self.get_subclassmethod_name())
         else:
             self._test_passed = False
-            error_message = get_error_message_from_exception(exception) if hasattr(self._outcome, 'errors') else get_error_message_from_traceback(exception)
+            if hasattr(self._outcome, 'errors'):
+                error_message = get_error_message_from_exception(exception)
+            else:
+                error_message = get_error_message_from_traceback(exception)
             self.logger.error("The test '%s' has failed: %s", self.get_subclassmethod_name(), error_message)
 
 
