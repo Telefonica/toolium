@@ -6,3 +6,5 @@ requests-mock~=1.10
 Pygments~=2.14
 flake8~=5.0; python_version < '3.8'
 flake8~=6.0; python_version >= '3.8'
+build~=0.10.0
+wheel~=0.40.0
