@@ -215,11 +215,8 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Firefox driver
         """
-        if capabilities.get("marionette"):
-            gecko_driver = self.config.get('Driver', 'gecko_driver_path')
-            self.logger.debug("Gecko driver path given in properties: %s", gecko_driver)
-        else:
-            gecko_driver = None
+        gecko_driver = self.config.get('Driver', 'gecko_driver_path')
+        self.logger.debug("Gecko driver path given in properties: %s", gecko_driver)
 
         # Get Firefox binary
         firefox_binary = self.config.get_optional('Firefox', 'binary')

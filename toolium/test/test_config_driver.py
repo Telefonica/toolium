@@ -85,10 +85,8 @@ def test_create_driver_remote(config, utils):
 
 @mock.patch('toolium.config_driver.FirefoxOptions')
 @mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_firefox(webdriver_mock, options, config, utils):
+def test_create_local_driver_firefox_no_gecko_path(webdriver_mock, options, config, utils):
     config.set('Driver', 'type', 'firefox')
-    config.add_section('Capabilities')
-    config.set('Capabilities', 'marionette', 'false')
     utils.get_driver_name.return_value = 'firefox'
     config_driver = ConfigDriver(config, utils)
     config_driver._create_firefox_profile = lambda: 'firefox profile'
@@ -96,7 +94,6 @@ def test_create_local_driver_firefox(webdriver_mock, options, config, utils):
 
     config_driver._create_local_driver()
     expected_capabilities = DesiredCapabilities.FIREFOX.copy()
-    expected_capabilities['marionette'] = False
     webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path=None,
                                                    firefox_options=options(), log_path='geckodriver.log')
@@ -104,10 +101,8 @@ def test_create_local_driver_firefox(webdriver_mock, options, config, utils):
 
 @mock.patch('toolium.config_driver.FirefoxOptions')
 @mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_firefox_gecko(webdriver_mock, options, config, utils):
+def test_create_local_driver_firefox_gecko_path(webdriver_mock, options, config, utils):
     config.set('Driver', 'type', 'firefox')
-    config.add_section('Capabilities')
-    config.set('Capabilities', 'marionette', 'true')
     config.set('Driver', 'gecko_driver_path', '/tmp/driver')
     utils.get_driver_name.return_value = 'firefox'
     config_driver = ConfigDriver(config, utils)
@@ -116,7 +111,6 @@ def test_create_local_driver_firefox_gecko(webdriver_mock, options, config, util
 
     config_driver._create_local_driver()
     expected_capabilities = DesiredCapabilities.FIREFOX.copy()
-    expected_capabilities['marionette'] = True
     webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path='/tmp/driver',
                                                    firefox_options=options(), log_path='geckodriver.log')
@@ -125,8 +119,6 @@ def test_create_local_driver_firefox_gecko(webdriver_mock, options, config, util
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_firefox_binary(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'firefox')
-    config.add_section('Capabilities')
-    config.set('Capabilities', 'marionette', 'false')
     config.add_section('Firefox')
     config.set('Firefox', 'binary', '/tmp/firefox')
     utils.get_driver_name.return_value = 'firefox'
@@ -302,7 +294,6 @@ def test_create_local_driver_unknown_driver(config, utils):
 def test_create_local_driver_capabilities(webdriver_mock, options, config, utils):
     config.set('Driver', 'type', 'firefox')
     config.add_section('Capabilities')
-    config.set('Capabilities', 'marionette', 'false')
     config.set('Capabilities', 'browserVersion', '45')
     utils.get_driver_name.return_value = 'firefox'
     config_driver = ConfigDriver(config, utils)
@@ -311,7 +302,6 @@ def test_create_local_driver_capabilities(webdriver_mock, options, config, utils
 
     config_driver._create_local_driver()
     expected_capabilities = DesiredCapabilities.FIREFOX.copy()
-    expected_capabilities['marionette'] = False
     expected_capabilities['browserVersion'] = '45'
     webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
                                                    firefox_profile='firefox profile', executable_path=None,
