@@ -63,22 +63,25 @@ class BasicTestCase(unittest.TestCase):
         self.logger.info("Running new test: %s", self.get_subclassmethod_name())
 
     def tearDown(self):
-        # Get unit test exception
-        if hasattr(self._outcome, 'errors'):
-            exception_info = self._outcome.errors[-1][1] if len(self._outcome.errors) > 0 else None
-        else:
-            exception_info = self._outcome.result.failures[0] if len(self._outcome.result.failures) > 0 else None
-        exception = exception_info[1] if exception_info else None
+        # Get error message from unittest errors
+        error_message = ''
+        if hasattr(self._outcome, 'errors') and len(self._outcome.errors) > 0:
+            # Python <3.11
+            exception_info = self._outcome.errors[-1][1]
+            if exception_info:
+                exception = exception_info[1]
+                error_message = get_error_message_from_exception(exception)
+        elif not hasattr(self._outcome, 'errors') and len(self._outcome.result.failures) > 0:
+            # Python 3.11
+            traceback = self._outcome.result.failures[0][1]
+            error_message = get_error_message_from_traceback(traceback)
 
-        if not exception:
+        # Change test status
+        if not error_message:
             self._test_passed = True
             self.logger.info("The test '%s' has passed", self.get_subclassmethod_name())
         else:
             self._test_passed = False
-            if hasattr(self._outcome, 'errors'):
-                error_message = get_error_message_from_exception(exception)
-            else:
-                error_message = get_error_message_from_traceback(exception)
             self.logger.error("The test '%s' has failed: %s", self.get_subclassmethod_name(), error_message)
 
 
