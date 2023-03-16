@@ -109,9 +109,9 @@ def test_configure_properties_system_property(driver_wrapper):
     environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
     environment_properties.append('TOOLIUM_DRIVER_TYPE')
     os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'properties.cfg'
-    os.environ['TOOLIUM_DRIVER_TYPE'] = 'Driver_type=opera'
+    os.environ['TOOLIUM_DRIVER_TYPE'] = 'Driver_type=edge'
     driver_wrapper.configure_properties()
-    assert driver_wrapper.config.get('Driver', 'type') == 'opera'
+    assert driver_wrapper.config.get('Driver', 'type') == 'edge'
 
 
 def test_configure_properties_file_default_file(driver_wrapper):
@@ -135,7 +135,7 @@ def test_configure_properties_no_changes(driver_wrapper):
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
 
     # Modify property
-    new_driver_type = 'opera'
+    new_driver_type = 'edge'
     driver_wrapper.config.set('Driver', 'type', new_driver_type)
     assert driver_wrapper.config.get('Driver', 'type') == new_driver_type
 
@@ -154,7 +154,7 @@ def test_configure_properties_change_configuration_file(driver_wrapper):
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
 
     # Modify property
-    new_driver_type = 'opera'
+    new_driver_type = 'edge'
     driver_wrapper.config.set('Driver', 'type', new_driver_type)
     assert driver_wrapper.config.get('Driver', 'type') == new_driver_type
 
@@ -171,7 +171,7 @@ def test_configure_properties_finalize_properties(driver_wrapper):
     environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
     environment_properties.append('TOOLIUM_DRIVER_TYPE')
     os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'properties.cfg'
-    os.environ['TOOLIUM_DRIVER_TYPE'] = 'Driver_type=opera'
+    os.environ['TOOLIUM_DRIVER_TYPE'] = 'Driver_type=edge'
 
     # Modify properties after reading properties file and system properties
     def finalize_properties_configuration(self):
@@ -182,7 +182,7 @@ def test_configure_properties_finalize_properties(driver_wrapper):
 
     driver_wrapper.configure_properties()
     # properties file: firefox
-    # system property: opera
+    # system property: edge
     # finalize properties method: chrome
     assert driver_wrapper.config.get('Driver', 'type') == 'chrome'
 

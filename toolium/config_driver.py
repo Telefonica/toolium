@@ -231,8 +231,7 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Firefox driver
         """
-        gecko_driver = self.config.get('Driver', 'gecko_driver_path')
-        self.logger.debug("Gecko driver path given in properties: %s", gecko_driver)
+        gecko_driver = self.config.get_optional('Driver', 'gecko_driver_path', None)
 
         # Get Firefox binary
         firefox_binary = self.config.get_optional('Firefox', 'binary')
@@ -252,7 +251,11 @@ class ConfigDriver(object):
 
         self._update_dict(firefox_options.capabilities, capabilities)
         firefox_options.profile = self._create_firefox_profile()
-        service = FirefoxService(executable_path=gecko_driver, log_path=log_path)
+        if gecko_driver:
+            self.logger.debug("Gecko driver path given in properties: %s", gecko_driver)
+            service = FirefoxService(executable_path=gecko_driver, log_path=log_path)
+        else:
+            service = FirefoxService(log_path=log_path)
         return webdriver.Firefox(service=service, options=firefox_options)
 
     def _add_firefox_arguments(self, options):
@@ -328,11 +331,14 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Chrome driver
         """
-        chrome_driver = self.config.get('Driver', 'chrome_driver_path')
-        self.logger.debug("Chrome driver path given in properties: %s", chrome_driver)
+        chrome_driver = self.config.get_optional('Driver', 'chrome_driver_path', None)
         chrome_options = self._create_chrome_options()
         self._update_dict(chrome_options.capabilities, capabilities)
-        service = ChromeService(executable_path=chrome_driver)
+        if chrome_driver:
+            self.logger.debug("Chrome driver path given in properties: %s", chrome_driver)
+            service = ChromeService(executable_path=chrome_driver)
+        else:
+            service = ChromeService()
         return webdriver.Chrome(service=service, options=chrome_options)
 
     def _create_chrome_options(self):
@@ -425,9 +431,12 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Safari driver
         """
-        safari_driver = self.config.get('Driver', 'safari_driver_path')
-        self.logger.debug("Safari driver path given in properties: %s", safari_driver)
-        service = SafariService(executable_path=safari_driver)
+        safari_driver = self.config.get_optional('Driver', 'safari_driver_path', None)
+        if safari_driver:
+            self.logger.debug("Safari driver path given in properties: %s", safari_driver)
+            service = SafariService(executable_path=safari_driver)
+        else:
+            service = SafariService()
         safari_options = SafariOptions()
         self._update_dict(safari_options.capabilities, capabilities)
         return webdriver.Safari(service=service, options=safari_options)
@@ -438,10 +447,15 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Internet Explorer driver
         """
-        explorer_driver = self.config.get('Driver', 'explorer_driver_path')
-        self.logger.debug("Explorer driver path given in properties: %s", explorer_driver)
-        service = IEService(executable_path=explorer_driver)
+        explorer_driver = self.config.get_optional('Driver', 'explorer_driver_path', None)
+        if explorer_driver:
+            self.logger.debug("Explorer driver path given in properties: %s", explorer_driver)
+            service = IEService(executable_path=explorer_driver)
+        else:
+            service = IEService()
         explorer_options = webdriver.IeOptions()
+        # Remove google capabilities to avoid explorer error when unknown capabilities are configured
+        capabilities = {key: value for key, value in capabilities.items() if not key.startswith('goog:')}
         self._update_dict(explorer_options.capabilities, capabilities)
         return webdriver.Ie(service=service, options=explorer_options)
 
@@ -451,9 +465,12 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: a new local Edge driver
         """
-        edge_driver = self.config.get('Driver', 'edge_driver_path')
-        self.logger.debug("Edge driver path given in properties: %s", edge_driver)
-        service = EdgeService(executable_path=edge_driver)
+        edge_driver = self.config.get_optional('Driver', 'edge_driver_path', None)
+        if edge_driver:
+            self.logger.debug("Edge driver path given in properties: %s", edge_driver)
+            service = EdgeService(executable_path=edge_driver)
+        else:
+            service = EdgeService()
         edge_options = webdriver.EdgeOptions()
         self._update_dict(edge_options.capabilities, capabilities)
         return webdriver.Edge(service=service, options=edge_options)

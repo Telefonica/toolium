@@ -181,10 +181,6 @@ class Selenoid(object):
             "internet explorer": {
               "11": {}
             },
-            "opera": {
-              "56.0": {},
-              "latest": {}
-            },
             "safari": {
               "latest": {}
             }

@@ -5,8 +5,8 @@ Driver Configuration
 
 Toolium allows to run tests on web browsers (using Selenium) or on mobile devices (using Appium). To choose the browser
 or the mobile OS, configure :code:`type` property in :code:`[Driver]` section in :code:`conf/properties.cfg` file with
-one of these values: :code:`firefox`, :code:`chrome`, :code:`iexplore`, :code:`edge`, :code:`safari`, :code:`opera`,
-:code:`phantomjs`, :code:`ios` or :code:`android`.
+one of these values: :code:`firefox`, :code:`chrome`, :code:`iexplore`, :code:`edge`, :code:`safari`, :code:`ios` or
+:code:`android`.
 
 The following example shows how to choose Firefox::
 

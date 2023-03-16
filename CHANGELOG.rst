@@ -17,6 +17,10 @@ v3.0.0
    | Config property 'visualtests_engine' in [Server] section has been removed
    | Images distance calculation method has changed, it is recommended to review thresholds in tests
 
+- Now `gecko_driver_path`, `chrome_driver_path`, `explorer_driver_path` and `edge_driver_path` config properties
+  in [Driver] section are optional, due to new SeleniumManager feature, that downloads drivers automatically
+- New optional config property `safari_driver_path` in [Driver] section to configure Safari driver
+
 v2.7.0
 ------
 
