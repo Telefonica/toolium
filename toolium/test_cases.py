@@ -19,7 +19,7 @@ limitations under the License.
 import logging
 import unittest
 
-from toolium.config_driver import get_error_message_from_exception
+from toolium.config_driver import get_error_message_from_exception, get_error_message_from_traceback
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.jira import change_all_jira_status
@@ -64,7 +64,10 @@ class BasicTestCase(unittest.TestCase):
 
     def tearDown(self):
         # Get unit test exception
-        exception_info = self._outcome.errors[-1][1] if len(self._outcome.errors) > 0 else None
+        if hasattr(self._outcome, 'errors'):
+            exception_info = self._outcome.errors[-1][1] if len(self._outcome.errors) > 0 else None
+        else:
+            exception_info = self._outcome.result.failures[0] if len(self._outcome.result.failures) > 0 else None
         exception = exception_info[1] if exception_info else None
 
         if not exception:
@@ -72,7 +75,10 @@ class BasicTestCase(unittest.TestCase):
             self.logger.info("The test '%s' has passed", self.get_subclassmethod_name())
         else:
             self._test_passed = False
-            error_message = get_error_message_from_exception(exception)
+            if hasattr(self._outcome, 'errors'):
+                error_message = get_error_message_from_exception(exception)
+            else:
+                error_message = get_error_message_from_traceback(exception)
             self.logger.error("The test '%s' has failed: %s", self.get_subclassmethod_name(), error_message)
 
 
