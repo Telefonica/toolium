@@ -21,13 +21,10 @@ import os
 import mock
 import pytest
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.firefox.options import Options
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
-
-pytest.skip("DesiredCapabilities must be updated to be compatible with Selenium 4", allow_module_level=True)
 
 
 @pytest.fixture
@@ -83,61 +80,7 @@ def test_create_driver_remote(config, utils):
     assert driver == 'remote driver mock'
 
 
-@mock.patch('toolium.config_driver.FirefoxOptions')
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_firefox_no_gecko_path(webdriver_mock, options, config, utils):
-    config.set('Driver', 'type', 'firefox')
-    utils.get_driver_name.return_value = 'firefox'
-    config_driver = ConfigDriver(config, utils)
-    config_driver._create_firefox_profile = lambda: 'firefox profile'
-    DriverWrappersPool.output_directory = ''
-
-    config_driver._create_local_driver()
-    expected_capabilities = DesiredCapabilities.FIREFOX.copy()
-    webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
-                                                   firefox_profile='firefox profile', executable_path=None,
-                                                   firefox_options=options(), log_path='geckodriver.log')
-
-
-@mock.patch('toolium.config_driver.FirefoxOptions')
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_firefox_gecko_path(webdriver_mock, options, config, utils):
-    config.set('Driver', 'type', 'firefox')
-    config.set('Driver', 'gecko_driver_path', '/tmp/driver')
-    utils.get_driver_name.return_value = 'firefox'
-    config_driver = ConfigDriver(config, utils)
-    config_driver._create_firefox_profile = lambda: 'firefox profile'
-    DriverWrappersPool.output_directory = ''
-
-    config_driver._create_local_driver()
-    expected_capabilities = DesiredCapabilities.FIREFOX.copy()
-    webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
-                                                   firefox_profile='firefox profile', executable_path='/tmp/driver',
-                                                   firefox_options=options(), log_path='geckodriver.log')
-
-
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_firefox_binary(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'firefox')
-    config.add_section('Firefox')
-    config.set('Firefox', 'binary', '/tmp/firefox')
-    utils.get_driver_name.return_value = 'firefox'
-    config_driver = ConfigDriver(config, utils)
-    config_driver._create_firefox_profile = lambda: 'firefox profile'
-    DriverWrappersPool.output_directory = ''
-
-    config_driver._create_local_driver()
-
-    # Check that firefox options contain the firefox binary
-    args, kwargs = webdriver_mock.Firefox.call_args
-    firefox_options = kwargs['firefox_options']
-    assert isinstance(firefox_options, Options)
-    if isinstance(firefox_options.binary, str):
-        assert firefox_options.binary == '/tmp/firefox'  # Selenium 2
-    else:
-        assert firefox_options.binary._start_cmd == '/tmp/firefox'  # Selenium 3
-
-
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_chrome(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'chrome')
@@ -151,6 +94,7 @@ def test_create_local_driver_chrome(webdriver_mock, config, utils):
     webdriver_mock.Chrome.assert_called_once_with('/tmp/driver', desired_capabilities=DesiredCapabilities.CHROME)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_chrome_multiple_options(webdriver_mock, config, utils):
     # From goog:chromeOptions in Capabilities section
@@ -193,6 +137,7 @@ def test_create_local_driver_chrome_multiple_options(webdriver_mock, config, uti
     webdriver_mock.Chrome.assert_called_once_with('/tmp/driver', desired_capabilities=capabilities)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_safari(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'safari')
@@ -203,6 +148,7 @@ def test_create_local_driver_safari(webdriver_mock, config, utils):
     webdriver_mock.Safari.assert_called_once_with(desired_capabilities=DesiredCapabilities.SAFARI)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_iexplore(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'iexplore')
@@ -214,6 +160,7 @@ def test_create_local_driver_iexplore(webdriver_mock, config, utils):
     webdriver_mock.Ie.assert_called_once_with('/tmp/driver', capabilities=DesiredCapabilities.INTERNETEXPLORER)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_edge(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'edge')
@@ -225,6 +172,7 @@ def test_create_local_driver_edge(webdriver_mock, config, utils):
     webdriver_mock.Edge.assert_called_once_with('/tmp/driver', capabilities=DesiredCapabilities.EDGE)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 def test_create_local_driver_android(config, utils):
     config.set('Driver', 'type', 'android')
     utils.get_driver_name.return_value = 'android'
@@ -235,6 +183,7 @@ def test_create_local_driver_android(config, utils):
     assert driver == 'remote driver mock'
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 def test_create_local_driver_ios(config, utils):
     config.set('Driver', 'type', 'ios')
     utils.get_driver_name.return_value = 'ios'
@@ -245,6 +194,7 @@ def test_create_local_driver_ios(config, utils):
     assert driver == 'remote driver mock'
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 def test_create_local_driver_iphone(config, utils):
     config.set('Driver', 'type', 'iphone')
     utils.get_driver_name.return_value = 'iphone'
@@ -255,6 +205,7 @@ def test_create_local_driver_iphone(config, utils):
     assert driver == 'remote driver mock'
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 def test_create_local_driver_unknown_driver(config, utils):
     config.set('Driver', 'type', 'unknown')
     utils.get_driver_name.return_value = 'unknown'
@@ -265,25 +216,7 @@ def test_create_local_driver_unknown_driver(config, utils):
     assert 'Unknown driver unknown' == str(excinfo.value)
 
 
-@mock.patch('toolium.config_driver.FirefoxOptions')
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_capabilities(webdriver_mock, options, config, utils):
-    config.set('Driver', 'type', 'firefox')
-    config.add_section('Capabilities')
-    config.set('Capabilities', 'browserVersion', '45')
-    utils.get_driver_name.return_value = 'firefox'
-    config_driver = ConfigDriver(config, utils)
-    config_driver._create_firefox_profile = lambda: 'firefox profile'
-    DriverWrappersPool.output_directory = ''
-
-    config_driver._create_local_driver()
-    expected_capabilities = DesiredCapabilities.FIREFOX.copy()
-    expected_capabilities['browserVersion'] = '45'
-    webdriver_mock.Firefox.assert_called_once_with(capabilities=expected_capabilities,
-                                                   firefox_profile='firefox profile', executable_path=None,
-                                                   firefox_options=options(), log_path='geckodriver.log')
-
-
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_firefox(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'firefox')
@@ -305,6 +238,7 @@ def test_create_remote_driver_firefox(webdriver_mock, config, utils):
                                                   desired_capabilities=capabilities)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_chrome(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'chrome')
@@ -325,6 +259,7 @@ def test_create_remote_driver_chrome(webdriver_mock, config, utils):
                                                   desired_capabilities=capabilities)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_chrome_multiple_options(webdriver_mock, config, utils):
     # From goog:chromeOptions in Capabilities section
@@ -369,6 +304,7 @@ def test_create_remote_driver_chrome_multiple_options(webdriver_mock, config, ut
                                                   desired_capabilities=capabilities)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_chrome_old_selenium(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'chrome')
@@ -389,6 +325,7 @@ def test_create_remote_driver_chrome_old_selenium(webdriver_mock, config, utils)
                                                   desired_capabilities=capabilities)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_safari(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'safari')
@@ -402,6 +339,7 @@ def test_create_remote_driver_safari(webdriver_mock, config, utils):
                                                   desired_capabilities=DesiredCapabilities.SAFARI)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_iexplore(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'iexplore')
@@ -415,6 +353,7 @@ def test_create_remote_driver_iexplore(webdriver_mock, config, utils):
                                                   desired_capabilities=DesiredCapabilities.INTERNETEXPLORER)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_edge(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'edge')
@@ -428,6 +367,7 @@ def test_create_remote_driver_edge(webdriver_mock, config, utils):
                                                   desired_capabilities=DesiredCapabilities.EDGE)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.appiumdriver')
 def test_create_remote_driver_android(appiumdriver_mock, config, utils):
     config.set('Driver', 'type', 'android')
@@ -445,6 +385,7 @@ def test_create_remote_driver_android(appiumdriver_mock, config, utils):
                                                      desired_capabilities=capabilities)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.appiumdriver')
 def test_create_remote_driver_ios(appiumdriver_mock, config, utils):
     config.set('Driver', 'type', 'ios')
@@ -462,6 +403,7 @@ def test_create_remote_driver_ios(appiumdriver_mock, config, utils):
                                                      desired_capabilities=capabilities)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.appiumdriver')
 def test_create_remote_driver_iphone(appiumdriver_mock, config):
     config.set('Driver', 'type', 'iphone')
@@ -480,6 +422,7 @@ def test_create_remote_driver_iphone(appiumdriver_mock, config):
                                                      desired_capabilities=capabilities)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_version_platform(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'iexplore-11-on-WIN10')
@@ -496,6 +439,7 @@ def test_create_remote_driver_version_platform(webdriver_mock, config, utils):
                                                   desired_capabilities=capabilities)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_version(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'iexplore-11')
@@ -511,6 +455,7 @@ def test_create_remote_driver_version(webdriver_mock, config, utils):
                                                   desired_capabilities=capabilities)
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_capabilities(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'iexplore-11')
@@ -564,33 +509,7 @@ def test_convert_property_type_list(config, utils):
     assert config_driver._convert_property_type(value) == [1, 2, 3]
 
 
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_firefox_profile(webdriver_mock, config, utils):
-    config.add_section('Firefox')
-    config.set('Firefox', 'profile', '/tmp')
-    config.add_section('FirefoxPreferences')
-    config.set('FirefoxPreferences', 'browser.download.folderList', '2')
-    config.add_section('FirefoxExtensions')
-    config.set('FirefoxExtensions', 'firebug', 'resources/firebug-3.0.0-beta.3.xpi')
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_firefox_profile()
-    webdriver_mock.FirefoxProfile.assert_called_once_with(profile_directory='/tmp')
-    webdriver_mock.FirefoxProfile().set_preference.assert_called_once_with('browser.download.folderList', 2)
-    webdriver_mock.FirefoxProfile().update_preferences.assert_called_once_with()
-    webdriver_mock.FirefoxProfile().add_extension.assert_called_once_with('resources/firebug-3.0.0-beta.3.xpi')
-
-
-def test_add_firefox_arguments(config, utils):
-    config.add_section('FirefoxArguments')
-    config.set('FirefoxArguments', '-private', '')
-    config_driver = ConfigDriver(config, utils)
-    firefox_options = Options()
-
-    config_driver._add_firefox_arguments(firefox_options)
-    assert firefox_options.arguments == ['-private']
-
-
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_chrome_options(webdriver_mock, config, utils):
     config.add_section('ChromePreferences')
@@ -613,6 +532,7 @@ def test_create_chrome_options(webdriver_mock, config, utils):
     webdriver_mock.ChromeOptions().add_extension.assert_called_once_with('resources/firebug-lite.crx')
 
 
+@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_chrome_options_headless(webdriver_mock, config, utils):
     config.set('Driver', 'headless', 'true')

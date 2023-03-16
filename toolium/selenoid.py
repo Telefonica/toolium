@@ -127,7 +127,7 @@ class Selenoid(object):
             selenoid_info = requests.get(host_url).json()
         except Exception:
             return None
-        self.driver_wrapper.logger.info('Selenoid host info: \n %s' % selenoid_info)
+        self.driver_wrapper.logger.info(f'Selenoid host info: {selenoid_info}')
         return selenoid_info
 
     def is_the_session_still_active(self):
