@@ -335,7 +335,7 @@ class ConfigDriver(object):
 
         if self.config.getboolean_optional('Driver', 'headless'):
             self.logger.debug("Running Chrome in headless mode")
-            options.add_argument('--headless')
+            options.add_argument('--headless=new')
             if os.name == 'nt':  # Temporarily needed if running on Windows.
                 options.add_argument('--disable-gpu')
 

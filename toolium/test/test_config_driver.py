@@ -684,7 +684,7 @@ def test_create_chrome_options_headless(webdriver_mock, config, utils):
     config_driver._create_chrome_options()
     webdriver_mock.ChromeOptions.assert_called_once_with()
     if os.name == 'nt':
-        webdriver_mock.ChromeOptions().add_argument.assert_has_calls([mock.call('--headless'),
+        webdriver_mock.ChromeOptions().add_argument.assert_has_calls([mock.call('--headless=new'),
                                                                       mock.call('--disable-gpu')])
     else:
-        webdriver_mock.ChromeOptions().add_argument.assert_called_once_with('--headless')
+        webdriver_mock.ChromeOptions().add_argument.assert_called_once_with('--headless=new')
