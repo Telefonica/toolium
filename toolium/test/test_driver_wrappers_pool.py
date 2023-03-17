@@ -50,7 +50,7 @@ def test_singleton(driver_wrapper):
     new_wrapper = DriverWrappersPool.get_default_wrapper()
 
     # Modify new wrapper
-    new_driver_type = 'opera'
+    new_driver_type = 'edge'
     new_wrapper.config.set('Driver', 'type', new_driver_type)
 
     # Check that both wrappers are the same object

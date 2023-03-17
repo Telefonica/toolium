@@ -170,7 +170,7 @@ class DriverWrapper(object):
         # Update baseline with real version value
         if '{Version}' in self.baseline_name:
             try:
-                splitted_version = self.driver.desired_capabilities['version'].split('.')
+                splitted_version = self.driver.desired_capabilities['browserVersion'].split('.')
                 version = '.'.join(splitted_version[:2])
             except KeyError:
                 version = None
@@ -359,9 +359,5 @@ class DriverWrapper(object):
         Get driver platform where tests are running
         :return: platform name
         """
-        platform = ''
-        if 'platform' in self.driver.desired_capabilities:
-            platform = self.driver.desired_capabilities['platform']
-        elif 'platformName' in self.driver.desired_capabilities:
-            platform = self.driver.desired_capabilities['platformName']
+        platform = self.driver.desired_capabilities['platformName']
         return platform

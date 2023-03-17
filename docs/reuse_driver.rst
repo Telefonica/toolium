@@ -15,7 +15,7 @@ in :code:`conf/properties.cfg`::
     reuse_driver_session: false
     restart_driver_after_failure: true
 
-* :code:`reuse_driver`: if enabled, driver will be reused within the scope of a class in unittest, a module in pytest and a feature in behave or lettuce.
+* :code:`reuse_driver`: if enabled, driver will be reused within the scope of a class in unittest, a module in pytest and a feature in behave.
 * :code:`reuse_driver_session`: if enabled, driver will be reused for all the tests in the execution. When using behave or pytest, the driver will be closed after all tests, but if you are using unittest, the driver will remain open after tests.
 * :code:`restart_driver_after_failure`: if enabled, driver will always be restarted after a failure in a test.
 
