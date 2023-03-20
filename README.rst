@@ -70,7 +70,9 @@ Don't forget to run unit tests:
 
     $ git clone git@github.com:<your_github_user>/toolium.git
     $ cd toolium
-    $ python setup.py test
+    $ pip install -r requirements.txt
+    $ pip install -r requirements_dev.txt
+    $ python -m pytest
 
 Finally, before accepting your contribution, we need you to sign our
 `Contributor License Agreement <https://raw.githubusercontent.com/telefonicaid/Licensing/master/ContributionPolicy.txt>`_
