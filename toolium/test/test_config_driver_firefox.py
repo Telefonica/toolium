@@ -26,7 +26,8 @@ from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
-DEFAULT_CAPABILITIES = {'acceptInsecureCerts': True, 'browserName': 'firefox', 'moz:debuggerAddress': True, 'pageLoadStrategy': 'normal'}
+DEFAULT_CAPABILITIES = {'acceptInsecureCerts': True, 'browserName': 'firefox', 'moz:debuggerAddress': True,
+                        'pageLoadStrategy': 'normal'}
 
 
 @pytest.fixture
