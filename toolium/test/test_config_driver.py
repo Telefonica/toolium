@@ -16,8 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os
-
 import mock
 import pytest
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -77,63 +75,6 @@ def test_create_driver_remote(config, utils):
     driver = config_driver.create_driver()
 
     assert driver == 'remote driver mock'
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_chrome(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'chrome')
-    config.set('Driver', 'chrome_driver_path', '/tmp/driver')
-    utils.get_driver_name.return_value = 'chrome'
-    config_driver = ConfigDriver(config, utils)
-    config_driver._create_chrome_options = lambda: 'chrome options'
-    config_driver._add_chrome_options_to_capabilities = lambda x: None
-
-    config_driver._create_local_driver()
-    webdriver_mock.Chrome.assert_called_once_with('/tmp/driver', desired_capabilities=DesiredCapabilities.CHROME)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_chrome_multiple_options(webdriver_mock, config, utils):
-    # From goog:chromeOptions in Capabilities section
-    options_from_capabilities = {
-        'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False,
-        'prefs': {'download.default_directory': '/this_value_will_be_overwritten',
-                  'download.prompt_for_download': False}
-    }
-    # From ChromePreferences, ChromeMobileEmulation, ChromeArguments and Chrome sections
-    options_from_sections = {
-        'prefs': {'download.default_directory': '/tmp'},
-        'mobileEmulation': {'deviceName': 'Google Nexus 5'},
-        'args': ['user-data-dir=C:\\Users\\USERNAME\\AppData\\Local\\Google\\Chrome\\User Data'],
-        'binary': '/usr/local/chrome_beta/chrome'
-    }
-    # Merged chrome options
-    final_chrome_options = {
-        'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False,
-        'prefs': {'download.default_directory': '/tmp', 'download.prompt_for_download': False},
-        'mobileEmulation': {'deviceName': 'Google Nexus 5'},
-        'args': ['user-data-dir=C:\\Users\\USERNAME\\AppData\\Local\\Google\\Chrome\\User Data'],
-        'binary': '/usr/local/chrome_beta/chrome'
-    }
-
-    config.set('Driver', 'type', 'chrome')
-    config.set('Driver', 'chrome_driver_path', '/tmp/driver')
-    config.add_section('Capabilities')
-    config.set('Capabilities', 'goog:chromeOptions', str(options_from_capabilities))
-    utils.get_driver_name.return_value = 'chrome'
-    config_driver = ConfigDriver(config, utils)
-
-    # Chrome options mock
-    chrome_options = mock.MagicMock()
-    chrome_options.to_capabilities.return_value = {'goog:chromeOptions': options_from_sections}
-    config_driver._create_chrome_options = mock.MagicMock(return_value=chrome_options)
-
-    config_driver._create_local_driver()
-    capabilities = DesiredCapabilities.CHROME.copy()
-    capabilities['goog:chromeOptions'] = final_chrome_options
-    webdriver_mock.Chrome.assert_called_once_with('/tmp/driver', desired_capabilities=capabilities)
 
 
 @pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
@@ -204,7 +145,6 @@ def test_create_local_driver_iphone(config, utils):
     assert driver == 'remote driver mock'
 
 
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 def test_create_local_driver_unknown_driver(config, utils):
     config.set('Driver', 'type', 'unknown')
     utils.get_driver_name.return_value = 'unknown'
@@ -213,115 +153,6 @@ def test_create_local_driver_unknown_driver(config, utils):
     with pytest.raises(Exception) as excinfo:
         config_driver._create_local_driver()
     assert 'Unknown driver unknown' == str(excinfo.value)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_remote_driver_firefox(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'firefox')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'firefox'
-    config_driver = ConfigDriver(config, utils)
-
-    # Firefox profile mock
-    class ProfileMock(object):
-        encoded = 'encoded profile'
-
-    config_driver._create_firefox_profile = mock.MagicMock(return_value=ProfileMock())
-
-    config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.FIREFOX.copy()
-    capabilities['firefox_profile'] = 'encoded profile'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                  desired_capabilities=capabilities)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_remote_driver_chrome(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'chrome')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'chrome'
-    config_driver = ConfigDriver(config, utils)
-
-    # Chrome options mock
-    chrome_options = mock.MagicMock()
-    chrome_options.to_capabilities.return_value = {'goog:chromeOptions': 'chrome options'}
-    config_driver._create_chrome_options = mock.MagicMock(return_value=chrome_options)
-
-    config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.CHROME.copy()
-    capabilities['goog:chromeOptions'] = 'chrome options'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                  desired_capabilities=capabilities)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_remote_driver_chrome_multiple_options(webdriver_mock, config, utils):
-    # From goog:chromeOptions in Capabilities section
-    options_from_capabilities = {
-        'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False,
-        'prefs': {'download.default_directory': '/this_value_will_be_overwritten',
-                  'download.prompt_for_download': False}
-    }
-    # From ChromePreferences, ChromeMobileEmulation, ChromeArguments and Chrome sections
-    options_from_sections = {
-        'prefs': {'download.default_directory': '/tmp'},
-        'mobileEmulation': {'deviceName': 'Google Nexus 5'},
-        'args': ['user-data-dir=C:\\Users\\USERNAME\\AppData\\Local\\Google\\Chrome\\User Data'],
-        'binary': '/usr/local/chrome_beta/chrome'
-    }
-    # Merged chrome options
-    final_chrome_options = {
-        'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False,
-        'prefs': {'download.default_directory': '/tmp', 'download.prompt_for_download': False},
-        'mobileEmulation': {'deviceName': 'Google Nexus 5'},
-        'args': ['user-data-dir=C:\\Users\\USERNAME\\AppData\\Local\\Google\\Chrome\\User Data'],
-        'binary': '/usr/local/chrome_beta/chrome'
-    }
-
-    config.set('Driver', 'type', 'chrome')
-    config.add_section('Capabilities')
-    config.set('Capabilities', 'goog:chromeOptions', str(options_from_capabilities))
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'chrome'
-    config_driver = ConfigDriver(config, utils)
-
-    # Chrome options mock
-    chrome_options = mock.MagicMock()
-    chrome_options.to_capabilities.return_value = {'goog:chromeOptions': options_from_sections}
-    config_driver._create_chrome_options = mock.MagicMock(return_value=chrome_options)
-
-    config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.CHROME.copy()
-    capabilities['goog:chromeOptions'] = final_chrome_options
-    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                  desired_capabilities=capabilities)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_remote_driver_chrome_old_selenium(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'chrome')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'chrome'
-    config_driver = ConfigDriver(config, utils)
-
-    # Chrome options mock
-    chrome_options = mock.MagicMock()
-    chrome_options.to_capabilities.return_value = {'chromeOptions': 'chrome options'}
-    config_driver._create_chrome_options = mock.MagicMock(return_value=chrome_options)
-
-    config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.CHROME.copy()
-    capabilities['chromeOptions'] = 'chrome options'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                  desired_capabilities=capabilities)
 
 
 @pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
@@ -506,41 +337,3 @@ def test_convert_property_type_list(config, utils):
     config_driver = ConfigDriver(config, utils)
     value = "[1, 2, 3]"
     assert config_driver._convert_property_type(value) == [1, 2, 3]
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_chrome_options(webdriver_mock, config, utils):
-    config.add_section('ChromePreferences')
-    config.set('ChromePreferences', 'download.default_directory', '/tmp')
-    config.add_section('ChromeMobileEmulation')
-    config.set('ChromeMobileEmulation', 'deviceName', 'Google Nexus 5')
-    config.add_section('ChromeArguments')
-    config.set('ChromeArguments', 'lang', 'es')
-    config.add_section('ChromeExtensions')
-    config.set('ChromeExtensions', 'firebug', 'resources/firebug-lite.crx')
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_chrome_options()
-    webdriver_mock.ChromeOptions.assert_called_once_with()
-    webdriver_mock.ChromeOptions().add_experimental_option.assert_has_calls(
-        [mock.call('prefs', {'download.default_directory': '/tmp'}),
-         mock.call('mobileEmulation', {'deviceName': 'Google Nexus 5'})]
-    )
-    webdriver_mock.ChromeOptions().add_argument.assert_called_once_with('lang=es')
-    webdriver_mock.ChromeOptions().add_extension.assert_called_once_with('resources/firebug-lite.crx')
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_chrome_options_headless(webdriver_mock, config, utils):
-    config.set('Driver', 'headless', 'true')
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_chrome_options()
-    webdriver_mock.ChromeOptions.assert_called_once_with()
-    if os.name == 'nt':
-        webdriver_mock.ChromeOptions().add_argument.assert_has_calls([mock.call('--headless=new'),
-                                                                      mock.call('--disable-gpu')])
-    else:
-        webdriver_mock.ChromeOptions().add_argument.assert_called_once_with('--headless=new')
