@@ -16,12 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os
-
 import mock
 import pytest
 from selenium import webdriver
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 
 from toolium.config_driver import ConfigDriver
@@ -30,6 +27,7 @@ from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
 DEFAULT_CAPABILITIES = {'acceptInsecureCerts': True, 'browserName': 'firefox', 'moz:debuggerAddress': True, 'pageLoadStrategy': 'normal'}
+
 
 @pytest.fixture
 def config():

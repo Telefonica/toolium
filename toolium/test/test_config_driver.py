@@ -24,7 +24,6 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
-from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
 @pytest.fixture
