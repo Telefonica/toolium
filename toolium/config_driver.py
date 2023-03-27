@@ -135,7 +135,6 @@ class ConfigDriver(object):
         
         return driver
 
-
     def _create_local_driver(self):
         """Create a driver in local machine
 
