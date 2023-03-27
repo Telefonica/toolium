@@ -9,6 +9,11 @@ target
 # VSCode IDE
 .vscode
 
+# virtualenv
+venv/
+VENV/
+ENV/
+
 # Packages
 *.egg
 *.egg-info
@@ -89,5 +94,3 @@ output
 
 # Tests
 */test/output
-*/test/resources/*.diff.png
-*/test/resources/*.tmp.png

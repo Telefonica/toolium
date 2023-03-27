@@ -1,10 +1,35 @@
 Toolium Changelog
 =================
 
-v2.6.4
+v3.0.0
 ------
 
 *Release date: In development*
+
+- Add support for Python 3.11
+- Add support for Selenium 4
+- Add support for Appium-Python-Client 2
+- Remove support for lettuce tests
+- Visual testing comparison has changed
+
+   | It only needs PIL library to compare images and generate the differences images
+   | Old PerceptualDiff and Magick engines have been removed
+   | Config property 'visualtests_engine' in [Server] section has been removed
+   | Images distance calculation method has changed, it is recommended to review thresholds in tests
+
+- Now `gecko_driver_path`, `chrome_driver_path`, `explorer_driver_path` and `edge_driver_path` config properties
+  in [Driver] section are optional, due to new SeleniumManager feature, that downloads drivers automatically
+- New optional config property `safari_driver_path` in [Driver] section to configure Safari driver
+
+v2.7.0
+------
+
+*Release date: 2023-02-24*
+
+- Fix drivers not being closed in `after_feature` when errors occur during `before_feature` steps execution
+- Allow to add extensions to chrome options from properties file
+
+   New config section [ChromeExtensions] with extensions file paths, e.g. 'firebug: resources/firebug-lite.crx'
 
 v2.6.3
 ------
@@ -443,7 +468,7 @@ v1.2.0
 
    | If it's false, the WebElement is searched whenever is needed (default value)
    | If it's true, the WebElement is saved in PageElement to avoid searching for the same element multiple times. Useful
-   | in mobile testing when searching for an element can take a long time.
+   in mobile testing when searching for an element can take a long time.
 - New config property 'restart_driver_fail' in [Driver] section to restart the driver when the test fails even though
   the value of *reuse_driver* property is *true*
 - System property 'Config_environment' is used to select config files, e.g., to read android-properties.cfg file:

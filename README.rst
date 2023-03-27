@@ -20,12 +20,12 @@ Getting Started
 ---------------
 
 Run ``pip install toolium`` to install the latest version from `PyPi <https://pypi.org/project/toolium>`_. It's
-highly recommendable to use a virtualenv. The minimal python version to use Toolium is `Python 3.6 <http://www.python.org>`_.
+highly recommendable to use a virtualenv.
 
 The main dependencies are:
 
 - `Selenium <http://docs.seleniumhq.org/>`_: to test web applications in major browsers (Firefox, Chrome, Internet
-  Explorer, Edge, Safari, Opera)
+  Explorer, Edge or Safari)
 - `Appium-Python-Client <https://github.com/appium/python-client>`_: to test mobile applications (native, hybrid or web)
   in Android or iOS devices/emulators.
 - `requests <http://docs.python-requests.org>`_: to test APIs
@@ -70,7 +70,9 @@ Don't forget to run unit tests:
 
     $ git clone git@github.com:<your_github_user>/toolium.git
     $ cd toolium
-    $ python setup.py test
+    $ pip install -r requirements.txt
+    $ pip install -r requirements_dev.txt
+    $ python -m pytest
 
 Finally, before accepting your contribution, we need you to sign our
 `Contributor License Agreement <https://raw.githubusercontent.com/telefonicaid/Licensing/master/ContributionPolicy.txt>`_

@@ -1,7 +1,8 @@
-requests>=2.12.4,<3              # api tests
-selenium>=2.53.6,<4              # web tests
-Appium-Python-Client>=0.24,<=1.3 # mobile tests
-screeninfo==0.3.1
-lxml==4.*
-Faker==13.3.2
+requests~=2.27            # api tests
+selenium~=4.0             # web tests
+Appium-Python-Client~=2.0 # mobile tests
+Pillow~=9.4.0             # visual testing
+screeninfo~=0.8
+lxml~=4.9
+Faker==18.3.1
 phonenumbers==8.13.8

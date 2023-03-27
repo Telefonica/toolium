@@ -58,8 +58,6 @@ web_tests = (
 maximizable_drivers = (
     ('firefox-4.1.2-on-android', True),
     ('firefox', True),
-    ('opera-12.12-on-xp', True),
-    ('opera', True),
     ('edge', True),
     ('android', False),
     ('ios', False),
@@ -104,7 +102,7 @@ def test_multiple(driver_wrapper):
 
     # Modify new wrapper
     first_driver_type = 'firefox'
-    new_driver_type = 'opera'
+    new_driver_type = 'edge'
     new_wrapper.config.set('Driver', 'type', new_driver_type)
 
     # Check that wrapper and new_wrapper are different
@@ -118,13 +116,13 @@ def test_configure_no_changes(driver_wrapper):
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
 
     # Modify wrapper
-    driver_wrapper.config.set('Driver', 'type', 'opera')
+    driver_wrapper.config.set('Driver', 'type', 'edge')
 
     # Trying to configure again
     driver_wrapper.configure(ConfigFiles())
 
     # Configuration has not been initialized
-    assert driver_wrapper.config.get('Driver', 'type') == 'opera'
+    assert driver_wrapper.config.get('Driver', 'type') == 'edge'
 
 
 def test_configure_change_configuration_file(driver_wrapper):
@@ -132,7 +130,7 @@ def test_configure_change_configuration_file(driver_wrapper):
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
 
     # Modify wrapper
-    driver_wrapper.config.set('Driver', 'type', 'opera')
+    driver_wrapper.config.set('Driver', 'type', 'edge')
 
     # Change properties file and try to configure again
     root_path = os.path.dirname(os.path.realpath(__file__))
@@ -226,6 +224,34 @@ def test_connect_api_from_file(driver_wrapper):
     assert driver_wrapper.config.get('Jira', 'enabled') == 'false'
     logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
     assert logging.getLevelName(logger.level) == 'DEBUG'
+
+
+def test_get_config_window_bounds(driver_wrapper):
+    assert driver_wrapper.get_config_window_bounds() == (0, 0)
+
+
+def test_get_config_window_bounds_with_bounds(driver_wrapper):
+    # Mock data
+    driver_wrapper.config.set('Driver', 'bounds_x', '1000')
+    driver_wrapper.config.set('Driver', 'bounds_y', '200')
+
+    assert driver_wrapper.get_config_window_bounds() == (1000, 200)
+
+
+@mock.patch('toolium.driver_wrapper.screeninfo')
+def test_get_config_window_bounds_with_monitor(screeninfo, driver_wrapper):
+    # Mock data
+    driver_wrapper.config.set('Driver', 'monitor', '0')
+    driver_wrapper.config.set('Driver', 'bounds_x', '1000')
+    driver_wrapper.config.set('Driver', 'bounds_y', '200')
+
+    class Monitor(object):
+        x = 50
+        y = 20
+
+    screeninfo.get_monitors.return_value = [Monitor()]
+
+    assert driver_wrapper.get_config_window_bounds() == (1050, 220)
 
 
 @pytest.mark.parametrize("driver_type, is_mobile, is_android, is_ios", mobile_tests)
