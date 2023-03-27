@@ -112,7 +112,7 @@ class ConfigDriver(object):
             self._update_dict(options.capabilities, capabilities)
 
             # Create remote appium driver
-            return appiumdriver.Remote(command_executor=server_url, options=options)
+            driver = appiumdriver.Remote(command_executor=server_url, options=options)
         else:
             # Get driver options
             if driver_name == 'firefox':
@@ -127,7 +127,14 @@ class ConfigDriver(object):
                 options = self._get_edge_options(capabilities)
 
             # Create remote web driver
-            return webdriver.Remote(command_executor=server_url, options=options)
+            driver = webdriver.Remote(command_executor=server_url, options=options)
+
+            # Add Firefox extesions to driver
+            if driver_name == 'firefox':
+                self._add_firefox_extensions(driver)
+        
+        return driver
+
 
     def _create_local_driver(self):
         """Create a driver in local machine
@@ -224,7 +231,12 @@ class ConfigDriver(object):
             service = FirefoxService(executable_path=gecko_driver, log_path=log_path)
         else:
             service = FirefoxService(log_path=log_path)
-        return webdriver.Firefox(service=service, options=firefox_options)
+        driver = webdriver.Firefox(service=service, options=firefox_options)
+
+        # Add Firefox extesions to driver
+        self._add_firefox_extensions(driver)
+
+        return driver
 
     def _get_firefox_options(self, capabilities={}):
         """Get Firefox options with given capabilities and configured
@@ -234,9 +246,10 @@ class ConfigDriver(object):
         """
         firefox_options = FirefoxOptions()
         self._add_firefox_arguments(firefox_options)
+        self._add_firefox_preferences(firefox_options)
+        self._add_firefox_profile(firefox_options)
         self._add_capabilities_from_properties(capabilities, 'Capabilities')
         self._update_dict(firefox_options.capabilities, capabilities)
-        firefox_options.profile = self._create_firefox_profile()
         return firefox_options
 
     def _add_firefox_arguments(self, options):
@@ -252,38 +265,39 @@ class ConfigDriver(object):
         except NoSectionError:
             pass
 
-    def _create_firefox_profile(self):
-        """Create and configure a firefox profile
+    def _add_firefox_preferences(self, options):
+        """Add Firefox preferences from properties file
 
-        :returns: firefox profile
+        :param options: Firefox options object
         """
-        # Get Firefox profile
-        profile_directory = self.config.get_optional('Firefox', 'profile')
-        if profile_directory:
-            self.logger.debug("Using firefox profile: %s", profile_directory)
-
-        # Create Firefox profile
-        profile = webdriver.FirefoxProfile(profile_directory=profile_directory)
-        profile.native_events_enabled = True
-
-        # Add Firefox preferences
         try:
             for pref, pref_value in dict(self.config.items('FirefoxPreferences')).items():
-                self.logger.debug("Added firefox preference: %s = %s", pref, pref_value)
-                profile.set_preference(pref, self._convert_property_type(pref_value))
-            profile.update_preferences()
+                self.logger.debug("Added Firefox preference: %s = %s", pref, pref_value)
+                options.set_preference(pref, self._convert_property_type(pref_value))
         except NoSectionError:
             pass
 
-        # Add Firefox extensions
+    def _add_firefox_profile(self, options):
+        """Add custom Firefox profile
+
+        :param options: Firefox options object
+        """
+        profile_path = self.config.get_optional('Firefox', 'profile')
+        if profile_path:
+            self.logger.debug("Using Firefox profile: %s", profile_path)
+            options.set_preference('profile', profile_path)
+
+    def _add_firefox_extensions(self, driver):
+        """Add Firefox extensions from properties file
+
+        :param driver: Firefox driver
+        """
         try:
             for pref, pref_value in dict(self.config.items('FirefoxExtensions')).items():
-                self.logger.debug("Added firefox extension: %s = %s", pref, pref_value)
-                profile.add_extension(pref_value)
+                self.logger.debug("Added Firefox extension: %s = %s", pref, pref_value)
+                webdriver.Firefox.install_addon(driver, pref_value, temporary=True)
         except NoSectionError:
             pass
-
-        return profile
 
     @staticmethod
     def _convert_property_type(value):
@@ -321,10 +335,10 @@ class ConfigDriver(object):
         return webdriver.Chrome(service=service, options=chrome_options)
 
     def _get_chrome_options(self, capabilities={}):
-        """Create and configure a chrome options object
+        """Create and configure a Chrome options object
 
         :param capabilities: capabilities object
-        :returns: chrome options object
+        :returns: Chrome options object
         """
         # Get Chrome binary
         chrome_binary = self.config.get_optional('Chrome', 'binary')
@@ -354,15 +368,15 @@ class ConfigDriver(object):
     def _add_chrome_options(self, options, option_name):
         """Add Chrome options from properties file
 
-        :param options: chrome options object
-        :param option_name: chrome option name
+        :param options: Chrome options object
+        :param option_name: Chrome option name
         """
         options_conf = {'prefs': {'section': 'ChromePreferences', 'message': 'preference'},
                         'mobileEmulation': {'section': 'ChromeMobileEmulation', 'message': 'mobile emulation option'}}
         option_value = dict()
         try:
             for key, value in dict(self.config.items(options_conf[option_name]['section'])).items():
-                self.logger.debug("Added chrome %s: %s = %s", options_conf[option_name]['message'], key, value)
+                self.logger.debug("Added Chrome %s: %s = %s", options_conf[option_name]['message'], key, value)
                 option_value[key] = self._convert_property_type(value)
             if len(option_value) > 0:
                 options.add_experimental_option(option_name, option_value)
@@ -372,12 +386,12 @@ class ConfigDriver(object):
     def _add_chrome_arguments(self, options):
         """Add Chrome arguments from properties file
 
-        :param options: chrome options object
+        :param options: Chrome options object
         """
         try:
             for pref, pref_value in dict(self.config.items('ChromeArguments')).items():
                 pref_value = '={}'.format(pref_value) if pref_value else ''
-                self.logger.debug("Added chrome argument: %s%s", pref, pref_value)
+                self.logger.debug("Added Chrome argument: %s%s", pref, pref_value)
                 options.add_argument('{}{}'.format(pref, self._convert_property_type(pref_value)))
         except NoSectionError:
             pass
@@ -385,11 +399,11 @@ class ConfigDriver(object):
     def _add_chrome_extensions(self, options):
         """Add Chrome extensions from properties file
 
-        :param options: chrome options object
+        :param options: Chrome options object
         """
         try:
             for pref, pref_value in dict(self.config.items('ChromeExtensions')).items():
-                self.logger.debug("Added chrome extension: %s = %s", pref, pref_value)
+                self.logger.debug("Added Chrome extension: %s = %s", pref, pref_value)
                 options.add_extension(pref_value)
         except NoSectionError:
             pass

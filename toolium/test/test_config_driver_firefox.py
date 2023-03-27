@@ -51,8 +51,6 @@ def utils():
 def test_create_local_driver_firefox_no_driver_path(webdriver_mock, service, options, config, utils):
     config.set('Driver', 'type', 'firefox')
     config_driver = ConfigDriver(config, utils)
-    expected_profile = webdriver.FirefoxProfile()
-    config_driver._create_firefox_profile = mock.MagicMock(return_value=expected_profile)
     DriverWrappersPool.output_directory = ''
 
     config_driver._create_local_driver()
@@ -68,8 +66,6 @@ def test_create_local_driver_firefox_driver_path(webdriver_mock, service, option
     config.set('Driver', 'type', 'firefox')
     config.set('Driver', 'gecko_driver_path', '/tmp/driver')
     config_driver = ConfigDriver(config, utils)
-    expected_profile = webdriver.FirefoxProfile()
-    config_driver._create_firefox_profile = mock.MagicMock(return_value=expected_profile)
     DriverWrappersPool.output_directory = ''
 
     config_driver._create_local_driver()
@@ -84,8 +80,6 @@ def test_create_local_driver_firefox_headless(webdriver_mock, service, config, u
     config.set('Driver', 'type', 'firefox')
     config.set('Driver', 'headless', 'true')
     config_driver = ConfigDriver(config, utils)
-    expected_profile = webdriver.FirefoxProfile()
-    config_driver._create_firefox_profile = mock.MagicMock(return_value=expected_profile)
     DriverWrappersPool.output_directory = ''
 
     config_driver._create_local_driver()
@@ -106,8 +100,6 @@ def test_create_local_driver_firefox_binary(webdriver_mock, service, config, uti
     config.add_section('Firefox')
     config.set('Firefox', 'binary', '/tmp/firefox')
     config_driver = ConfigDriver(config, utils)
-    expected_profile = webdriver.FirefoxProfile()
-    config_driver._create_firefox_profile = mock.MagicMock(return_value=expected_profile)
     DriverWrappersPool.output_directory = ''
 
     config_driver._create_local_driver()
@@ -121,51 +113,93 @@ def test_create_local_driver_firefox_binary(webdriver_mock, service, config, uti
     webdriver_mock.Firefox.assert_called_once_with(service=service(), options=options)
 
 
+@mock.patch('toolium.config_driver.webdriver')
+def test_create_local_driver_firefox_extension(webdriver_mock, config, utils):
+    config.set('Driver', 'type', 'firefox')
+    config.add_section('FirefoxExtensions')
+    config.set('FirefoxExtensions', 'firebug', 'resources/firebug-3.0.0-beta.3.xpi')
+    config_driver = ConfigDriver(config, utils)
+    DriverWrappersPool.output_directory = ''
+
+    config_driver._create_local_driver()
+
+    # Check that extension has been added to driver
+    webdriver_mock.Firefox.install_addon.assert_called_once_with(webdriver_mock.Firefox(),
+                                                                 'resources/firebug-3.0.0-beta.3.xpi', temporary=True)
+
+
 def test_get_firefox_options(config, utils):
     config_driver = ConfigDriver(config, utils)
-    expected_profile = webdriver.FirefoxProfile()
-    config_driver._create_firefox_profile = mock.MagicMock(return_value=expected_profile)
     expected_arguments = []
+    expected_preferences = {}
     expected_capabilities = DEFAULT_CAPABILITIES
 
     options = config_driver._get_firefox_options()
 
     assert options.arguments == expected_arguments
+    assert options.preferences == expected_preferences
     assert options.capabilities == expected_capabilities
-    assert options.profile == expected_profile
 
 
 def test_get_firefox_options_arguments(config, utils):
     config.add_section('FirefoxArguments')
     config.set('FirefoxArguments', '-private', '')
     config_driver = ConfigDriver(config, utils)
-    expected_profile = webdriver.FirefoxProfile()
-    config_driver._create_firefox_profile = mock.MagicMock(return_value=expected_profile)
     expected_arguments = ['-private']
+    expected_preferences = {}
     expected_capabilities = DEFAULT_CAPABILITIES
 
     options = config_driver._get_firefox_options()
 
     assert options.arguments == expected_arguments
+    assert options.preferences == expected_preferences
     assert options.capabilities == expected_capabilities
-    assert options.profile == expected_profile
+
+
+def test_get_firefox_options_preferences(config, utils):
+    config.add_section('FirefoxPreferences')
+    config.set('FirefoxPreferences', 'browser.download.folderList', '2')
+    config_driver = ConfigDriver(config, utils)
+    expected_arguments = []
+    expected_preferences = {'browser.download.folderList': 2}
+    expected_capabilities = DEFAULT_CAPABILITIES
+
+    options = config_driver._get_firefox_options()
+
+    assert options.arguments == expected_arguments
+    assert options.preferences == expected_preferences
+    assert options.capabilities == expected_capabilities
+
+
+def test_get_firefox_options_profile(config, utils):
+    config.add_section('Firefox')
+    config.set('Firefox', 'profile', '/tmp')
+    config_driver = ConfigDriver(config, utils)
+    expected_arguments = []
+    expected_preferences = {'profile': '/tmp'}
+    expected_capabilities = DEFAULT_CAPABILITIES
+
+    options = config_driver._get_firefox_options()
+
+    assert options.arguments == expected_arguments
+    assert options.preferences == expected_preferences
+    assert options.capabilities == expected_capabilities
 
 
 def test_get_firefox_options_capabilities_update(config, utils):
     config.add_section('Capabilities')
     config.set('Capabilities', 'pageLoadStrategy', 'eager')
     config_driver = ConfigDriver(config, utils)
-    expected_profile = webdriver.FirefoxProfile()
-    config_driver._create_firefox_profile = mock.MagicMock(return_value=expected_profile)
     expected_arguments = []
+    expected_preferences = {}
     expected_capabilities = DEFAULT_CAPABILITIES.copy()
     expected_capabilities['pageLoadStrategy'] = 'eager'
 
     options = config_driver._get_firefox_options()
 
     assert options.arguments == expected_arguments
+    assert options.preferences == expected_preferences
     assert options.capabilities == expected_capabilities
-    assert options.profile == expected_profile
 
 
 def test_get_firefox_options_capabilities_new(config, utils):
@@ -174,24 +208,22 @@ def test_get_firefox_options_capabilities_new(config, utils):
     # TODO: next line it should not be needed, but config object has not been cleaned after previous test
     config.set('Capabilities', 'pageLoadStrategy', 'normal')
     config_driver = ConfigDriver(config, utils)
-    expected_profile = webdriver.FirefoxProfile()
-    config_driver._create_firefox_profile = mock.MagicMock(return_value=expected_profile)
     expected_arguments = []
+    expected_preferences = {}
     expected_capabilities = DEFAULT_CAPABILITIES.copy()
     expected_capabilities['browserVersion'] = '50'
 
     options = config_driver._get_firefox_options()
 
     assert options.arguments == expected_arguments
+    assert options.preferences == expected_preferences
     assert options.capabilities == expected_capabilities
-    assert options.profile == expected_profile
 
 
 def test_get_firefox_options_with_previous_capabilities(config, utils):
     config_driver = ConfigDriver(config, utils)
-    expected_profile = webdriver.FirefoxProfile()
-    config_driver._create_firefox_profile = mock.MagicMock(return_value=expected_profile)
     expected_arguments = []
+    expected_preferences = {}
     expected_capabilities = DEFAULT_CAPABILITIES.copy()
     expected_capabilities['browserVersion'] = '100'
 
@@ -199,8 +231,8 @@ def test_get_firefox_options_with_previous_capabilities(config, utils):
     options = config_driver._get_firefox_options(previous_capabilities)
 
     assert options.arguments == expected_arguments
+    assert options.preferences == expected_preferences
     assert options.capabilities == expected_capabilities
-    assert options.profile == expected_profile
 
 
 def test_add_firefox_arguments(config, utils):
@@ -222,30 +254,11 @@ def test_add_firefox_arguments_no_section(config, utils):
 
 
 @mock.patch('toolium.config_driver.webdriver')
-def test_create_firefox_profile(webdriver_mock, config, utils):
-    config.add_section('Firefox')
-    config.set('Firefox', 'profile', '/tmp')
-    config.add_section('FirefoxPreferences')
-    config.set('FirefoxPreferences', 'browser.download.folderList', '2')
-    config.add_section('FirefoxExtensions')
-    config.set('FirefoxExtensions', 'firebug', 'resources/firebug-3.0.0-beta.3.xpi')
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_firefox_profile()
-    webdriver_mock.FirefoxProfile.assert_called_once_with(profile_directory='/tmp')
-    webdriver_mock.FirefoxProfile().set_preference.assert_called_once_with('browser.download.folderList', 2)
-    webdriver_mock.FirefoxProfile().update_preferences.assert_called_once_with()
-    webdriver_mock.FirefoxProfile().add_extension.assert_called_once_with('resources/firebug-3.0.0-beta.3.xpi')
-
-
-@mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_firefox(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'firefox')
     server_url = 'http://10.20.30.40:5555'
     utils.get_server_url.return_value = server_url
     config_driver = ConfigDriver(config, utils)
-    expected_profile = webdriver.FirefoxProfile()
-    config_driver._create_firefox_profile = mock.MagicMock(return_value=expected_profile)
     DriverWrappersPool.output_directory = ''
     expected_capabilities = DEFAULT_CAPABILITIES
 
@@ -265,8 +278,6 @@ def test_create_remote_driver_firefox_with_version_and_platform(webdriver_mock, 
     server_url = 'http://10.20.30.40:5555'
     utils.get_server_url.return_value = server_url
     config_driver = ConfigDriver(config, utils)
-    expected_profile = webdriver.FirefoxProfile()
-    config_driver._create_firefox_profile = mock.MagicMock(return_value=expected_profile)
     DriverWrappersPool.output_directory = ''
     expected_capabilities = DEFAULT_CAPABILITIES.copy()
     expected_capabilities['browserVersion'] = '50'
@@ -274,9 +285,34 @@ def test_create_remote_driver_firefox_with_version_and_platform(webdriver_mock, 
 
     config_driver._create_remote_driver()
 
-    # Check that chrome options contain expected capabilities
+    # Check that firefox options contain expected capabilities
     args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
     webdriver_mock.Remote.assert_called_once_with(command_executor=f'{server_url}/wd/hub', options=options)
+
+
+@mock.patch('toolium.config_driver.webdriver')
+def test_create_remote_driver_firefox_extension(webdriver_mock, config, utils):
+    config.set('Driver', 'type', 'firefox')
+    config.add_section('FirefoxExtensions')
+    config.set('FirefoxExtensions', 'firebug', 'resources/firebug-3.0.0-beta.3.xpi')
+    server_url = 'http://10.20.30.40:5555'
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
+    DriverWrappersPool.output_directory = ''
+    expected_capabilities = DEFAULT_CAPABILITIES
+
+    config_driver._create_remote_driver()
+
+    # Check that firefox options contain expected capabilities
+    args, kwargs = webdriver_mock.Remote.call_args
+    options = kwargs['options']
+    assert isinstance(options, Options)
+    assert options.capabilities == expected_capabilities
+    webdriver_mock.Remote.assert_called_once_with(command_executor=f'{server_url}/wd/hub', options=options)
+
+    # Check that extension has been added to driver
+    webdriver_mock.Firefox.install_addon.assert_called_once_with(webdriver_mock.Remote(),
+                                                                 'resources/firebug-3.0.0-beta.3.xpi', temporary=True)
