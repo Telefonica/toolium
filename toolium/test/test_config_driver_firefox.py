@@ -18,7 +18,6 @@ limitations under the License.
 
 import mock
 import pytest
-from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
 from toolium.config_driver import ConfigDriver

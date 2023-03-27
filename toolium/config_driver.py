@@ -132,7 +132,7 @@ class ConfigDriver(object):
             # Add Firefox extesions to driver
             if driver_name == 'firefox':
                 self._add_firefox_extensions(driver)
-        
+
         return driver
 
     def _create_local_driver(self):
