@@ -117,10 +117,10 @@ def test_get_downloaded_file_path_server_type_selenoid(context):
 
 def test_get_downloaded_file_path_server_type_unknown(context):
     context.driver_wrapper.server_type = 'unknown'
-    context.download_directory_base = '/'
+    context.download_directory_base = os.path.sep
     context.download_directory = 'path'
 
-    assert get_downloaded_file_path(context, 'file_name') == '/path/file_name'
+    assert get_downloaded_file_path(context, 'file_name') == os.path.join(os.path.sep, 'path', 'file_name')
 
 
 def test_retrieve_remote_downloaded_file_download_directory_none(context):
@@ -137,15 +137,16 @@ def test_retrieve_remote_downloaded_no_server_section(context):
 
 
 def test_retrieve_remote_downloaded_file_download_directory_and_server_section(context):
-    context.download_directory = "/downloads"
+    context.download_directory = 'download_path'
     context.driver_wrapper.config.set('Server', 'enabled', 'true')
     toolium.utils.download_files._get_download_directory_url = mock.Mock(return_value='https://host:8001')
     toolium.utils.download_files.makedirs_safe = mock.Mock(return_value=0)
     toolium.utils.download_files.urlretrieve = mock.Mock(return_value=0)
 
-    assert retrieve_remote_downloaded_file(context, 'file_name') == '/downloads/file_name'
-    toolium.utils.download_files.urlretrieve.assert_called_once_with('https://host:8001/file_name',
-                                                                     '/downloads/file_name')
+    download_filename = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER,
+                                     context.download_directory, 'file_name')
+    assert retrieve_remote_downloaded_file(context, 'file_name') == download_filename
+    toolium.utils.download_files.urlretrieve.assert_called_once_with('https://host:8001/file_name', download_filename)
 
 
 def test_get_downloaded_files_list_download_directory_none(context):
@@ -163,12 +164,12 @@ def test_get_downloaded_files_list_no_server_section(context):
     toolium.utils.download_files.os.listdir = mock.Mock(return_value=['file1.jpg', 'file2.txt'])
 
     assert get_downloaded_files_list(context) == ['file1.jpg', 'file2.txt']
-    toolium.utils.download_files.os.listdir.assert_called_once_with(os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), 'output', DOWNLOADS_FOLDER, 'download_path'))
+    download_folder = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER, context.download_directory)
+    toolium.utils.download_files.os.listdir.assert_called_once_with(download_folder)
 
 
 def test_get_downloaded_files_list_download_directory_and_server_section(context):
-    context.download_directory = "/downloads"
+    context.download_directory = "download_path"
     context.driver_wrapper.config.set('Server', 'enabled', 'true')
     toolium.utils.download_files._get_download_directory_url = mock.Mock(return_value='https://host:8001')
     response = mock.Mock()
@@ -187,10 +188,10 @@ def test_get_remote_node_for_download(context):
 
 
 def test_get_download_directory_url_download_directory(context):
-    context.download_directory = "/downloads"
+    context.download_directory = "download_path"
     toolium.utils.download_files._get_remote_node_for_download = mock.Mock(return_value='localhost')
 
-    assert _get_download_directory_url(context) == "http://localhost:{}/downloads".format(DOWNLOADS_SERVICE_PORT)
+    assert _get_download_directory_url(context) == "http://localhost:{}/download_path".format(DOWNLOADS_SERVICE_PORT)
 
 
 def test_get_download_directory_url_download_directory_none(context):
@@ -239,13 +240,9 @@ def test_delete_retrieved_downloaded_file_download_directory_file_dwn(context):
     toolium.utils.download_files.os.rmdir = mock.Mock(return_value=0)
 
     delete_retrieved_downloaded_file(context, 'file_downloaded', None)
-    toolium.utils.download_files.os.remove.assert_called_once_with(os.path.
-                                                                   join(os.path.dirname(os.path.realpath(__file__)),
-                                                                        'output', DOWNLOADS_FOLDER, 'download_path',
-                                                                        'file_downloaded'))
-    toolium.utils.download_files.os.rmdir.assert_called_once_with(os.path.
-                                                                  join(os.path.dirname(os.path.realpath(__file__)),
-                                                                       'output', DOWNLOADS_FOLDER, 'download_path'))
+    download_folder = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER, context.download_directory)
+    toolium.utils.download_files.os.remove.assert_called_once_with(os.path.join(download_folder, 'file_downloaded'))
+    toolium.utils.download_files.os.rmdir.assert_called_once_with(os.path.join(download_folder))
 
 
 def test_delete_retrieved_downloaded_file_download_directory_file_retr(context):
@@ -254,13 +251,9 @@ def test_delete_retrieved_downloaded_file_download_directory_file_retr(context):
     toolium.utils.download_files.os.rmdir = mock.Mock(return_value=0)
 
     delete_retrieved_downloaded_file(context, 'file_downloaded', 'file_retrieved')
-    toolium.utils.download_files.os.remove.assert_called_once_with(os.path.
-                                                                   join(os.path.dirname(os.path.realpath(__file__)),
-                                                                        'output', DOWNLOADS_FOLDER, 'download_path',
-                                                                        'file_retrieved'))
-    toolium.utils.download_files.os.rmdir.assert_called_once_with(os.path.
-                                                                  join(os.path.dirname(os.path.realpath(__file__)),
-                                                                       'output', DOWNLOADS_FOLDER, 'download_path'))
+    download_folder = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER, context.download_directory)
+    toolium.utils.download_files.os.remove.assert_called_once_with(os.path.join(download_folder, 'file_retrieved'))
+    toolium.utils.download_files.os.rmdir.assert_called_once_with(os.path.join(download_folder))
 
 
 def test_delete_retrieved_downloaded_file_download_directory_none(context):
@@ -269,7 +262,6 @@ def test_delete_retrieved_downloaded_file_download_directory_none(context):
     toolium.utils.download_files.os.rmdir = mock.Mock(return_value=0)
 
     delete_retrieved_downloaded_file(context, 'file_name', None)
-    toolium.utils.download_files.os.remove.assert_called_once_with(os.path.
-                                                                   join(os.path.dirname(os.path.realpath(__file__)),
-                                                                        'output', 'downloads', 'file_name'))
+    download_folder = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER, context.download_directory)
+    toolium.utils.download_files.os.remove.assert_called_once_with(os.path.join(download_folder, 'file_name'))
     toolium.utils.download_files.os.rmdir.assert_not_called()
