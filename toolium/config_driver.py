@@ -26,10 +26,13 @@ from appium.options.common.base import AppiumOptions
 from configparser import NoSectionError
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.ie.service import Service as IEService
+from selenium.webdriver.ie.options import Options as IeOptions
+from selenium.webdriver.ie.service import Service as IeService
 from selenium.webdriver.safari.service import Service as SafariService
 from selenium.webdriver.safari.options import Options as SafariOptions
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -327,13 +330,11 @@ class ConfigDriver(object):
         chrome_binary = self.config.get_optional('Chrome', 'binary')
 
         # Create Chrome options
-        options = webdriver.ChromeOptions()
+        options = ChromeOptions()
 
         if self.config.getboolean_optional('Driver', 'headless'):
             self.logger.debug("Running Chrome in headless mode")
             options.add_argument('--headless=new')
-            if os.name == 'nt':  # Temporarily needed if running on Windows.
-                options.add_argument('--disable-gpu')
 
         if chrome_binary is not None:
             options.binary_location = chrome_binary
@@ -439,9 +440,9 @@ class ConfigDriver(object):
         explorer_driver = self.config.get_optional('Driver', 'explorer_driver_path', None)
         if explorer_driver:
             self.logger.debug("Explorer driver path given in properties: %s", explorer_driver)
-            service = IEService(executable_path=explorer_driver)
+            service = IeService(executable_path=explorer_driver)
         else:
-            service = IEService()
+            service = IeService()
         explorer_options = self._get_explorer_options()
         return webdriver.Ie(service=service, options=explorer_options)
 
@@ -451,7 +452,7 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: explorer options object
         """
-        options = webdriver.IeOptions()
+        options = IeOptions()
         self._add_capabilities_from_properties(capabilities, 'Capabilities')
         # Remove google capabilities to avoid explorer error when unknown capabilities are configured
         capabilities = {key: value for key, value in capabilities.items() if not key.startswith('goog:')}
@@ -479,7 +480,7 @@ class ConfigDriver(object):
         :param capabilities: capabilities object
         :returns: edge options object
         """
-        options = webdriver.EdgeOptions()
+        options = EdgeOptions()
         self._add_capabilities_from_properties(capabilities, 'Capabilities')
         self._update_dict(options.capabilities, capabilities)
         return options
