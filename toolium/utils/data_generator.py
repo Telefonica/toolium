@@ -72,7 +72,7 @@ class DataGenerator(object):
         For example: '+448081570270'
         If locale is not defined, return phone number from anywhere.
         """
-        if self._provider: # Example: en_GB
+        if self._provider:  # Example: en_GB
             region_code = self._provider.split('_')[-1]
             raw_phone_number = phonenumbers.parse(self._fake.phone_number(), region_code)
             return phonenumbers.format_number(raw_phone_number, phonenumbers.PhoneNumberFormat.E164)
@@ -94,7 +94,6 @@ class DataGenerator(object):
         Generate a country code in iso3166-1 alpha-2 format.
         """
         return self._fake.country_code()
-
 
     @property
     def random_uuidv4(self) -> str:
@@ -126,5 +125,5 @@ class DataGenerator(object):
         Can be added custom validations for the country.
         """
         if provider == 'es_ES':
-            return re.match('(?:0[1-9]|[1-4]\d|5[0-2])\d{3}$', postal_code)
+            return re.match(r"(?:0[1-9]|[1-4]\d|5[0-2])\d{3}$", postal_code)
         return True
