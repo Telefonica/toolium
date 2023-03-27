@@ -24,6 +24,14 @@ properties in *[Driver]* section::
 Additional Configuration
 ------------------------
 
+To configure `Browser options <https://www.selenium.dev/documentation/webdriver/drivers/options/>`_, create a
+*[Capabilities]* configuration section and add every option that you want to configure with its value.
+
+For example, the following configuration changes page load strategy to eager mode::
+
+    [Capabilities]
+    pageLoadStrategy: eager
+
 Firefox
 ~~~~~~~
 
