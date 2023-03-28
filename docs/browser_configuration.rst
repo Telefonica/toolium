@@ -56,7 +56,7 @@ section::
 
 **FirefoxPreferences section**
 
-To use a custom Firefox profile, create a *[FirefoxPreferences]* configuration section and add every preference that
+To configure Firefox preferences, create a *[FirefoxPreferences]* configuration section and add every preference that
 you want to configure with its value.
 
 For example, the following configuration allows to download files without asking user::
