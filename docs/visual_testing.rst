@@ -113,7 +113,7 @@ When using behave, it can also be configured in `before_all` method:
         context.config_files.set_visual_baseline_directory('resources/baseline')
         toolium_before_all(context)
 
-When using nose, it can also be configured in `setUp` method:
+When using nose2, it can also be configured in `setUp` method:
 
 .. code:: python
 

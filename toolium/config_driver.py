@@ -94,7 +94,7 @@ class ConfigDriver(object):
 
     def _create_remote_driver(self):
         """Create a driver in a remote server
-        View valid capabilities in https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
+        View valid capabilities in https://www.selenium.dev/documentation/webdriver/drivers/options/
 
         :returns: a new remote selenium driver
         """
@@ -472,10 +472,9 @@ class ConfigDriver(object):
         self._update_dict(options.capabilities, capabilities)
         return options
 
-    def _setup_edge(self, capabilities):
+    def _setup_edge(self):
         """Setup Edge webdriver
 
-        :param capabilities: capabilities object
         :returns: a new local Edge driver
         """
         edge_driver = self.config.get_optional('Driver', 'edge_driver_path', None)

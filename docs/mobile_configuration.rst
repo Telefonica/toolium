@@ -25,4 +25,4 @@ shows how to configure Appium to run tests over TestApp app on an iPhone 6 with 
     platformVersion: 8.3
     app: http://server_url/TestApp.zip
 
-See http://appium.io/slate/en/master#appium-server-capabilities for the complete Appium capabilities list.
+See https://appium.github.io/appium/docs/en/2.0/guides/caps/ for the complete Appium capabilities list.

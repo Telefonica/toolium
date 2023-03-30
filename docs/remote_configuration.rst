@@ -81,7 +81,7 @@ The following example requests to the Selenium Grid Hub a Windows environment wi
     type: iexplore
 
     [Capabilities]
-    version: 11
-    platform: WINDOWS
+    browserVersion: 11
+    platformName: WINDOWS
 
-See https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities for the complete Selenium capabilities list.
+See `Browser options <https://www.selenium.dev/documentation/webdriver/drivers/options/>` for the complete Selenium capabilities list.
