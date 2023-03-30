@@ -46,7 +46,7 @@ grid node and the video recording has been enabled in grid. Both grids allow rec
 For example, to enable video recording in GGR, the following capability must be configured ::
 
     [Capabilities]
-    enableVideo: true
+    selenoid___options: {'enableVideo': True}
 
 In order to download the execution video even if the test passes, configure the property *video_enabled* in *[Server]*
 section in properties.cfg file ::
@@ -76,7 +76,7 @@ Notice that if using Chrome, log types can be enabled in *capabilities* section 
 Also take into account that, to enable logs in GGR, the following capability must be configured ::
 
     [Capabilities]
-    enableLog: true
+    selenoid___options: {'enableLog': True}
 
 In order to download webdriver logs even if the test passes, configure the property `logs_enabled <https://toolium.readthedocs.io/en/latest/remote_configuration.html#logs-enabled>`_
 in *[Server]* section in properties.cfg file ::

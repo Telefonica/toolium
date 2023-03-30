@@ -82,6 +82,6 @@ The following example requests to the Selenium Grid Hub a Windows environment wi
 
     [Capabilities]
     browserVersion: 11
-    platformName: WINDOWS
+    platformName: windows
 
 See `Browser options <https://www.selenium.dev/documentation/webdriver/drivers/options/>` for the complete Selenium capabilities list.

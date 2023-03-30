@@ -176,14 +176,8 @@ class ConfigDriver(object):
             pass
 
         try:
-            platforms_list = {'xp': 'XP',
-                              'windows_7': 'VISTA',
-                              'windows_8': 'WIN8',
-                              'windows_10': 'WIN10',
-                              'linux': 'LINUX',
-                              'android': 'ANDROID',
-                              'mac': 'MAC'}
-            capabilities['platformName'] = platforms_list.get(driver_type.split('-')[3], driver_type.split('-')[3])
+            # platforName must be lowercase: https://w3c.github.io/webdriver/#dfn-platform-name
+            capabilities['platformName'] = driver_type.split('-')[3].lower()
         except IndexError:
             pass
 
@@ -467,8 +461,8 @@ class ConfigDriver(object):
         """
         options = IeOptions()
         self._add_capabilities_from_properties(capabilities, 'Capabilities')
-        # Remove google capabilities to avoid explorer error when unknown capabilities are configured
-        capabilities = {key: value for key, value in capabilities.items() if not key.startswith('goog:')}
+        # Remove custom capabilities to avoid explorer error when unknown capabilities are configured
+        capabilities = {key: value for key, value in capabilities.items() if ':' not in key}
         self._update_dict(options.capabilities, capabilities)
         return options
 

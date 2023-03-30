@@ -20,6 +20,7 @@ import os
 import requests
 import time
 
+from ast import literal_eval
 from toolium.utils.path_utils import makedirs_safe
 
 # constants
@@ -35,10 +36,7 @@ class Selenoid(object):
     properties.cfg or local-properties.cfg files:
     ---------------------------------------------
     [Capabilities]
-    # capabilities to selenoid
-    enableVideo: true
-    enableVNC: true
-    enableLog: true
+    selenoid___options: {'enableVideo': True, 'enableVNC': True, 'enableLog': True}
 
     [Server]
     enabled: true            --> MANDATORY
@@ -68,7 +66,7 @@ class Selenoid(object):
         self.logs_directory = kwargs.get('logs_dir', DriverWrappersPool.logs_directory)
         self.output_directory = kwargs.get('output_dir', DriverWrappersPool.output_directory)
         self.browser_remote = driver_wrapper.config.getboolean_optional('Server', 'enabled', False)
-        self.browser = driver_wrapper.driver.desired_capabilities['browserName']
+        self.browser = driver_wrapper.driver.capabilities['browserName']
 
         if self.browser_remote:
             self.session_id = driver_wrapper.driver.session_id
@@ -210,6 +208,18 @@ class Selenoid(object):
                         return True
         return False
 
+    def get_selenoid_option(self, option_name):
+        """
+        Get selenoid option value from configured capabilities
+        :param option_name: option name
+        :returns: option value
+        """
+        try:
+            option_value = literal_eval(self.driver_wrapper.config.get('Capabilities', 'selenoid:options'))[option_name]
+        except Exception:
+            option_value = None
+        return option_value
+
     def download_session_video(self, scenario_name, timeout=5):
         """
         download the execution video file if the scenario fails or the video is enabled,
@@ -220,8 +230,7 @@ class Selenoid(object):
         :param timeout: threshold until the video file is downloaded
         """
         # Download video only in linux nodes with video enabled
-        if (self.driver_wrapper.get_driver_platform().lower() != 'linux' or
-                not self.driver_wrapper.config.getboolean_optional('Capabilities', 'enableVideo')):
+        if self.driver_wrapper.get_driver_platform() != 'linux' or not self.get_selenoid_option('enableVideo'):
             return
 
         path_file = os.path.join(self.videos_directory, '%s.%s' % (scenario_name, MP4_EXTENSION))
@@ -246,8 +255,7 @@ class Selenoid(object):
         :param timeout: threshold until the log file is downloaded
         """
         # Download logs only in linux nodes with logs enabled
-        if (self.driver_wrapper.get_driver_platform().lower() != 'linux' or
-                not self.driver_wrapper.config.getboolean_optional('Capabilities', 'enableLog')):
+        if self.driver_wrapper.get_driver_platform() != 'linux' or not self.get_selenoid_option('enableLog'):
             return
 
         path_file = os.path.join(self.logs_directory, '%s_ggr.%s' % (scenario_name, LOG_EXTENSION))
