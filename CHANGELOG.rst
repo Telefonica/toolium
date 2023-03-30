@@ -476,7 +476,7 @@ v1.2.0
 
 .. code:: console
 
-    $ Config_environment=android nosetests web/tests/test_web.py
+    $ Config_environment=android nose2 web/tests/test_web.py
 
 - Behave user property 'env' is deprecated, use 'Config_environment' instead:
 

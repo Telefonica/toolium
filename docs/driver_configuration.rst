@@ -24,11 +24,11 @@ different properties files are used for different environments, they can be sele
 Toolium configuration will be loaded from :code:`conf/properties.cfg`, :code:`conf/android-properties.cfg` and
 :code:`local-android-properties.cfg` files:
 
-Nose:
+Nose2:
 
 .. code:: console
 
-    $ TOOLIUM_CONFIG_ENVIRONMENT=android nosetests web/tests/test_web.py
+    $ TOOLIUM_CONFIG_ENVIRONMENT=android nose2 web/tests/test_web.py
 
 Pytest:
 
