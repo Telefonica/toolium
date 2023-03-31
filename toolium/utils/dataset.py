@@ -37,9 +37,10 @@ base_file_path = ''
 
 # Global variables used in map_param replacements
 
-# Language terms and project config are not set by toolium, they must be set from test project
+# Language terms, country and project config are not set by toolium, they must be set from test project
 language = None
 language_terms = None
+country = None
 project_config = None
 # Toolium config and behave context are set when toolium before_all method is called in behave tests
 toolium_config = None
@@ -65,7 +66,7 @@ def replace_param(param, language='es', infer_param_type=True):
         [B] Generates a blank space
         [UUID] Generates a v4 UUID
         [RANDOM] Generates a random value
-        [RANDOM_PHONE_NUMBER] Generates a random phone number following the pattern +34654XXXXXX
+        [RANDOM_PHONE_NUMBER] Generates a random phone number following the pattern +34654XXXXXX, using the language and country specified in dataset.language and dataset.country
         [TIMESTAMP] Generates a timestamp from the current time
         [DATETIME] Generates a datetime from the current time
         [NOW] Similar to DATETIME without milliseconds; the format depends on the language

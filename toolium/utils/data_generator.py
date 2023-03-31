@@ -110,13 +110,17 @@ class DataGenerator(object):
     def get_locale():
         """
         Return the locale.
-        If property is not defined, 'es_ES' is set.
+        If language and country properties are not defined, 'es_ES' is set.
         """
-        try:
-            from toolium.utils.dataset import map_param
-            return f"{map_param('[CONF:LANG]')}_{map_param('[CONF:COUNTRY]')}"
-        except Exception:
-            return 'es_ES'
+        from toolium.utils.dataset import language, country
+        locale = 'es_ES'
+        if language and ('-' in language or '_' in language):
+            # When language contain the complete locale value
+            locale = language.replace('-', '_')
+            locale = f"{locale.split('_')[0]}_{locale.split('_')[1].upper()}"
+        elif language and country:
+            locale = f'{language}_{country.upper()}'
+        return locale
 
     @staticmethod
     def is_valid_postcode(provider, postal_code):
