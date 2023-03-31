@@ -33,7 +33,7 @@ The driver wrapper contains the driver instance, that can be used as a regular d
 
 .. code-block:: python
 
-    second_wrapper.driver.find_element_by_xpath('//form')
+    second_wrapper.driver.find_element(BY.XPATH, '//form')
 
 To use the second driver in page objects and their elements, pass the driver wrapper to the page object constructor:
 
