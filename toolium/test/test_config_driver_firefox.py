@@ -273,6 +273,27 @@ def test_create_remote_driver_firefox(webdriver_mock, config, utils):
 
 @mock.patch('toolium.config_driver.webdriver')
 def test_create_remote_driver_firefox_with_version_and_platform(webdriver_mock, config, utils):
+    config.set('Driver', 'type', 'firefox-50-on-linux')
+    server_url = 'http://10.20.30.40:5555'
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
+    DriverWrappersPool.output_directory = ''
+    expected_capabilities = DEFAULT_CAPABILITIES.copy()
+    expected_capabilities['browserVersion'] = '50'
+    expected_capabilities['platformName'] = 'linux'
+
+    config_driver._create_remote_driver()
+
+    # Check that firefox options contain expected capabilities
+    args, kwargs = webdriver_mock.Remote.call_args
+    options = kwargs['options']
+    assert isinstance(options, Options)
+    assert options.capabilities == expected_capabilities
+    webdriver_mock.Remote.assert_called_once_with(command_executor=f'{server_url}/wd/hub', options=options)
+
+
+@mock.patch('toolium.config_driver.webdriver')
+def test_create_remote_driver_firefox_with_version_and_platform_uppercase(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'firefox-50-on-LINUX')
     server_url = 'http://10.20.30.40:5555'
     utils.get_server_url.return_value = server_url
@@ -280,7 +301,7 @@ def test_create_remote_driver_firefox_with_version_and_platform(webdriver_mock, 
     DriverWrappersPool.output_directory = ''
     expected_capabilities = DEFAULT_CAPABILITIES.copy()
     expected_capabilities['browserVersion'] = '50'
-    expected_capabilities['platformName'] = 'LINUX'
+    expected_capabilities['platformName'] = 'linux'
 
     config_driver._create_remote_driver()
 

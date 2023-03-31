@@ -57,7 +57,7 @@ class VisualTest(object):
 
         # Update baseline with real platformVersion value
         if '{platformVersion}' in self.driver_wrapper.baseline_name:
-            platform_version = self.driver_wrapper.driver.desired_capabilities['platformVersion']
+            platform_version = self.driver_wrapper.driver.capabilities['platformVersion']
             baseline_name = self.driver_wrapper.baseline_name.replace('{platformVersion}', platform_version)
             self.driver_wrapper.baseline_name = baseline_name
             self.driver_wrapper.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,

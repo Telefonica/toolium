@@ -72,7 +72,7 @@ def test_update_visual_baseline_platform_version(driver_wrapper):
     # Configure baseline and driver mock
     driver_wrapper.config.set('VisualTests', 'baseline_name', 'ios_{PlatformVersion}')
     driver_wrapper.driver = mock.MagicMock()
-    driver_wrapper.driver.desired_capabilities.__getitem__.return_value = '9.3'
+    driver_wrapper.driver.capabilities.__getitem__.return_value = '9.3'
 
     driver_wrapper.configure_visual_baseline()
     driver_wrapper.update_visual_baseline()
@@ -86,7 +86,7 @@ def test_update_visual_baseline_version(driver_wrapper):
     # Configure baseline and driver mock
     driver_wrapper.config.set('VisualTests', 'baseline_name', 'chrome_{Version}')
     driver_wrapper.driver = mock.MagicMock()
-    driver_wrapper.driver.desired_capabilities.__getitem__.return_value = '51.0.2704.103'
+    driver_wrapper.driver.capabilities.__getitem__.return_value = '51.0.2704.103'
 
     driver_wrapper.configure_visual_baseline()
     driver_wrapper.update_visual_baseline()
