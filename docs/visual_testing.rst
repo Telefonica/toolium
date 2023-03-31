@@ -56,7 +56,7 @@ or
 
 .. code-block:: python
 
-    form_element = self.driver.find_element_by_xpath('//form')
+    form_element = self.driver.find_element(BY.XPATH, '//form')
     self.assert_screenshot(form_element, screenshot_name)
 
 * Comparing a single element, represented by its locator
