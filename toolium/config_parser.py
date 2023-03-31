@@ -173,9 +173,9 @@ class ExtendedConfigParser(ConfigParser):
 
     # Overwrite ConfigParser methods to allow colon in options names
     # To set a config property with colon in name
-    #    goog:loggingPrefs = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
+    #    selenoid:options = "{'enableVideo': True}"
     # configure properties.cfg with:
-    #    goog___loggingPrefs: {'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}
+    #    selenoid___options: {'enableVideo': True}
 
     def _encode_option(self, option):
         return option.replace(':', '___')

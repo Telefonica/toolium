@@ -133,6 +133,29 @@ def test_get_chrome_options_binary(config, utils):
     assert options.binary_location == expected_binary_location
 
 
+def test_get_chrome_options_additional(config, utils):
+    config.add_section('Chrome')
+    config.set('Chrome', 'options',
+               "{'excludeSwitches': ['enable-automation'], 'perfLoggingPrefs': {'enableNetwork': True}}")
+    config_driver = ConfigDriver(config, utils)
+    expected_arguments = []
+    expected_capabilities = DEFAULT_CAPABILITIES
+    expected_experimental_options = {
+        'excludeSwitches': ['enable-automation'],
+        'perfLoggingPrefs': {'enableNetwork': True}
+    }
+    expected_extensions_len = 0
+    expected_binary_location = ''
+
+    options = config_driver._get_chrome_options()
+
+    assert options.arguments == expected_arguments
+    assert options.capabilities == expected_capabilities
+    assert options.experimental_options == expected_experimental_options
+    assert len(options.extensions) == expected_extensions_len
+    assert options.binary_location == expected_binary_location
+
+
 def test_get_chrome_options_headless(config, utils):
     config.set('Driver', 'headless', 'true')
     config_driver = ConfigDriver(config, utils)

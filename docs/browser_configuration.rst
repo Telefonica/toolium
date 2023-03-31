@@ -117,17 +117,6 @@ For example, to open firefox in a private browsing mode::
 Chrome
 ~~~~~~
 
-**Chrome section**
-
-When Chrome is installed in a non-default location, configure the Chrome binary path in *[Chrome]* configuration
-section::
-
-    [Driver]
-    type: chrome
-
-    [Chrome]
-    binary: /usr/local/chrome_beta/chrome
-
 **ChromePreferences section**
 
 To configure `Chrome preferences <https://cs.chromium.org/chromium/src/chrome/common/pref_names.cc>`_, create a
@@ -194,32 +183,26 @@ replacing ':' with '___' in the key name::
 
     [Capabilities]
     goog___loggingPrefs: {'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}
-    goog___chromeOptions: {'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False}
 
-In fact, all the settings in above Chrome sections can be also configured in *goog___chromeOptions*:
+**Chrome section**
 
-- Chrome section::
+Additional `Chrome Options <https://chromedriver.chromium.org/capabilities#h.p_ID_102>`_ can be configured in
+*[Chrome]* configuration section::
 
-    [Capabilities]
-    goog___chromeOptions: {'binary': '/usr/local/chrome_beta/chrome'}
+    [Driver]
+    type: chrome
 
-- ChromePreferences section::
+    [Chrome]
+    options: {'excludeSwitches': ['enable-automation'], 'perfLoggingPrefs': {'enableNetwork': True}}
 
-    [Capabilities]
-    goog___chromeOptions: {'prefs': {'download.default_directory': 'C:\tmp'}}
+When Chrome is installed in a non-default location, configure the Chrome binary path in *[Chrome]* configuration
+section::
 
-- ChromeArguments section::
+    [Driver]
+    type: chrome
 
-    [Capabilities]
-    goog___chromeOptions: {'args': {'user-data-dir': 'C:\Users\USERNAME\AppData\Local\Google\Chrome\User Data'}}
-
-- ChromeMobileEmulation section::
-
-    [Capabilities]
-    goog___chromeOptions: {'mobileEmulation': {'deviceName': 'Google Nexus 5'}}
-
-In case of defining the same setting both in its dedicated section and in the capabilities section, the dedicated
-section value will be used.
+    [Chrome]
+    binary: /usr/local/chrome_beta/chrome
 
 Driver Download
 ---------------

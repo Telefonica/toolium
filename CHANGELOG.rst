@@ -20,6 +20,8 @@ v3.0.0
 - Now `gecko_driver_path`, `chrome_driver_path`, `explorer_driver_path` and `edge_driver_path` config properties
   in [Driver] section are optional, due to new SeleniumManager feature, that downloads drivers automatically
 - New optional config property `safari_driver_path` in [Driver] section to configure Safari driver
+- New optional config property `options` in [Chromer] section to configure Chrome options instead of using old
+  property `goog:chromeOptions` in [Capabilities] section.
 - Update [RANDOM_PHONE_NUMBER] replacement using new `DataGenerator` class
 
 v2.7.0
