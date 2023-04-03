@@ -23,6 +23,9 @@ v3.0.0
 - New optional config property `options` in [Chromer] section to configure Chrome options instead of using old
   property `goog:chromeOptions` in [Capabilities] section.
 - Update [RANDOM_PHONE_NUMBER] replacement using new `DataGenerator` class
+- Remove deprecated parameter `context` from `map_param` and POEditor methods
+- Remove deprecated config property `restart_driver_fail` in [Driver] section
+- Remove deprecated environment variables `Config_environment` and `env`
 
 v2.7.0
 ------

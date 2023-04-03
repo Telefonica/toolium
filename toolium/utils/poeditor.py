@@ -73,17 +73,13 @@ ENDPOINT_POEDITOR_DOWNLOAD_FILE = "v2/download/file"
 logger = logging.getLogger(__name__)
 
 
-def download_poeditor_texts(context=None, file_type='json'):
+def download_poeditor_texts(file_type='json'):
     """
     Executes all steps to download texts from POEditor and saves them to a file in output dir
 
-    :param context: behave context (deprecated)
     :param file_type: file type (only json supported)
     :return: N/A
     """
-    if context:
-        logger.warning('Deprecated context parameter has been sent to download_poeditor_texts method. Please, configure'
-                       ' dataset global variables instead of passing context to download_poeditor_texts.')
     project_info = get_poeditor_project_info_by_name()
     language_codes = get_poeditor_language_codes(project_info)
     language = get_valid_lang(language_codes)
@@ -91,9 +87,6 @@ def download_poeditor_texts(context=None, file_type='json'):
     save_downloaded_file(poeditor_terms)
     # Save terms in dataset to be used in [POE:] map_param replacements
     dataset.poeditor_terms = poeditor_terms
-    if context:
-        # Save terms in context for backwards compatibility
-        context.poeditor_export = dataset.poeditor_terms
 
 
 def get_poeditor_project_info_by_name(project_name=None):
@@ -138,24 +131,17 @@ def get_poeditor_language_codes(project_info):
     return language_codes
 
 
-def search_terms_with_string(context=None, lang=None):
+def search_terms_with_string(lang=None):
     """
     Saves POEditor terms for a given existing language in that project
 
-    :param context: behave context (deprecated)
     :param lang: a valid language existing in that POEditor project
     :return: N/A (saves it to context.poeditor_terms)
     """
-    if context:
-        logger.warning('Deprecated context parameter has been sent to search_terms_with_string method. Please, '
-                       'configure dataset global variables instead of passing context to search_terms_with_string.')
     project_info = get_poeditor_project_info_by_name()
     language_codes = get_poeditor_language_codes(project_info)
     language = get_valid_lang(language_codes, lang)
     dataset.poeditor_terms = get_all_terms(project_info, language)
-    if context:
-        # Save terms in context for backwards compatibility
-        context.poeditor_terms = dataset.poeditor_terms
 
 
 def export_poeditor_project(project_info, lang, file_type):
@@ -298,16 +284,10 @@ def get_all_terms(project_info, lang):
     return terms
 
 
-def load_poeditor_texts(context=None):
+def load_poeditor_texts():
     """
     Download POEditor texts and save in output folder if the config exists or use previously downloaded texts
-
-    :param context: behave context (deprecated parameter)
     """
-    if context:
-        logger.warning('Deprecated context parameter has been sent to load_poeditor_texts method. Please, '
-                       'configure POEditor global variables instead of passing context to load_poeditor_texts.')
-
     if get_poeditor_api_token():
         # Try to get poeditor mode param from toolium config first
         poeditor_mode = dataset.toolium_config.get_optional('TestExecution', 'poeditor_mode')
@@ -325,13 +305,10 @@ def load_poeditor_texts(context=None):
 
             with open(file_path, 'r') as f:
                 dataset.poeditor_terms = json.load(f)
-                if context:
-                    # Workaround for backwards compatibility
-                    context.poeditor_export = dataset.poeditor_terms
                 last_mod_time = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(file_path)))
                 logger.info('Using local POEditor file "%s" with date: %s' % (file_path, last_mod_time))
         else:  # without mode configured or mode = 'online'
-            download_poeditor_texts(context)
+            download_poeditor_texts()
     else:
         logger.info("POEditor is not configured")
 

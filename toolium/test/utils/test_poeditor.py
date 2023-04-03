@@ -69,17 +69,3 @@ def test_load_poeditor_texts_without_api_token():
 
     load_poeditor_texts()
     poeditor.logger.info.assert_called_with("POEditor is not configured")
-
-
-def test_load_poeditor_texts_without_api_token_deprecated():
-    """
-    Verification of POEditor texts load abortion when api_token is not configured and deprecated message is logged
-    """
-    context = mock.MagicMock()
-    poeditor.logger = mock.MagicMock()
-
-    load_poeditor_texts(context)
-    poeditor.logger.info.assert_called_with("POEditor is not configured")
-    poeditor.logger.warning.assert_called_with("Deprecated context parameter has been sent to load_poeditor_texts "
-                                               "method. Please, configure POEditor global variables instead of passing "
-                                               "context to load_poeditor_texts.")

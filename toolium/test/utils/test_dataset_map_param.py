@@ -157,22 +157,6 @@ def test_a_context_param_with_dots():
     assert expected_att == result_att
 
 
-def test_a_context_param_deprecated():
-    """
-    Verification of a mapped parameter as CONTEXT and check that deprecated message is logged
-    """
-    context = mock.MagicMock()
-    context.attribute = "attribute value"
-    dataset.logger = mock.MagicMock()
-
-    result_att = map_param("[CONTEXT:attribute]", context)
-    expected_att = "attribute value"
-    assert expected_att == result_att
-    dataset.logger.warning.assert_called_with("Deprecated context parameter has been sent to map_param method. Please, "
-                                              "configure dataset global variables instead of passing context to "
-                                              "map_param.")
-
-
 def test_a_poe_param_single_result():
     """
     Verification of a POE mapped parameter with a single result for a reference
@@ -187,28 +171,6 @@ def test_a_poe_param_single_result():
     result = map_param('[POE:home.tv.mute]')
     expected = "Ahora la tele está silenciada"
     assert result == expected
-
-
-def test_a_poe_param_single_result_deprecated():
-    """
-    Verification of a POE mapped parameter with a single result for a reference
-    """
-    context = mock.MagicMock()
-    context.poeditor_export = [
-        {
-            "term": "Poniendo mute",
-            "definition": "Ahora la tele está silenciada",
-            "reference": "home:home.tv.mute",
-        }
-    ]
-    dataset.logger = mock.MagicMock()
-
-    result = map_param('[POE:home.tv.mute]', context)
-    expected = "Ahora la tele está silenciada"
-    assert result == expected
-    dataset.logger.warning.assert_called_with("Deprecated context parameter has been sent to map_param method. Please, "
-                                              "configure dataset global variables instead of passing context to "
-                                              "map_param.")
 
 
 def test_a_poe_param_no_result_assertion():
