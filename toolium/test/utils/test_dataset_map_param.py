@@ -91,6 +91,26 @@ def test_a_conf_param():
     assert expected == result
 
 
+def test_a_conf_param_unknown():
+    """
+    Verification of an unknown mapped parameter as CONF
+    """
+    dataset.project_config = {"service": {"port": 80}}
+    with pytest.raises(Exception) as excinfo:
+        map_param("[CONF:unknown]")
+    assert '"Mapping chain not found in the given configuration dictionary. \'unknown\'"' == str(excinfo.value)
+
+
+def test_a_conf_param_without_project_config():
+    """
+    Verification of a mapped parameter as CONF when project_config is None
+    """
+    dataset.project_config = None
+    result = map_param("[CONF:unknown]")
+    expected = "[CONF:unknown]"
+    assert expected == result
+
+
 def test_a_context_param():
     """
     Verification of a mapped parameter as CONTEXT

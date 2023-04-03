@@ -19,6 +19,7 @@ limitations under the License.
 import datetime
 from uuid import UUID
 
+from toolium.utils import dataset
 from toolium.utils.dataset import replace_param
 
 
@@ -136,6 +137,15 @@ def test_replace_param_random_phone_number_with_type_inference_forcing_str():
     assert type(param) == str
     assert len(param) == 12
     assert param.startswith('+34')
+
+
+def test_replace_param_random_phone_number_for_given_locale():
+    dataset.language = 'pt'
+    dataset.country = 'BR'
+    param = replace_param('[RANDOM_PHONE_NUMBER]', infer_param_type=False)
+    assert type(param) == str
+    assert len(param) == 13
+    assert param.startswith('+55')
 
 
 def test_replace_param_timestamp_with_type_inference():
