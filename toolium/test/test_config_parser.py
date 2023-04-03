@@ -100,16 +100,16 @@ def test_get(config):
 
 def test_get_with_colon_in_option(config):
     section = 'Capabilities'
-    option = 'goog:loggingPrefs'
-    value = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
+    option = 'selenoid:options'
+    value = "{'enableVNC': True, 'enableVideo': True}"
     assert value == config.get(section, option)
 
 
 def test_set_with_colon_in_option(config):
     section = 'Capabilities'
-    option = 'goog:loggingPrefs'
-    orig_value = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
-    new_value = "{'performance': 'ALL', 'browser': 'ALL'}"
+    option = 'selenoid:options'
+    orig_value = "{'enableVNC': True, 'enableVideo': True}"
+    new_value = "{'enableVNC': False}"
 
     # Check previous value
     assert orig_value == config.get(section, option)
@@ -121,22 +121,22 @@ def test_set_with_colon_in_option(config):
 
 def test_options_with_colon_in_option(config):
     section = 'Capabilities'
-    options = ['goog:loggingPrefs', 'goog:chromeOptions']
+    options = ['selenoid:options', 'cloud:options']
     assert options == config.options(section)
 
 
 def test_has_option_with_colon_in_option(config):
     section = 'Capabilities'
-    option = 'goog:loggingPrefs'
-    wrong_option = 'goog:loggingPrefsWrong'
+    option = 'selenoid:options'
+    wrong_option = 'selenoid:optionsWrong'
     assert config.has_option(section, option) is True
     assert config.has_option(section, wrong_option) is False
 
 
 def test_remove_option_with_colon_in_option(config):
     section = 'Capabilities'
-    option = 'goog:loggingPrefs'
-    wrong_option = 'goog:loggingPrefsWrong'
+    option = 'selenoid:options'
+    wrong_option = 'selenoid:optionsWrong'
     assert config.remove_option(section, option) is True
     assert config.remove_option(section, wrong_option) is False
     assert config.get_optional(section, option, default=None) is None
@@ -144,8 +144,7 @@ def test_remove_option_with_colon_in_option(config):
 
 def test_items_with_colon_in_option(config):
     section = 'Capabilities'
-    items = [('goog:loggingPrefs', "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"),
-             ('goog:chromeOptions', "{'excludeSwitches': ['enable-automation'], 'useAutomationExtension': False}")]
+    items = [('selenoid:options', "{'enableVNC': True, 'enableVideo': True}"), ('cloud:options', "{'name': 'test'}")]
     assert items == config.items(section)
 
 
@@ -175,10 +174,10 @@ def test_deepcopy(config):
 
 def test_deepcopy_and_modify_option_with_colon(config):
     section = 'Capabilities'
-    configured_option = 'goog___loggingPrefs'
-    option = 'goog:loggingPrefs'
-    orig_value = "{'performance': 'ALL', 'browser': 'ALL', 'driver': 'ALL'}"
-    new_value = "{'performance': 'ALL', 'browser': 'ALL'}"
+    configured_option = 'selenoid___options'
+    option = 'selenoid:options'
+    orig_value = "{'enableVNC': True, 'enableVideo': True}"
+    new_value = "{'enableVNC': False}"
 
     # Check previous value
     assert orig_value == config.get(section, option)

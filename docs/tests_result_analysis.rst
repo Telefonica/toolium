@@ -9,8 +9,8 @@ nose, pytest, behave, ...). But Toolium provides some useful features to analyze
 Logs
 ----
 
-Toolium internal logs are written in *output/toolium.log*. Your tests logs can be also written in the same file using the
-already existing logger instance:
+Toolium internal logs are written in *output/toolium.log*. Your tests logs can be also written in the same file using
+the already existing logger instance:
 
 .. code-block:: python
 
@@ -62,24 +62,31 @@ the driver type, the webdriver will contain different log types, for instance, *
 *performance*, *profiler*, *logcat*, *bugreport*, etc.
 
 By default, when a test fails, toolium will download all log types available in current webdriver. But it can be also
-configured to download only a set of log types setting the property `log_types <https://toolium.readthedocs.io/en/latest/remote_configuration.html#log-types>`_
-in *[Server]* section in properties.cfg file ::
+configured to download only a set of log types setting the property
+`log_types <https://toolium.readthedocs.io/en/latest/remote_configuration.html#log-types>`_ in *[Server]* section in
+properties.cfg file ::
 
     [Server]
     log_types: client,server
 
-Notice that if using Chrome, log types can be enabled in *capabilities* section ::
+Notice that if using Chrome, log types can be enabled in *[Capabilities]* section and performance log can be configured
+in *[Chrome]* section::
 
     [Capabilities]
     goog___loggingPrefs: {'browser':'ALL', 'driver': 'ALL', 'performance': 'ALL'}
 
-Also take into account that, to enable logs in GGR, the following capability must be configured ::
+    [Chrome]
+    options: {'perfLoggingPrefs': {'enableNetwork': True}}
+
+Also take into account that, to enable logs in GGR, the following capability must be configured in *[Capabilities]*
+section ::
 
     [Capabilities]
     selenoid___options: {'enableLog': True}
 
-In order to download webdriver logs even if the test passes, configure the property `logs_enabled <https://toolium.readthedocs.io/en/latest/remote_configuration.html#logs-enabled>`_
-in *[Server]* section in properties.cfg file ::
+In order to download webdriver logs even if the test passes, configure the property
+`logs_enabled <https://toolium.readthedocs.io/en/latest/remote_configuration.html#logs-enabled>`_ in *[Server]* section
+in properties.cfg file ::
 
     [Server]
     logs_enabled: true

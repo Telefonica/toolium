@@ -349,6 +349,7 @@ class ConfigDriver(object):
         # Add Chrome preferences, arguments, extensions and mobile emulation options
         self._add_chrome_options(options, 'prefs')
         self._add_chrome_options(options, 'mobileEmulation')
+        self._add_chrome_additional_options(options)
         self._add_chrome_arguments(options)
         self._add_chrome_extensions(options)
 
@@ -364,8 +365,10 @@ class ConfigDriver(object):
         :param options: Chrome options object
         :param option_name: Chrome option name
         """
-        options_conf = {'prefs': {'section': 'ChromePreferences', 'message': 'preference'},
-                        'mobileEmulation': {'section': 'ChromeMobileEmulation', 'message': 'mobile emulation option'}}
+        options_conf = {
+            'prefs': {'section': 'ChromePreferences', 'message': 'preference'},
+            'mobileEmulation': {'section': 'ChromeMobileEmulation', 'message': 'mobile emulation option'}
+        }
         option_value = dict()
         try:
             for key, value in dict(self.config.items(options_conf[option_name]['section'])).items():
@@ -375,6 +378,20 @@ class ConfigDriver(object):
                 options.add_experimental_option(option_name, option_value)
         except NoSectionError:
             pass
+
+    def _add_chrome_additional_options(self, options):
+        """Add Chrome additional options from properties file
+
+        :param options: Chrome options object
+        """
+        chrome_options = self.config.get_optional('Chrome', 'options')
+        if options:
+            try:
+                for key, value in ast.literal_eval(chrome_options).items():
+                    self.logger.debug("Added Chrome additional option: %s = %s", key, value)
+                    options.add_experimental_option(key, value)
+            except Exception as exc:
+                self.logger.warning(f'Chrome options "{chrome_options}" can not be added: {exc}')
 
     def _add_chrome_arguments(self, options):
         """Add Chrome arguments from properties file
