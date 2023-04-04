@@ -57,15 +57,6 @@ def driver_wrapper():
     environment_properties = []
 
 
-def test_configure_properties_deprecated(driver_wrapper):
-    environment_properties.append('Config_prop_filenames')
-    os.environ['Config_prop_filenames'] = 'properties.cfg'
-    driver_wrapper.configure_properties()
-    assert driver_wrapper.config.get('Driver', 'type') == 'firefox'  # get last value
-    assert driver_wrapper.config.get_optional('Driver', 'implicitly_wait') == '5'  # only in properties
-    assert driver_wrapper.config.get_optional('AppiumCapabilities', 'app') is None  # only in android
-
-
 def test_configure_properties(driver_wrapper):
     environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
     os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'properties.cfg'

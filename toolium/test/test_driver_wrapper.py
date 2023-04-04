@@ -156,20 +156,6 @@ def test_configure_environment(driver_wrapper):
     assert driver_wrapper.config.get('Driver', 'type') == 'android'
 
 
-def test_configure_environment_deprecated_property(driver_wrapper):
-    # Check previous values
-    assert driver_wrapper.config.get('Driver', 'type') == 'firefox'
-
-    # Change environment and try to configure again
-    environment_properties.append('Config_environment')
-    os.environ['Config_environment'] = 'android'
-    config_files = DriverWrappersPool.initialize_config_files(ConfigFiles())
-    driver_wrapper.configure(config_files)
-
-    # Check that configuration has been initialized
-    assert driver_wrapper.config.get('Driver', 'type') == 'android'
-
-
 @mock.patch('toolium.driver_wrapper.ConfigDriver.create_driver')
 def test_connect(create_driver, driver_wrapper):
     # Mock data
@@ -280,45 +266,39 @@ def test_is_maximizable(driver_type, is_maximizable, driver_wrapper):
     assert driver_wrapper.is_maximizable() == is_maximizable
 
 
-# (reuse_driver, reuse_driver_session, restart_driver_after_failure, restart_driver_fail,
+# (reuse_driver, reuse_driver_session, restart_driver_after_failure,
 #  reuse_driver_from_tags, scope, test_passed, expected_should_reuse_driver)
 should_be_reused = (
-    ('true', 'true', 'true', 'true', True, 'function', True, True),  # all = true
+    ('true', 'true', 'true', True, 'function', True, True),  # all = true
     # reuse_driver
-    ('true', 'false', 'false', 'false', False, 'function', True, True),  # reuse = true, function
-    ('true', 'false', 'false', 'false', False, 'module', True, False),  # reuse = true, module
-    ('true', 'false', 'false', 'false', False, 'session', True, False),  # reuse = true, session
-    ('false', 'false', 'false', 'false', False, 'function', True, False),  # reuse = false
+    ('true', 'false', 'false', False, 'function', True, True),  # reuse = true, function
+    ('true', 'false', 'false', False, 'module', True, False),  # reuse = true, module
+    ('true', 'false', 'false', False, 'session', True, False),  # reuse = true, session
+    ('false', 'false', 'false', False, 'function', True, False),  # reuse = false
     # restart_driver_after_failure
-    ('true', 'false', 'false', 'false', False, 'function', True, True),  # restart = false, test passed
-    ('true', 'false', 'true', 'false', False, 'function', True, True),  # restart = true, test passed
-    ('true', 'false', 'false', 'false', False, 'function', False, True),  # restart = false, test failed
-    ('true', 'false', 'true', 'false', False, 'function', False, False),  # restart = true, test failed
-    # restart_driver_fail (deprecated)
-    ('true', 'false', 'false', 'false', False, 'function', True, True),  # restart = false, test passed
-    ('true', 'false', 'false', 'true', False, 'function', True, True),  # restart = true, test passed
-    ('true', 'false', 'false', 'false', False, 'function', False, True),  # restart = false, test failed
-    ('true', 'false', 'false', 'true', False, 'function', False, False),  # restart = true, test failed
+    ('true', 'false', 'false', False, 'function', True, True),  # restart = false, test passed
+    ('true', 'false', 'true', False, 'function', True, True),  # restart = true, test passed
+    ('true', 'false', 'false', False, 'function', False, True),  # restart = false, test failed
+    ('true', 'false', 'true', False, 'function', False, False),  # restart = true, test failed
     # reuse_driver_session
-    ('false', 'true', 'false', 'false', False, 'function', True, True),  # reuse = true, function
-    ('false', 'true', 'false', 'false', False, 'module', True, True),  # reuse = true, module
-    ('false', 'true', 'false', 'false', False, 'session', True, False),  # reuse = true, session
+    ('false', 'true', 'false', False, 'function', True, True),  # reuse = true, function
+    ('false', 'true', 'false', False, 'module', True, True),  # reuse = true, module
+    ('false', 'true', 'false', False, 'session', True, False),  # reuse = true, session
     # reuse_driver_from_tags
-    ('false', 'false', 'false', 'false', True, 'function', True, True),  # reuse = true, function
-    ('false', 'false', 'false', 'false', True, 'module', True, False),  # reuse = true, module
-    ('false', 'false', 'false', 'false', True, 'session', True, False),  # reuse = true, session
+    ('false', 'false', 'false', True, 'function', True, True),  # reuse = true, function
+    ('false', 'false', 'false', True, 'module', True, False),  # reuse = true, module
+    ('false', 'false', 'false', True, 'session', True, False),  # reuse = true, session
 )
 
 
-@pytest.mark.parametrize("reuse_driver, reuse_driver_session, restart_driver_after_failure, restart_driver_fail, "
+@pytest.mark.parametrize("reuse_driver, reuse_driver_session, restart_driver_after_failure, "
                          "reuse_driver_from_tags, scope, test_passed, expected_should_reuse_driver", should_be_reused)
-def test_should_reuse_driver(reuse_driver, reuse_driver_session, restart_driver_after_failure, restart_driver_fail,
+def test_should_reuse_driver(reuse_driver, reuse_driver_session, restart_driver_after_failure,
                              reuse_driver_from_tags, scope, test_passed, expected_should_reuse_driver, driver_wrapper):
     # Set config properties
     driver_wrapper.config.set('Driver', 'reuse_driver', reuse_driver)
     driver_wrapper.config.set('Driver', 'reuse_driver_session', reuse_driver_session)
     driver_wrapper.config.set('Driver', 'restart_driver_after_failure', restart_driver_after_failure)
-    driver_wrapper.config.set('Driver', 'restart_driver_fail', restart_driver_fail)
 
     # Create context mock
     context = mock.MagicMock()

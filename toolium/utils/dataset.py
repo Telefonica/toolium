@@ -24,9 +24,11 @@ import os
 import random as r
 import re
 import string
+import uuid
+
 from ast import literal_eval
 from copy import deepcopy
-import uuid
+from inspect import isfunction
 from toolium.utils.data_generator import DataGenerator
 
 logger = logging.getLogger(__name__)
@@ -66,11 +68,13 @@ def replace_param(param, language='es', infer_param_type=True):
         [B] Generates a blank space
         [UUID] Generates a v4 UUID
         [RANDOM] Generates a random value
-        [RANDOM_PHONE_NUMBER] Generates a random phone number following the pattern +34654XXXXXX, using the language and country specified in dataset.language and dataset.country
+        [RANDOM_PHONE_NUMBER] Generates a random phone number following the pattern +34654XXXXXX, using the language
+            and country specified in dataset.language and dataset.country
         [TIMESTAMP] Generates a timestamp from the current time
         [DATETIME] Generates a datetime from the current time
         [NOW] Similar to DATETIME without milliseconds; the format depends on the language
-        [NOW(%Y-%m-%dT%H:%M:%SZ)] Same as NOW but using an specific format by the python strftime function of the datetime module
+        [NOW(%Y-%m-%dT%H:%M:%SZ)] Same as NOW but using an specific format by the python strftime function of the
+            datetime module
         [NOW + 2 DAYS] Similar to NOW but two days later
         [NOW - 1 MINUTES] Similar to NOW but one minute earlier
         [NOW(%Y-%m-%dT%H:%M:%SZ) - 7 DAYS] Similar to NOW but seven days before and with the indicated format
@@ -146,17 +150,17 @@ def _replace_param_type(param):
 
 def _find_param_date_expressions(param):
     """
-    Finds in a param one or several date expressions. 
+    Finds in a param one or several date expressions.
     For example, for a param like "it happened on [NOW - 1 MONTH] of the last year and will happen [TODAY('%d/%m')]",
     this method returns an array with two string elements: "[NOW - 1 MONTH]" and [TODAY('%d/%m')]"
     The kind of expressions to search are based on these rules:
     - expression is sorrounded by [ and ]
     - first word of the expression is either NOW or TODAY
-    - when first word is NOW, it can have an addtional format for the date between parenthesis, 
+    - when first word is NOW, it can have an addtional format for the date between parenthesis,
         like NOW(%Y-%m-%dT%H:%M:%SZ). The definition of the format is the same as considered by the
         python strftime function of the datetime module
-    - and optional offset can be given by indicating how many days, hours, etc.. to add or remove to the current datetime.
-        This part of the expression includes a +/- symbol plus a number and a unit
+    - and optional offset can be given by indicating how many days, hours, etc.. to add or remove to the current
+        datetime. This part of the expression includes a +/- symbol plus a number and a unit
 
     Some valid expressions are:
         [NOW]
@@ -191,14 +195,14 @@ def _replace_param_replacement(param, language):
         '[UUID]': str(uuid.uuid4()),
         # make sure random is not made up of digits only, by forcing the first char to be a letter
         '[RANDOM]': ''.join([r.choice(string.ascii_lowercase), *(r.choice(alphanums) for i in range(7))]),
-        '[RANDOM_PHONE_NUMBER]': DataGenerator().phone_number,
+        '[RANDOM_PHONE_NUMBER]': _get_random_phone_number,
         '[TIMESTAMP]': str(int(datetime.datetime.timestamp(datetime.datetime.utcnow()))),
         '[DATETIME]': str(datetime.datetime.utcnow()),
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),
         '[TODAY]': str(datetime.datetime.utcnow().strftime(date_day_format))
     }
-    
-    # append date expressions found in param to the replacement dict 
+
+    # append date expressions found in param to the replacement dict
     date_expressions = _find_param_date_expressions(param)
     for date_expr in date_expressions:
         replacements[date_expr] = _replace_param_date(date_expr, language)[0]
@@ -207,9 +211,15 @@ def _replace_param_replacement(param, language):
     param_replaced = False
     for key in replacements.keys():
         if key in new_param:
-            new_param = new_param.replace(key, replacements[key])
+            new_value = replacements[key]() if isfunction(replacements[key]) else replacements[key]
+            new_param = new_param.replace(key, new_value)
             param_replaced = True
     return new_param, param_replaced
+
+
+def _get_random_phone_number():
+    # Method to avoid executing data generator when it is not needed
+    return DataGenerator().phone_number
 
 
 def _replace_param_transform_string(param):
@@ -245,8 +255,8 @@ def _replace_param_date(param, language):
     Transform param value in a date after applying the specified delta.
     E.g. [TODAY - 2 DAYS], [NOW - 10 MINUTES]
     An specific format could be defined in the case of NOW this way: NOW('THEFORMAT')
-    where THEFORMAT is any valid format accepted by the python 
-    [datetime.strftime](https://docs.python.org/3/library/datetime.html#datetime.date.strftime) function 
+    where THEFORMAT is any valid format accepted by the python
+    [datetime.strftime](https://docs.python.org/3/library/datetime.html#datetime.date.strftime) function
 
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY
@@ -259,7 +269,7 @@ def _replace_param_date(param, language):
         now = datetime.datetime.utcnow()
         if not amount or not units:
             return now
-        the_amount = int(amount.replace(' ',''))
+        the_amount = int(amount.replace(' ', ''))
         the_units = units.lower()
         return now + datetime.timedelta(**dict([(the_units, the_amount)]))
 
@@ -349,34 +359,15 @@ def _infer_param_type(param):
     return new_param
 
 
-# Ignore flake8 warning until deprecated context parameter is removed
-# flake8: noqa: C901
-def map_param(param, context=None):
+def map_param(param):
     """
     Transform the given string by replacing specific patterns containing keys with their values,
     which can be obtained from the Behave context or from environment files or variables.
     See map_one_param function for a description of the available tags and replacement logic.
 
     :param param: string parameter
-    :param context: Behave context object (deprecated parameter)
     :return: string with the applied replacements
     """
-    if context:
-        logger.warning('Deprecated context parameter has been sent to map_param method. Please, configure dataset'
-                       ' global variables instead of passing context to map_param.')
-        global language, language_terms, project_config, toolium_config, poeditor_terms, behave_context
-        if hasattr(context, 'language'):
-            language = context.language
-        if hasattr(context, 'language_dict'):
-            language_terms = context.language_dict
-        if hasattr(context, 'project_config'):
-            project_config = context.project_config
-        if hasattr(context, 'toolium_config'):
-            toolium_config = context.toolium_config
-        if hasattr(context, 'poeditor_export'):
-            poeditor_terms = context.poeditor_export
-        behave_context = context
-
     if not isinstance(param, str):
         return param
 
@@ -394,7 +385,7 @@ def map_param(param, context=None):
 
     if mapped_param != param:
         # Calling to map_param recursively to replace parameters that include another parameters
-        mapped_param = map_param(mapped_param, context)
+        mapped_param = map_param(mapped_param)
 
     return mapped_param
 
@@ -566,7 +557,7 @@ def map_toolium_param(param, config):
         section = param.split("_", 1)[0]
         property_name = param.split("_", 1)[1]
     except IndexError:
-        msg = f"Invalid format in Toolium config param '{param}'. Valid format: 'Section_property'."
+        msg = f"Invalid format in Toolium config param '{param}'. Valid format: 'Section_option'."
         logger.error(msg)
         raise IndexError(msg)
 
@@ -589,7 +580,7 @@ def get_value_from_context(param, context):
     storage or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
     in the context storage or as a property of the context object whose name is last_request. In both cases, when found,
     "result" is considered (and resolved) as a property into the returned value.
-    
+
     There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
 
     context.storage['a'].b.c.d
@@ -625,7 +616,6 @@ def get_value_from_context(param, context):
     return value
 
 
-
 def get_message_property(param, language_terms, language_key):
     """
     Return the message for the given param, using it as a key in the list of language properties.
@@ -658,7 +648,7 @@ def get_translation_by_poeditor_reference(reference, poeditor_terms):
     :param poeditor_terms: poeditor terms
     :return: list of strings with the translations from POEditor or string with the translation if only one was found
     """
-    poeditor_config = project_config['poeditor'] if 'poeditor' in project_config else {}
+    poeditor_config = project_config['poeditor'] if project_config and 'poeditor' in project_config else {}
     key = poeditor_config['key_field'] if 'key_field' in poeditor_config else 'reference'
     search_type = poeditor_config['search_type'] if 'search_type' in poeditor_config else 'contains'
     # Get POEditor prefixes and add no prefix option

@@ -45,10 +45,6 @@ def before_all(context):
 
     # Get 'TOOLIUM_CONFIG_ENVIRONMENT' property from user input (e.g. -D TOOLIUM_CONFIG_ENVIRONMENT=ios)
     env = context.config.userdata.get('TOOLIUM_CONFIG_ENVIRONMENT')
-    # Deprecated: use TOOLIUM_CONFIG_ENVIRONMENT property
-    env = env if env else context.config.userdata.get('Config_environment')
-    # Deprecated: use TOOLIUM_CONFIG_ENVIRONMENT property
-    env = env if env else context.config.userdata.get('env')
     if env:
         os.environ['TOOLIUM_CONFIG_ENVIRONMENT'] = env
 

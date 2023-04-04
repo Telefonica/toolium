@@ -51,13 +51,6 @@ def driver_wrapper():
     environment_properties = []
 
 
-def test_configure_logger_deprecated(driver_wrapper):
-    environment_properties.append('Config_log_filename')
-    os.environ['Config_log_filename'] = 'logging.conf'
-    driver_wrapper.configure_logger()
-    assert logging.getLevelName(driver_wrapper.logger.getEffectiveLevel()) == 'DEBUG'
-
-
 def test_configure_logger(driver_wrapper):
     environment_properties.append('TOOLIUM_CONFIG_LOG_FILENAME')
     os.environ['TOOLIUM_CONFIG_LOG_FILENAME'] = 'logging.conf'

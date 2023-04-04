@@ -65,19 +65,11 @@ def test_before_all(create_and_configure_wrapper):
     assert context.config_files.config_log_filename is None
 
 
-properties = (
-    'TOOLIUM_CONFIG_ENVIRONMENT',
-    'Config_environment',
-    'env'
-)
-
-
-@pytest.mark.parametrize("property_name", properties)
 @mock.patch('toolium.behave.environment.create_and_configure_wrapper')
-def test_before_all_config_environment(create_and_configure_wrapper, property_name):
+def test_before_all_config_environment(create_and_configure_wrapper):
     # Create context mock
     context = mock.MagicMock()
-    context.config.userdata.get.side_effect = lambda x: 'os' if x == property_name else None
+    context.config.userdata.get.side_effect = lambda x: 'os' if x == 'TOOLIUM_CONFIG_ENVIRONMENT' else None
     context.config_files = ConfigFiles()
 
     before_all(context)

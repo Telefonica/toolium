@@ -197,23 +197,6 @@ def test_deepcopy_and_modify_option_with_colon(config):
     assert new_value == new_config.get(section, option)
 
 
-def test_update_properties_environ_deprecated(config):
-    section = 'AppiumCapabilities'
-    option = 'platformName'
-    orig_value = 'Android'
-    new_value = 'iOS'
-
-    # Check previous value
-    assert orig_value == config.get(section, option)
-
-    # Change system property and update config
-    os.environ['{}_{}'.format(section, option)] = new_value
-    config.update_properties(os.environ)
-
-    # Check the new config value
-    assert new_value == config.get(section, option)
-
-
 toolium_system_properties = (
     # Update value
     ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', 'iOS'),
