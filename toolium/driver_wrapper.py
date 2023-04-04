@@ -124,9 +124,6 @@ class DriverWrapper(object):
             self.config = ExtendedConfigParser.get_config_from_file(prop_filenames)
             self.config_properties_filenames = prop_filenames
 
-        # Override properties with system properties [Deprecated: use toolium system properties]
-        self.config.update_properties(os.environ)
-
         # Override properties with toolium system properties
         self.config.update_toolium_system_properties(os.environ)
 

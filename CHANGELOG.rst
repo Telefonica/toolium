@@ -9,7 +9,6 @@ v3.0.0
 - Add support for Python 3.11
 - Add support for Selenium 4
 - Add support for Appium-Python-Client 2
-- Remove support for lettuce tests
 - Visual testing comparison has changed
 
    | It only needs PIL library to compare images and generate the differences images
@@ -23,9 +22,10 @@ v3.0.0
 - New optional config property `options` in [Chromer] section to configure Chrome options instead of using old
   property `goog:chromeOptions` in [Capabilities] section.
 - Update [RANDOM_PHONE_NUMBER] replacement using new `DataGenerator` class
+- Remove support for lettuce tests
 - Remove deprecated parameter `context` from `map_param` and POEditor methods
 - Remove deprecated config property `restart_driver_fail` in [Driver] section
-- Remove deprecated environment variables `Config_environment` and `env`
+- Remove deprecated environment variables `Section_option`, `Config_environment` and `env`
 
 v2.7.0
 ------

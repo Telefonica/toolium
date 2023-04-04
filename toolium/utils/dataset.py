@@ -557,7 +557,7 @@ def map_toolium_param(param, config):
         section = param.split("_", 1)[0]
         property_name = param.split("_", 1)[1]
     except IndexError:
-        msg = f"Invalid format in Toolium config param '{param}'. Valid format: 'Section_property'."
+        msg = f"Invalid format in Toolium config param '{param}'. Valid format: 'Section_option'."
         logger.error(msg)
         raise IndexError(msg)
 
