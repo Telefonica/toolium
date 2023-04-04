@@ -20,12 +20,6 @@ import logging
 import os
 import re
 
-try:
-    from behave_pytest.hook import install_pytest_asserts
-except ImportError:
-    def install_pytest_asserts():
-        pass
-
 from toolium.utils import dataset
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
@@ -40,9 +34,6 @@ def before_all(context):
 
     :param context: behave context
     """
-    # Use pytest asserts if behave_pytest is installed
-    install_pytest_asserts()
-
     # Get 'TOOLIUM_CONFIG_ENVIRONMENT' property from user input (e.g. -D TOOLIUM_CONFIG_ENVIRONMENT=ios)
     env = context.config.userdata.get('TOOLIUM_CONFIG_ENVIRONMENT')
     if env:
