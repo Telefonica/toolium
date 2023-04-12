@@ -79,17 +79,6 @@ def test_create_driver_remote(config, utils):
 
 @pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 @mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_safari(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'safari')
-    utils.get_driver_name.return_value = 'safari'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_local_driver()
-    webdriver_mock.Safari.assert_called_once_with(desired_capabilities=DesiredCapabilities.SAFARI)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
 def test_create_local_driver_iexplore(webdriver_mock, config, utils):
     config.set('Driver', 'type', 'iexplore')
     config.set('Driver', 'explorer_driver_path', '/tmp/driver')
@@ -141,20 +130,6 @@ def test_create_local_driver_unknown_driver(config, utils):
     with pytest.raises(Exception) as excinfo:
         config_driver._create_local_driver()
     assert 'Unknown driver unknown' == str(excinfo.value)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_remote_driver_safari(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'safari')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'safari'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_remote_driver()
-    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                  desired_capabilities=DesiredCapabilities.SAFARI)
 
 
 @pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
