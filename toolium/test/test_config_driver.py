@@ -100,7 +100,6 @@ def test_create_local_driver_iexplore(webdriver_mock, config, utils):
     webdriver_mock.Ie.assert_called_once_with('/tmp/driver', capabilities=DesiredCapabilities.INTERNETEXPLORER)
 
 
-
 @pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 def test_create_local_driver_android(config, utils):
     config.set('Driver', 'type', 'android')
