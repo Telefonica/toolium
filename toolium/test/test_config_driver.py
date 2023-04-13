@@ -18,7 +18,6 @@ limitations under the License.
 
 import mock
 import pytest
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
