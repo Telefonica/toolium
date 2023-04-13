@@ -137,7 +137,7 @@ def test_create_remote_driver_iexplore(webdriver_mock, config, utils):
 
     config_driver._create_remote_driver()
 
-    # Check that edge options contain expected capabilities
+    # Check that internet explorer options contain expected capabilities
     args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
@@ -179,7 +179,7 @@ def test_create_remote_driver_iexplore_with_version_and_platform_uppercase(webdr
 
     config_driver._create_remote_driver()
 
-    # Check that edge options contain expected capabilities
+    # Check that internet explorer options contain expected capabilities
     args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
