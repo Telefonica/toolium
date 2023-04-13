@@ -100,17 +100,6 @@ def test_create_local_driver_iexplore(webdriver_mock, config, utils):
     webdriver_mock.Ie.assert_called_once_with('/tmp/driver', capabilities=DesiredCapabilities.INTERNETEXPLORER)
 
 
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_edge(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'edge')
-    config.set('Driver', 'edge_driver_path', '/tmp/driver')
-    utils.get_driver_name.return_value = 'edge'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_local_driver()
-    webdriver_mock.Edge.assert_called_once_with('/tmp/driver', capabilities=DesiredCapabilities.EDGE)
-
 
 @pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 def test_create_local_driver_android(config, utils):
@@ -181,20 +170,6 @@ def test_create_remote_driver_iexplore(webdriver_mock, config, utils):
     config_driver._create_remote_driver()
     webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                   desired_capabilities=DesiredCapabilities.INTERNETEXPLORER)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_remote_driver_edge(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'edge')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'edge'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_remote_driver()
-    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                  desired_capabilities=DesiredCapabilities.EDGE)
 
 
 @pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")

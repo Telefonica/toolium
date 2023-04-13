@@ -263,7 +263,7 @@ def test_create_remote_driver_firefox(webdriver_mock, config, utils):
 
     config_driver._create_remote_driver()
 
-    # Check that chrome options contain expected capabilities
+    # Check that firefox options contain expected capabilities
     args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
