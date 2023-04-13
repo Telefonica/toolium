@@ -76,39 +76,6 @@ def test_create_driver_remote(config, utils):
     assert driver == 'remote driver mock'
 
 
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-def test_create_local_driver_android(config, utils):
-    config.set('Driver', 'type', 'android')
-    utils.get_driver_name.return_value = 'android'
-    config_driver = ConfigDriver(config, utils)
-    config_driver._create_remote_driver = lambda: 'remote driver mock'
-
-    driver = config_driver._create_local_driver()
-    assert driver == 'remote driver mock'
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-def test_create_local_driver_ios(config, utils):
-    config.set('Driver', 'type', 'ios')
-    utils.get_driver_name.return_value = 'ios'
-    config_driver = ConfigDriver(config, utils)
-    config_driver._create_remote_driver = lambda: 'remote driver mock'
-
-    driver = config_driver._create_local_driver()
-    assert driver == 'remote driver mock'
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-def test_create_local_driver_iphone(config, utils):
-    config.set('Driver', 'type', 'iphone')
-    utils.get_driver_name.return_value = 'iphone'
-    config_driver = ConfigDriver(config, utils)
-    config_driver._create_remote_driver = lambda: 'remote driver mock'
-
-    driver = config_driver._create_local_driver()
-    assert driver == 'remote driver mock'
-
-
 def test_create_local_driver_unknown_driver(config, utils):
     config.set('Driver', 'type', 'unknown')
     utils.get_driver_name.return_value = 'unknown'
@@ -117,61 +84,6 @@ def test_create_local_driver_unknown_driver(config, utils):
     with pytest.raises(Exception) as excinfo:
         config_driver._create_local_driver()
     assert 'Unknown driver unknown' == str(excinfo.value)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.appiumdriver')
-def test_create_remote_driver_android(appiumdriver_mock, config, utils):
-    config.set('Driver', 'type', 'android')
-    config.add_section('AppiumCapabilities')
-    config.set('AppiumCapabilities', 'automationName', 'Appium')
-    config.set('AppiumCapabilities', 'platformName', 'Android')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'android'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_remote_driver()
-    capabilities = {'automationName': 'Appium', 'platformName': 'Android'}
-    appiumdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                     desired_capabilities=capabilities)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.appiumdriver')
-def test_create_remote_driver_ios(appiumdriver_mock, config, utils):
-    config.set('Driver', 'type', 'ios')
-    config.add_section('AppiumCapabilities')
-    config.set('AppiumCapabilities', 'automationName', 'Appium')
-    config.set('AppiumCapabilities', 'platformName', 'iOS')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'ios'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_remote_driver()
-    capabilities = {'automationName': 'Appium', 'platformName': 'iOS'}
-    appiumdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                     desired_capabilities=capabilities)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.appiumdriver')
-def test_create_remote_driver_iphone(appiumdriver_mock, config):
-    config.set('Driver', 'type', 'iphone')
-    config.add_section('AppiumCapabilities')
-    config.set('AppiumCapabilities', 'automationName', 'Appium')
-    config.set('AppiumCapabilities', 'platformName', 'iOS')
-    server_url = 'http://10.20.30.40:5555'
-    utils = mock.MagicMock()
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'iphone'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_remote_driver()
-    capabilities = {'automationName': 'Appium', 'platformName': 'iOS'}
-    appiumdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                     desired_capabilities=capabilities)
 
 
 def test_convert_property_type_true(config, utils):
