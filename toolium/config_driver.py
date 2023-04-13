@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
+Copyright 2023 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -121,7 +121,7 @@ class ConfigDriver(object):
                 options = self._get_chrome_options(capabilities)
             elif driver_name == 'safari':
                 options = self._get_safari_options(capabilities)
-            elif driver_name == 'explorer':
+            elif driver_name == 'iexplore':
                 options = self._get_explorer_options(capabilities)
             elif driver_name == 'edge':
                 options = self._get_edge_options(capabilities)

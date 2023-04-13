@@ -78,18 +78,6 @@ def test_create_driver_remote(config, utils):
 
 
 @pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_local_driver_iexplore(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'iexplore')
-    config.set('Driver', 'explorer_driver_path', '/tmp/driver')
-    utils.get_driver_name.return_value = 'iexplore'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_local_driver()
-    webdriver_mock.Ie.assert_called_once_with('/tmp/driver', capabilities=DesiredCapabilities.INTERNETEXPLORER)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
 def test_create_local_driver_android(config, utils):
     config.set('Driver', 'type', 'android')
     utils.get_driver_name.return_value = 'android'
@@ -130,20 +118,6 @@ def test_create_local_driver_unknown_driver(config, utils):
     with pytest.raises(Exception) as excinfo:
         config_driver._create_local_driver()
     assert 'Unknown driver unknown' == str(excinfo.value)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_remote_driver_iexplore(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'iexplore')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'iexplore'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_remote_driver()
-    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                  desired_capabilities=DesiredCapabilities.INTERNETEXPLORER)
 
 
 @pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
@@ -199,57 +173,6 @@ def test_create_remote_driver_iphone(appiumdriver_mock, config):
     capabilities = {'automationName': 'Appium', 'platformName': 'iOS'}
     appiumdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
                                                      desired_capabilities=capabilities)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_remote_driver_version_platform(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'iexplore-11-on-WIN10')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'iexplore'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.INTERNETEXPLORER
-    capabilities['browserVersion'] = '11'
-    capabilities['platformName'] = 'WIN10'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                  desired_capabilities=capabilities)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_remote_driver_version(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'iexplore-11')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'iexplore'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.INTERNETEXPLORER.copy()
-    capabilities['browserVersion'] = '11'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                  desired_capabilities=capabilities)
-
-
-@pytest.mark.skip("DesiredCapabilities must be updated to be compatible with Selenium 4")
-@mock.patch('toolium.config_driver.webdriver')
-def test_create_remote_driver_capabilities(webdriver_mock, config, utils):
-    config.set('Driver', 'type', 'iexplore-11')
-    config.add_section('Capabilities')
-    config.set('Capabilities', 'browserVersion', '11')
-    server_url = 'http://10.20.30.40:5555'
-    utils.get_server_url.return_value = server_url
-    utils.get_driver_name.return_value = 'iexplore'
-    config_driver = ConfigDriver(config, utils)
-
-    config_driver._create_remote_driver()
-    capabilities = DesiredCapabilities.INTERNETEXPLORER.copy()
-    capabilities['browserVersion'] = '11'
-    webdriver_mock.Remote.assert_called_once_with(command_executor='%s/wd/hub' % server_url,
-                                                  desired_capabilities=capabilities)
 
 
 def test_convert_property_type_true(config, utils):
