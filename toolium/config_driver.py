@@ -121,7 +121,7 @@ class ConfigDriver(object):
                 options = self._get_chrome_options(capabilities)
             elif driver_name == 'safari':
                 options = self._get_safari_options(capabilities)
-            elif driver_name == 'explorer':
+            elif driver_name == 'iexplore':
                 options = self._get_explorer_options(capabilities)
             elif driver_name == 'edge':
                 options = self._get_edge_options(capabilities)
