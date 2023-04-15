@@ -250,6 +250,25 @@ def test_create_remote_driver_chrome(webdriver_mock, config, utils):
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
+    webdriver_mock.Remote.assert_called_once_with(command_executor=server_url, options=options)
+
+
+@mock.patch('toolium.config_driver.webdriver')
+def test_create_remote_driver_chrome_basepath(webdriver_mock, config, utils):
+    config.set('Driver', 'type', 'chrome')
+    config.set('Server', 'base_path', '/wd/hub')
+    server_url = 'http://10.20.30.40:5555'
+    utils.get_server_url.return_value = server_url
+    config_driver = ConfigDriver(config, utils)
+    expected_capabilities = DEFAULT_CAPABILITIES
+
+    config_driver._create_remote_driver()
+
+    # Check that chrome options contain expected capabilities
+    args, kwargs = webdriver_mock.Remote.call_args
+    options = kwargs['options']
+    assert isinstance(options, Options)
+    assert options.capabilities == expected_capabilities
     webdriver_mock.Remote.assert_called_once_with(command_executor=f'{server_url}/wd/hub', options=options)
 
 
@@ -270,7 +289,7 @@ def test_create_remote_driver_chrome_with_version_and_platform(webdriver_mock, c
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
-    webdriver_mock.Remote.assert_called_once_with(command_executor=f'{server_url}/wd/hub', options=options)
+    webdriver_mock.Remote.assert_called_once_with(command_executor=server_url, options=options)
 
 
 @mock.patch('toolium.config_driver.webdriver')
@@ -290,4 +309,4 @@ def test_create_remote_driver_chrome_with_version_and_platform_uppercase(webdriv
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
-    webdriver_mock.Remote.assert_called_once_with(command_executor=f'{server_url}/wd/hub', options=options)
+    webdriver_mock.Remote.assert_called_once_with(command_executor=server_url, options=options)

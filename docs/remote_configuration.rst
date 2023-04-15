@@ -19,6 +19,7 @@ section in properties.cfg file::
     video_enabled: false
     logs_enabled: false
     log_types: all
+    base_path:
 
 enabled
 ~~~~~~~
@@ -61,12 +62,18 @@ logs_enabled
 | *false*: webdriver and GGR logs are downloaded and saved to local files only if the test fails
 
 log_types
-~~~~~~~~~~
+~~~~~~~~~
 | Comma-separated list of webdriver log types that will be downloaded if remote test fails or if *logs_enabled* is true
 |
 | *all*: all available log types in remote server will be downloaded (default value)
 | '': setting an empty string, no log types will be downloaded
 | *client,server*: in this example, only client and server logs will be downloaded
+
+base_path
+~~~~~~~~~
+| Base path to use as prefix for all webdriver routes running on the server, empty by default.
+|
+| */wd/hub*: use this base path with old Selenium 3 or Appium 1 remote servers
 
 
 Remote Driver Capabilities

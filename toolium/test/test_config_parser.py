@@ -94,7 +94,7 @@ def test_getboolean_optional(section, option, default, response, config):
 def test_get(config):
     section = 'AppiumCapabilities'
     option = 'automationName'
-    value = 'Appium'
+    value = 'UiAutomator2'
     assert value == config.get(section, option)
 
 
@@ -151,8 +151,8 @@ def test_items_with_colon_in_option(config):
 def test_deepcopy(config):
     section = 'AppiumCapabilities'
     option = 'automationName'
-    orig_value = 'Appium'
-    new_value = 'Selendroid'
+    orig_value = 'UiAutomator2'
+    new_value = 'espresso'
 
     # Check previous value
     assert orig_value == config.get(section, option)
