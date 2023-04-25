@@ -70,6 +70,26 @@ def test_a_lang_param():
     assert expected == result
 
 
+unknown_lang_keys = [
+    ('unknown'),
+    ('home.unknown'),
+    ('unknown!'),
+    ('home.unknown!'),
+]
+
+
+@pytest.mark.parametrize("lang_key", unknown_lang_keys)
+def test_a_lang_param_unknown(lang_key):
+    """
+    Verification of a unknown mapped parameter as LANG
+    """
+    dataset.language_terms = {"home": {"button": {"send": {"es": "enviar", "en": "send"}}}}
+    dataset.language = "es"
+    with pytest.raises(KeyError) as excinfo:
+        map_param(f"[LANG:{lang_key}]")
+    assert f'"Mapping chain \'{lang_key}\' not found in the language properties file"' == str(excinfo.value)
+
+
 def test_a_toolium_param():
     """
     Verification of a mapped parameter as TOOLIUM
