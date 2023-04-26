@@ -371,7 +371,7 @@ def map_param(param):
     if not isinstance(param, str):
         return param
 
-    map_regex = r"[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][a-zA-Z\.\:\/\_\-\ 0-9]*\]"
+    map_regex = r"[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][^\[\]]*\]"
     map_expressions = re.compile(map_regex)
 
     mapped_param = param
