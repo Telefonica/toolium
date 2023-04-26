@@ -102,7 +102,7 @@ class ConfigDriver(object):
         capabilities = self._get_capabilities_from_driver_type()
 
         # Get server url
-        server_url = f'{self.utils.get_server_url()}/wd/hub'
+        server_url = f"{self.utils.get_server_url()}{self.config.get_optional('Server', 'base_path', '')}"
 
         driver_name = self.utils.get_driver_name()
         if driver_name in ('android', 'ios', 'iphone'):
@@ -192,6 +192,7 @@ class ConfigDriver(object):
         cap_type = {'Capabilities': 'server', 'AppiumCapabilities': 'Appium server'}
         try:
             for cap, cap_value in dict(self.config.items(section)).items():
+                cap = f'appium:{cap}' if section == 'AppiumCapabilities' else cap
                 self.logger.debug("Added %s capability: %s = %s", cap_type[section], cap, cap_value)
                 cap_value = cap_value if cap == 'browserVersion' else self._convert_property_type(cap_value)
                 self._update_dict(capabilities, {cap: cap_value}, initial_key=cap)

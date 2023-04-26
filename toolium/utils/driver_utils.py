@@ -135,8 +135,7 @@ class Utils(WaitUtils):
             self.logger.debug("Trying to identify remote node")
             try:
                 # Request session info from grid hub and extract remote node
-                url = '{}/grid/api/testsession?session={}'.format(self.get_server_url(),
-                                                                  session_id)
+                url = '{}/grid/api/testsession?session={}'.format(self.get_server_url(), session_id)
                 proxy_id = requests.get(url).json()['proxyId']
                 remote_node = urlparse(proxy_id).hostname if urlparse(proxy_id).hostname else proxy_id
                 server_type = 'grid'

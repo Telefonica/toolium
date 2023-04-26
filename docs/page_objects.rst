@@ -222,28 +222,28 @@ The corresponding Android page object, where page elements are defined with thei
 
 .. code-block:: python
 
-    from selenium.webdriver.common.by import By
+    from appium.webdriver.common.appiumby import AppiumBy
     from toolium.pageelements import InputText, Button
     from toolium_examples.pageobjects.base.login import BaseLoginPageObject
 
     class AndroidLoginPageObject(BaseLoginPageObject):
-        username = InputText(By.ID, 'io.appium.android.apis:id/username')
-        password = InputText(By.ID, 'io.appium.android.apis:id/password')
-        login_button = Button(By.ID, "io.appium.android.apis:id/login_button")
+        username = InputText(AppiumBy.ID, 'io.appium.android.apis:id/username')
+        password = InputText(AppiumBy.ID, 'io.appium.android.apis:id/password')
+        login_button = Button(AppiumBy.ID, "io.appium.android.apis:id/login_button")
 
 
 And the iOS page object, where page elements are defined with their specific iOS locators:
 
 .. code-block:: python
 
-    from appium.webdriver.common.mobileby import MobileBy
+    from appium.webdriver.common.appiumby import AppiumBy
     from toolium.pageelements import InputText, Button
     from toolium_examples.pageobjects.base.login import BaseLoginPageObject
 
     class IosLoginPageObject(BaseLoginPageObject):
-        username = InputText(MobileBy.IOS_UIAUTOMATION, '.textFields()[0]')
-        password = InputText(MobileBy.IOS_UIAUTOMATION, '.secureTextFields()[0]')
-        login_button = Button(MobileBy.IOS_UIAUTOMATION, '.buttons()[0]')
+        username = InputText(AppiumBy.IOS_UIAUTOMATION, '.textFields()[0]')
+        password = InputText(AppiumBy.IOS_UIAUTOMATION, '.secureTextFields()[0]')
+        login_button = Button(AppiumBy.IOS_UIAUTOMATION, '.buttons()[0]')
 
 
 Base, Android and iOS page objects must be defined in different files following this structure::

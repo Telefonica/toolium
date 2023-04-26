@@ -68,8 +68,8 @@ def replace_param(param, language='es', infer_param_type=True):
         [B] Generates a blank space
         [UUID] Generates a v4 UUID
         [RANDOM] Generates a random value
-        [RANDOM_PHONE_NUMBER] Generates a random phone number following the pattern +34654XXXXXX, using the language
-            and country specified in dataset.language and dataset.country
+        [RANDOM_PHONE_NUMBER] Generates a random phone number for language and country configured in dataset.language
+            and dataset.country
         [TIMESTAMP] Generates a timestamp from the current time
         [DATETIME] Generates a datetime from the current time
         [NOW] Similar to DATETIME without milliseconds; the format depends on the language

@@ -164,7 +164,7 @@ functions or check the :ref:`dataset <dataset>` module for more implementation d
 * :code:`[B]`: Generates a blank space
 * :code:`[UUID]`: Generates a v4 UUID
 * :code:`[RANDOM]`: Generates a random value
-* :code:`[RANDOM_PHONE_NUMBER]`: Generates a random phone number following the pattern +34654XXXXXX, using the language and country specified in dataset.language and dataset.country
+* :code:`[RANDOM_PHONE_NUMBER]`: Generates a random phone number for language and country configured in dataset.language and dataset.country
 * :code:`[TIMESTAMP]`: Generates a timestamp from the current time
 * :code:`[DATETIME]`: Generates a datetime from the current time
 * :code:`[NOW]`: Similar to DATETIME without milliseconds; the format depends on the language
