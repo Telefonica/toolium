@@ -130,7 +130,6 @@ def before_scenario(context, scenario):
 
     # Behave dynamic environment
     context.dyn_env.execute_before_scenario_steps(context)
-    
     # Make sure storage dict are empty
     context.storage = dict()
 
