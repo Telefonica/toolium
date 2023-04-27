@@ -593,7 +593,11 @@ def get_value_from_context(param, context):
     :return: mapped value
     """
     parts = param.split('.')
-    context_storage = collections.ChainMap(context.storage, context.feature_storage)
+    try:
+        context_storage = collections.ChainMap(context.storage, context.feature_storage)
+    except AttributeError:
+        # When before_feature is not called, context.storage and context.feature_storage are not available
+        context_storage = {}
     if parts[0] in context_storage:
         value = context_storage[parts[0]]
     elif hasattr(context, parts[0]):
@@ -609,7 +613,10 @@ def get_value_from_context(param, context):
         elif hasattr(value, part):
             value = getattr(value, part)
         else:
-            msg = f"key or attribute '{part}' not found in context"
+            if isinstance(value, dict):
+                msg = f"'{part}' key not found in {value} value in context"
+            else:
+                msg = f"'{part}' attribute not found in {type(value).__name__} class in context"
             logger.error(msg)
             raise Exception(msg)
     return value

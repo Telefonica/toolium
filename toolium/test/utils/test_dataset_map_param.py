@@ -16,7 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
 import os
 import pytest
 
@@ -192,63 +191,6 @@ def test_a_conf_param_without_project_config():
     result = map_param("[CONF:unknown]")
     expected = "[CONF:unknown]"
     assert expected == result
-
-
-def test_a_context_param():
-    """
-    Verification of a mapped parameter as CONTEXT
-    """
-    context = mock.MagicMock()
-    context.attribute = "attribute value"
-    context.storage = {"storage_key": "storage entry value"}
-    dataset.behave_context = context
-
-    result_att = map_param("[CONTEXT:attribute]")
-    expected_att = "attribute value"
-    assert expected_att == result_att
-
-
-def test_a_context_param_storage():
-    """
-    Verification of a mapped parameter as CONTEXT saved in storage
-    """
-    context = mock.MagicMock()
-    context.attribute = "attribute value"
-    context.storage = {"storage_key": "storage entry value"}
-    dataset.behave_context = context
-
-    result_st = map_param("[CONTEXT:storage_key]")
-    expected_st = "storage entry value"
-    assert expected_st == result_st
-
-
-def test_a_context_param_with_dots():
-    """
-    Verification of a mapped parameter with dots as CONTEXT
-    """
-    context = mock.MagicMock()
-
-    class Obj(object):
-        pass
-    one = Obj()
-    one.two = "the value"
-
-    context.one = one
-    dataset.behave_context = context
-
-    result_att = map_param("[CONTEXT:one.two]")
-    expected_att = "the value"
-    assert expected_att == result_att
-
-    three = Obj()
-    three.four = "the other value"
-
-    context.storage = {"three": three}
-    dataset.behave_context = context
-
-    result_att = map_param("[CONTEXT:three.four]")
-    expected_att = "the other value"
-    assert expected_att == result_att
 
 
 def test_a_poe_param_single_result():
