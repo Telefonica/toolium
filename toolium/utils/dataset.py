@@ -595,7 +595,7 @@ def get_value_from_context(param, context):
     parts = param.split('.')
     context_storage = collections.ChainMap(context.storage, context.feature_storage)
     if parts[0] in context_storage:
-        value = context.storage[parts[0]]
+        value = context_storage[parts[0]]
     elif hasattr(context, parts[0]):
         value = getattr(context, parts[0])
     else:
