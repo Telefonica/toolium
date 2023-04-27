@@ -574,13 +574,13 @@ def map_toolium_param(param, config):
 
 def get_value_from_context(param, context):
     """
-    Find the value of the given param using it as a key in the context storage dictionary (context.storage) or in the
-    context object itself. The key might be comprised of dotted tokens. In such case, the searched key is the first
-    token. The rest of the tokens are considered nested properties/objects.
+    Find the value of the given param using it as a key in the context storage dictionaries (context.storage or
+    context.feature_storage) or in the context object itself. The key might be comprised of dotted tokens. In such case,
+    the searched key is the first token. The rest of the tokens are considered nested properties/objects.
     So, for example, in the basic case, "last_request_result" could be used as key that would be searched into context
-    storage or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
-    in the context storage or as a property of the context object whose name is last_request. In both cases, when found,
-    "result" is considered (and resolved) as a property into the returned value.
+    storages or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
+    in the context storages or as a property of the context object whose name is last_request. In both cases, when
+    found, "result" is considered (and resolved) as a property or a key into the returned value.
 
     There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
 
@@ -589,23 +589,11 @@ def get_value_from_context(param, context):
     context.a.b.c.d
 
     :param param: key to be searched (e.g. "last_request_result" / "last_request.result")
-    :param context: Behave context object
+    :param context: behave context
     :return: mapped value
     """
     parts = param.split('.')
-    try:
-        context_storage = collections.ChainMap(context.storage, context.feature_storage)
-    except AttributeError:
-        # When before_feature is not called, context.storage and context.feature_storage are not available
-        context_storage = {}
-    if parts[0] in context_storage:
-        value = context_storage[parts[0]]
-    elif hasattr(context, parts[0]):
-        value = getattr(context, parts[0])
-    else:
-        msg = f"'{parts[0]}' key not found in context"
-        logger.error(msg)
-        raise Exception(msg)
+    value = _get_initial_value_from_context(parts[0], context)
 
     for part in parts[1:]:
         if isinstance(value, dict) and part in value:
@@ -619,6 +607,31 @@ def get_value_from_context(param, context):
                 msg = f"'{part}' attribute not found in {type(value).__name__} class in context"
             logger.error(msg)
             raise Exception(msg)
+    return value
+
+
+def _get_initial_value_from_context(initial_key, context):
+    """
+    Find the value of the given initial_key using it as a key in the context storage dictionaries (context.storage or
+    context.feature_storage) or in the context object itself.
+
+    :param initial_key: key to be searched in context
+    :param context: behave context
+    :return: mapped value
+    """
+    try:
+        context_storage = collections.ChainMap(context.storage, context.feature_storage)
+    except AttributeError:
+        # When before_feature is not called, context.storage and context.feature_storage are not available
+        context_storage = {}
+    if initial_key in context_storage:
+        value = context_storage[initial_key]
+    elif hasattr(context, initial_key):
+        value = getattr(context, initial_key)
+    else:
+        msg = f"'{initial_key}' key not found in context"
+        logger.error(msg)
+        raise Exception(msg)
     return value
 
 
