@@ -75,6 +75,10 @@ def before_feature(context, feature):
     # Behave dynamic environment
     context.dyn_env.get_steps_from_feature_description(feature.description)
     context.dyn_env.execute_before_feature_steps(context)
+    # Dictionary to store information between steps
+    context.storage = dict()
+    # Dictionary to store information between features
+    context.feature_storage = dict()
 
 
 def before_scenario(context, scenario):
@@ -126,6 +130,9 @@ def before_scenario(context, scenario):
 
     # Behave dynamic environment
     context.dyn_env.execute_before_scenario_steps(context)
+    
+    # Make sure storage dict are empty
+    context.storage = dict()
 
 
 def create_and_configure_wrapper(context):
