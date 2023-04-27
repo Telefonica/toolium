@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import base64
+import collections
 import datetime
 import json
 import logging
@@ -592,35 +593,25 @@ def get_value_from_context(param, context):
     :return: mapped value
     """
     parts = param.split('.')
-    value = None
-    if context.storage and parts[0] in context.storage:
+    context_storage = collections.ChainMap(context.storage, context.feature_storage)
+    if parts[0] in context_storage:
         value = context.storage[parts[0]]
-    elif context.feature_storage and parts[0] in context.feature_storage:
-        value = context.feature_storage[parts[0]]
+    elif hasattr(context, parts[0]):
+        value = getattr(context, parts[0])
     else:
-        logger.debug(f"'{parts[0]}' key not found in context storage, searching in context")
-        try:
-            value = getattr(context, parts[0])
-        except AttributeError:
-            msg = f"'{parts[0]}' not found neither in context storage nor in context"
-            logger.error(msg)
-            raise AttributeError(msg)
+        msg = f"'{parts[0]}' key not found in context"
+        logger.error(msg)
+        raise Exception(msg)
 
-    if len(parts) > 1:
-        try:
-            for part in parts[1:]:
-                if isinstance(value, dict):
-                    value = value[part]
-                else:
-                    value = getattr(value, part)
-        except AttributeError:
-            msg = f"'{part}' is not an attribute of {value}"
+    for part in parts[1:]:
+        if isinstance(value, dict) and part in value:
+            value = value[part]
+        elif hasattr(value, part):
+            value = getattr(value, part)
+        else:
+            msg = f"key or attribute '{part}' not found in context"
             logger.error(msg)
-            raise AttributeError(msg)
-        except KeyError:
-            msg = f"'{part}' is not an key of {value}"
-            logger.error(msg)
-            raise KeyError(msg)
+            raise Exception(msg)
     return value
 
 
