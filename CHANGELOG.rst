@@ -22,11 +22,13 @@ v3.0.0
 - New optional config property `options` in [Chrome] section to configure Chrome options instead of using old
   property `goog:chromeOptions` in [Capabilities] section.
 - New optional config property `base_path` in [Server] section to allow using old Selenium 3 or Appium 1 remote servers
-- Update [RANDOM_PHONE_NUMBER] replacement using new `DataGenerator` class
 - Remove support for lettuce tests
 - Remove deprecated parameter `context` from `map_param` and POEditor methods
 - Remove deprecated config property `restart_driver_fail` in [Driver] section
 - Remove deprecated environment variables `Section_option`, `Config_environment` and `env`
+- Update `[RANDOM_PHONE_NUMBER]` replacement using new `DataGenerator` class
+- Update `[CONTEXT:a.b.c]` replacement to search data in context, context.storage and context.feature_storage
+- Update `[CONTEXT:a.b.c]` replacement to allow dictionaries or classes in context fields
 
 v2.7.0
 ------
