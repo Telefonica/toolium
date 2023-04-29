@@ -20,7 +20,6 @@ import logging
 import re
 import requests
 from jira import JIRA
-
 from toolium.config_driver import get_error_message_from_exception
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
@@ -103,6 +102,10 @@ def save_jira_conf():
     build = config.get_optional('Jira', 'build')
     only_if_changes = config.getboolean_optional('Jira', 'onlyifchanges')
     attachments = []
+    jira_properties = {"enabled": enabled, "execution_url": execution_url, "summary_prefix": summary_prefix,
+                       "labels": labels, "comments": comments, "fix_version": fix_version, "build": build,
+                       "only_if_changes": only_if_changes, "attachments": attachments}
+    logger.debug("Jira properties set:" + jira_properties.__str__())
 
 
 def add_attachment(attachment):
@@ -112,6 +115,7 @@ def add_attachment(attachment):
     """
     if attachment:
         attachments.append(attachment)
+        logger.info("Attachement Added from: " + attachment)
 
 
 def add_jira_status(test_key, test_status, test_comment):
@@ -126,6 +130,8 @@ def add_jira_status(test_key, test_status, test_comment):
         if test_key in jira_tests_status:
             # Merge data with previous test status
             previous_status = jira_tests_status[test_key]
+            logger.debug("Found previous data for " + test_key.__str__())
+
             test_status = 'Pass' if previous_status[1] == 'Pass' and test_status == 'Pass' else 'Fail'
             if previous_status[2] and test_comment:
                 test_comment = '{}\n{}'.format(previous_status[2], test_comment)
@@ -134,6 +140,8 @@ def add_jira_status(test_key, test_status, test_comment):
             attachments += previous_status[3]
         # Add or update test status
         jira_tests_status[test_key] = (test_key, test_status, test_comment, attachments)
+    elif enabled and not test_key:
+        logger.error("Status not updated, invalid test key")
 
 
 def change_all_jira_status():
@@ -141,6 +149,7 @@ def change_all_jira_status():
     for test_status in jira_tests_status.values():
         change_jira_status(*test_status)
     jira_tests_status.clear()
+    logger.debug("Test cases status updated")
 
 
 def change_jira_status(test_key, test_status, test_comment, test_attachments):
@@ -180,7 +189,8 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments):
         logger.warning("Error updating Test Case '%s': [%s] %s", test_key, response.status_code,
                        get_error_message(response.content))
     else:
-        logger.debug("%s", response.content.decode().splitlines()[0])
+        logger.debug("Response with status " + str(response.status_code) +
+                     " is: '%s'", response.content.decode().splitlines()[0])
 
 
 def get_error_message(response_content):
@@ -193,6 +203,8 @@ def get_error_message(response_content):
     match = apache_regex.search(response_content)
     if match:
         error_message = match.group(1)
+        logger.debug("Error message extracted from HTTP response with regex:" + apache_regex.__repr__())
+
     else:
         local_regex = re.compile(r'.*<title>(.*)</title>.*')
         match = local_regex.search(response_content)
@@ -200,4 +212,6 @@ def get_error_message(response_content):
             error_message = match.group(1)
         else:
             error_message = response_content
+        logger.debug("Error message extracted from HTTP response with regex:" + local_regex.__repr__())
+
     return error_message
