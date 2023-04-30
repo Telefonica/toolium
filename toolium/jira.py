@@ -48,6 +48,7 @@ class JiraServer:
         self.server.close()
         logger.info("Jira server closed//")
 
+
 # Dict to save tuples with jira keys, their test status, comments and attachments
 jira_tests_status = {}
 
@@ -111,7 +112,7 @@ def save_jira_conf():
     jira_properties = {"enabled": enabled, "execution_url": execution_url, "summary_prefix": summary_prefix,
                        "labels": labels, "comments": comments, "fix_version": fix_version, "build": build,
                        "only_if_changes": only_if_changes, "attachments": attachments}
-    logger.debug("Jira properties set:" + jira_properties.__str__())
+    logger.debug("Jira properties read:" + jira_properties.__str__())
 
 
 def add_attachment(attachment):
@@ -155,7 +156,10 @@ def change_all_jira_status():
     for test_status in jira_tests_status.values():
         change_jira_status(*test_status)
     jira_tests_status.clear()
-    logger.debug("Update attempt complete, clearing queue")
+    if enabled:
+        logger.debug("Update attempt complete, clearing queue")
+    else:
+        logger.debug("Jira disabled, upload skipped")
 
 
 def change_jira_status(test_key, test_status, test_comment, test_attachments: list[str]):
@@ -188,21 +192,18 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
                 # TODO issue = new_testcase(server, project_id, summary=scenarioname, description=description)
                 # test_key = issue.key
 
-            # TODO enforce test case as issue type and call create_test_execution for each scenario as below
-            #  new_execution = create_test_execution(server,test_key, project_id)
 
-            logger.info("Retrieving " + test_key)
-            issue = server.issue(test_key)
+            new_execution = create_test_execution(server,test_key, project_id)
+            logger.info(f"Created execution {new_execution.key} for test " + test_key)
 
             # TODO massage payload, labels??
             logger.debug("Update skipped for " + test_key)
             # issue.update(fields=payload, jira=server)
 
-            # TODO wait to create test execution before transitioning to behave status
-            logger.debug("Transition skipped for " + test_key)
-            # transition(server, issue, test_status)
+            logger.debug("Transitioning " + new_execution.key)
+            transition(server, new_execution, test_status)
 
-            add_results(server, issue.key, test_attachments)
+            add_results(server, new_execution.key, test_attachments)
 
     except Exception as e:
         logger.error("Exception while updating Issue '%s': %s", test_key, e)
