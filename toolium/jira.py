@@ -21,6 +21,7 @@ import os
 import re
 from os import path
 from jira import JIRA, Issue
+from jira.exceptions import JIRAError
 from toolium.config_driver import get_error_message_from_exception
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
@@ -122,7 +123,7 @@ def add_attachment(attachment):
     """
     if attachment:
         attachments.append(attachment)
-        logger.info("Attachement Added from: " + attachment)
+        logger.info("Attachement added from: " + attachment)
 
 
 def add_jira_status(test_key, test_status, test_comment):
@@ -192,8 +193,10 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
                 # TODO issue = new_testcase(server, project_id, summary=scenarioname, description=description)
                 # test_key = issue.key
 
-
-            new_execution = create_test_execution(server,test_key, project_id)
+            logger.debug("Creating execution for " + test_key)
+            new_execution = create_test_execution(server, test_key, project_id,
+                                                  summary_prefix, existing_issues[0].fields.summary, fix_version,
+                                                  existing_issues[0].fields.labels, labels)
             logger.info(f"Created execution {new_execution.key} for test " + test_key)
 
             # TODO massage payload, labels??
@@ -205,7 +208,8 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
 
             add_results(server, new_execution.key, test_attachments)
 
-    except Exception as e:
+    except JIRAError as e:
+        print_trace(logger, e)
         logger.error("Exception while updating Issue '%s': %s", test_key, e)
         return
 
@@ -242,14 +246,16 @@ def transition(server: JIRA, issue: Issue, test_status: str):
     Transitions the issue to a new state, see issue workflows in the project for available options
     param test_status: the new status of the issue
     """
-    logger.info("Setting new status for " + issue.key + "from " + issue.get_field("status") + " to " + test_status)
-    response = server.transition_issue(issue.key, transition=test_status.lower())
-    if response.status_code >= 400:
-        logger.warning("Error transitioning Test Case '%s': [%s] %s", issue.key, response.status_code,
-                       get_error_message(response.content.decode()))
-    else:
-        logger.debug("Transition response with status " + str(response.status_code) +
-                     " is: '%s'", response.content.decode().splitlines()[0])
+    logger.info("Setting new status for " + issue.key + "from " + issue.fields.status.raw['name'] + " to " + test_status)
+    try:
+        server.transition_issue(issue.key, transition=test_status.lower())
+    except JIRAError:
+        # TODO Get available transitions
+        logger.warning("Available transitions for %s are %s", issue.key, server.transitions(issue.key))
+        logger.error("Error transitioning Test Case '%s' to status [%s]", issue.key, test_status)
+
+        return
+    logger.debug("Transitioned issue to status %s", test_status)
 
 
 def add_results(jira: JIRA, issueid: str, attachements: list[str] = None):
@@ -306,7 +312,9 @@ def add_results(jira: JIRA, issueid: str, attachements: list[str] = None):
         addlogs(issueid)
         logger.debug("Results added to issue " + issueid)
 
-    except Exception as error:
+    except FileNotFoundError as error:
+        # TODO catch all jira exception types
+        print_trace(logger, error)
         logger.error("Results not added, exception:" + str(error))
 
 
@@ -332,3 +340,21 @@ def get_error_message(response_content: str):
         logger.debug("Error message extracted from HTTP response with regex:" + local_regex.__repr__())
 
     return error_message
+
+
+def print_trace(logger, e):
+    # TODO refactor
+    # TODO move to utils as stand alone
+    # TODO set custom JiraError for toolium?
+    import traceback
+
+    trace = traceback.format_tb(e.__traceback__, 30)
+    final_stack = ''
+    for count in range(len(trace)):
+        final_stack += f'Trace stack {count} {trace[count]}'
+    logger.error(f'Error Trace:\n{final_stack}')
+    logger.error(f'Error: {e.__class__}')
+    if hasattr(e, "msg"):
+        logger.error(f'Error Message: {e.msg}')
+    else:
+        logger.error(e.args)
