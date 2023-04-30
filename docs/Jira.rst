@@ -28,7 +28,7 @@ Full example::
     onlyifchanges: true
     summary_prefix: # TODO
     fixversion: 4.12
-    labels: # TODO
+    labels: [QA, label2, 3rdlabel]
     comments: # TODO
     build: # TODO
 

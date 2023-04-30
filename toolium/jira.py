@@ -104,7 +104,11 @@ def save_jira_conf():
     project_id = int(config.get_optional('Jira', 'project_id'))
     execution_url = config.get_optional('Jira', 'execution_url')
     summary_prefix = config.get_optional('Jira', 'summary_prefix')
-    labels = config.get_optional('Jira', 'labels')
+    labels_raw = config.get_optional('Jira', 'labels')
+    labels_raw = labels_raw.replace("[", "").replace("]", "")
+    labels = []
+    for label in labels_raw.split(","):
+        labels.append(label)
     comments = config.get_optional('Jira', 'comments')
     fix_version = config.get_optional('Jira', 'fixversion')
     build = config.get_optional('Jira', 'build')
@@ -214,7 +218,7 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
         return
 
 
-def execute_query(jira: JIRA, query: str):
+def execute_query(jira: JIRA, query: str) -> list:
     logger = logging.getLogger("Jira.Queries")
 
     logger.info(f"executing query: {query} ...\n")
@@ -228,13 +232,15 @@ def execute_query(jira: JIRA, query: str):
     return existing_issues
 
 
-def create_test_execution(server: JIRA, issueid: str, projectid: int, summary=None, description=None) -> Issue:
+def create_test_execution(server: JIRA, issueid: str, projectid: int, parent_labels: list, summary=None, description=None,
+                        new_labels: list = None,) -> Issue:
     """Creates an execution linked to the TestCase provided"""
     issue_dict = {
         'project': {'id': projectid},
         'summary': summary if summary else input("Summary:"),
         'description': description if description else input("Description:"),
         'issuetype': {'name': 'Test Case Execution'},
+        'labels': parent_labels + new_labels,
         'parent': {'key': issueid}
     }
 
