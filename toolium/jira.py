@@ -61,10 +61,10 @@ enabled = None
 jiratoken = None
 project_id = 0
 execution_url = ''
-summary_prefix = None
-labels = None
+summary_prefix = ""
+labels = []
 comments = None
-fix_version = None
+fix_version = ""
 build = None
 only_if_changes = None
 
@@ -106,7 +106,6 @@ def save_jira_conf():
     summary_prefix = config.get_optional('Jira', 'summary_prefix')
     labels_raw = config.get_optional('Jira', 'labels')
     labels_raw = labels_raw.replace("[", "").replace("]", "")
-    labels = []
     for label in labels_raw.split(","):
         labels.append(label)
     comments = config.get_optional('Jira', 'comments')
@@ -223,7 +222,8 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
 
             logger.debug("Creating execution for " + test_key)
             new_execution = create_test_execution(server, test_key, project_id,
-                                                  summary_prefix, existing_issues[0].fields.summary, fix_version,
+                                                  summary_prefix, existing_issues[0].fields.summary,
+                                                  fix_version,
                                                   existing_issues[0].fields.labels, labels)
             logger.info(f"Created execution {new_execution.key} for test " + test_key)
 
@@ -256,16 +256,21 @@ def execute_query(jira: JIRA, query: str) -> list:
     return existing_issues
 
 
-def create_test_execution(server: JIRA, issueid: str, projectid: int, parent_labels: list, summary=None, description=None,
-                        new_labels: list = None,) -> Issue:
+def create_test_execution(server: JIRA, issueid: str, projectid: int, summary_prefix: str, test_summary: str,
+                          fix_version: str, parent_labels: list, new_labels: list = None, description: str = " ") -> Issue:
     """Creates an execution linked to the TestCase provided"""
     issue_dict = {
         'project': {'id': projectid},
-        'summary': summary if summary else input("Summary:"),
-        'description': description if description else input("Description:"),
+        'assignee': {'name': server.current_user()},
         'issuetype': {'name': 'Test Case Execution'},
+        'parent': {'key': issueid},
+        'summary': str(summary_prefix) + " Execution of " + test_summary + " " + issueid,
+        'fixVersions': [{'name': fix_version}],
+        # TODO set priority as config input?
+        # 'priority': {'name': 'Minor', "id": 10101},
         'labels': parent_labels + new_labels,
-        'parent': {'key': issueid}
+        # 'versions': [{'name': fix_version}],
+        'description': description,
     }
 
     return server.create_issue(fields=issue_dict)
