@@ -18,34 +18,17 @@ limitations under the License.
 
 import logging
 import re
-import requests
-from jira import JIRA
+from jira import JIRA, Issue
 from toolium.config_driver import get_error_message_from_exception
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
-# Dict to save tuples with jira keys, their test status, comments and attachments
-jira_tests_status = {}
-
-# List to save temporary test attachments
-attachments = []
-
-# Jira configuration
-enabled = None
-execution_url = None
-summary_prefix = None
-labels = None
-comments = None
-fix_version = None
-build = None
-only_if_changes = None
-
 logger = logging.getLogger(__name__)
+
 
 class JiraServer:
 
     def __init__(self, execution_url, token=None):
         global logger
-
         logger = logging.getLogger("Jira.Server")
         self.url = execution_url
         self._token = token
@@ -62,6 +45,24 @@ class JiraServer:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.server.close()
         logger.info("Jira server closed//")
+
+# Dict to save tuples with jira keys, their test status, comments and attachments
+jira_tests_status = {}
+
+# List to save temporary test attachments
+attachments = []
+
+# Jira configuration
+enabled = None
+jiratoken = None
+project_id = 0
+execution_url = ''
+summary_prefix = None
+labels = None
+comments = None
+fix_version = None
+build = None
+only_if_changes = None
 
 
 def jira(test_key):
@@ -91,9 +92,12 @@ def jira(test_key):
 
 def save_jira_conf():
     """Read Jira configuration from properties file and save it"""
-    global enabled, execution_url, summary_prefix, labels, comments, fix_version, build, only_if_changes, attachments
+    global enabled, jiratoken, project_id, execution_url, summary_prefix, labels, comments,\
+        fix_version, build, only_if_changes, attachments
     config = DriverWrappersPool.get_default_wrapper().config
     enabled = config.getboolean_optional('Jira', 'enabled')
+    jiratoken = config.get_optional('Jira', 'token')
+    project_id = int(config.get_optional('Jira', 'project_id'))
     execution_url = config.get_optional('Jira', 'execution_url')
     summary_prefix = config.get_optional('Jira', 'summary_prefix')
     labels = config.get_optional('Jira', 'labels')
@@ -149,16 +153,16 @@ def change_all_jira_status():
     for test_status in jira_tests_status.values():
         change_jira_status(*test_status)
     jira_tests_status.clear()
-    logger.debug("Test cases status updated")
+    logger.debug("Update attempt complete, clearing queue")
 
 
-def change_jira_status(test_key, test_status, test_comment, test_attachments):
+def change_jira_status(test_key, test_status, test_comment, test_attachments: list[str]):
     """Update test status in Jira
 
     :param test_key: test case key in Jira
     :param test_status: test case status
     :param test_comment: test case comments
-    :param test_attachments: test case attachments
+    :param test_attachments: list of absolutes paths of test case attachment files
     """
 
     if not execution_url:
@@ -174,26 +178,78 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments):
     if only_if_changes:
         payload['onlyIfStatusChanges'] = 'true'
     try:
-        if test_attachments and len(test_attachments) > 0:
-            files = dict()
-            for index in range(len(test_attachments)):
-                files['attachments{}'.format(index)] = open(test_attachments[index], 'rb')
-        else:
-            files = None
-        response = requests.post(execution_url, data=payload, files=files)
+        with JiraServer(execution_url, jiratoken) as server:
+            existing_issues = execute_query(server, 'issue = ' + test_key)
+            if not existing_issues:
+                logger.warning("Jira Issue not found,...")
+                return
+                # TODO issue = new_testcase(server, project_id, summary=scenarioname, description=description)
+                # test_key = issue.key
+
+            # TODO enforce test case as issue type and call create_test_execution for each scenario as below
+            #  new_execution = create_test_execution(server,test_key, project_id)
+
+            logger.info("Retrieving " + test_key)
+            issue = server.issue(test_key)
+
+            # TODO massage payload, labels??
+            logger.debug("Update skipped for " + test_key)
+            # issue.update(fields=payload, jira=server)
+
+            # TODO wait to create test execution before transitioning to behave status
+            logger.debug("Transition skipped for " + test_key)
+            # transition(server, issue, test_status)
+            # TODO add attachements
+            # add_results(server, issue.key, test_attachments)
+
     except Exception as e:
-        logger.warning("Error updating Test Case '%s': %s", test_key, e)
+        logger.error("Exception while updating Issue '%s': %s", test_key, e)
         return
 
+
+def execute_query(jira: JIRA, query: str):
+    logger = logging.getLogger("Jira.Queries")
+
+    logger.info(f"executing query: {query} ...\n")
+    existing_issues = jira.search_issues(query)
+
+    issuesfound = ""
+    for issue in existing_issues:
+        issuesfound += f'\n{issue} {jira.issue(issue).fields.summary}'
+    if issuesfound:
+        logger.info("Found issue/s:" + issuesfound)
+    return existing_issues
+
+
+def create_test_execution(server: JIRA, issueid: str, projectid: int, summary=None, description=None) -> Issue:
+    """Creates an execution linked to the TestCase provided"""
+    issue_dict = {
+        'project': {'id': projectid},
+        'summary': summary if summary else input("Summary:"),
+        'description': description if description else input("Description:"),
+        'issuetype': {'name': 'Test Case Execution'},
+        'parent': {'key': issueid}
+    }
+
+    return server.create_issue(fields=issue_dict)
+
+
+def transition(server: JIRA, issue: Issue, test_status: str):
+    """
+    Transitions the issue to a new state, see issue workflows in the project for available options
+    param test_status: the new status of the issue
+    """
+    logger.info("Setting new status for " + issue.key + "from " + issue.get_field("status") + " to " + test_status)
+    response = server.transition_issue(issue.key, transition=test_status.lower())
     if response.status_code >= 400:
-        logger.warning("Error updating Test Case '%s': [%s] %s", test_key, response.status_code,
-                       get_error_message(response.content))
+        logger.warning("Error transitioning Test Case '%s': [%s] %s", issue.key, response.status_code,
+                       get_error_message(response.content.decode()))
     else:
-        logger.debug("Response with status " + str(response.status_code) +
+        logger.debug("Transition response with status " + str(response.status_code) +
                      " is: '%s'", response.content.decode().splitlines()[0])
 
 
-def get_error_message(response_content):
+def get_error_message(response_content: str):
     """Extract error message from the HTTP response
 
     :param response_content: HTTP response from test case execution API
