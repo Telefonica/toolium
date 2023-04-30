@@ -60,6 +60,8 @@ attachments = []
 enabled = None
 jiratoken = None
 project_id = 0
+project_key = ""
+project_name = ""
 execution_url = ''
 summary_prefix = ""
 labels = []
@@ -96,12 +98,14 @@ def jira(test_key):
 
 def save_jira_conf():
     """Read Jira configuration from properties file and save it"""
-    global enabled, jiratoken, project_id, execution_url, summary_prefix, labels, comments,\
+    global enabled, jiratoken, project_id, project_key, project_name, execution_url, summary_prefix, labels, comments,\
         fix_version, build, only_if_changes, attachments
     config = DriverWrappersPool.get_default_wrapper().config
     enabled = config.getboolean_optional('Jira', 'enabled')
     jiratoken = config.get_optional('Jira', 'token')
     project_id = int(config.get_optional('Jira', 'project_id'))
+    project_key = int(config.get_optional('Jira', 'project_key'))
+    project_name = int(config.get_optional('Jira', 'project_name'))
     execution_url = config.get_optional('Jira', 'execution_url')
     summary_prefix = config.get_optional('Jira', 'summary_prefix')
     labels_raw = config.get_optional('Jira', 'labels')
@@ -167,22 +171,46 @@ def change_all_jira_status():
 
 
 def check_jira_args(server: JIRA):
+    global project_name, project_key, project_id
 
     available_keys = []
     for project_instance in server.projects():
+        # TODO turn into dict
         available_keys.append([project_instance.raw['name'], project_instance.raw['key'],project_instance.raw['id']])
-    if project_id not in available_keys:
-        msg = f"No existe el proyecto '{project_id}'"
+
+    if project_id:
+        project_option = project_id
+    elif project_key:
+        project_option = project_key
+    else:
+        project_option = project_name
+
+    # TODO create def
+    if project_option not in available_keys:
+        msg = f"No existe el proyecto '{project_option}'"
         logger.warning(f"Available projects for your user: '{available_keys}'")
         logger.error(msg)
         raise ValueError(msg)
 
+    # TODO create def
+    # TODO Refactor duplicate ifs
+    if project_id:
+        project_key = server.project(str(project_id)).raw["key"]
+    elif project_key:
+        project_id = int(server.project(project_key).raw["id"])
+    else:
+        for version in available_keys:
+            if project_name in version:
+                project_key = version[1]
+                project_id = int(version[2])
+
+    # TODO create def
     available_fixversions = []
-    for version in server.project(str(project_id)):
+    for version in server.project_versions(project_name):
         available_fixversions.append(version.raw["name"])
     if fix_version not in available_fixversions:
         msg = f"No existe la fix version '{fix_version}'"
-        logger.warning(f"Available fixversions for project {server.project(str(project_id))} are {available_fixversions}")
+        logger.warning(f"Available fixversions for project {server.project(project_name)} are {available_fixversions}")
         logger.error(msg)
         raise ValueError(msg)
 
