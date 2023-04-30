@@ -17,7 +17,9 @@ limitations under the License.
 """
 
 import logging
+import os
 import re
+from os import path
 from jira import JIRA, Issue
 from toolium.config_driver import get_error_message_from_exception
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -199,8 +201,8 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
             # TODO wait to create test execution before transitioning to behave status
             logger.debug("Transition skipped for " + test_key)
             # transition(server, issue, test_status)
-            # TODO add attachements
-            # add_results(server, issue.key, test_attachments)
+
+            add_results(server, issue.key, test_attachments)
 
     except Exception as e:
         logger.error("Exception while updating Issue '%s': %s", test_key, e)
@@ -247,6 +249,64 @@ def transition(server: JIRA, issue: Issue, test_status: str):
     else:
         logger.debug("Transition response with status " + str(response.status_code) +
                      " is: '%s'", response.content.decode().splitlines()[0])
+
+
+def add_results(jira: JIRA, issueid: str, attachements: list[str] = None):
+    """Adds the results to the execution or the associated test case instead"""
+
+    def addscreenshots(issueid: str, attachements: list[str] = None):
+        """
+            Attach the screenshots found the report folder to the jira issue provided
+            param issueid: Full Jira ID
+            param attachements: Absolute paths of attachments
+            Raises FileNotFound: if an attachement file is not found
+        """
+
+        if attachements:
+            for filepath in attachements:
+                if os.path.isfile(path.join(filepath)):
+                    with open(filepath, 'rb') as file:
+                        logger.debug("Opened screenshot " + file.name)
+                        jira.add_attachment(issue=issueid, attachment=file)
+                        logger.info("Attached " + file.name + " into " + issueid)
+        else:
+            screenshotspath = path.join(path.dirname(__file__), ".", DriverWrappersPool.screenshots_directory)
+            logger.debug("Reading screenshot folder " + screenshotspath)
+
+            if len(os.listdir(screenshotspath)) < 1:
+                logger.warning("Screenshot folder empty...")
+                return
+
+            for filename in os.listdir(screenshotspath):
+                if os.path.isfile(path.join(screenshotspath, filename)):
+                    with open(os.path.join(screenshotspath, filename), 'rb') as file:
+                        logger.debug("Opened screenshot " + file.name)
+                        jira.add_attachment(issue=issueid, attachment=file)
+                        logger.info("Attached " + filename + " into " + issueid)
+        logger.info("Screenshots uploaded...")
+
+    def addlogs(issueid: str):
+        """
+            Attach the logs in the report folder to the jira issue provided
+            param issueid Full Jira ID
+            Raises FileNotFound Error if the log file is not found in reports
+        """
+        logpath = path.join(path.dirname(__file__),
+                            ".", DriverWrappersPool.screenshots_directory, "..", "..", "toolium.log")
+
+        with open(logpath, 'rb') as file:
+            logger.debug("Opened log file " + file.name)
+            jira.add_attachment(issue=issueid, attachment=file)
+            logger.info("Attached log into " + issueid)
+
+    try:
+        logger.info("Adding results to issue...")
+        addscreenshots(issueid, attachements) if attachements else addscreenshots(issueid)
+        addlogs(issueid)
+        logger.debug("Results added to issue " + issueid)
+
+    except Exception as error:
+        logger.error("Results not added, exception:" + str(error))
 
 
 def get_error_message(response_content: str):
