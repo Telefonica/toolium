@@ -107,6 +107,7 @@ When using behave, it can also be configured in `before_all` method:
 .. code:: python
 
     from toolium.behave.environment import before_all as toolium_before_all
+    from toolium.config_files import ConfigFiles
 
     def before_all(context):
         context.config_files = ConfigFiles()
