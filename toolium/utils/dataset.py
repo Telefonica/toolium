@@ -619,11 +619,10 @@ def _get_initial_value_from_context(initial_key, context):
     :param context: behave context
     :return: mapped value
     """
-    try:
+    context_storage = context.storage if hasattr(context, 'storage') else {}
+    if hasattr(context, 'feature_storage'):
+        # context.feature_storage is initialized only when before_feature method is called
         context_storage = collections.ChainMap(context.storage, context.feature_storage)
-    except AttributeError:
-        # When before_feature is not called, context.storage and context.feature_storage are not available
-        context_storage = {}
     if initial_key in context_storage:
         value = context_storage[initial_key]
     elif hasattr(context, initial_key):
