@@ -4,7 +4,7 @@ Toolium Changelog
 v3.0.0
 ------
 
-*Release date: In development*
+*Release date: 2023-05-03*
 
 - Add support for Python 3.11
 - Add support for Selenium 4
