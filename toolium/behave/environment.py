@@ -207,7 +207,7 @@ def after_scenario(context, scenario):
     :param scenario: running scenario
     """
     if scenario.status == 'skipped':
-        return
+        context.logger.info("The scenario '%s' has been skipped", scenario.name)
     elif scenario.status == 'passed':
         test_status = 'Pass'
         test_comment = None
@@ -219,11 +219,12 @@ def after_scenario(context, scenario):
         context.global_status['test_passed'] = False
 
     # Close drivers
-    DriverWrappersPool.close_drivers(scope='function', test_name=scenario.name, test_passed=scenario.status == 'passed',
-                                     context=context)
+    DriverWrappersPool.close_drivers(scope='function', test_name=scenario.name,
+                                     test_passed=scenario.status in ['passed', 'skipped'], context=context)
 
     # Save test status to be updated later
-    add_jira_status(get_jira_key_from_scenario(scenario), test_status, test_comment)
+    if scenario.status != 'skipped':
+        add_jira_status(get_jira_key_from_scenario(scenario), test_status, test_comment)
 
 
 def get_jira_key_from_scenario(scenario):

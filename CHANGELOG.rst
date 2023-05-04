@@ -7,6 +7,7 @@ v3.0.1
 *Release date: In development*
 
 - Allow to search in `context.storage` using `[CONTEXT:a.b.c]` replacement when `before_feature` method is not used
+- Execute after scenario methods also when a scenario is skipped to assure that scenario preconditions are cleaned
 
 v3.0.0
 ------
