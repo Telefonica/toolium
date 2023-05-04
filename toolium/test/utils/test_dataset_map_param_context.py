@@ -16,7 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
 import pytest
 
 from toolium.utils import dataset
@@ -27,7 +26,9 @@ def test_a_context_param():
     """
     Verification of a mapped parameter as CONTEXT
     """
-    context = mock.MagicMock()
+    class Context(object):
+        pass
+    context = Context()
     context.attribute = "attribute value"
     context.storage = {"storage_key": "storage entry value"}
     context.feature_storage = {"feature_storage_key": "feature storage entry value"}
@@ -42,7 +43,9 @@ def test_a_context_param_storage():
     """
     Verification of a mapped parameter as CONTEXT saved in storage
     """
-    context = mock.MagicMock()
+    class Context(object):
+        pass
+    context = Context()
     context.attribute = "attribute value"
     context.storage = {"storage_key": "storage entry value"}
     context.feature_storage = {"feature_storage_key": "feature storage entry value"}
@@ -57,7 +60,9 @@ def test_a_context_param_feature_storage():
     """
     Verification of a mapped parameter as CONTEXT saved in feature storage
     """
-    context = mock.MagicMock()
+    class Context(object):
+        pass
+    context = Context()
     context.attribute = "attribute value"
     context.storage = {"storage_key": "storage entry value"}
     context.feature_storage = {"feature_storage_key": "feature storage entry value"}
@@ -72,10 +77,45 @@ def test_a_context_param_storage_and_feature_storage():
     """
     Verification of a mapped parameter as CONTEXT saved in storage and feature storage
     """
-    context = mock.MagicMock()
+    class Context(object):
+        pass
+    context = Context()
     context.attribute = "attribute value"
     context.storage = {"storage_key": "storage entry value"}
     context.feature_storage = {"storage_key": "feature storage entry value"}
+    dataset.behave_context = context
+
+    result_st = map_param("[CONTEXT:storage_key]")
+    expected_st = "storage entry value"
+    assert expected_st == result_st
+
+
+def test_a_context_param_without_storage_and_feature_storage():
+    """
+    Verification of a mapped parameter as CONTEXT when before_feature and before_scenario have not been executed, so
+    storage and feature_storage are not initialized
+    """
+    class Context(object):
+        pass
+    context = Context()
+    context.attribute = "attribute value"
+    dataset.behave_context = context
+
+    result_att = map_param("[CONTEXT:attribute]")
+    expected_att = "attribute value"
+    assert expected_att == result_att
+
+
+def test_a_context_param_storage_without_feature_storage():
+    """
+    Verification of a mapped parameter as CONTEXT saved in storage when before_feature has been executed, so
+    feature_storage is not initialized
+    """
+    class Context(object):
+        pass
+    context = Context()
+    context.attribute = "attribute value"
+    context.storage = {"storage_key": "storage entry value"}
     dataset.behave_context = context
 
     result_st = map_param("[CONTEXT:storage_key]")

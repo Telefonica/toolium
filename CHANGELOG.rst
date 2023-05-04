@@ -6,6 +6,8 @@ v3.0.1
 
 *Release date: In development*
 
+- Allow to search in `context.storage` using `[CONTEXT:a.b.c]` replacement when `before_feature` method is not used
+
 v3.0.0
 ------
 
