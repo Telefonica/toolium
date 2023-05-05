@@ -28,13 +28,13 @@ Nose2:
 
 .. code:: console
 
-    $ TOOLIUM_CONFIG_ENVIRONMENT=android nose2 web/tests/test_web.py
+    $ TOOLIUM_CONFIG_ENVIRONMENT=android python -m nose2 web/tests/test_web.py
 
 Pytest:
 
 .. code:: console
 
-    $ TOOLIUM_CONFIG_ENVIRONMENT=android pytest web_pytest/tests/test_web_pytest.py
+    $ TOOLIUM_CONFIG_ENVIRONMENT=android python -m pytest web_pytest/tests/test_web_pytest.py
 
 Behave:
 
