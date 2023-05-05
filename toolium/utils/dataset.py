@@ -473,7 +473,7 @@ def _get_mapping_type_and_key(param):
     """
     types = ["CONF", "LANG", "POE", "ENV", "BASE64", "TOOLIUM", "CONTEXT", "FILE"]
     for type in types:
-        match_group = re.match(r"\[%s:(.*)\]" % type, param)
+        match_group = re.match(r"\[%s:([^\[\]]*)\]" % type, param)
         if match_group:
             return type, match_group.group(1)
     return None, None
