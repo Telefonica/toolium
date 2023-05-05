@@ -128,10 +128,11 @@ def before_scenario(context, scenario):
 
     context.logger.info("Running new scenario: %s", scenario.name)
 
+    # Make sure storage dict are empty in each scenario
+    context.storage = dict()
+
     # Behave dynamic environment
     context.dyn_env.execute_before_scenario_steps(context)
-    # Make sure storage dict are empty
-    context.storage = dict()
 
 
 def create_and_configure_wrapper(context):
