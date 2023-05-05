@@ -117,6 +117,7 @@ unknown_lang_keys = [
     ('home.unknown'),
     ('unknown!'),
     ('home.unknown!'),
+    ('home.unknown\n'),
 ]
 
 
@@ -129,7 +130,9 @@ def test_a_lang_param_unknown(lang_key):
     dataset.language = "es"
     with pytest.raises(KeyError) as excinfo:
         map_param(f"[LANG:{lang_key}]")
-    assert f'"Mapping chain \'{lang_key}\' not found in the language properties file"' == str(excinfo.value)
+    # Get exception message updating \n
+    exc_message = str(excinfo.value).replace('\\n', '\n')
+    assert f'"Mapping chain \'{lang_key}\' not found in the language properties file"' == exc_message
 
 
 def test_a_toolium_param():
