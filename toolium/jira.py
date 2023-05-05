@@ -110,6 +110,7 @@ def save_jira_conf():
     summary_prefix = config.get_optional('Jira', 'summary_prefix')
     labels_raw = config.get_optional('Jira', 'labels')
     labels_raw = labels_raw.replace("[", "").replace("]", "")
+    labels = []
     for label in labels_raw.split(","):
         labels.append(label)
     comments = config.get_optional('Jira', 'comments')
@@ -176,41 +177,46 @@ def check_jira_args(server: JIRA):
     available_keys = []
     for project_instance in server.projects():
         # TODO turn into dict
-        available_keys.append([project_instance.raw['name'], project_instance.raw['key'],project_instance.raw['id']])
+        available_keys.append([project_instance.raw['name'], project_instance.raw['key'], project_instance.raw['id']])
 
-    if project_id:
-        project_option = project_id
-    elif project_key:
-        project_option = project_key
-    else:
-        project_option = project_name
+    logger.debug(f"Read project info read name:'{project_name}', key:'{project_key}', id:'{project_id}'")
 
     # TODO create def
-    if project_option not in available_keys:
-        msg = f"No existe el proyecto '{project_option}'"
+    project_option = ""
+    # TODO Update jira_properties
+    for key in available_keys:
+        if project_id in key[2]:
+            project_option = project_id
+        elif project_key in key[1]:
+            project_option = project_key
+        elif project_name in key[0]:
+            project_option = project_name
+
+    if not project_option:
+        msg = f"No existe el proyecto especificado name:'{project_name}', key:'{project_key}', id:'{project_id}'"
         logger.warning(f"Available projects for your user: '{available_keys}'")
         logger.error(msg)
         raise ValueError(msg)
 
     # TODO create def
     # TODO Refactor duplicate ifs
-    if project_id:
+    if project_option == project_id:
         project_key = server.project(str(project_id)).raw["key"]
-    elif project_key:
-        project_id = int(server.project(project_key).raw["id"])
+    elif project_option == project_key:
+        project_id = str(server.project(project_key).raw["id"])
     else:
         for version in available_keys:
             if project_name in version:
                 project_key = version[1]
-                project_id = int(version[2])
+                project_id = str(version[2])
 
     # TODO create def
     available_fixversions = []
-    for version in server.project_versions(project_name):
+    for version in server.project_versions(project_key):
         available_fixversions.append(version.raw["name"])
     if fix_version not in available_fixversions:
         msg = f"No existe la fix version '{fix_version}'"
-        logger.warning(f"Available fixversions for project {server.project(project_name)} are {available_fixversions}")
+        logger.warning(f"Available fixversions for project {server.project(project_key)} are {available_fixversions}")
         logger.error(msg)
         raise ValueError(msg)
 
