@@ -386,7 +386,7 @@ class ConfigDriver(object):
         :param options: Chrome options object
         """
         chrome_options = self.config.get_optional('Chrome', 'options')
-        if options:
+        if chrome_options:
             try:
                 for key, value in ast.literal_eval(chrome_options).items():
                     self.logger.debug("Added Chrome additional option: %s = %s", key, value)
