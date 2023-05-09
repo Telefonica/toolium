@@ -207,15 +207,16 @@ def after_scenario(context, scenario):
     :param context: behave context
     :param scenario: running scenario
     """
+    jira_test_status = None
+    jira_test_comment = None
     if scenario.status == 'skipped':
         context.logger.info("The scenario '%s' has been skipped", scenario.name)
     elif scenario.status == 'passed':
-        test_status = 'Pass'
-        test_comment = None
+        jira_test_status = 'Pass'
         context.logger.info("The scenario '%s' has passed", scenario.name)
     else:
-        test_status = 'Fail'
-        test_comment = "The scenario '%s' has failed" % scenario.name
+        jira_test_status = 'Fail'
+        jira_test_comment = "The scenario '%s' has failed" % scenario.name
         context.logger.error("The scenario '%s' has failed", scenario.name)
         context.global_status['test_passed'] = False
 
@@ -224,8 +225,8 @@ def after_scenario(context, scenario):
                                      test_passed=scenario.status in ['passed', 'skipped'], context=context)
 
     # Save test status to be updated later
-    if scenario.status != 'skipped':
-        add_jira_status(get_jira_key_from_scenario(scenario), test_status, test_comment)
+    if jira_test_status:
+        add_jira_status(get_jira_key_from_scenario(scenario), jira_test_status, jira_test_comment)
 
 
 def get_jira_key_from_scenario(scenario):
