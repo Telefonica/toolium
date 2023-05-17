@@ -72,13 +72,14 @@ def before_feature(context, feature):
         no_driver = 'no_driver' in feature.tags
         start_driver(context, no_driver)
 
-    # Behave dynamic environment
-    context.dyn_env.get_steps_from_feature_description(feature.description)
-    context.dyn_env.execute_before_feature_steps(context)
     # Dictionary to store information between steps
     context.storage = dict()
     # Dictionary to store information between features
     context.feature_storage = dict()
+
+    # Behave dynamic environment
+    context.dyn_env.get_steps_from_feature_description(feature.description)
+    context.dyn_env.execute_before_feature_steps(context)
 
 
 def before_scenario(context, scenario):

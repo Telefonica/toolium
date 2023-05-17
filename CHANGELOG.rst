@@ -6,6 +6,7 @@ v3.0.2
 
 *Release date: In development*
 
+- `context.storage` must be initialized before dynamic environment steps in `before_feature` method
 - Mark scenario as failed when a dynamic environment step fails in `before_scenario`
 - Mark all feature scenarios as failed when a dynamic environment step fails in `before_feature` and `after_feature`
 
@@ -17,7 +18,7 @@ v3.0.1
 - Allow to search in `context.storage` using `[CONTEXT:a.b.c]` replacement when `before_feature` method is not used
 - Execute after scenario methods also when a scenario is skipped to assure that scenario preconditions are cleaned
 - Fix `[LANG:key]` replacement bug when it contains carriage returns
-- `context.storage` must be initialized before dynamic environment steps
+- `context.storage` must be initialized before dynamic environment steps in `before_scenario` method
 - Fix error in Python 3.11 executing nose2 tests
 
 v3.0.0
