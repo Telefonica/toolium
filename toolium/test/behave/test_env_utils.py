@@ -196,7 +196,7 @@ def test_execute_after_feature_steps_passed_actions(context, dyn_env):
 
 
 def test_execute_after_feature_steps_failed_actions(context, dyn_env):
-    context.execute_steps.side_effect = Exception('Exception in before feature step')
+    context.execute_steps.side_effect = Exception('Exception in after feature step')
     dyn_env.fail_first_step_precondition_exception = mock.MagicMock()
 
     dyn_env.execute_after_feature_steps(context)
