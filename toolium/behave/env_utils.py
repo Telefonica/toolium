@@ -18,15 +18,14 @@ limitations under the License.
 
 import sys
 import warnings
-from pkg_resources import parse_version
 
-# constants
-# pre-actions in feature files
+# Actions types defined in feature files
 ACTIONS_BEFORE_FEATURE = 'actions before the feature'
 ACTIONS_BEFORE_SCENARIO = 'actions before each scenario'
 ACTIONS_AFTER_SCENARIO = 'actions after each scenario'
 ACTIONS_AFTER_FEATURE = 'actions after the feature'
-KEYWORDS = ['Setup', 'Check', 'Given', 'When', 'Then', 'And', 'But']  # prefix in steps to actions
+# Valid prefix in action steps
+KEYWORDS = ['Setup', 'Check', 'Given', 'When', 'Then', 'And', 'But']
 GIVEN_PREFIX = 'Given'
 TABLE_SEPARATOR = '|'
 STEP_TEXT_SEPARATORS = ['"""', "'''"]
@@ -118,6 +117,19 @@ class DynamicEnvironment:
         def after_feature(context, feature):
             # ---- actions after feature ----
             context.dyn_env.execute_after_feature_steps(context)
+
+    Error management with behave and dynamic environment:
+        * Error in before_feature:
+                before_scenario and after_scenario are not executed
+                after_feature is executed
+                each scenario is marked as failed
+        * Error in before_scenario:
+                after_scenario is executed
+                the scenario is marked as failed
+        * Error in after_scenario:
+                the scenario status is not changed
+        * Error in after_feature:
+                the scenarios status are not changed
     """
 
     def __init__(self, **kwargs):
@@ -134,6 +146,7 @@ class DynamicEnvironment:
         self.scenario_counter = 0
         self.feature_error = False
         self.scenario_error = False
+        self.before_error_message = None
 
     def init_actions(self):
         """clear actions lists"""
@@ -212,28 +225,19 @@ class DynamicEnvironment:
                 self.logger.by_console('\n')
 
             for item in self.actions[action]:
-                self.scenario_error = False
                 try:
                     self.__print_step_by_console(item)
+                    self.logger.debug('Executing step defined in %s: %s' % (action, repr(item)))
                     context.execute_steps('''%s%s''' % (GIVEN_PREFIX, self.__remove_prefix(item)))
-                    self.logger.debug('step defined in pre-actions: %s' % repr(item))
                 except Exception as exc:
-                    self.feature_error = action in [ACTIONS_BEFORE_FEATURE]
-                    self.scenario_error = action in [ACTIONS_BEFORE_SCENARIO]
+                    if action == ACTIONS_BEFORE_FEATURE:
+                        self.feature_error = True
+                        self.before_error_message = exc
+                    elif action == ACTIONS_BEFORE_SCENARIO:
+                        self.scenario_error = True
+                        self.before_error_message = exc
                     self.logger.error(exc)
-                    self.error_exception = exc
                     break
-
-    def reset_error_status(self):
-        """
-        Check if the dyn_env has got any exception when executing the steps and restore the value of status to False.
-        :return: True if any exception has been raised when executing steps
-        """
-        try:
-            return self.feature_error or self.scenario_error
-        finally:
-            self.feature_error = False
-            self.scenario_error = False
 
     def execute_before_feature_steps(self, context):
         """
@@ -243,8 +247,9 @@ class DynamicEnvironment:
         """
         self.__execute_steps_by_action(context, ACTIONS_BEFORE_FEATURE)
 
-        if context.dyn_env.feature_error:
-            # Mark this Feature as skipped. Steps will not be executed.
+        if self.feature_error:
+            # Mark this Feature as skipped to do not execute any Scenario
+            # Status will be changed to failed in after_feature method
             context.feature.mark_skipped()
 
     def execute_before_scenario_steps(self, context):
@@ -253,11 +258,11 @@ class DynamicEnvironment:
         :param context: It’s a clever place where you and behave can store information to share around,
                         automatically managed by behave.
         """
-        if not self.feature_error:
-            self.__execute_steps_by_action(context, ACTIONS_BEFORE_SCENARIO)
+        self.__execute_steps_by_action(context, ACTIONS_BEFORE_SCENARIO)
 
-        if context.dyn_env.scenario_error:
-            # Mark this Scenario as skipped. Steps will not be executed.
+        if self.scenario_error:
+            # Mark this Scenario as skipped to do not execute any step
+            # Status will be changed to failed in after_scenario method
             context.scenario.mark_skipped()
 
     def execute_after_scenario_steps(self, context):
@@ -266,13 +271,16 @@ class DynamicEnvironment:
         :param context: It’s a clever place where you and behave can store information to share around,
                         automatically managed by behave.
         """
-        if not self.feature_error:
-            self.__execute_steps_by_action(context, ACTIONS_AFTER_SCENARIO)
+        self.__execute_steps_by_action(context, ACTIONS_AFTER_SCENARIO)
 
-        # Behave dynamic environment: Fail all steps if dyn_env has got any error and reset it
-        if self.reset_error_status():
+        # Mark first step as failed when before_scenario has failed
+        if self.scenario_error:
+            error_message = self.before_error_message
+            self.scenario_error = False
+            self.before_error_message = None
             context.scenario.reset()
-            context.dyn_env.fail_first_step_precondition_exception(context.scenario)
+            self.fail_first_step_precondition_exception(context.scenario)
+            raise Exception(f'Before scenario steps have failed: {error_message}')
 
     def execute_after_feature_steps(self, context):
         """
@@ -282,13 +290,16 @@ class DynamicEnvironment:
         """
         self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)
 
-        # Behave dynamic environment: Fail all steps if dyn_env has got any error and reset it
-        if self.reset_error_status():
+        # Mark first step of each scenario as failed when before_feature has failed
+        if self.feature_error:
+            error_message = self.before_error_message
+            self.feature_error = False
+            self.before_error_message = None
             context.feature.reset()
             for scenario in context.feature.walk_scenarios():
                 if scenario.should_run(context.config):
-                    context.dyn_env.fail_first_step_precondition_exception(scenario)
-            raise Exception("Preconditions failed during the execution")
+                    self.fail_first_step_precondition_exception(scenario)
+            raise Exception(f'Before feature steps have failed: {error_message}')
 
     def fail_first_step_precondition_exception(self, scenario):
         """
@@ -296,17 +307,9 @@ class DynamicEnvironment:
         This is needed because xUnit exporter in Behave fails if there are not failed steps.
         :param scenario: Behave's Scenario
         """
-
-        try:
-            import behave
-            if parse_version(behave.__version__) < parse_version('1.2.6'):
-                status = 'failed'
-            else:
-                status = behave.model_core.Status.failed
-        except ImportError as exc:
-            self.logger.error(exc)
-            raise
-
-        scenario.steps[0].status = status
-        scenario.steps[0].exception = Exception("Preconditions failed")
-        scenario.steps[0].error_message = str(self.error_exception)
+        if len(scenario.steps) > 0:
+            # Behave is an optional dependency in toolium, so it is imported here
+            from behave.model_core import Status
+            scenario.steps[0].status = Status.failed
+            scenario.steps[0].exception = Exception('Preconditions failed')
+            scenario.steps[0].error_message = str(self.before_error_message)

@@ -9,3 +9,4 @@ flake8~=6.0; python_version >= '3.8'
 build~=0.10
 wheel~=0.40
 twine~=4.0
+behave==1.2.6  # behave tests

@@ -274,10 +274,9 @@ def test_after_feature_with_failed_preconditions(DriverWrappersPool):
     context.dyn_env = mock.MagicMock()
     context.dyn_env.execute_after_feature_steps.side_effect = Exception('Preconditions failed')
 
-    try:
+    with pytest.raises(Exception) as excinfo:
         after_feature(context, feature)
-    except Exception:
-        pass
+    assert 'Preconditions failed' == str(excinfo.value)
 
     # Check that close_drivers is called
     DriverWrappersPool.close_drivers.assert_called_once_with(scope='module', test_name='name', test_passed=True)

@@ -7,6 +7,8 @@ v3.0.2
 *Release date: In development*
 
 - `context.storage` must be initialized before dynamic environment steps in `before_feature` method
+- Mark scenario as failed when a dynamic environment step fails in `before_scenario`
+- Mark all feature scenarios as failed when a dynamic environment step fails in `before_feature` and `after_feature`
 
 v3.0.1
 ------
