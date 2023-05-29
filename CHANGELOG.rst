@@ -9,6 +9,7 @@ v3.0.2
 - `context.storage` must be initialized before dynamic environment steps in `before_feature` method
 - Mark scenario as failed when a dynamic environment step fails in `before_scenario`
 - Mark all feature scenarios as failed when a dynamic environment step fails in `before_feature` and `after_feature`
+- Configure minimal Appium-Python-Client version to 2.3.0 to avoid import errors
 
 v3.0.1
 ------
