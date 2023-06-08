@@ -601,30 +601,70 @@ def get_value_from_context(param, context):
     msg = None
 
     for part in parts[1:]:
+        is_list_with_index = re.search(regex_list_index, part)
         if isinstance(value, dict) and part in value:
             value = value[part]
-        elif is_list_with_index := re.search(regex_list_index, part):
-            value = value[is_list_with_index.group(1)]
-            try:
-                list_index = int(is_list_with_index.group(2))
-            except ValueError:
-                raise Exception(f"the index '{is_list_with_index.group(2)}' must be a numeric index")
+        elif is_list_with_index:
+            value, list_index = get_list_index_value(value, is_list_with_index)
         elif isinstance(value, list):
-            if list_index >= len(value):
-                msg = f"Invalid index '{list_index}', list size is '{len(value)}'. {list_index} >= {len(value)}."
-            else:
-                value = value[list_index][part]
+            msg, value = get_value_in_list(value, list_index, part)
         elif hasattr(value, part):
             value = getattr(value, part)
         else:
-            if isinstance(value, dict):
-                msg = f"'{part}' key not found in {value} value in context"
-            else:
-                msg = f"'{part}' attribute not found in {type(value).__name__} class in context"
+            msg = get_value_context_errors(value, part)
         if msg:
             logger.error(msg)
             raise Exception(msg)
     return value
+
+
+def get_list_index_value(value, is_list_with_index):
+    """
+    get the value updated with elements in list
+    update the list index with the given as parameter
+
+    :param value: updated value of the CONTEXT dict
+    :param is_list_with_index: key that matchs the regex (.*){(.*)}, key{index}
+    :return: value and index updated
+    """
+    val = value[is_list_with_index.group(1)]
+    try:
+        idx = int(is_list_with_index.group(2))
+    except ValueError:
+        raise Exception(f"the index '{is_list_with_index.group(2)}' must be a numeric index")
+    return val, idx
+
+
+def get_value_in_list(value, list_index, part):
+    """
+    get the value updated with elements in list
+    update the value with the given list_index and the part
+
+    :param value: updated value of the CONTEXT dict
+    :param list_index: index of the list
+    :param part: part to take in the value
+    :return: error msg and updated value
+    """
+    msg = None
+    if list_index >= len(value):
+        msg = f"Invalid index '{list_index}', list size is '{len(value)}'. {list_index} >= {len(value)}."
+    else:
+        value = value[list_index][part]
+    return msg, value
+
+
+def get_value_context_errors(value, part):
+    """
+    Returns the errors
+
+    :param value: value of the CONTEXT dict
+    :param part: part to take in the value
+    :return: errors
+    """
+    if isinstance(value, dict):
+        return f"'{part}' key not found in {value} value in context"
+    else:
+        return f"'{part}' attribute not found in {type(value).__name__} class in context"
 
 
 def _get_initial_value_from_context(initial_key, context):

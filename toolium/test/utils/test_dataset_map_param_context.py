@@ -383,6 +383,7 @@ def test_a_context_param_list_oob_index():
         map_param("[CONTEXT:list.cmsScrollableActions{5}.id]")
     assert "Invalid index '5', list size is '2'. 5 >= 2." == str(excinfo.value)
 
+
 def test_a_context_param_list_no_numeric_index():
     """
     Verification of a list with a no numeric index as CONTEXT
@@ -412,6 +413,7 @@ def test_a_context_param_list_no_numeric_index():
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions{'36'}.id]")
     assert "the index ''36'' must be a numeric index" == str(excinfo.value)
+
 
 def test_a_context_param_index_in_non_list_attribute():
     """
