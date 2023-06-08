@@ -609,7 +609,7 @@ def get_value_from_context(param, context):
         elif isinstance(value, list):
             msg, value = get_value_in_list(value, list_index, part)
         elif hasattr(value, part):
-            value = getattr(value, part)
+            value = get_attribute(value, part)
         else:
             msg = get_value_context_errors(value, part)
         if msg:
@@ -627,7 +627,10 @@ def get_list_index_value(value, is_list_with_index):
     :param is_list_with_index: key that matchs the regex (.*){(.*)}, key{index}
     :return: value and index updated
     """
-    val = value[is_list_with_index.group(1)]
+    try:
+        val = get_attribute(value, is_list_with_index.group(1))
+    except AttributeError:
+        val = value[is_list_with_index.group(1)]
     try:
         idx = int(is_list_with_index.group(2))
     except ValueError:
@@ -649,8 +652,22 @@ def get_value_in_list(value, list_index, part):
     if list_index >= len(value):
         msg = f"Invalid index '{list_index}', list size is '{len(value)}'. {list_index} >= {len(value)}."
     else:
-        value = value[list_index][part]
+        value = get_attribute(value[list_index], part)
     return msg, value
+
+
+def get_attribute(value, key):
+    """
+    get the key attribute, accepts dictionary and classes
+
+    :param value: updated value of the dict
+    :param key: part to take in the value
+    :return: error msg and updated value
+    """
+    try:
+        return getattr(value, key)
+    except AttributeError:
+        return value[key]
 
 
 def get_value_context_errors(value, part):
@@ -683,7 +700,7 @@ def _get_initial_value_from_context(initial_key, context):
     if initial_key in context_storage:
         value = context_storage[initial_key]
     elif hasattr(context, initial_key):
-        value = getattr(context, initial_key)
+        value = get_attribute(context, initial_key)
     else:
         msg = f"'{initial_key}' key not found in context"
         logger.error(msg)
@@ -774,7 +791,7 @@ def get_file(file_path):
     Return the content of a file given its path. If a base path was previously set by using
     the set_file_path() function, the file path specified must be relative to that path.
 
-    :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
+    :param file_path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content
     """
     file_path_parts = (base_file_path + file_path).split("/")
@@ -791,7 +808,7 @@ def convert_file_to_base64(file_path):
     Return the content of a file given its path encoded in Base64. If a base path was previously set by using
     the set_file_path() function, the file path specified must be relative to that path.
 
-    :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
+    :param file_path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content encoded in Base64
     """
     file_path_parts = (base_base64_path + file_path).split("/")

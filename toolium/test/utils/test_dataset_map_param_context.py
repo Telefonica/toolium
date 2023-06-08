@@ -19,7 +19,7 @@ limitations under the License.
 import pytest
 
 from toolium.utils import dataset
-from toolium.utils.dataset import map_param
+from toolium.utils.dataset import get_attribute, map_param
 
 
 def test_a_context_param():
@@ -433,3 +433,36 @@ def test_a_context_param_index_in_non_list_attribute():
     }
     dataset.behave_context = context
     assert map_param("[CONTEXT:list.url{3}.id{1}]") == 'ask-for-duplicate'
+
+
+def test_get_attribute_class():
+    """
+    Verification of a get attribute given a class
+    """
+
+    class ExampleClass:
+        """
+        ExampleClass class
+        """
+
+        def __init__(self, url, text):
+            self.url = url
+            self.text = text
+
+    example = ExampleClass(url = {'id': 'ask-for-duplicate'}, text="QA duplica")
+
+    assert get_attribute(example, "text") == 'QA duplica'
+
+def test_get_attribute_dict():
+    """
+    Verification of a get attribute given a dictionary
+    """
+
+    example = {
+        'url': {
+            'id': 'ask-for-duplicate'
+        },
+        'text': 'QA duplica'
+    }
+
+    assert get_attribute(example, "text") == 'QA duplica'
