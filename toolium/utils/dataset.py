@@ -615,7 +615,7 @@ def get_value_from_context(param, context):
             else:
                 value = value[list_index][part]
         elif hasattr(value, part):
-            value = value[part]
+            value = getattr(value, part)
         else:
             if isinstance(value, dict):
                 msg = f"'{part}' key not found in {value} value in context"
