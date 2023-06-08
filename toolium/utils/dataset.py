@@ -581,6 +581,8 @@ def get_value_from_context(param, context):
     storages or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
     in the context storages or as a property of the context object whose name is last_request. In both cases, when
     found, "result" is considered (and resolved) as a property or a key into the returned value.
+    If the element is a list then return the first element as default or take the index passed between '{}'
+    f.e: list{2} returns the second element of the list 'list'.
 
     There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
 
@@ -594,17 +596,32 @@ def get_value_from_context(param, context):
     """
     parts = param.split('.')
     value = _get_initial_value_from_context(parts[0], context)
+    regex_list_index = r'(.*){(.*)}'
+    list_index = 0
+    msg = None
 
     for part in parts[1:]:
         if isinstance(value, dict) and part in value:
             value = value[part]
+        elif is_list_with_index := re.search(regex_list_index, part):
+            value = value[is_list_with_index.group(1)]
+            try:
+                list_index = int(is_list_with_index.group(2))
+            except ValueError:
+                raise Exception(f"the index '{is_list_with_index.group(2)}' must be a numeric index")
+        elif isinstance(value, list):
+            if list_index >= len(value):
+                msg = f"Invalid index '{list_index}', list size is '{len(value)}'. {list_index} >= {len(value)}."
+            else:
+                value = value[list_index][part]
         elif hasattr(value, part):
-            value = getattr(value, part)
+            value = value[part]
         else:
             if isinstance(value, dict):
                 msg = f"'{part}' key not found in {value} value in context"
             else:
                 msg = f"'{part}' attribute not found in {type(value).__name__} class in context"
+        if msg:
             logger.error(msg)
             raise Exception(msg)
     return value
