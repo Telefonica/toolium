@@ -449,9 +449,10 @@ def test_get_attribute_class():
             self.url = url
             self.text = text
 
-    example = ExampleClass(url = {'id': 'ask-for-duplicate'}, text="QA duplica")
+    example = ExampleClass(url={'id': 'ask-for-duplicate'}, text="QA duplica")
 
     assert get_attribute(example, "text") == 'QA duplica'
+
 
 def test_get_attribute_dict():
     """
