@@ -581,8 +581,8 @@ def get_value_from_context(param, context):
     storages or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
     in the context storages or as a property of the context object whose name is last_request. In both cases, when
     found, "result" is considered (and resolved) as a property or a key into the returned value.
-    If the element is a list then return the first element as default or take the index passed between '{}'
-    f.e: list{2} returns the second element of the list 'list'.
+    If the element is a list then return the first element as default or take the index given in the next part
+    f.e: list.1 returns the second element of the list 'list'.
 
     There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
 
@@ -596,18 +596,13 @@ def get_value_from_context(param, context):
     """
     parts = param.split('.')
     value = _get_initial_value_from_context(parts[0], context)
-    regex_list_index = r'(.*){(.*)}'
-    list_index = 0
     msg = None
 
     for part in parts[1:]:
-        is_list_with_index = re.search(regex_list_index, part)
         if isinstance(value, dict) and part in value:
             value = value[part]
-        elif is_list_with_index:
-            value, list_index = get_list_index_value(value, is_list_with_index)
         elif isinstance(value, list):
-            msg, value = get_value_in_list(value, list_index, part)
+            msg, value = get_value_in_list(value, part)
         elif hasattr(value, part):
             value = get_attribute(value, part)
         else:
@@ -618,41 +613,27 @@ def get_value_from_context(param, context):
     return value
 
 
-def get_list_index_value(value, is_list_with_index):
-    """
-    get the value updated with elements in list
-    update the list index with the given as parameter
-
-    :param value: updated value of the CONTEXT dict
-    :param is_list_with_index: key that matchs the regex (.*){(.*)}, key{index}
-    :return: value and index updated
-    """
-    try:
-        val = get_attribute(value, is_list_with_index.group(1))
-    except AttributeError:
-        val = value[is_list_with_index.group(1)]
-    try:
-        idx = int(is_list_with_index.group(2))
-    except ValueError:
-        raise Exception(f"the index '{is_list_with_index.group(2)}' must be a numeric index")
-    return val, idx
-
-
-def get_value_in_list(value, list_index, part):
+def get_value_in_list(value, part):
     """
     get the value updated with elements in list
     update the value with the given list_index and the part
 
     :param value: updated value of the CONTEXT dict
-    :param list_index: index of the list
-    :param part: part to take in the value
+    :param part: part to take in the value (index of the list)
     :return: error msg and updated value
     """
     msg = None
-    if list_index >= len(value):
-        msg = f"Invalid index '{list_index}', list size is '{len(value)}'. {list_index} >= {len(value)}."
+    if part.isdigit():
+        part = int(part)
+        if part >= len(value):
+            msg = f"Invalid index '{part}', list size is '{len(value)}'. {part} >= {len(value)}."
+        else:
+            value = value[part]
     else:
-        value = get_attribute(value[list_index], part)
+        try:
+            value = get_attribute(value[0], part)
+        except (KeyError, TypeError):
+            msg = f"the index '{part}' must be a numeric index or a valid key"
     return msg, value
 
 
