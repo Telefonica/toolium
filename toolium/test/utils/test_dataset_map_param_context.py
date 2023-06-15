@@ -414,6 +414,7 @@ def test_a_context_param_list_no_numeric_index():
         map_param("[CONTEXT:list.cmsScrollableActions.'36'.id]")
     assert "the index ''36'' must be a numeric index or a valid key" == str(excinfo.value)
 
+
 def test_a_context_param_class_no_numeric_index():
     """
     Verification of a class with a no numeric index as CONTEXT
@@ -428,16 +429,8 @@ def test_a_context_param_class_no_numeric_index():
         """
 
         def __init__(self):
-            self.cmsScrollableActions = [
-            {
-                'id': 'ask-for-duplicate',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
-        ]
+            self.cmsScrollableActions = [{'id': 'ask-for-duplicate', 'text': 'QA duplica'},
+                                         {'id': 'ask-for-qa', 'text': 'QA no duplica'}]
 
     context.list = ExampleClass()
     dataset.behave_context = context
