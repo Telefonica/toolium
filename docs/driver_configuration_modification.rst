@@ -46,6 +46,6 @@ can be monkey patched to modify properties values, for instance:
 
     def finalize_properties_configuration(self):
         if self.config.getboolean_optional('Server', 'enabled'):
-            self.config.set('Capabilities', 'selenoid:options', {'enableVideo': True}):
+            self.config.set('Capabilities', 'selenoid:options', "{'enableVideo': True}"):
 
     DriverWrapper.finalize_properties_configuration = finalize_properties_configuration
