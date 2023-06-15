@@ -1,10 +1,14 @@
 Toolium Changelog
 =================
 
-v3.0.2
+v3.1.0
 ------
 
 *Release date: In development*
+- Update `[CONTEXT:a.b.c]` to allow list access in context, f.e: context.list.1 access to the second element of list
+
+v3.0.2
+------
 
 - `context.storage` must be initialized before dynamic environment steps in `before_feature` method
 - Mark scenario as failed when a dynamic environment step fails in `before_scenario`
