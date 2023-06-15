@@ -601,54 +601,16 @@ def get_value_from_context(param, context):
     for part in parts[1:]:
         if isinstance(value, dict) and part in value:
             value = value[part]
-        elif isinstance(value, list):
-            msg, value = get_value_in_list(value, part)
+        elif isinstance(value, list) and part.isdigit() and int(part) < len(value):
+            value = value[int(part)]
         elif hasattr(value, part):
-            value = get_attribute(value, part)
+            value = getattr(value, part)
         else:
             msg = get_value_context_errors(value, part)
         if msg:
             logger.error(msg)
             raise Exception(msg)
     return value
-
-
-def get_value_in_list(value, part):
-    """
-    get the value updated with elements in list
-    update the value with the given list_index and the part
-
-    :param value: updated value of the CONTEXT dict
-    :param part: part to take in the value (index of the list)
-    :return: error msg and updated value
-    """
-    msg = None
-    if part.isdigit():
-        part = int(part)
-        if part >= len(value):
-            msg = f"Invalid index '{part}', list size is '{len(value)}'. {part} >= {len(value)}."
-        else:
-            value = value[part]
-    else:
-        try:
-            value = get_attribute(value[0], part)
-        except (KeyError, TypeError):
-            msg = f"the index '{part}' must be a numeric index or a valid key"
-    return msg, value
-
-
-def get_attribute(value, key):
-    """
-    get the key attribute, accepts dictionary and classes
-
-    :param value: updated value of the dict
-    :param key: part to take in the value
-    :return: error msg and updated value
-    """
-    try:
-        return getattr(value, key)
-    except AttributeError:
-        return value[key]
 
 
 def get_value_context_errors(value, part):
@@ -661,6 +623,11 @@ def get_value_context_errors(value, part):
     """
     if isinstance(value, dict):
         return f"'{part}' key not found in {value} value in context"
+    elif isinstance(value, list):
+        if part.isdigit():
+            return f"Invalid index '{part}', list size is '{len(value)}'. {part} >= {len(value)}."
+        else:
+            return f"the index '{part}' must be a numeric index"
     else:
         return f"'{part}' attribute not found in {type(value).__name__} class in context"
 
@@ -681,7 +648,7 @@ def _get_initial_value_from_context(initial_key, context):
     if initial_key in context_storage:
         value = context_storage[initial_key]
     elif hasattr(context, initial_key):
-        value = get_attribute(context, initial_key)
+        value = getattr(context, initial_key)
     else:
         msg = f"'{initial_key}' key not found in context"
         logger.error(msg)

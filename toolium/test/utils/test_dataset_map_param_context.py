@@ -19,7 +19,7 @@ limitations under the License.
 import pytest
 
 from toolium.utils import dataset
-from toolium.utils.dataset import get_attribute, map_param
+from toolium.utils.dataset import map_param
 
 
 def test_a_context_param():
@@ -305,9 +305,9 @@ def test_a_context_param_list():
                                                                 {'id': 'ask-for-qa', 'text': 'QA no duplica'}]
 
 
-def test_a_context_param_list_default():
+def test_a_context_param_list_default_no_index():
     """
-    Verification of a list without index as CONTEXT (get the attribute of the first element in list)
+    Verification of a list without index as CONTEXT
     """
     class Context(object):
         pass
@@ -326,7 +326,10 @@ def test_a_context_param_list_default():
         ]
     }
     dataset.behave_context = context
-    assert map_param("[CONTEXT:list.cmsScrollableActions.text]") == 'QA duplica'
+
+    with pytest.raises(Exception) as excinfo:
+        map_param("[CONTEXT:list.cmsScrollableActions.text]")
+    assert "the index 'text' must be a numeric index" == str(excinfo.value)
 
 
 def test_a_context_param_list_correct_index():
@@ -408,11 +411,11 @@ def test_a_context_param_list_no_numeric_index():
 
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.prueba.id]")
-    assert "the index 'prueba' must be a numeric index or a valid key" == str(excinfo.value)
+    assert "the index 'prueba' must be a numeric index" == str(excinfo.value)
 
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.'36'.id]")
-    assert "the index ''36'' must be a numeric index or a valid key" == str(excinfo.value)
+    assert "the index ''36'' must be a numeric index" == str(excinfo.value)
 
 
 def test_a_context_param_class_no_numeric_index():
@@ -438,42 +441,8 @@ def test_a_context_param_class_no_numeric_index():
     print(context)
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.prueba.id]")
-    assert "the index 'prueba' must be a numeric index or a valid key" == str(excinfo.value)
+    assert "the index 'prueba' must be a numeric index" == str(excinfo.value)
 
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.'36'.id]")
-    assert "the index ''36'' must be a numeric index or a valid key" == str(excinfo.value)
-
-
-def test_get_attribute_class():
-    """
-    Verification of a get attribute given a class
-    """
-
-    class ExampleClass:
-        """
-        ExampleClass class
-        """
-
-        def __init__(self, url, text):
-            self.url = url
-            self.text = text
-
-    example = ExampleClass(url={'id': 'ask-for-duplicate'}, text="QA duplica")
-
-    assert get_attribute(example, "text") == 'QA duplica'
-
-
-def test_get_attribute_dict():
-    """
-    Verification of a get attribute given a dictionary
-    """
-
-    example = {
-        'url': {
-            'id': 'ask-for-duplicate'
-        },
-        'text': 'QA duplica'
-    }
-
-    assert get_attribute(example, "text") == 'QA duplica'
+    assert "the index ''36'' must be a numeric index" == str(excinfo.value)
