@@ -281,7 +281,7 @@ def test_a_context_param_dict_unknown():
 
 def test_a_context_param_list():
     """
-    Verification of a list without index as CONTEXT to get all the list, not a element in the list
+    Verification of a list without index as CONTEXT to get all the list, not an element in the list
     """
     class Context(object):
         pass
