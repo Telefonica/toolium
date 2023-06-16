@@ -420,7 +420,7 @@ def test_a_context_param_list_no_numeric_index():
 
 def test_a_context_param_class_no_numeric_index():
     """
-    Verification of a class with a no numeric index as CONTEXT
+    Verification of a class with a non-numeric index as CONTEXT
     """
     class Context(object):
         pass
