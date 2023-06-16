@@ -277,3 +277,172 @@ def test_a_context_param_dict_unknown():
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:one.three]")
     assert f"'three' key not found in {context.one} value in context" == str(excinfo.value)
+
+
+def test_a_context_param_list():
+    """
+    Verification of a list without index as CONTEXT to get all the list, not an element in the list
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            }
+        ]
+    }
+    dataset.behave_context = context
+
+    assert map_param("[CONTEXT:list.cmsScrollableActions]") == [{'id': 'ask-for-duplicate', 'text': 'QA duplica'},
+                                                                {'id': 'ask-for-qa', 'text': 'QA no duplica'}]
+
+
+def test_a_context_param_list_default_no_index():
+    """
+    Verification of a list without index as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            }
+        ]
+    }
+    dataset.behave_context = context
+
+    with pytest.raises(Exception) as excinfo:
+        map_param("[CONTEXT:list.cmsScrollableActions.text]")
+    assert "the index 'text' must be a numeric index" == str(excinfo.value)
+
+
+def test_a_context_param_list_correct_index():
+    """
+    Verification of a list with a correct index (In bounds) as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            }
+        ]
+    }
+    dataset.behave_context = context
+    assert map_param("[CONTEXT:list.cmsScrollableActions.1.id]") == 'ask-for-qa'
+
+
+def test_a_context_param_list_oob_index():
+    """
+    Verification of a list with an incorrect index (Out of bounds) as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            }
+        ]
+    }
+    dataset.behave_context = context
+
+    with pytest.raises(Exception) as excinfo:
+        map_param("[CONTEXT:list.cmsScrollableActions.2.id]")
+    assert "Invalid index '2', list size is '2'. 2 >= 2." == str(excinfo.value)
+
+    with pytest.raises(Exception) as excinfo:
+        map_param("[CONTEXT:list.cmsScrollableActions.5.id]")
+    assert "Invalid index '5', list size is '2'. 5 >= 2." == str(excinfo.value)
+
+
+def test_a_context_param_list_no_numeric_index():
+    """
+    Verification of a list with a non-numeric index as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            }
+        ]
+    }
+    dataset.behave_context = context
+
+    with pytest.raises(Exception) as excinfo:
+        map_param("[CONTEXT:list.cmsScrollableActions.prueba.id]")
+    assert "the index 'prueba' must be a numeric index" == str(excinfo.value)
+
+    with pytest.raises(Exception) as excinfo:
+        map_param("[CONTEXT:list.cmsScrollableActions.'36'.id]")
+    assert "the index ''36'' must be a numeric index" == str(excinfo.value)
+
+
+def test_a_context_param_class_no_numeric_index():
+    """
+    Verification of a class with a non-numeric index as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    class ExampleClass:
+        """
+        ExampleClass class
+        """
+
+        def __init__(self):
+            self.cmsScrollableActions = [{'id': 'ask-for-duplicate', 'text': 'QA duplica'},
+                                         {'id': 'ask-for-qa', 'text': 'QA no duplica'}]
+
+    context.list = ExampleClass()
+    dataset.behave_context = context
+
+    print(context)
+    with pytest.raises(Exception) as excinfo:
+        map_param("[CONTEXT:list.cmsScrollableActions.prueba.id]")
+    assert "the index 'prueba' must be a numeric index" == str(excinfo.value)
+
+    with pytest.raises(Exception) as excinfo:
+        map_param("[CONTEXT:list.cmsScrollableActions.'36'.id]")
+    assert "the index ''36'' must be a numeric index" == str(excinfo.value)

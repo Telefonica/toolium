@@ -581,6 +581,8 @@ def get_value_from_context(param, context):
     storages or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
     in the context storages or as a property of the context object whose name is last_request. In both cases, when
     found, "result" is considered (and resolved) as a property or a key into the returned value.
+    If the resolved element at one of the tokens is a list, then the next token (if present) is used as the index
+    to select one of its elements, e.g. "list.1" returns the second element of the list "list".
 
     There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
 
@@ -594,20 +596,39 @@ def get_value_from_context(param, context):
     """
     parts = param.split('.')
     value = _get_initial_value_from_context(parts[0], context)
+    msg = None
 
     for part in parts[1:]:
         if isinstance(value, dict) and part in value:
             value = value[part]
+        elif isinstance(value, list) and part.isdigit() and int(part) < len(value):
+            value = value[int(part)]
         elif hasattr(value, part):
             value = getattr(value, part)
         else:
-            if isinstance(value, dict):
-                msg = f"'{part}' key not found in {value} value in context"
-            else:
-                msg = f"'{part}' attribute not found in {type(value).__name__} class in context"
+            msg = _get_value_context_error_msg(value, part)
             logger.error(msg)
             raise Exception(msg)
     return value
+
+
+def _get_value_context_error_msg(value, part):
+    """
+    Returns an appropriate error message when an error occurs resolving a CONTEXT reference.
+
+    :param value: last value that has been correctly resolved
+    :param part: token that is causing the error
+    :return: a string with the error message
+    """
+    if isinstance(value, dict):
+        return f"'{part}' key not found in {value} value in context"
+    elif isinstance(value, list):
+        if part.isdigit():
+            return f"Invalid index '{part}', list size is '{len(value)}'. {part} >= {len(value)}."
+        else:
+            return f"the index '{part}' must be a numeric index"
+    else:
+        return f"'{part}' attribute not found in {type(value).__name__} class in context"
 
 
 def _get_initial_value_from_context(initial_key, context):
@@ -717,7 +738,7 @@ def get_file(file_path):
     Return the content of a file given its path. If a base path was previously set by using
     the set_file_path() function, the file path specified must be relative to that path.
 
-    :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
+    :param file_path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content
     """
     file_path_parts = (base_file_path + file_path).split("/")
@@ -734,7 +755,7 @@ def convert_file_to_base64(file_path):
     Return the content of a file given its path encoded in Base64. If a base path was previously set by using
     the set_file_path() function, the file path specified must be relative to that path.
 
-    :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
+    :param file_path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content encoded in Base64
     """
     file_path_parts = (base_base64_path + file_path).split("/")
