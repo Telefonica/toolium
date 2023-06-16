@@ -606,7 +606,7 @@ def get_value_from_context(param, context):
         elif hasattr(value, part):
             value = getattr(value, part)
         else:
-            msg = get_value_context_errors(value, part)
+            msg = _get_value_context_error_msg(value, part)
             logger.error(msg)
             raise Exception(msg)
     return value
