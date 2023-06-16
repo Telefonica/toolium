@@ -612,7 +612,7 @@ def get_value_from_context(param, context):
     return value
 
 
-def get_value_context_errors(value, part):
+def _get_value_context_error_msg(value, part):
     """
     Returns an appropriate error message when an error occurs resolving a CONTEXT reference.
 
