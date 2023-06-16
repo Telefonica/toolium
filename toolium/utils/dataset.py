@@ -581,8 +581,8 @@ def get_value_from_context(param, context):
     storages or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
     in the context storages or as a property of the context object whose name is last_request. In both cases, when
     found, "result" is considered (and resolved) as a property or a key into the returned value.
-    If the element is a list then return the first element as default or take the index given in the next part
-    f.e: list.1 returns the second element of the list 'list'.
+    If the resolved element at one of the tokens is a list, then the next token (if present) is used as the index
+    to select one of its elements, e.g. "list.1" returns the second element of the list "list".
 
     There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
 
