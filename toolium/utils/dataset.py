@@ -614,11 +614,11 @@ def get_value_from_context(param, context):
 
 def get_value_context_errors(value, part):
     """
-    Returns the errors
+    Returns an appropriate error message when an error occurs resolving a CONTEXT reference.
 
-    :param value: value of the CONTEXT dict
-    :param part: part to take in the value
-    :return: errors
+    :param value: last value that has been correctly resolved
+    :param part: token that is causing the error
+    :return: a string with the error message
     """
     if isinstance(value, dict):
         return f"'{part}' key not found in {value} value in context"
