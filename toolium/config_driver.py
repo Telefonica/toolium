@@ -109,6 +109,7 @@ class ConfigDriver(object):
             # Get driver options
             options = AppiumOptions()
             self._add_capabilities_from_properties(capabilities, 'AppiumCapabilities')
+            self._add_capabilities_from_properties(capabilities, 'Capabilities')
             self._update_dict(options.capabilities, capabilities)
 
             # Create remote appium driver
