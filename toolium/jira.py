@@ -174,43 +174,74 @@ def change_all_jira_status():
 def check_jira_args(server: JIRA):
     global project_name, project_key, project_id
 
+    project_name, project_key, project_id = _check_project_set_ids(server, project_id, project_key, project_name)
+    _check_fix_version(server, fix_version)
+
+
+def _check_project_set_ids(server: JIRA, p_id: str, p_key: str, p_name: str):
+    """
+    Checks the provided project identifiers returns the values updated if they were empty
+    Note that the args are provided in order of precedence to prevent mismatches between them
+    Args:
+        server (str): jira server instance
+        p_id (str): The project id
+        p_key (str): the key shortcut for the project
+        p_name (str): Project full name as registered when the project was created
+    Raises:
+        ValueError: if the project does not exist; will log available project if any
+    Returns:
+        p_id (str): The project id
+        p_key (str): the key shortcut for the project
+        p_name (str): Project full name as registered when the project was created
+
+    """
     available_keys = []
     for project_instance in server.projects():
         # TODO turn into dict
-        available_keys.append([project_instance.raw['name'], project_instance.raw['key'], project_instance.raw['id']])
+        available_keys.append(
+            [project_instance.raw['name'], project_instance.raw['key'], project_instance.raw['id']])
 
-    logger.debug(f"Read project info read name:'{project_name}', key:'{project_key}', id:'{project_id}'")
+    logger.debug(f"Read project info read name:'{p_name}', key:'{p_key}', id:'{p_id}'")
 
-    # TODO create def
     project_option = ""
-    # TODO Update jira_properties
     for key in available_keys:
-        if project_id in key[2]:
-            project_option = project_id
-        elif project_key in key[1]:
-            project_option = project_key
-        elif project_name in key[0]:
-            project_option = project_name
+        if p_id in key[2]:
+            project_option = p_id
+        elif p_key in key[1]:
+            project_option = p_key
+        elif p_name in key[0]:
+            project_option = p_name
 
     if not project_option:
-        msg = f"No existe el proyecto especificado name:'{project_name}', key:'{project_key}', id:'{project_id}'"
+        msg = f"No existe el proyecto especificado name:'{p_name}', key:'{p_key}', id:'{p_id}'"
         logger.warning(f"Available projects for your user: '{available_keys}'")
         logger.error(msg)
         raise ValueError(msg)
 
     # TODO create def
     # TODO Refactor duplicate ifs
-    if project_option == project_id:
-        project_key = server.project(str(project_id)).raw["key"]
-    elif project_option == project_key:
-        project_id = str(server.project(project_key).raw["id"])
+    if project_option == p_id:
+        p_key = server.project(str(p_id)).raw["key"]
+    elif project_option == p_key:
+        p_id = str(server.project(p_key).raw["id"])
     else:
         for version in available_keys:
-            if project_name in version:
-                project_key = version[1]
-                project_id = str(version[2])
+            if p_name in version:
+                p_key = version[1]
+                p_id = str(version[2])
 
-    # TODO create def
+    return p_id, p_key, p_name
+
+
+def _check_fix_version(server: JIRA, fix_version: str) -> None:
+    """
+    Retrieves the fix_versions for the current project and ensures the one provided is valid
+    Args:
+        server (str): jira server instance
+        fix_version (str): fix version that will be checked
+    Raises:
+        ValueError: if the fix_version is invalid
+    """
     available_fixversions = []
     for version in server.project_versions(project_key):
         available_fixversions.append(version.raw["name"])
