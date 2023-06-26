@@ -17,14 +17,16 @@ limitations under the License.
 """
 
 import os
-
+import unittest
 import mock
 import pytest
 import requests_mock
+from jira import JIRAError
 from requests.exceptions import ConnectionError
 
 from toolium import jira
 from toolium.driver_wrappers_pool import DriverWrappersPool
+from toolium.jira import JiraServer
 
 
 @pytest.fixture
@@ -243,3 +245,32 @@ class MockTestClass():
     @jira.jira(test_key='TOOLIUM-3')
     def mock_test_fail(self):
         raise AssertionError('test error')
+
+
+def test_jira_connection_anonymous():
+    with JiraServer("https://issues.apache.org/jira", None) as jira:
+        assert len(jira.projects()) > 1
+
+
+@unittest.skip("TOKEN injection pending")
+def test_jira_connection_private_user():
+    def call_jira_server():
+        with JiraServer("https://issues.apache.org/jira", "") as jira:  # TODO
+            assert jira.current_user()
+    unittest.TestCase().assertRaises(JIRAError, call_jira_server)
+
+
+def test_jira_connection_invalid_url():
+    # with JiraServer("http://github.com", None) as jira:
+    #     return
+    def call_jira_server():
+        with JiraServer("http://github.com", None) as jira:
+            return
+    unittest.TestCase().assertRaisesRegex(JIRAError, "^JiraError HTTP 406 url",  call_jira_server)
+
+
+def test_jira_connection_invalid_token():
+    def call_jira_server():
+        with JiraServer("https://jira.elevenpaths.com/", "6") as jira:
+            assert jira.current_user()
+    unittest.TestCase().assertRaises(JIRAError, call_jira_server)
