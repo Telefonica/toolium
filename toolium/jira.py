@@ -174,7 +174,7 @@ def change_all_jira_status():
 def check_jira_args(server: JIRA):
     global project_name, project_key, project_id
 
-    project_name, project_key, project_id = _check_project_set_ids(server, project_id, project_key, project_name)
+    project_id, project_key = _check_project_set_ids(server, project_id, project_key, project_name)
     _check_fix_version(server, fix_version)
 
 
@@ -192,7 +192,6 @@ def _check_project_set_ids(server: JIRA, p_id: str, p_key: str, p_name: str):
     Returns:
         p_id (str): The project id
         p_key (str): the key shortcut for the project
-        p_name (str): Project full name as registered when the project was created
 
     """
     available_keys = []
@@ -207,10 +206,20 @@ def _check_project_set_ids(server: JIRA, p_id: str, p_key: str, p_name: str):
     for key in available_keys:
         if p_id in key[2]:
             project_option = p_id
+            p_key = server.project(str(p_id)).raw["key"]
+            break
         elif p_key in key[1]:
             project_option = p_key
+            p_id = str(server.project(p_key).raw["id"])
+            break
         elif p_name in key[0]:
             project_option = p_name
+            for version in available_keys:
+                if p_name in version:
+                    p_key = version[1]
+                    p_id = str(version[2])
+                    break
+            break
 
     if not project_option:
         msg = f"No existe el proyecto especificado name:'{p_name}', key:'{p_key}', id:'{p_id}'"
@@ -218,19 +227,7 @@ def _check_project_set_ids(server: JIRA, p_id: str, p_key: str, p_name: str):
         logger.error(msg)
         raise ValueError(msg)
 
-    # TODO create def
-    # TODO Refactor duplicate ifs
-    if project_option == p_id:
-        p_key = server.project(str(p_id)).raw["key"]
-    elif project_option == p_key:
-        p_id = str(server.project(p_key).raw["id"])
-    else:
-        for version in available_keys:
-            if p_name in version:
-                p_key = version[1]
-                p_id = str(version[2])
-
-    return p_id, p_key, p_name
+    return p_id, p_key
 
 
 def _check_fix_version(server: JIRA, fix_version: str) -> None:
