@@ -193,8 +193,9 @@ def test_before_scenario_no_driver_feature(start_driver, add_assert_screenshot_m
     start_driver.assert_called_once_with(context, True)
 
 
+@mock.patch('toolium.behave.environment.add_jira_status')
 @mock.patch('toolium.behave.environment.DriverWrappersPool')
-def test_after_scenario_passed(DriverWrappersPool):
+def test_after_scenario_passed(DriverWrappersPool, add_jira_status):
     # Create context mock
     context = mock.MagicMock()
     context.global_status = {'test_passed': True}
@@ -204,14 +205,16 @@ def test_after_scenario_passed(DriverWrappersPool):
 
     after_scenario(context, scenario)
 
-    # Check that close_drivers is called
+    # Check that close_drivers and add_jira_status are called
     assert context.global_status['test_passed'] is True
     DriverWrappersPool.close_drivers.assert_called_once_with(context=context, scope='function', test_name='name',
                                                              test_passed=True)
+    add_jira_status.assert_called_once_with(None, 'Pass', None)
 
 
+@mock.patch('toolium.behave.environment.add_jira_status')
 @mock.patch('toolium.behave.environment.DriverWrappersPool')
-def test_after_scenario_failed(DriverWrappersPool):
+def test_after_scenario_failed(DriverWrappersPool, add_jira_status):
     # Create context mock
     context = mock.MagicMock()
     context.global_status = {'test_passed': True}
@@ -221,14 +224,16 @@ def test_after_scenario_failed(DriverWrappersPool):
 
     after_scenario(context, scenario)
 
-    # Check that close_drivers is called
+    # Check that close_drivers and add_jira_status are called
     assert context.global_status['test_passed'] is False
     DriverWrappersPool.close_drivers.assert_called_once_with(context=context, scope='function', test_name='name',
                                                              test_passed=False)
+    add_jira_status.assert_called_once_with(None, 'Fail', "The scenario 'name' has failed")
 
 
+@mock.patch('toolium.behave.environment.add_jira_status')
 @mock.patch('toolium.behave.environment.DriverWrappersPool')
-def test_after_scenario_skipped(DriverWrappersPool):
+def test_after_scenario_skipped(DriverWrappersPool, add_jira_status):
     # Create context mock
     context = mock.MagicMock()
     context.global_status = {'test_passed': True}
@@ -238,9 +243,11 @@ def test_after_scenario_skipped(DriverWrappersPool):
 
     after_scenario(context, scenario)
 
-    # Check that close_drivers is not called
+    # Check that close_drivers is called, but add_jira_status not
     assert context.global_status['test_passed'] is True
-    DriverWrappersPool.close_drivers.assert_not_called()
+    DriverWrappersPool.close_drivers.assert_called_once_with(context=context, scope='function', test_name='name',
+                                                             test_passed=True)
+    add_jira_status.assert_not_called()
 
 
 @mock.patch('toolium.behave.environment.DriverWrappersPool')
@@ -267,10 +274,9 @@ def test_after_feature_with_failed_preconditions(DriverWrappersPool):
     context.dyn_env = mock.MagicMock()
     context.dyn_env.execute_after_feature_steps.side_effect = Exception('Preconditions failed')
 
-    try:
+    with pytest.raises(Exception) as excinfo:
         after_feature(context, feature)
-    except Exception:
-        pass
+    assert 'Preconditions failed' == str(excinfo.value)
 
     # Check that close_drivers is called
     DriverWrappersPool.close_drivers.assert_called_once_with(scope='module', test_name='name', test_passed=True)

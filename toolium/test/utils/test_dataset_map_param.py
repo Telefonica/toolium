@@ -16,7 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
 import os
 import pytest
 
@@ -35,6 +34,13 @@ def test_an_env_param():
     assert expected == result
 
 
+def test_an_env_param_unknown():
+    """
+    Verification of an unknown mapped parameter as ENV
+    """
+    assert map_param("[ENV:UNKNOWN]") is None
+
+
 def test_a_file_param():
     """
     Verification of a mapped parameter as FILE
@@ -42,9 +48,27 @@ def test_a_file_param():
     result = map_param("[FILE:toolium/test/resources/document.txt]")
     expected = "Document used to verify functionalities in MSS "
     assert expected == result
+
+
+def test_a_file_param_setting_path():
+    """
+    Verification of a mapped parameter as FILE setting previously the path
+    """
     set_file_path('toolium/test/resources/')
     result = map_param("[FILE:document.txt]")
+    expected = "Document used to verify functionalities in MSS "
     assert expected == result
+
+
+def test_a_file_param_unknown():
+    """
+    Verification of an unknown mapped parameter as FILE
+    """
+    set_file_path('')
+    with pytest.raises(Exception) as excinfo:
+        map_param("[FILE:toolium/test/resources/unknown.txt]")
+    file_absolute_path = os.path.abspath('toolium/test/resources/unknown.txt')
+    assert f' ERROR - Cannot read file "{file_absolute_path}". Does not exist.' == str(excinfo.value)
 
 
 def test_a_base64_param():
@@ -54,9 +78,27 @@ def test_a_base64_param():
     result = map_param("[BASE64:toolium/test/resources/document.txt]")
     expected = "RG9jdW1lbnQgdXNlZCB0byB2ZXJpZnkgZnVuY3Rpb25hbGl0aWVzIGluIE1TUyA="
     assert expected == result
+
+
+def test_a_base64_param_setting_path():
+    """
+    Verification of a mapped parameter as BASE64 setting previously the path
+    """
     set_base64_path('toolium/test/resources/')
     result = map_param("[BASE64:document.txt]")
+    expected = "RG9jdW1lbnQgdXNlZCB0byB2ZXJpZnkgZnVuY3Rpb25hbGl0aWVzIGluIE1TUyA="
     assert expected == result
+
+
+def test_a_base64_param_unknown():
+    """
+    Verification of an unknown mapped parameter as BASE64
+    """
+    set_base64_path('')
+    with pytest.raises(Exception) as excinfo:
+        map_param("[BASE64:toolium/test/resources/unknown.txt]")
+    file_absolute_path = os.path.abspath('toolium/test/resources/unknown.txt')
+    assert f' ERROR - Cannot read file "{file_absolute_path}". Does not exist.' == str(excinfo.value)
 
 
 def test_a_lang_param():
@@ -70,6 +112,29 @@ def test_a_lang_param():
     assert expected == result
 
 
+unknown_lang_keys = [
+    ('unknown'),
+    ('home.unknown'),
+    ('unknown!'),
+    ('home.unknown!'),
+    ('home.unknown\n'),
+]
+
+
+@pytest.mark.parametrize("lang_key", unknown_lang_keys)
+def test_a_lang_param_unknown(lang_key):
+    """
+    Verification of an unknown mapped parameter as LANG
+    """
+    dataset.language_terms = {"home": {"button": {"send": {"es": "enviar", "en": "send"}}}}
+    dataset.language = "es"
+    with pytest.raises(KeyError) as excinfo:
+        map_param(f"[LANG:{lang_key}]")
+    # Get exception message updating \n
+    exc_message = str(excinfo.value).replace('\\n', '\n')
+    assert f'"Mapping chain \'{lang_key}\' not found in the language properties file"' == exc_message
+
+
 def test_a_toolium_param():
     """
     Verification of a mapped parameter as TOOLIUM
@@ -79,6 +144,17 @@ def test_a_toolium_param():
     result = map_param("[TOOLIUM:TestExecution_environment]")
     expected = "QA"
     assert expected == result
+
+
+def test_a_toolium_param_unknown():
+    """
+    Verification of an unknown mapped parameter as TOOLIUM
+    """
+    config_file_path = os.path.join("toolium", "test", "resources", "toolium.cfg")
+    dataset.toolium_config = ExtendedConfigParser.get_config_from_file(config_file_path)
+    with pytest.raises(Exception) as excinfo:
+        map_param("[TOOLIUM:TestExecution_unknown]")
+    assert "'TestExecution_unknown' param not found in Toolium config file" == str(excinfo.value)
 
 
 def test_a_conf_param():
@@ -91,14 +167,23 @@ def test_a_conf_param():
     assert expected == result
 
 
-def test_a_conf_param_unknown():
+unknown_conf_keys = [
+    ('unknown'),
+    ('service.unknown'),
+    ('unknown!'),
+    ('service.unknown!'),
+]
+
+
+@pytest.mark.parametrize("conf_key", unknown_conf_keys)
+def test_a_conf_param_unknown(conf_key):
     """
     Verification of an unknown mapped parameter as CONF
     """
     dataset.project_config = {"service": {"port": 80}}
     with pytest.raises(Exception) as excinfo:
-        map_param("[CONF:unknown]")
-    assert '"Mapping chain not found in the given configuration dictionary. \'unknown\'"' == str(excinfo.value)
+        map_param(f"[CONF:{conf_key}]")
+    assert f'"Mapping chain not found in the given configuration dictionary. \'{conf_key}\'"' == str(excinfo.value)
 
 
 def test_a_conf_param_without_project_config():
@@ -109,52 +194,6 @@ def test_a_conf_param_without_project_config():
     result = map_param("[CONF:unknown]")
     expected = "[CONF:unknown]"
     assert expected == result
-
-
-def test_a_context_param():
-    """
-    Verification of a mapped parameter as CONTEXT
-    """
-    context = mock.MagicMock()
-    context.attribute = "attribute value"
-    context.storage = {"storage_key": "storage entry value"}
-    dataset.behave_context = context
-
-    result_att = map_param("[CONTEXT:attribute]")
-    expected_att = "attribute value"
-    assert expected_att == result_att
-    result_st = map_param("[CONTEXT:storage_key]")
-    expected_st = "storage entry value"
-    assert expected_st == result_st
-
-
-def test_a_context_param_with_dots():
-    """
-    Verification of a mapped parameter with dots as CONTEXT
-    """
-    context = mock.MagicMock()
-
-    class Obj(object):
-        pass
-    one = Obj()
-    one.two = "the value"
-
-    context.one = one
-    dataset.behave_context = context
-
-    result_att = map_param("[CONTEXT:one.two]")
-    expected_att = "the value"
-    assert expected_att == result_att
-
-    three = Obj()
-    three.four = "the other value"
-
-    context.storage = {"three": three}
-    dataset.behave_context = context
-
-    result_att = map_param("[CONTEXT:three.four]")
-    expected_att = "the other value"
-    assert expected_att == result_att
 
 
 def test_a_poe_param_single_result():

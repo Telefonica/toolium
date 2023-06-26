@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import base64
+import collections
 import datetime
 import json
 import logging
@@ -68,8 +69,8 @@ def replace_param(param, language='es', infer_param_type=True):
         [B] Generates a blank space
         [UUID] Generates a v4 UUID
         [RANDOM] Generates a random value
-        [RANDOM_PHONE_NUMBER] Generates a random phone number following the pattern +34654XXXXXX, using the language
-            and country specified in dataset.language and dataset.country
+        [RANDOM_PHONE_NUMBER] Generates a random phone number for language and country configured in dataset.language
+            and dataset.country
         [TIMESTAMP] Generates a timestamp from the current time
         [DATETIME] Generates a datetime from the current time
         [NOW] Similar to DATETIME without milliseconds; the format depends on the language
@@ -371,7 +372,7 @@ def map_param(param):
     if not isinstance(param, str):
         return param
 
-    map_regex = r"[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][a-zA-Z\.\:\/\_\-\ 0-9]*\]"
+    map_regex = r"[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][^\[\]]*\]"
     map_expressions = re.compile(map_regex)
 
     mapped_param = param
@@ -472,7 +473,7 @@ def _get_mapping_type_and_key(param):
     """
     types = ["CONF", "LANG", "POE", "ENV", "BASE64", "TOOLIUM", "CONTEXT", "FILE"]
     for type in types:
-        match_group = re.match(r"\[%s:(.*)\]" % type, param)
+        match_group = re.match(r"\[%s:([^\[\]]*)\]" % type, param)
         if match_group:
             return type, match_group.group(1)
     return None, None
@@ -573,13 +574,15 @@ def map_toolium_param(param, config):
 
 def get_value_from_context(param, context):
     """
-    Find the value of the given param using it as a key in the context storage dictionary (context.storage) or in the
-    context object itself. The key might be comprised of dotted tokens. In such case, the searched key is the first
-    token. The rest of the tokens are considered nested properties/objects.
+    Find the value of the given param using it as a key in the context storage dictionaries (context.storage or
+    context.feature_storage) or in the context object itself. The key might be comprised of dotted tokens. In such case,
+    the searched key is the first token. The rest of the tokens are considered nested properties/objects.
     So, for example, in the basic case, "last_request_result" could be used as key that would be searched into context
-    storage or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
-    in the context storage or as a property of the context object whose name is last_request. In both cases, when found,
-    "result" is considered (and resolved) as a property into the returned value.
+    storages or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
+    in the context storages or as a property of the context object whose name is last_request. In both cases, when
+    found, "result" is considered (and resolved) as a property or a key into the returned value.
+    If the resolved element at one of the tokens is a list, then the next token (if present) is used as the index
+    to select one of its elements, e.g. "list.1" returns the second element of the list "list".
 
     There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
 
@@ -588,31 +591,67 @@ def get_value_from_context(param, context):
     context.a.b.c.d
 
     :param param: key to be searched (e.g. "last_request_result" / "last_request.result")
-    :param context: Behave context object
+    :param context: behave context
     :return: mapped value
     """
     parts = param.split('.')
-    value = None
-    if context.storage and parts[0] in context.storage:
-        value = context.storage[parts[0]]
+    value = _get_initial_value_from_context(parts[0], context)
+    msg = None
+
+    for part in parts[1:]:
+        if isinstance(value, dict) and part in value:
+            value = value[part]
+        elif isinstance(value, list) and part.isdigit() and int(part) < len(value):
+            value = value[int(part)]
+        elif hasattr(value, part):
+            value = getattr(value, part)
+        else:
+            msg = _get_value_context_error_msg(value, part)
+            logger.error(msg)
+            raise Exception(msg)
+    return value
+
+
+def _get_value_context_error_msg(value, part):
+    """
+    Returns an appropriate error message when an error occurs resolving a CONTEXT reference.
+
+    :param value: last value that has been correctly resolved
+    :param part: token that is causing the error
+    :return: a string with the error message
+    """
+    if isinstance(value, dict):
+        return f"'{part}' key not found in {value} value in context"
+    elif isinstance(value, list):
+        if part.isdigit():
+            return f"Invalid index '{part}', list size is '{len(value)}'. {part} >= {len(value)}."
+        else:
+            return f"the index '{part}' must be a numeric index"
     else:
-        logger.debug(f"'{parts[0]}' key not found in context storage, searching in context")
-        try:
-            value = getattr(context, parts[0])
-        except AttributeError:
-            msg = f"'{parts[0]}' not found neither in context storage nor in context"
-            logger.error(msg)
-            raise AttributeError(msg)
+        return f"'{part}' attribute not found in {type(value).__name__} class in context"
 
-    if len(parts) > 1:
-        try:
-            for part in parts[1:]:
-                value = getattr(value, part)
-        except AttributeError:
-            msg = f"'{part}' is not an attribute of {value}"
-            logger.error(msg)
-            raise AttributeError(msg)
 
+def _get_initial_value_from_context(initial_key, context):
+    """
+    Find the value of the given initial_key using it as a key in the context storage dictionaries (context.storage or
+    context.feature_storage) or in the context object itself.
+
+    :param initial_key: key to be searched in context
+    :param context: behave context
+    :return: mapped value
+    """
+    context_storage = context.storage if hasattr(context, 'storage') else {}
+    if hasattr(context, 'feature_storage'):
+        # context.feature_storage is initialized only when before_feature method is called
+        context_storage = collections.ChainMap(context.storage, context.feature_storage)
+    if initial_key in context_storage:
+        value = context_storage[initial_key]
+    elif hasattr(context, initial_key):
+        value = getattr(context, initial_key)
+    else:
+        msg = f"'{initial_key}' key not found in context"
+        logger.error(msg)
+        raise Exception(msg)
     return value
 
 
@@ -699,7 +738,7 @@ def get_file(file_path):
     Return the content of a file given its path. If a base path was previously set by using
     the set_file_path() function, the file path specified must be relative to that path.
 
-    :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
+    :param file_path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content
     """
     file_path_parts = (base_file_path + file_path).split("/")
@@ -716,7 +755,7 @@ def convert_file_to_base64(file_path):
     Return the content of a file given its path encoded in Base64. If a base path was previously set by using
     the set_file_path() function, the file path specified must be relative to that path.
 
-    :param file path: file path using slash as separator (e.g. "resources/files/doc.txt")
+    :param file_path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content encoded in Base64
     """
     file_path_parts = (base_base64_path + file_path).split("/")

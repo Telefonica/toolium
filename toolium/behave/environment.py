@@ -72,6 +72,11 @@ def before_feature(context, feature):
         no_driver = 'no_driver' in feature.tags
         start_driver(context, no_driver)
 
+    # Dictionary to store information between steps
+    context.storage = dict()
+    # Dictionary to store information between features
+    context.feature_storage = dict()
+
     # Behave dynamic environment
     context.dyn_env.get_steps_from_feature_description(feature.description)
     context.dyn_env.execute_before_feature_steps(context)
@@ -123,6 +128,9 @@ def before_scenario(context, scenario):
     save_jira_conf()
 
     context.logger.info("Running new scenario: %s", scenario.name)
+
+    # Make sure storage dict are empty in each scenario
+    context.storage = dict()
 
     # Behave dynamic environment
     context.dyn_env.execute_before_scenario_steps(context)
@@ -200,24 +208,26 @@ def after_scenario(context, scenario):
     :param context: behave context
     :param scenario: running scenario
     """
+    jira_test_status = None
+    jira_test_comment = None
     if scenario.status == 'skipped':
-        return
+        context.logger.info("The scenario '%s' has been skipped", scenario.name)
     elif scenario.status == 'passed':
-        test_status = 'Pass'
-        test_comment = None
+        jira_test_status = 'Pass'
         context.logger.info("The scenario '%s' has passed", scenario.name)
     else:
-        test_status = 'Fail'
-        test_comment = "The scenario '%s' has failed" % scenario.name
+        jira_test_status = 'Fail'
+        jira_test_comment = "The scenario '%s' has failed" % scenario.name
         context.logger.error("The scenario '%s' has failed", scenario.name)
         context.global_status['test_passed'] = False
 
     # Close drivers
-    DriverWrappersPool.close_drivers(scope='function', test_name=scenario.name, test_passed=scenario.status == 'passed',
-                                     context=context)
+    DriverWrappersPool.close_drivers(scope='function', test_name=scenario.name,
+                                     test_passed=scenario.status in ['passed', 'skipped'], context=context)
 
     # Save test status to be updated later
-    add_jira_status(get_jira_key_from_scenario(scenario), test_status, test_comment)
+    if jira_test_status:
+        add_jira_status(get_jira_key_from_scenario(scenario), jira_test_status, jira_test_comment)
 
 
 def get_jira_key_from_scenario(scenario):
