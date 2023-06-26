@@ -22,11 +22,12 @@ import mock
 import pytest
 import requests_mock
 from jira import JIRAError
+from jira.resources import Version
 from requests.exceptions import ConnectionError
 
 from toolium import jira
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.jira import JiraServer
+from toolium.jira import JiraServer, _check_fix_version
 
 
 @pytest.fixture
@@ -264,7 +265,7 @@ def test_jira_connection_invalid_url():
     # with JiraServer("http://github.com", None) as jira:
     #     return
     def call_jira_server():
-        with JiraServer("http://github.com", None) as jira:
+        with JiraServer("http://github.com", None):
             return
     unittest.TestCase().assertRaisesRegex(JIRAError, "^JiraError HTTP 406 url",  call_jira_server)
 
@@ -274,3 +275,23 @@ def test_jira_connection_invalid_token():
         with JiraServer("https://jira.elevenpaths.com/", "6") as jira:
             assert jira.current_user()
     unittest.TestCase().assertRaises(JIRAError, call_jira_server)
+
+def test_jira_check_valid_fix_version():
+    version = mock.Mock(Version)
+    version.configure_mock(raw={"name":"1.1"})
+    server = mock.Mock(JiraServer("https://jira.elevenpaths.com/", "6"))
+    server.configure_mock(project= lambda x:"KEY", project_versions = lambda arg: [version])
+    _check_fix_version(server, "KEY", "1.1")
+
+
+def test_jira_check_wrong_fix_version():
+    version = mock.Mock(Version)
+    version.configure_mock(raw={"name":"0.5"})
+    server = mock.Mock(JiraServer("https://jira.elevenpaths.com/", "6"))
+    server.configure_mock(project= lambda x:"KEY", project_versions = lambda arg: [version])
+
+    def call_check_fix_version_wrong():
+        _check_fix_version(server, "KEY", "1.1")
+    unittest.TestCase().assertRaisesRegex(ValueError,
+                                          "No existe la fix version '1.1'",
+                                          call_check_fix_version_wrong)
