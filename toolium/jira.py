@@ -175,7 +175,7 @@ def check_jira_args(server: JIRA):
     global project_name, project_key, project_id
 
     project_id, project_key = _check_project_set_ids(server, project_id, project_key, project_name)
-    _check_fix_version(server, fix_version)
+    _check_fix_version(server, project_key, fix_version)
 
 
 def _check_project_set_ids(server: JIRA, p_id: str, p_key: str, p_name: str):
@@ -230,11 +230,12 @@ def _check_project_set_ids(server: JIRA, p_id: str, p_key: str, p_name: str):
     return p_id, p_key
 
 
-def _check_fix_version(server: JIRA, fix_version: str) -> None:
+def _check_fix_version(server: JIRA, project_key: str, fix_version: str) -> None:
     """
     Retrieves the fix_versions for the current project and ensures the one provided is valid
     Args:
         server (str): jira server instance
+        project_key (str): project ket (short version of the name)
         fix_version (str): fix version that will be checked
     Raises:
         ValueError: if the fix_version is invalid
