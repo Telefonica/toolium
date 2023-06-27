@@ -384,14 +384,13 @@ def test_is_remote_video_enabled_unknown_server(utils):
     assert utils.is_remote_video_enabled('unknown', '') is False
 
 
-@pytest.mark.parametrize("driver_type, appium_app, appium_browser_name, bar_height", navigation_bar_tests)
-def test_get_safari_navigation_bar_height(driver_type, appium_app, appium_browser_name, bar_height, driver_wrapper,
-                                          utils):
+@pytest.mark.parametrize("driver_type, appium_app, browser_name, bar_height", navigation_bar_tests)
+def test_get_safari_navigation_bar_height(driver_type, appium_app, browser_name, bar_height, driver_wrapper, utils):
     driver_wrapper.config.set('Driver', 'type', driver_type)
     if appium_app:
         driver_wrapper.config.set('AppiumCapabilities', 'app', appium_app)
-    if appium_browser_name:
-        driver_wrapper.config.set('AppiumCapabilities', 'browserName', appium_browser_name)
+    if browser_name:
+        driver_wrapper.config.set('AppiumCapabilities', 'browserName', browser_name)
     assert utils.get_safari_navigation_bar_height() == bar_height
 
 
@@ -425,7 +424,7 @@ def test_get_window_size_android_web(driver_wrapper, utils):
     driver_wrapper.driver.current_context = 'WEBVIEW'
     driver_wrapper.driver.execute_script.side_effect = [window_size['width'], window_size['height']]
     driver_wrapper.config.set('Driver', 'type', 'android')
-    driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
+    driver_wrapper.config.set('Capabilities', 'browserName', 'chrome')
 
     assert utils.get_window_size() == window_size
     driver_wrapper.driver.execute_script.assert_has_calls(
@@ -438,7 +437,7 @@ def test_get_window_size_android_web_two_times(driver_wrapper, utils):
     driver_wrapper.driver.current_context = 'WEBVIEW'
     driver_wrapper.driver.execute_script.side_effect = [window_size['width'], window_size['height']]
     driver_wrapper.config.set('Driver', 'type', 'android')
-    driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
+    driver_wrapper.config.set('Capabilities', 'browserName', 'chrome')
 
     assert utils.get_window_size() == window_size
     assert utils.get_window_size() == window_size
@@ -455,7 +454,7 @@ def test_get_native_coords_android_web(driver_wrapper, utils):
     driver_wrapper.driver.execute_script.side_effect = [web_window_size['width'], web_window_size['height']]
     driver_wrapper.driver.get_window_size.side_effect = [native_window_size]
     driver_wrapper.config.set('Driver', 'type', 'android')
-    driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
+    driver_wrapper.config.set('Capabilities', 'browserName', 'chrome')
 
     web_coords = {'x': 105, 'y': 185}
     native_coords = {'x': 52.5, 'y': 92.5}
@@ -469,7 +468,7 @@ def test_get_native_coords_ios_web(driver_wrapper, utils):
     driver_wrapper.driver.get_window_size.return_value = native_window_size
     utils.get_window_size = mock.MagicMock(return_value=web_window_size)
     driver_wrapper.config.set('Driver', 'type', 'ios')
-    driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
+    driver_wrapper.config.set('Capabilities', 'browserName', 'safari')
 
     web_coords = {'x': 105, 'y': 185}
     native_coords = {'x': 52.5, 'y': 156.5}
@@ -500,7 +499,7 @@ def test_swipe_android_web(driver_wrapper, utils):
     driver_wrapper.driver.execute_script.side_effect = [web_window_size['width'], web_window_size['height']]
     driver_wrapper.driver.get_window_size.side_effect = [native_window_size]
     driver_wrapper.config.set('Driver', 'type', 'android')
-    driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'chrome')
+    driver_wrapper.config.set('Capabilities', 'browserName', 'chrome')
 
     # Create element mock
     element = get_mock_element(x=250, y=40, height=40, width=300)
@@ -533,7 +532,7 @@ def test_swipe_ios_web(driver_wrapper, utils):
     driver_wrapper.driver.get_window_size.return_value = native_window_size
     utils.get_window_size = mock.MagicMock(return_value=web_window_size)
     driver_wrapper.config.set('Driver', 'type', 'ios')
-    driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
+    driver_wrapper.config.set('Capabilities', 'browserName', 'safari')
 
     # Create element mock
     element = get_mock_element(x=250, y=40, height=40, width=300)
