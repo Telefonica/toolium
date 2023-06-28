@@ -415,7 +415,7 @@ def add_results(jira: JIRA, issueid: str, attachements: list[str] = None):
 
     try:
         logger.info("Adding results to issue...")
-        _addscreenshots(jira, issueid, attachements) if attachements else addscreenshots(issueid)
+        _addscreenshots(jira, issueid, attachements) if attachements else _addscreenshots(jira, issueid)
         _addlogs(jira, issueid)
         logger.debug("Results added to issue " + issueid)
 
