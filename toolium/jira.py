@@ -290,6 +290,9 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
                                                   existing_issues[0].fields.labels, labels)
             logger.info(f"Created execution {new_execution.key} for test " + test_key)
 
+            if composed_comments:
+                server.add_comment(new_execution.key, composed_comments)
+
             # TODO massage payload, labels??
             logger.debug("Update skipped for " + test_key)
             # issue.update(fields=payload, jira=server)
@@ -334,6 +337,7 @@ def create_test_execution(server: JIRA, issueid: str, projectid: int, summary_pr
         'labels': parent_labels + new_labels,
         # 'versions': [{'name': fix_version}],
         'description': description,
+        #TODO add build field ??
     }
 
     return server.create_issue(fields=issue_dict)
