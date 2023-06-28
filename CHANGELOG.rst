@@ -7,6 +7,7 @@ v3.1.0
 *Release date: In development*
 
 - Update `[CONTEXT:a.b.c]` replacement to allow lists access, e.g. [CONTEXT:list.1] to access the second element of list
+- `platformVersion` Appium capability must be a string
 
 v3.0.2
 ------
