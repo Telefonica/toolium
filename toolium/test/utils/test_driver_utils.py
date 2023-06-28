@@ -390,7 +390,7 @@ def test_get_safari_navigation_bar_height(driver_type, appium_app, browser_name,
     if appium_app:
         driver_wrapper.config.set('AppiumCapabilities', 'app', appium_app)
     if browser_name:
-        driver_wrapper.config.set('AppiumCapabilities', 'browserName', browser_name)
+        driver_wrapper.config.set('Capabilities', 'browserName', browser_name)
     assert utils.get_safari_navigation_bar_height() == bar_height
 
 

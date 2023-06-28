@@ -121,7 +121,7 @@ def test_set_with_colon_in_option(config):
 
 def test_options_with_colon_in_option(config):
     section = 'Capabilities'
-    options = ['selenoid:options', 'cloud:options']
+    options = ['selenoid:options', 'cloud:options', 'platformName']
     assert options == config.options(section)
 
 
@@ -144,7 +144,8 @@ def test_remove_option_with_colon_in_option(config):
 
 def test_items_with_colon_in_option(config):
     section = 'Capabilities'
-    items = [('selenoid:options', "{'enableVNC': True, 'enableVideo': True}"), ('cloud:options', "{'name': 'test'}")]
+    items = [('selenoid:options', "{'enableVNC': True, 'enableVideo': True}"), ('cloud:options', "{'name': 'test'}"),
+             ('platformName', 'Android')]
     assert items == config.items(section)
 
 
