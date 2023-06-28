@@ -23,11 +23,16 @@ Project data in order of preference:
 Note: if the project cannot be located, available project for your user will be printed in toolium.log
 
 onlyifchanges: true if previous state of the updated issues is similar true will force the update, false will omit it
+
 summary_prefix: # TODO
+
 fixversion: The fixversion field, see example below
-labels: # TODO
-comments: # TODO
-build: # TODO
+
+labels: List of labels to be added
+
+comments: A comment to be added in each of the test executions
+
+build: Inactive field # TODO Pending field value confirmation
 
 Full example::
 
@@ -39,11 +44,10 @@ Full example::
     project_name: Apache Commons RDF
     execution_url: https://jira.atlassian.com
     onlyifchanges: true
-    summary_prefix: # TODO
+    summary_prefix: [DEV][QA]
     fixversion: 4.12
     labels: [QA, label2, 3rdlabel]
-    comments: # TODO
-    build: # TODO
+    comments: "A new comment for the execution"
 
 See `https://jira.readthedocs.io`_ for the complete Package documentation.
 
