@@ -276,19 +276,20 @@ def test_jira_connection_invalid_token():
             assert jira.current_user()
     unittest.TestCase().assertRaises(JIRAError, call_jira_server)
 
+
 def test_jira_check_valid_fix_version():
     version = mock.Mock(Version)
-    version.configure_mock(raw={"name":"1.1"})
+    version.configure_mock(raw={"name": "1.1"})
     server = mock.Mock(JiraServer("https://jira.elevenpaths.com/", "6"))
-    server.configure_mock(project= lambda x:"KEY", project_versions = lambda arg: [version])
+    server.configure_mock(project=lambda x: "KEY", project_versions=lambda arg: [version])
     _check_fix_version(server, "KEY", "1.1")
 
 
 def test_jira_check_wrong_fix_version():
     version = mock.Mock(Version)
-    version.configure_mock(raw={"name":"0.5"})
+    version.configure_mock(raw={"name": "0.5"})
     server = mock.Mock(JiraServer("https://jira.elevenpaths.com/", "6"))
-    server.configure_mock(project= lambda x:"KEY", project_versions = lambda arg: [version])
+    server.configure_mock(project=lambda x: "KEY", project_versions=lambda arg: [version])
 
     def call_check_fix_version_wrong():
         _check_fix_version(server, "KEY", "1.1")
