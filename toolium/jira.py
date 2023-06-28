@@ -250,7 +250,7 @@ def _check_fix_version(server: JIRA, project_key: str, fix_version: str) -> None
         raise ValueError(msg)
 
 
-def change_jira_status(test_key, test_status, test_comment, test_attachments: list[str]):
+def change_jira_status(test_key, test_status, test_comment, test_attachments: list):
     """Update test status in Jira
 
     :param test_key: test case key in Jira
@@ -363,7 +363,7 @@ def transition(server: JIRA, issue: Issue, test_status: str):
     logger.debug("Transitioned issue to status %s", test_status)
 
 
-def _addscreenshots(jira: JIRA, issueid: str, attachements: list[str] = None):
+def _addscreenshots(jira: JIRA, issueid: str, attachements: list = None):
     """
         Attach the screenshots found the report folder to the jira issue provided
         param issueid: Full Jira ID
@@ -410,7 +410,7 @@ def _addlogs(jira: JIRA, issueid: str):
         logger.info("Attached log into " + issueid)
 
 
-def add_results(jira: JIRA, issueid: str, attachements: list[str] = None):
+def add_results(jira: JIRA, issueid: str, attachements: list = None):
     """Adds the results to the execution or the associated test case instead"""
 
     try:
