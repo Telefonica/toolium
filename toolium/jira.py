@@ -103,12 +103,12 @@ def save_jira_conf():
     config = DriverWrappersPool.get_default_wrapper().config
     enabled = config.getboolean_optional('Jira', 'enabled')
     jiratoken = config.get_optional('Jira', 'token')
-    project_id = int(config.get_optional('Jira', 'project_id'))
-    project_key = int(config.get_optional('Jira', 'project_key'))
-    project_name = int(config.get_optional('Jira', 'project_name'))
+    project_id = int(config.get_optional('Jira', 'project_id', 0))
+    project_key = config.get_optional('Jira', 'project_key')
+    project_name = config.get_optional('Jira', 'project_name')
     execution_url = config.get_optional('Jira', 'execution_url')
     summary_prefix = config.get_optional('Jira', 'summary_prefix')
-    labels_raw = config.get_optional('Jira', 'labels')
+    labels_raw = config.get_optional('Jira', 'labels', "")
     labels_raw = labels_raw.replace("[", "").replace("]", "")
     labels = []
     for label in labels_raw.split(","):
