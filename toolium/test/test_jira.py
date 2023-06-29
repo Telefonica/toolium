@@ -18,7 +18,7 @@ limitations under the License.
 import importlib
 import os
 import unittest
-from tempfile import TemporaryFile
+from tempfile import NamedTemporaryFile
 from unittest.mock import ANY
 import mock
 import pytest
@@ -78,7 +78,7 @@ def test_change_jira_status_attachments(logger):
     jira.enabled = True
     jira.execution_url = 'http://server/execution_service'
     jira.only_if_changes = True
-    attachments = [os.path.dirname(TemporaryFile().name)]
+    attachments = [os.path.dirname(os.path.join(NamedTemporaryFile().name))]
     jira.logger = mock.MagicMock()
 
     def addlogs(*args, **kwargs):
