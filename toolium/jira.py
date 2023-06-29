@@ -196,43 +196,26 @@ def _check_project_set_ids(server: JIRA, p_id: int, p_key: str, p_name: str):
         p_key (str): the key shortcut for the project
 
     """
-    available_keys = []
-    for project_instance in server.projects():
-        available_keys.append(
-            {"name": project_instance.raw['name'],
-             "key": project_instance.raw['key'],
-             "id": project_instance.raw['id']}
-        )
 
-    logger.debug(f"Read project info read name:'{p_name}', key:'{p_key}', id:'{p_id}'")
+    if p_id:
+        p_key = server.project(str(p_id)).raw["key"]
+    elif p_key:
+        p_id = str(server.project(p_key).raw["id"])
 
-    project_option = ""
-    for option in [p_id, p_key, p_name]:
-        for key in available_keys:
-            _set_project_data(server, option, str(key["id"]), key["key"])
-            if p_id > 0:
-                break
+    elif project_name:
+        for project in server.projects():
+            if project_name == project["name"]:
+                p_id = project["id"]
+                p_key = project["key"]
+        logger.debug(f"Read project info, name:'{p_name}', key:'{p_key}', id:'{p_id}'")
 
-    if not project_option:
+    else:
         msg = f"No existe el proyecto especificado name:'{p_name}', key:'{p_key}', id:'{p_id}'"
-        logger.warning(f"Available projects for your user: '{available_keys}'")
+        logger.warning(f"Available projects for your user: '{server.projects()}'")
         logger.error(msg)
         raise ValueError(msg)
 
     return p_id, p_key
-
-
-def _set_project_data(server: JIRA, target: str, project_id: str, project_key: str):
-    if target in project_id:
-        project_key = server.project(str(project_id)).raw["key"]
-
-    elif target in project_key:
-        project_id = str(server.project(project_key).raw["id"])
-
-    else:
-        return None, None
-
-    return project_id, project_key
 
 
 def _check_fix_version(server: JIRA, project_key: str, fix_version: str) -> None:
@@ -265,6 +248,7 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
     :param jira_server: JIRA server instance to use for the upload if any
     """
 
+
     if not execution_url:
         logger.warning("Test Case '%s' can not be updated: execution_url is not configured", test_key)
         return
@@ -273,8 +257,12 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
     composed_comments = comments
     if test_comment:
         composed_comments = '{}\n{}'.format(comments, test_comment) if comments else test_comment
+
+    global labels
+    # TODO remove global reference
     payload = {'jiraTestCaseId': test_key, 'jiraStatus': test_status, 'summaryPrefix': summary_prefix,
                'labels': labels, 'comments': composed_comments, 'version': fix_version, 'build': build}
+
     if only_if_changes:
         payload['onlyIfStatusChanges'] = 'true'
     try:
@@ -293,8 +281,7 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
             logger.debug("Creating execution for " + test_key)
             labels += existing_issues[0].fields.labels
             summary = f"{summary_prefix} Execution of {existing_issues[0].fields.summary} {test_key}"
-            new_execution = create_test_execution(server, test_key, project_id,
-                                                  summary, fix_version, labels)
+            new_execution = create_test_execution(server, test_key, summary, fix_version, labels)
             logger.info(f"Created execution {new_execution.key} for test " + test_key)
 
             if composed_comments:
@@ -329,12 +316,30 @@ def execute_query(jira: JIRA, query: str) -> list:
     return existing_issues
 
 
-def create_test_execution(server: JIRA, issueid: str, projectid: int,
-                          summary: str, fix_version: str, labels: list = None,
+def search_project_id_from_issue(server: JIRA, issue_id: str) -> int:
+    """
+    Returns the id of the project given an issue identifier
+    """
+    # TODO remove either this or the duplicated set id/key method above
+    try:
+        if project_id > 0:
+            logger.debug("Global project id found")
+            return project_id
+    except AttributeError:
+        for project in server.projects():
+            if issue_id.split("-")[0].strip().upper() in project.raw["key"]:
+                logger.debug(f'Found id {project.raw["id"]} for issue {issue_id}')
+                return int(project.raw["id"])
+    return 0
+
+
+def create_test_execution(server: JIRA, issueid: str, summary: str,
+                          fix_version: str, labels: list = None,
                           description: str = " ") -> Issue:
     """Creates an execution linked to the TestCase provided"""
+
     issue_dict = {
-        'project': {'id': projectid},
+        'project': {'id': search_project_id_from_issue(server, issueid)},
         'assignee': {'name': server.current_user()},
         'issuetype': {'name': 'Test Case Execution'},
         'parent': {'key': issueid},
