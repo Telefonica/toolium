@@ -19,6 +19,9 @@ limitations under the License.
 import logging
 import os
 import re
+from pathlib import Path
+
+import requests
 from os import path
 from jira import JIRA, Issue
 from jira.exceptions import JIRAError
@@ -250,7 +253,7 @@ def _check_fix_version(server: JIRA, project_key: str, fix_version: str) -> None
         raise ValueError(msg)
 
 
-def change_jira_status(test_key, test_status, test_comment, test_attachments: list):
+def change_jira_status(test_key, test_status, test_comment, test_attachments: list, jira_server: JIRA = None):
     """Update test status in Jira
 
     :param test_key: test case key in Jira
@@ -272,7 +275,8 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
     if only_if_changes:
         payload['onlyIfStatusChanges'] = 'true'
     try:
-        with JiraServer(execution_url, jiratoken) as server:
+        server = jira_server if jira_server else JiraServer(execution_url, jiratoken)
+        with server as server:
 
             check_jira_args(server)
 
@@ -302,7 +306,7 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
 
             add_results(server, new_execution.key, test_attachments)
 
-    except JIRAError as e:
+    except (JIRAError, requests.exceptions.ConnectionError) as e:
         print_trace(logger, e)
         logger.error("Exception while updating Issue '%s': %s", test_key, e)
         return
@@ -395,14 +399,15 @@ def _addscreenshots(jira: JIRA, issueid: str, attachements: list = None):
     logger.info("Screenshots uploaded...")
 
 
-def _addlogs(jira: JIRA, issueid: str):
+def _addlogs(jira: JIRA, issueid: str, logpath: Path = None):
     """
         Attach the logs in the report folder to the jira issue provided
         param issueid Full Jira ID
         Raises FileNotFound Error if the log file is not found in reports
     """
-    logpath = path.join(path.dirname(__file__),
-                        ".", DriverWrappersPool.screenshots_directory, "..", "..", "toolium.log")
+    if not logpath:
+        logpath = path.join(path.dirname(__file__),
+                            ".", DriverWrappersPool.screenshots_directory, "..", "..", "toolium.log")
 
     with open(logpath, 'rb') as file:
         logger.debug("Opened log file " + file.name)
