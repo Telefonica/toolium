@@ -248,7 +248,6 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
     :param jira_server: JIRA server instance to use for the upload if any
     """
 
-
     if not execution_url:
         logger.warning("Test Case '%s' can not be updated: execution_url is not configured", test_key)
         return
