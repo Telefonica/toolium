@@ -15,16 +15,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import importlib
 import os
 import unittest
+from tempfile import TemporaryFile
+from unittest.mock import ANY
 import mock
 import pytest
-import requests_mock
 from jira import JIRAError
 from jira.resources import Version
 from requests.exceptions import ConnectionError
 
+import toolium
 from toolium import jira
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.jira import JiraServer, _check_fix_version
@@ -42,87 +44,52 @@ def logger():
     logger_patch.stop()
 
     # Clear jira module configuration
-    jira.enabled = None
-    jira.execution_url = None
-    jira.summary_prefix = None
-    jira.labels = None
-    jira.comments = None
-    jira.fix_version = None
-    jira.build = None
-    jira.only_if_changes = None
-    jira.jira_tests_status.clear()
-    jira.attachments = []
-
+    importlib.reload(toolium.jira)
 
 def test_change_jira_status(logger):
-    # Test response
-    response = b"The Test Case Execution 'TOOLIUM-11' has been created\r\n"
 
     # Configure jira module
     jira.enabled = True
     jira.execution_url = 'http://server/execution_service'
-    jira.summary_prefix = 'prefix'
-    jira.labels = 'label1 label2'
-    jira.comments = 'comment'
-    jira.fix_version = 'Release 1.0'
-    jira.build = '453'
-    jira.only_if_changes = True
+    jira.logger = mock.MagicMock()
+    jira.check_jira_args = mock.MagicMock()
+    jira.add_results = mock.MagicMock()
+    jira.transition = mock.MagicMock()
+    jira.execute_query = mock.MagicMock()
+    jira.execute_query.return_value = [mock.MagicMock()]
+    def create_test(*args, **kwargs):
+        mock_test = mock.MagicMock(key="TOOLIUM-TEST")
+        return mock_test
+    jira.create_test_execution = create_test
 
-    with requests_mock.mock() as req_mock:
-        # Configure mock
-        req_mock.post(jira.execution_url, content=response)
-
-        # Test method
-        jira.change_jira_status('TOOLIUM-1', 'Pass', None, [])
-
-        # Check requested url
-        assert jira.execution_url == req_mock.request_history[0].url
-        for partial_url in ['jiraStatus=Pass', 'jiraTestCaseId=TOOLIUM-1', 'summaryPrefix=prefix',
-                            'labels=label1+label2', 'comments=comment', 'version=Release+1.0', 'build=453',
-                            'onlyIfStatusChanges=true']:
-            assert partial_url in req_mock.request_history[0].text
+    # Test method
+    jira.change_jira_status('TOOLIUM-1', 'Pass', None, [], mock.MagicMock())
 
     # Check logging call
-    logger.debug.assert_called_once_with("%s", "The Test Case Execution 'TOOLIUM-11' has been created")
+    jira.logger.debug.assert_any_call("Creating execution for TOOLIUM-1")
+    jira.logger.info.assert_called_with(f"Created execution TOOLIUM-TEST for test TOOLIUM-1")
 
 
 def test_change_jira_status_attachments(logger):
-    # Test response
-    response = b"The Test Case Execution 'TOOLIUM-11' has been created\r\n"
 
     # Configure jira module
     jira.enabled = True
     jira.execution_url = 'http://server/execution_service'
-    jira.summary_prefix = 'prefix'
-    jira.labels = 'label1 label2'
-    jira.comments = 'comment'
-    jira.fix_version = 'Release 1.0'
-    jira.build = '453'
     jira.only_if_changes = True
-    resources_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
-    attachments = [os.path.join(resources_path, 'ios.png'), os.path.join(resources_path, 'ios_web.png')]
+    attachments = [os.path.dirname(TemporaryFile().name)]
+    jira.logger = mock.MagicMock()
+    def addlogs(*args, **kwargs):
+        jira.logger.info("Attached log into TOOLIUM-1")
+    jira._addlogs = addlogs
 
-    with requests_mock.mock() as req_mock:
-        # Configure mock
-        req_mock.post(jira.execution_url, content=response)
-
-        # Test method
-        jira.change_jira_status('TOOLIUM-1', 'Pass', None, attachments)
-
-        # Get response body
-        body_bytes = req_mock.last_request.body
-
-    # Check requested url
-    body = "".join(map(chr, body_bytes))
-    for partial_url in ['"jiraStatus"\r\n\r\nPass', '"jiraTestCaseId"\r\n\r\nTOOLIUM-1',
-                        '"summaryPrefix"\r\n\r\nprefix', '"labels"\r\n\r\nlabel1 label2',
-                        '"comments"\r\n\r\ncomment', '"version"\r\n\r\nRelease 1.0', '"build"\r\n\r\n453',
-                        '"onlyIfStatusChanges"\r\n\r\ntrue', '"attachments0"; filename="ios.png"',
-                        '"attachments1"; filename="ios_web.png"']:
-        assert partial_url in body
+    # Test method
+    jira.add_results(mock.MagicMock(), 'TOOLIUM-1', attachments)
 
     # Check logging call
-    logger.debug.assert_called_once_with("%s", "The Test Case Execution 'TOOLIUM-11' has been created")
+    calls = [mock.call('Adding results to issue...'),
+             mock.call('Screenshots uploaded...'),
+             mock.call("Attached log into TOOLIUM-1")]
+    jira.logger.info.assert_has_calls(calls)
 
 
 @mock.patch('toolium.jira.requests.get')
@@ -132,29 +99,31 @@ def test_change_jira_status_empty_url(jira_get, logger):
 
     # Configure jira module
     jira.enabled = True
+    jira.logger = mock.MagicMock()
 
     # Test method
     jira.change_jira_status('TOOLIUM-1', 'Pass', None, [])
 
     # Check logging error message
-    logger.warning.assert_called_once_with("Test Case '%s' can not be updated: execution_url is not configured",
+    jira.logger.warning.assert_called_once_with("Test Case '%s' can not be updated: execution_url is not configured",
                                            'TOOLIUM-1')
 
 
 @mock.patch('toolium.jira.requests.post')
 def test_change_jira_status_exception(jira_post, logger):
     # Configure jira mock
-    jira_post.side_effect = ConnectionError('exception error')
+    jira_post.side_effect = ConnectionError()
 
     # Configure jira module
     jira.enabled = True
     jira.execution_url = 'http://server/execution_service'
+    jira.logger = mock.MagicMock()
 
     # Test method
     jira.change_jira_status('TOOLIUM-1', 'Pass', None, [])
 
     # Check logging error message
-    logger.warning.assert_called_once_with("Error updating Test Case '%s': %s", 'TOOLIUM-1', jira_post.side_effect)
+    jira.logger.error.assert_called_with("Exception while updating Issue '%s': %s", 'TOOLIUM-1', ANY)
 
 
 def test_jira_annotation_pass(logger):
