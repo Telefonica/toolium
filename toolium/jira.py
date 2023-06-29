@@ -113,7 +113,6 @@ def save_jira_conf():
     summary_prefix = config.get_optional('Jira', 'summary_prefix')
     labels_raw = config.get_optional('Jira', 'labels', "")
     labels_raw = labels_raw.replace("[", "").replace("]", "")
-    labels = []
     for label in labels_raw.split(","):
         labels.append(label)
     comments = config.get_optional('Jira', 'comments')
@@ -181,7 +180,7 @@ def check_jira_args(server: JIRA):
     _check_fix_version(server, project_key, fix_version)
 
 
-def _check_project_set_ids(server: JIRA, p_id: str, p_key: str, p_name: str):
+def _check_project_set_ids(server: JIRA, p_id: int, p_key: str, p_name: str):
     """
     Checks the provided project identifiers returns the values updated if they were empty
     Note that the args are provided in order of precedence to prevent mismatches between them
@@ -199,30 +198,20 @@ def _check_project_set_ids(server: JIRA, p_id: str, p_key: str, p_name: str):
     """
     available_keys = []
     for project_instance in server.projects():
-        # TODO turn into dict
         available_keys.append(
-            [project_instance.raw['name'], project_instance.raw['key'], project_instance.raw['id']])
+            {"name": project_instance.raw['name'],
+             "key": project_instance.raw['key'],
+             "id": project_instance.raw['id']}
+        )
 
     logger.debug(f"Read project info read name:'{p_name}', key:'{p_key}', id:'{p_id}'")
 
     project_option = ""
-    for key in available_keys:
-        if p_id in key[2]:
-            project_option = p_id
-            p_key = server.project(str(p_id)).raw["key"]
-            break
-        elif p_key in key[1]:
-            project_option = p_key
-            p_id = str(server.project(p_key).raw["id"])
-            break
-        elif p_name in key[0]:
-            project_option = p_name
-            for version in available_keys:
-                if p_name in version:
-                    p_key = version[1]
-                    p_id = str(version[2])
-                    break
-            break
+    for option in [p_id, p_key, p_name]:
+        for key in available_keys:
+            _set_project_data(server, option, str(key["id"]), key["key"])
+            if p_id > 0:
+                break
 
     if not project_option:
         msg = f"No existe el proyecto especificado name:'{p_name}', key:'{p_key}', id:'{p_id}'"
@@ -231,6 +220,19 @@ def _check_project_set_ids(server: JIRA, p_id: str, p_key: str, p_name: str):
         raise ValueError(msg)
 
     return p_id, p_key
+
+
+def _set_project_data(server: JIRA, target: str, project_id: str, project_key: str):
+    if target in project_id:
+        project_key = server.project(str(project_id)).raw["key"]
+
+    elif target in project_key:
+        project_id = str(server.project(project_key).raw["id"])
+
+    else:
+        return None, None
+
+    return project_id, project_key
 
 
 def _check_fix_version(server: JIRA, project_key: str, fix_version: str) -> None:
@@ -260,6 +262,7 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
     :param test_status: test case status
     :param test_comment: test case comments
     :param test_attachments: list of absolutes paths of test case attachment files
+    :param jira_server: JIRA server instance to use for the upload if any
     """
 
     if not execution_url:
@@ -288,10 +291,10 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments: li
                 # test_key = issue.key
 
             logger.debug("Creating execution for " + test_key)
+            labels += existing_issues[0].fields.labels
+            summary = f"{summary_prefix} Execution of {existing_issues[0].fields.summary} {test_key}"
             new_execution = create_test_execution(server, test_key, project_id,
-                                                  summary_prefix, existing_issues[0].fields.summary,
-                                                  fix_version,
-                                                  existing_issues[0].fields.labels, labels)
+                                                  summary, fix_version, labels)
             logger.info(f"Created execution {new_execution.key} for test " + test_key)
 
             if composed_comments:
@@ -327,8 +330,7 @@ def execute_query(jira: JIRA, query: str) -> list:
 
 
 def create_test_execution(server: JIRA, issueid: str, projectid: int,
-                          summary_prefix: str, test_summary: str,
-                          fix_version: str, parent_labels: list, new_labels: list = None,
+                          summary: str, fix_version: str, labels: list = None,
                           description: str = " ") -> Issue:
     """Creates an execution linked to the TestCase provided"""
     issue_dict = {
@@ -336,11 +338,11 @@ def create_test_execution(server: JIRA, issueid: str, projectid: int,
         'assignee': {'name': server.current_user()},
         'issuetype': {'name': 'Test Case Execution'},
         'parent': {'key': issueid},
-        'summary': str(summary_prefix) + " Execution of " + test_summary + " " + issueid,
+        'summary': summary,
         'fixVersions': [{'name': fix_version}],
         # TODO set priority as config input?
         # 'priority': {'name': 'Minor', "id": 10101},
-        'labels': parent_labels + new_labels,
+        'labels': labels,
         # 'versions': [{'name': fix_version}],
         'description': description,
         # TODO add build field ??
@@ -375,28 +377,46 @@ def _addscreenshots(jira: JIRA, issueid: str, attachements: list = None):
         Raises FileNotFound: if an attachement file is not found
     """
 
-    if attachements:
-        for filepath in attachements:
-            if os.path.isfile(path.join(filepath)):
-                with open(filepath, 'rb') as file:
-                    logger.debug("Opened screenshot " + file.name)
-                    jira.add_attachment(issue=issueid, attachment=file)
-                    logger.info("Attached " + file.name + " into " + issueid)
-    else:
-        screenshotspath = path.join(path.dirname(__file__), ".", DriverWrappersPool.screenshots_directory)
-        logger.debug("Reading screenshot folder " + screenshotspath)
+    if not attachements:
+        attachements = read_screenshot_folder()
 
-        if len(os.listdir(screenshotspath)) < 1:
-            logger.warning("Screenshot folder empty...")
-            return
+    for filepath in attachements:
+        if os.path.isfile(path.join(filepath)):
+            _add_screenshot_as_file(jira, issueid, path.join(filepath))
 
-        for filename in os.listdir(screenshotspath):
-            if os.path.isfile(path.join(screenshotspath, filename)):
-                with open(os.path.join(screenshotspath, filename), 'rb') as file:
-                    logger.debug("Opened screenshot " + file.name)
-                    jira.add_attachment(issue=issueid, attachment=file)
-                    logger.info("Attached " + filename + " into " + issueid)
     logger.info("Screenshots uploaded...")
+
+
+def read_screenshot_folder() -> list:
+    """
+    Reads the screenshot folder and returns a list with the absolute paths to each file found
+    """
+    screenshotspath = path.join(path.dirname(__file__), ".", DriverWrappersPool.screenshots_directory)
+    logger.debug("Reading screenshot folder " + screenshotspath)
+    file_list = []
+
+    if len(os.listdir(screenshotspath)) < 1:
+        logger.warning("Screenshot folder empty...")
+
+    for filename in os.listdir(screenshotspath):
+        if os.path.isfile(path.join(screenshotspath, filename)):
+            file_list.append(path.dirname(path.join(screenshotspath, filename)))
+
+    return file_list
+
+
+def _add_screenshot_as_file(jira: JIRA, issue_id: str, screenshotspath: str):
+    """
+    Adds the given file as an attachement for the provided issue
+    :param jira: JIRA server to be used for the attachement
+    :param issue_id: The id of the target isue
+    :param screenshotspath: Absolute path of the attachment
+    Raises OSError if the file cannot be opened
+    """
+    with open(os.path.join(screenshotspath), 'rb') as file:
+        logger.debug("Opened screenshot " + file.name)
+        jira.add_attachment(issue=issue_id, attachment=file)
+        logger.info("Attached " + file.name + " into " + issue_id)
 
 
 def _addlogs(jira: JIRA, issueid: str, logpath: Path = None):
