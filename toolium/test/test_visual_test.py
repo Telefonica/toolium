@@ -661,7 +661,7 @@ def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
 
     # Update conf and create a new VisualTest instance
     driver_wrapper.config.set('Driver', 'type', 'ios')
-    driver_wrapper.config.set('AppiumCapabilities', 'browserName', 'safari')
+    driver_wrapper.config.set('Capabilities', 'browserName', 'safari')
     driver_wrapper.config.set('VisualTests', 'save', 'true')
     visual = VisualTest(driver_wrapper)
 

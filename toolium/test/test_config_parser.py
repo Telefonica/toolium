@@ -121,7 +121,7 @@ def test_set_with_colon_in_option(config):
 
 def test_options_with_colon_in_option(config):
     section = 'Capabilities'
-    options = ['selenoid:options', 'cloud:options']
+    options = ['selenoid:options', 'cloud:options', 'platformName']
     assert options == config.options(section)
 
 
@@ -144,7 +144,8 @@ def test_remove_option_with_colon_in_option(config):
 
 def test_items_with_colon_in_option(config):
     section = 'Capabilities'
-    items = [('selenoid:options', "{'enableVNC': True, 'enableVideo': True}"), ('cloud:options', "{'name': 'test'}")]
+    items = [('selenoid:options', "{'enableVNC': True, 'enableVideo': True}"), ('cloud:options', "{'name': 'test'}"),
+             ('platformName', 'Android')]
     assert items == config.items(section)
 
 
@@ -199,13 +200,13 @@ def test_deepcopy_and_modify_option_with_colon(config):
 
 toolium_system_properties = (
     # Update value
-    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', 'iOS'),
+    ('TOOLIUM_CAPABILITIES_PLATFORMNAME', 'Capabilities', 'platformName', 'Android', 'iOS'),
     # Underscore in value
-    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', 'a_b'),
+    ('TOOLIUM_CAPABILITIES_PLATFORMNAME', 'Capabilities', 'platformName', 'Android', 'a_b'),
     # Equal symbol in value
-    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', 'a=b'),
+    ('TOOLIUM_CAPABILITIES_PLATFORMNAME', 'Capabilities', 'platformName', 'Android', 'a=b'),
     # Empty value
-    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', ''),
+    ('TOOLIUM_CAPABILITIES_PLATFORMNAME', 'Capabilities', 'platformName', 'Android', ''),
     # Underscore in option
     ('TOOLIUM_SERVER_VIDEO_ENABLED', 'Server', 'video_enabled', 'false', 'true'),
     # New section
@@ -213,9 +214,9 @@ toolium_system_properties = (
     # New option
     ('TOOLIUM_CAPABILITIES_CUSTOMCAPABILITY', 'Capabilities', 'customCapability', None, 'prueba'),
     # Lowercase section in name
-    ('TOOLIUM_APPIUMCapabilities_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', 'iOS'),
+    ('TOOLIUM_Capabilities_PLATFORMNAME', 'Capabilities', 'platformName', 'Android', 'iOS'),
     # Lowercase option in name
-    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMName', 'AppiumCapabilities', 'platformName', 'Android', 'iOS'),
+    ('TOOLIUM_CAPABILITIES_PLATFORMName', 'Capabilities', 'platformName', 'Android', 'iOS'),
 )
 
 
@@ -238,31 +239,27 @@ def test_update_toolium_system_properties(config, property_name, section, option
 
 toolium_system_properties_wrong_format = (
     # No section and option in name
-    ('TOOLIUM', 'AppiumCapabilities', 'platformName', 'Android', 'AppiumCapabilities_platformName=iOS'),
+    ('TOOLIUM', 'Capabilities', 'platformName', 'Android', 'Capabilities_platformName=iOS'),
     # No option in name
-    ('TOOLIUM_APPIUMCAPABILITIES', 'AppiumCapabilities', 'platformName', 'Android',
-     'AppiumCapabilities_platformName=iOS'),
+    ('TOOLIUM_CAPABILITIES', 'Capabilities', 'platformName', 'Android', 'Capabilities_platformName=iOS'),
     # Option in name different from option in value
-    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORM', 'AppiumCapabilities', 'platformName', 'Android',
-     'AppiumCapabilities_platformName=iOS'),
+    ('TOOLIUM_CAPABILITIES_PLATFORM', 'Capabilities', 'platformName', 'Android', 'Capabilities_platformName=iOS'),
     # Additional param in name
-    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME_WRONG', 'AppiumCapabilities', 'platformName', 'Android',
-     'AppiumCapabilities_platformName=iOS'),
+    ('TOOLIUM_CAPABILITIES_PLATFORMNAME_WRONG', 'Capabilities', 'platformName', 'Android',
+     'Capabilities_platformName=iOS'),
     # No option in value
-    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android',
-     'AppiumCapabilities=iOS'),
+    ('TOOLIUM_CAPABILITIES_PLATFORMNAME', 'Capabilities', 'platformName', 'Android', 'Capabilities=iOS'),
     # Additional param in value
-    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android',
-     'AppiumCapabilities_platformName_wrong=iOS'),
+    ('TOOLIUM_CAPABILITIES_PLATFORMNAME', 'Capabilities', 'platformName', 'Android',
+     'Capabilities_platformName_wrong=iOS'),
     # No equal in value
-    ('TOOLIUM_APPIUMCAPABILITIES_PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android',
-     'AppiumCapabilities_platformName iOS'),
+    ('TOOLIUM_CAPABILITIES_PLATFORMNAME', 'Capabilities', 'platformName', 'Android', 'Capabilities_platformName iOS'),
     # Empty section
-    ('TOOLIUM__PLATFORMNAME', 'AppiumCapabilities', 'platformName', 'Android', '_platformName=iOS'),
+    ('TOOLIUM__PLATFORMNAME', 'Capabilities', 'platformName', 'Android', '_platformName=iOS'),
     # Empty option
-    ('TOOLIUM_APPIUMCAPABILITIES_', 'AppiumCapabilities', 'platformName', 'Android', 'AppiumCapabilities_=iOS'),
+    ('TOOLIUM_CAPABILITIES_', 'Capabilities', 'platformName', 'Android', 'Capabilities_=iOS'),
     # No toolium system property
-    ('WRONGNAME', 'AppiumCapabilities', 'platformName', 'Android', 'platformName_Android=iOS'),
+    ('WRONGNAME', 'Capabilities', 'platformName', 'Android', 'platformName_Android=iOS'),
 )
 
 
@@ -294,7 +291,7 @@ def test_update_toolium_system_properties_wrong_format(config, logger, property_
 
 
 def test_update_properties_behave(config):
-    section = 'AppiumCapabilities'
+    section = 'Capabilities'
     option = 'platformName'
     orig_value = 'Android'
     new_value = 'iOS'

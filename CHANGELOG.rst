@@ -7,6 +7,8 @@ v3.1.0
 *Release date: In development*
 
 - Update `[CONTEXT:a.b.c]` replacement to allow lists access, e.g. [CONTEXT:list.1] to access the second element of list
+- Add capabilities configured in `[Capabilities]` section also to Appium tests to use `platformName` and `browserName`
+ w3c capabilities instead of Appium ones
 - `platformVersion` Appium capability must be a string
 
 v3.0.2

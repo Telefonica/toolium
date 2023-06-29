@@ -36,7 +36,7 @@ mobile_tests = (
     ('firefox', False, False, False),
 )
 
-# (driver_type, appium_app, appium_browser_name, is_web, is_android_web, is_ios_web)
+# (driver_type, appium_app, browser_name, is_web, is_android_web, is_ios_web)
 web_tests = (
     ('android-4.1.2-on-android', 'C:/Demo.apk', None, False, False, False),
     ('android', 'C:/Demo.apk', None, False, False, False),
@@ -254,7 +254,7 @@ def test_is_web_test(driver_type, appium_app, appium_browser_name, is_web, is_an
     if appium_app is not None:
         driver_wrapper.config.set('AppiumCapabilities', 'app', appium_app)
     if appium_browser_name is not None:
-        driver_wrapper.config.set('AppiumCapabilities', 'browserName', appium_browser_name)
+        driver_wrapper.config.set('Capabilities', 'browserName', appium_browser_name)
     assert driver_wrapper.is_web_test() == is_web
     assert driver_wrapper.is_android_web_test() == is_android_web
     assert driver_wrapper.is_ios_web_test() == is_ios_web
