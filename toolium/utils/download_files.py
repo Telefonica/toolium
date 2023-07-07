@@ -146,10 +146,8 @@ def compare_downloaded_file(context, file_name, expected_folder, expected_file_n
     :param max_wait: max time to wait
     """
     # Get downloaded file and compare with expected file
-    if expected_file_name is None:
-        template_file = os.path.join(os.getcwd(), expected_folder, file_name)
-    else:
-        template_file = os.path.join(os.getcwd(), expected_folder, expected_file_name)
+    expected_file_name = file_name if expected_file_name is None else expected_file_name
+    template_file = os.path.join(os.getcwd(), expected_folder, expected_file_name)
     start_time = time.time()
     while time.time() < start_time + max_wait:
         downloaded_file = get_downloaded_file_path(context, file_name)
