@@ -12,9 +12,11 @@ The following example shows how to configure Appium to run tests over TestApp ap
     [Driver]
     type: ios
 
+    [Capabilities]
+    platformName: iOS
+
     [AppiumCapabilities]
     automationName: XCUITest
-    platformName: iOS
     deviceName: iPhone 14
     platformVersion: 16.1
     app: http://server_url/TestApp.zip
@@ -24,9 +26,11 @@ And this example shows how to choose Android::
     [Driver]
     type: android
 
+    [Capabilities]
+    platformName: Android
+
     [AppiumCapabilities]
     automationName: UiAutomator2
-    platformName: Android
     deviceName: Android
     app: http://server_url/TestApp.apk
 

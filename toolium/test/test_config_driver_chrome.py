@@ -197,12 +197,15 @@ def test_get_chrome_options_capabilities_new(config, utils):
 def test_get_chrome_options_capabilities_update(config, utils):
     config.add_section('Capabilities')
     config.set('Capabilities', 'browserVersion', '50')
+    config.set('Capabilities', 'platformVersion', '14')
     # TODO: next line it should not be needed, but config object has not been cleaned after previous test
     config.set('Capabilities', 'pageLoadStrategy', 'normal')
     config_driver = ConfigDriver(config, utils)
     expected_arguments = []
     expected_capabilities = DEFAULT_CAPABILITIES.copy()
+    # browserVersion and platformVersion are not converted to int
     expected_capabilities['browserVersion'] = '50'
+    expected_capabilities['platformVersion'] = '14'
     expected_experimental_options = {}
     expected_extensions_len = 0
     expected_binary_location = ''

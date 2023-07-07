@@ -307,7 +307,7 @@ class DriverWrapper(object):
 
         :returns: True if test must be executed in a browser
         """
-        appium_browser_name = self.config.get_optional('AppiumCapabilities', 'browserName')
+        appium_browser_name = self.config.get_optional('Capabilities', 'browserName')
         return not self.is_mobile_test() or appium_browser_name not in (None, '')
 
     def is_android_web_test(self):

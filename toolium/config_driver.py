@@ -109,6 +109,7 @@ class ConfigDriver(object):
             # Get driver options
             options = AppiumOptions()
             self._add_capabilities_from_properties(capabilities, 'AppiumCapabilities')
+            self._add_capabilities_from_properties(capabilities, 'Capabilities')
             self._update_dict(options.capabilities, capabilities)
 
             # Create remote appium driver
@@ -192,9 +193,10 @@ class ConfigDriver(object):
         cap_type = {'Capabilities': 'server', 'AppiumCapabilities': 'Appium server'}
         try:
             for cap, cap_value in dict(self.config.items(section)).items():
+                if cap not in ['browserVersion', 'platformVersion']:
+                    cap_value = self._convert_property_type(cap_value)
                 cap = f'appium:{cap}' if section == 'AppiumCapabilities' else cap
                 self.logger.debug("Added %s capability: %s = %s", cap_type[section], cap, cap_value)
-                cap_value = cap_value if cap == 'browserVersion' else self._convert_property_type(cap_value)
                 self._update_dict(capabilities, {cap: cap_value}, initial_key=cap)
         except NoSectionError:
             pass

@@ -113,16 +113,17 @@ def test_create_remote_driver_android_capabilities(appiumdriver_mock, config, ut
     driver_type = 'android'
     utils.get_driver_name.return_value = driver_type
     config.set('Driver', 'type', driver_type)
+    config.add_section('Capabilities')
+    config.set('Capabilities', 'platformName', 'Android')
     config.add_section('AppiumCapabilities')
     config.set('AppiumCapabilities', 'automationName', 'UiAutomator2')
-    config.set('AppiumCapabilities', 'platformName', 'Android')
     server_url = 'http://10.20.30.40:5555'
     utils.get_server_url.return_value = server_url
     config_driver = ConfigDriver(config, utils)
     DriverWrappersPool.output_directory = ''
     expected_capabilities = DEFAULT_CAPABILITIES
+    expected_capabilities['platformName'] = 'Android'
     expected_capabilities['appium:automationName'] = 'UiAutomator2'
-    expected_capabilities['appium:platformName'] = 'Android'
 
     config_driver._create_remote_driver()
 
@@ -139,16 +140,17 @@ def test_create_remote_driver_ios_capabilities(appiumdriver_mock, config, utils)
     driver_type = 'ios'
     utils.get_driver_name.return_value = driver_type
     config.set('Driver', 'type', driver_type)
+    config.add_section('Capabilities')
+    config.set('Capabilities', 'platformName', 'iOS')
     config.add_section('AppiumCapabilities')
     config.set('AppiumCapabilities', 'automationName', 'XCUITest')
-    config.set('AppiumCapabilities', 'platformName', 'iOS')
     server_url = 'http://10.20.30.40:5555'
     utils.get_server_url.return_value = server_url
     config_driver = ConfigDriver(config, utils)
     DriverWrappersPool.output_directory = ''
     expected_capabilities = DEFAULT_CAPABILITIES
+    expected_capabilities['platformName'] = 'iOS'
     expected_capabilities['appium:automationName'] = 'XCUITest'
-    expected_capabilities['appium:platformName'] = 'iOS'
 
     config_driver._create_remote_driver()
 
