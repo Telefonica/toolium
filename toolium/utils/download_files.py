@@ -137,7 +137,7 @@ def _get_download_directory_url(context):
     return url
 
 
-def compare_downloaded_file(context, file_name, expected_folder, expected_file_name=None, max_wait):
+def compare_downloaded_file(context, file_name, expected_folder, max_wait, expected_file_name=None):
     """
     Compare downloaded file with the expected file
     :param context: behave context
