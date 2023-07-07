@@ -137,7 +137,7 @@ def _get_download_directory_url(context):
     return url
 
 
-def compare_downloaded_file(context, file_name, expected_folder, max_wait):
+def compare_downloaded_file(context, file_name, expected_folder, max_wait, expected_file_name=None):
     """
     Compare downloaded file with the expected file
     :param context: behave context
@@ -146,7 +146,8 @@ def compare_downloaded_file(context, file_name, expected_folder, max_wait):
     :param max_wait: max time to wait
     """
     # Get downloaded file and compare with expected file
-    template_file = os.path.join(os.getcwd(), expected_folder, file_name)
+    expected_file_name = file_name if expected_file_name is None else expected_file_name
+    template_file = os.path.join(os.getcwd(), expected_folder, expected_file_name)
     start_time = time.time()
     while time.time() < start_time + max_wait:
         downloaded_file = get_downloaded_file_path(context, file_name)
