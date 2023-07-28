@@ -8,8 +8,10 @@ v3.1.0
 
 - Update `[CONTEXT:a.b.c]` replacement to allow lists access, e.g. [CONTEXT:list.1] to access the second element of list
 - Add capabilities configured in `[Capabilities]` section also to Appium tests to use `platformName` and `browserName`
- w3c capabilities instead of Appium ones
+  w3c capabilities instead of Appium ones
 - `platformVersion` Appium capability must be a string
+- Add optional parameter to `compare_downloaded_files` method to allow to compare files with different names
+- Remove Python 3.7 support (Python 3.7 reached the end of its life on June 27th, 2023)
 
 v3.0.2
 ------
