@@ -29,7 +29,7 @@ def run_mock(test_name):
     :param test_name: test name that must be executed
     :returns: test instance
     """
-    # BasicTestCase import should be inside method to avoid collecting tests error in behave with python 3.7
+    # BasicTestCase import should be inside method to avoid collecting tests error in behave
     from toolium.test_cases import BasicTestCase
 
     class MockTestClass(BasicTestCase):
