@@ -130,13 +130,14 @@ class PageElement(CommonObject):
             else:
                 app_web_context = "{}_{}".format(PageElement.webview_context_prefix,
                                                  self.driver.capabilities['appPackage'])
-                contexts = self.driver.execute_script('mobile: getContexts')
-                context_dict = next(
-                    (item for item in contexts if 'webviewName' in item and item['webviewName'] == app_web_context),
-                    None)
-                if context_dict and 'pages' in context_dict:
+                if app_web_context in self.driver.contexts:
                     context = app_web_context
-                    window_handle = 'CDwindow-{}'.format(context_dict['pages'][0]['id'])
+                    if self.driver.context != context:
+                        self.driver.switch_to.context(context)
+                    window_handle = self.driver.window_handles[0]
+                else:
+                    raise KeyError("WEBVIEW context not found")
+
             if context:
                 if self.driver.context != context:
                     self.driver.switch_to.context(context)
