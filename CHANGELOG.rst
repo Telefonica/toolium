@@ -12,6 +12,7 @@ v3.1.0
 - `platformVersion` Appium capability must be a string
 - Add optional parameter to `compare_downloaded_files` method to allow to compare files with different names
 - Remove Python 3.7 support (Python 3.7 reached the end of its life on June 27th, 2023)
+- Update _android_automatic_context_selection method to be compatible with latest chromedriver versions
 
 v3.0.2
 ------
