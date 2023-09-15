@@ -116,25 +116,25 @@ def test_replace_param_uuid():
 def test_replace_param_random():
     param = replace_param('[RANDOM]')
     assert len(param) == 8
-    assert type(param) == str
+    assert isinstance(param, str)
 
 
 def test_replace_param_random_phone_number_with_type_inference():
     param = replace_param('[RANDOM_PHONE_NUMBER]')
-    assert type(param) == int
+    assert isinstance(param, int)
     assert len(str(param)) == 11
 
 
 def test_replace_param_random_phone_number_without_type_inference():
     param = replace_param('[RANDOM_PHONE_NUMBER]', infer_param_type=False)
-    assert type(param) == str
+    assert isinstance(param, str)
     assert len(param) == 12
     assert param.startswith('+34')
 
 
 def test_replace_param_random_phone_number_with_type_inference_forcing_str():
     param = replace_param('[STR:[RANDOM_PHONE_NUMBER]]')
-    assert type(param) == str
+    assert isinstance(param, str)
     assert len(param) == 12
     assert param.startswith('+34')
 
@@ -143,27 +143,27 @@ def test_replace_param_random_phone_number_for_given_locale():
     dataset.language = 'pt'
     dataset.country = 'BR'
     param = replace_param('[RANDOM_PHONE_NUMBER]', infer_param_type=False)
-    assert type(param) == str
+    assert isinstance(param, str)
     assert len(param) == 13
     assert param.startswith('+55')
 
 
 def test_replace_param_timestamp_with_type_inference():
     param = replace_param('[TIMESTAMP]')
-    assert type(param) == int
+    assert isinstance(param, int)
     assert datetime.datetime.strptime(str(datetime.datetime.fromtimestamp(param)), '%Y-%m-%d %H:%M:%S')
 
 
 def test_replace_param_timestamp_without_type_inference():
     param = replace_param('[TIMESTAMP]', infer_param_type=False)
-    assert type(param) == str
+    assert isinstance(param, str)
     assert len(param) == 10
     assert datetime.datetime.strptime(str(datetime.datetime.fromtimestamp(int(param))), '%Y-%m-%d %H:%M:%S')
 
 
 def test_replace_param_timestamp_with_type_inference_forcing_str():
     param = replace_param('[STR:[TIMESTAMP]]')
-    assert type(param) == str
+    assert isinstance(param, str)
     assert len(param) == 10
     assert datetime.datetime.strptime(str(datetime.datetime.fromtimestamp(int(param))), '%Y-%m-%d %H:%M:%S')
 
@@ -335,43 +335,43 @@ def test_replace_param_now_offsets_with_and_without_format_and_more():
 
 def test_replace_param_str_int():
     param = replace_param('[STR:28]')
-    assert type(param) == str
+    assert isinstance(param, str)
     assert param == '28'
 
 
 def test_replace_param_str():
     param = replace_param('[STR:abc]')
-    assert type(param) == str
+    assert isinstance(param, str)
     assert param == 'abc'
 
 
 def test_replace_param_int():
     param = replace_param('[INT:28]')
-    assert type(param) == int
+    assert isinstance(param, int)
     assert param == 28
 
 
 def test_replace_param_float():
     param = replace_param('[FLOAT:28]')
-    assert type(param) == float
+    assert isinstance(param, float)
     assert param == 28.0
 
 
 def test_replace_param_list_integers():
     param = replace_param('[LIST:[1,2,3]]')
-    assert type(param) == list
+    assert isinstance(param, list)
     assert param == [1, 2, 3]
 
 
 def test_replace_param_list_strings():
     param = replace_param("[LIST:['1','2','3']]")
-    assert type(param) == list
+    assert isinstance(param, list)
     assert param == ['1', '2', '3']
 
 
 def test_replace_param_dict():
     param = replace_param("[DICT:{'a':'test1','b':'test2','c':'test3'}]")
-    assert type(param) == dict
+    assert isinstance(param, dict)
     assert param == {'a': 'test1', 'b': 'test2', 'c': 'test3'}
 
 
