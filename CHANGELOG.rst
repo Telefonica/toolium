@@ -4,7 +4,7 @@ Toolium Changelog
 v3.1.0
 ------
 
-*Release date: In development*
+*Release date: 2023-09-19*
 
 - Update `[CONTEXT:a.b.c]` replacement to allow lists access, e.g. [CONTEXT:list.1] to access the second element of list
 - Add capabilities configured in `[Capabilities]` section also to Appium tests to use `platformName` and `browserName`
