@@ -120,10 +120,11 @@ class PageElements(CommonObject):
             self._page_elements = []
             for order, web_element in enumerate(self.web_elements):
                 # Create multiple PageElement with original locator and order
-                page_element = self.page_element_class(self.locator[0], self.locator[1], parent=self.parent,
-                                                       order=order, webview = self.webview,
-                                                       webview_context_selection_callback = self.webview_context_selection_callback,
-                                                       webview_csc_args = self.webview_csc_args)
+                page_element =\
+                    self.page_element_class(self.locator[0], self.locator[1], parent=self.parent,
+                                            order=order, webview=self.webview,
+                                            webview_context_selection_callback=self.webview_context_selection_callback,
+                                            webview_csc_args=self.webview_csc_args)
                 page_element.reset_object(self.driver_wrapper)
                 page_element._web_element = web_element
                 self._page_elements.append(page_element)
@@ -137,7 +138,6 @@ class PageElements(CommonObject):
 
     def __iter__(self):
         return iter(self.page_elements)
-
 
 
 class Buttons(PageElements):

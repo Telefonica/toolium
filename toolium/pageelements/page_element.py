@@ -117,7 +117,6 @@ class PageElement(CommonObject):
                 self._web_element = base.find_elements(*self.locator)[self.order] if self.order \
                     else base.find_element(*self.locator)
 
-
     def parent_locator_str(self):
         """Return string with locator tuple for parent element
 
