@@ -41,7 +41,8 @@ class PageElements(CommonObject):
     """
     page_element_class = PageElement  #: class of page elements (PageElement, Button...)
 
-    def __init__(self, by, value, parent=None, page_element_class=None, order=None):
+    def __init__(self, by, value, parent=None, page_element_class=None, order=None, webview=False,
+                 webview_context_selection_callback=None, webview_csc_args=None):
         """Initialize the PageElements object with the given locator components.
 
         If parent is not None, find_elements will be performed over it, instead of
@@ -53,6 +54,11 @@ class PageElements(CommonObject):
         :param order: index value if the locator returns more than one element
         :param page_element_class: class of page elements (PageElement, Button...)
         :param shadowroot: CSS SELECTOR of JS element where shadowroot tag appears
+        :param webview: True if the element is in a mobile webiew
+        :param webview_context_selection_callback: method provided to select the desired webview context if
+        automatic_context_selection is enabled. Must return a tuple (context, window_handle) for android, and a context
+        for ios
+        :param webview_csc_args: arguments list for webview_context_selection_callback
         """
         super(PageElements, self).__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value
@@ -61,6 +67,10 @@ class PageElements(CommonObject):
         self.shadowroot = None  #: Not implemented for PageElements yet
         self.driver_wrapper = DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
         # update instance element class or use PageElement class
+        self.webview = webview
+        self.webview_context_selection_callback = webview_context_selection_callback  #: callback for selection of the
+        # webview context with automatic_context_selection
+        self.webview_csc_args = webview_csc_args  #: arguments list for the context selection callback method
         if page_element_class:
             self.page_element_class = page_element_class
         self._page_elements = []
@@ -90,6 +100,12 @@ class PageElements(CommonObject):
             if self.parent:
                 self._web_elements = self.utils.get_web_element(self.parent).find_elements(*self.locator)
             else:
+                # check context for mobile webviews
+                if self.driver_wrapper.config.getboolean_optional('Driver', 'automatic_context_selection'):
+                    if self.driver_wrapper.is_android_test():
+                        self._android_automatic_context_selection()
+                    elif self.driver_wrapper.is_ios_test():
+                        self._ios_automatic_context_selection()
                 self._web_elements = self.driver.find_elements(*self.locator)
         return self._web_elements
 
@@ -105,7 +121,9 @@ class PageElements(CommonObject):
             for order, web_element in enumerate(self.web_elements):
                 # Create multiple PageElement with original locator and order
                 page_element = self.page_element_class(self.locator[0], self.locator[1], parent=self.parent,
-                                                       order=order)
+                                                       order=order, webview = self.webview,
+                                                       webview_context_selection_callback = self.webview_context_selection_callback,
+                                                       webview_csc_args = self.webview_csc_args)
                 page_element.reset_object(self.driver_wrapper)
                 page_element._web_element = web_element
                 self._page_elements.append(page_element)
@@ -119,6 +137,7 @@ class PageElements(CommonObject):
 
     def __iter__(self):
         return iter(self.page_elements)
+
 
 
 class Buttons(PageElements):
