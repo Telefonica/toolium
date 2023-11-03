@@ -35,6 +35,7 @@ class LoginPageObject(PageObject):
         self.inputs = PageElements(By.XPATH, '//input')
         self.links = PageElements(By.XPATH, '//a')
         self.inputs_with_parent = PageElements(By.XPATH, '//input', parent=(By.ID, 'parent'))
+        self.inputs_with_webview = PageElements(By.XPATH, '//input', webview=True)
 
 
 @pytest.fixture
@@ -163,3 +164,20 @@ def test_reset_object(driver_wrapper):
     assert len(login_page.links._web_elements) == 1
     assert login_page.links._page_elements[0]._web_element is not None
     assert page_element_21._web_element is not None
+
+def test_get_page_elements_without_webview(driver_wrapper):
+    driver_wrapper.driver.find_elements.return_value = child_elements
+    page_elements = LoginPageObject().inputs.page_elements
+
+    # Check webview attribute is set to false by default in child elements
+    assert page_elements[0].webview == False
+    assert page_elements[1].webview == False
+
+def test_get_page_elements_with_webview(driver_wrapper):
+    driver_wrapper.driver.find_elements.return_value = child_elements
+    page_elements = LoginPageObject().inputs_with_webview.page_elements
+
+    # Check webview attribute is set to true in child element when a Pagelements element
+    # is created with the webview attribute
+    assert page_elements[0].webview
+    assert page_elements[1].webview

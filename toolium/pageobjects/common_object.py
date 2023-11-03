@@ -68,11 +68,13 @@ class CommonObject(object):
     def _android_automatic_context_selection(self):
         """Change context selection depending if the element is a webview for android devices"""
         # we choose the appPackage webview context, and select the first window returned by mobile: getContexts
-        if self.webview:
+        if self.webview or (self.parent and self.parent.webview):
             context = None
             window_handle = None
             if self.webview_context_selection_callback:
                 context, window_handle = self.webview_context_selection_callback(*self.webview_csc_args)
+            elif self.parent and self.parent.webview_context_selection_callback:
+                context, window_handle = self.parent.webview_context_selection_callback(*self.parent.webview_csc_args)
             else:
                 app_web_context = "{}_{}".format(CommonObject.webview_context_prefix,
                                                  self.driver.capabilities['appPackage'])
