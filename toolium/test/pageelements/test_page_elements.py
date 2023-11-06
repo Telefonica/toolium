@@ -165,6 +165,7 @@ def test_reset_object(driver_wrapper):
     assert login_page.links._page_elements[0]._web_element is not None
     assert page_element_21._web_element is not None
 
+
 def test_get_page_elements_without_webview(driver_wrapper):
     driver_wrapper.driver.find_elements.return_value = child_elements
     page_elements = LoginPageObject().inputs.page_elements
@@ -172,6 +173,7 @@ def test_get_page_elements_without_webview(driver_wrapper):
     # Check webview attribute is set to false by default in child elements
     assert not page_elements[0].webview
     assert not page_elements[1].webview
+
 
 def test_get_page_elements_with_webview(driver_wrapper):
     driver_wrapper.driver.find_elements.return_value = child_elements
