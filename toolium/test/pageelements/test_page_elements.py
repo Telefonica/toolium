@@ -170,8 +170,8 @@ def test_get_page_elements_without_webview(driver_wrapper):
     page_elements = LoginPageObject().inputs.page_elements
 
     # Check webview attribute is set to false by default in child elements
-    assert page_elements[0].webview == False
-    assert page_elements[1].webview == False
+    assert not page_elements[0].webview
+    assert not page_elements[1].webview
 
 def test_get_page_elements_with_webview(driver_wrapper):
     driver_wrapper.driver.find_elements.return_value = child_elements
