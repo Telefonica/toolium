@@ -37,7 +37,7 @@ class LoginPageObject(PageObject):
         self.inputs_with_parent = PageElements(By.XPATH, '//input', parent=(By.ID, 'parent'))
         self.inputs_with_webview = PageElements(By.XPATH, '//input', webview=True)
         self.inputs_with_webview_callback = \
-            PageElements(By.XPATH, '//input', webview_context_selection_callback= lambda a,b : (a,b),
+            PageElements(By.XPATH, '//input', webview_context_selection_callback=lambda a, b: (a, b),
                          webview_csc_args=['WEBVIEW_fake.other', "CDwindow-0123456789"], webview=True)
         self.parent_webview = PageElement(By.XPATH, '//parent', webview=True)
         self.inputs_with_webview_parent = PageElements(By.XPATH, '//input', parent=self.parent_webview, webview=True)
@@ -189,15 +189,17 @@ def test_get_page_elements_with_webview(driver_wrapper):
     assert page_elements[0].webview
     assert page_elements[1].webview
 
+
 def test_get_page_elements_with_context_selection_callback_provided(driver_wrapper):
     driver_wrapper.driver.find_elements.return_value = child_elements
-    page_elements = LoginPageObject().inputs_with_webview_callback.page_elements   
+    page_elements = LoginPageObject().inputs_with_webview_callback.page_elements
 
     # Check context selection callback provided is set correctly to pageelements
-    assert page_elements[0].webview_context_selection_callback 
+    assert page_elements[0].webview_context_selection_callback
     assert page_elements[0].webview_csc_args
-    assert page_elements[1].webview_context_selection_callback 
+    assert page_elements[1].webview_context_selection_callback
     assert page_elements[1].webview_csc_args
+
 
 def test_mobile_automatic_context_selection_switch_to_new_webview_context_in_pagelements_without_parent(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=True)
@@ -209,9 +211,10 @@ def test_mobile_automatic_context_selection_switch_to_new_webview_context_in_pag
     driver_wrapper.driver.contexts = ["WEBVIEW_test.package.fake", "WEBVIEW_other.fake.context"]
     driver_wrapper.driver.current_window_handle = "0987654321"
     driver_wrapper.driver.window_handles = ["1234567890", "0987654321"]
-    LoginPageObject().inputs_with_webview.page_elements 
+    LoginPageObject().inputs_with_webview.page_elements
     driver_wrapper.driver.switch_to.context.assert_called_with('WEBVIEW_test.package.fake')
     driver_wrapper.driver.switch_to.window.assert_called_once_with('1234567890')
+
 
 def test_mobile_automatic_context_selection_called_in_pagelements_without_parent(driver_wrapper):
     PageElements._android_automatic_context_selection = mock.MagicMock()
@@ -224,10 +227,11 @@ def test_mobile_automatic_context_selection_called_in_pagelements_without_parent
     mock_element = mock.MagicMock(spec=WebElement)
     mock_element.find_elements.return_value = child_elements
     driver_wrapper.driver.find_element.return_value = mock_element
-    
+
     LoginPageObject().inputs_with_webview.page_elements
     PageElement._android_automatic_context_selection.assert_not_called
     PageElements._android_automatic_context_selection.assert_called_once()
+
 
 def test_mobile_automatic_context_selection_called_in_pagelements_with_parent(driver_wrapper):
     PageElements._android_automatic_context_selection = mock.MagicMock()
@@ -240,7 +244,7 @@ def test_mobile_automatic_context_selection_called_in_pagelements_with_parent(dr
     mock_element = mock.MagicMock(spec=WebElement)
     mock_element.find_elements.return_value = child_elements
     driver_wrapper.driver.find_element.return_value = mock_element
-    
+
     LoginPageObject().inputs_with_webview_parent.page_elements
     PageElement._android_automatic_context_selection.assert_called_once()
     PageElements._android_automatic_context_selection.assert_not_called
