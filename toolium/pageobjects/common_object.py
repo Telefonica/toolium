@@ -65,6 +65,11 @@ class CommonObject(object):
         """
         return self.driver_wrapper.utils
 
+    def _switch_to_new_context(self, context):
+        """ Change to a new context if its different than the current one"""
+        if self.driver.context != context:
+            self.driver.switch_to.context(context)
+
     def _android_automatic_context_selection(self):
         """Change context selection depending if the element is a webview for android devices"""
         # we choose the appPackage webview context, and select the first window returned by mobile: getContexts
@@ -80,22 +85,19 @@ class CommonObject(object):
                                                  self.driver.capabilities['appPackage'])
                 if app_web_context in self.driver.contexts:
                     context = app_web_context
-                    if self.driver.context != context:
-                        self.driver.switch_to.context(context)
+                    self._switch_to_new_context(context)
                     window_handle = self.driver.window_handles[0]
                 else:
                     raise KeyError("WEBVIEW context not found")
 
             if context:
-                if self.driver.context != context:
-                    self.driver.switch_to.context(context)
+                self._switch_to_new_context(context)
                 if self.driver.current_window_handle != window_handle:
                     self.driver.switch_to.window(window_handle)
             else:
                 raise KeyError("WEBVIEW context not found")
         else:
-            if self.driver.context != CommonObject.native_context:
-                self.driver.switch_to.context(CommonObject.native_context)
+            self._switch_to_new_context(CommonObject.native_context)
 
     def _ios_automatic_context_selection(self):
         """Change context selection depending if the element is a webview for ios devices"""
@@ -115,5 +117,4 @@ class CommonObject(object):
             else:
                 raise KeyError("WEBVIEW context not found")
         else:
-            if self.driver.context != CommonObject.native_context:
-                self.driver.switch_to.context(CommonObject.native_context)
+            self._switch_to_new_context(CommonObject.native_context)
