@@ -112,8 +112,7 @@ class CommonObject(object):
                      'bundleId' in item and item['bundleId'] == self.driver.capabilities['bundleId']),
                     None)
             if context_id:
-                if self.driver.context != context_id:
-                    self.driver.switch_to.context(context_id)
+                self._switch_to_new_context(context_id)
             else:
                 raise KeyError("WEBVIEW context not found")
         else:
