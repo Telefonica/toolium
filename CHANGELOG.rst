@@ -7,6 +7,7 @@ v3.1.1
 *Release date: In development*
 
 - Upgrade Sphinx version from 4.* to 7.* to fix readthedocs theme format
+- Do not log warning messages when toolium system properties are used
 
 v3.1.0
 ------
