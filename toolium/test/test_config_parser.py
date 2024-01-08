@@ -16,8 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
 import os
+
+import mock
 import pytest
 
 from toolium.config_parser import ExtendedConfigParser
@@ -285,9 +286,33 @@ def test_update_toolium_system_properties_wrong_format(config, logger, property_
     if property_name.startswith('TOOLIUM'):
         logger.warning.assert_called_once_with('A toolium system property is configured but its name does not math with'
                                                ' section and option in value (use TOOLIUM_[SECTION]_[OPTION]=[Section]_'
-                                               '[option]=value): %s=%s' % (property_name, property_value))
+                                               '[option]=value): %s=%s', property_name, property_value)
     else:
         logger.warning.assert_not_called()
+
+
+toolium_system_properties_special = (
+    ('TOOLIUM_CONFIG_ENVIRONMENT', 'value1'),
+    ('TOOLIUM_OUTPUT_DIRECTORY', 'value2'),
+    ('TOOLIUM_OUTPUT_LOG_FILENAME', 'value3'),
+    ('TOOLIUM_CONFIG_DIRECTORY', 'value4'),
+    ('TOOLIUM_CONFIG_LOG_FILENAME', 'value5'),
+    ('TOOLIUM_CONFIG_PROPERTIES_FILENAMES', 'value6'),
+    ('TOOLIUM_VISUAL_BASELINE_DIRECTORY', 'value7'),
+)
+
+
+@pytest.mark.parametrize("property_name, property_value", toolium_system_properties_special)
+def test_update_toolium_system_properties_special(config, logger, property_name, property_value):
+    # Change system property and update config
+    environment_properties.append(property_name)
+    os.environ[property_name] = property_value
+    previous_config = config.deepcopy()
+    config.update_toolium_system_properties(os.environ)
+
+    # Check that config has not been updated and error message is not logged
+    assert previous_config == config, 'Config has been updated'
+    logger.warning.assert_not_called()
 
 
 def test_update_properties_behave(config):

@@ -24,6 +24,11 @@ from io import StringIO
 logger = logging.getLogger(__name__)
 
 
+SPECIAL_SYSTEM_PROPERTIES = ['TOOLIUM_CONFIG_ENVIRONMENT', 'TOOLIUM_OUTPUT_DIRECTORY', 'TOOLIUM_OUTPUT_LOG_FILENAME',
+                             'TOOLIUM_CONFIG_DIRECTORY', 'TOOLIUM_CONFIG_LOG_FILENAME',
+                             'TOOLIUM_CONFIG_PROPERTIES_FILENAMES', 'TOOLIUM_VISUAL_BASELINE_DIRECTORY']
+
+
 class ExtendedConfigParser(ConfigParser):
     def optionxform(self, optionstr):
         """Override default optionxform in ConfigParser to allow case sensitive options"""
@@ -120,10 +125,10 @@ class ExtendedConfigParser(ConfigParser):
                 if not self.has_section(section):
                     self.add_section(section)
                 self.set(section, option, value)
-            elif property_name.startswith('TOOLIUM'):
+            elif property_name.startswith('TOOLIUM') and property_name not in SPECIAL_SYSTEM_PROPERTIES:
                 logger.warning('A toolium system property is configured but its name does not math with section'
                                ' and option in value (use TOOLIUM_[SECTION]_[OPTION]=[Section]_[option]=value):'
-                               ' %s=%s' % (property_name, property_value))
+                               ' %s=%s', property_name, property_value)
 
     def translate_config_variables(self, str_with_variables):
         """
