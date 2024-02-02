@@ -4,6 +4,8 @@ Toolium Changelog
 v3.1.2
 ------
 
+- Upgrade Pillow version to 10.1.* to fix compatibility with Python 3.12
+
 *Release date: In development*
 
 v3.1.1
