@@ -3,6 +3,6 @@ selenium~=4.0             # web tests
 Appium-Python-Client~=2.3 # mobile tests
 Pillow~=9.4               # visual testing
 screeninfo~=0.8
-lxml==4.9.2
+lxml~=5.1
 Faker~=18.3
 phonenumbers~=8.13
