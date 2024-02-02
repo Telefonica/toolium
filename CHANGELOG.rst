@@ -4,7 +4,7 @@ Toolium Changelog
 v3.1.1
 ------
 
-*Release date: In development*
+*Release date: 2024-02-02*
 
 - Add support for Python 3.12
 - Upgrade Sphinx version from 4.* to 7.* to fix readthedocs theme format
