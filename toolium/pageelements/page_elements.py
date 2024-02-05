@@ -15,7 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from typing import List, Any
+import inspect
+from typing import Any, List
 
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.pageelements.button_page_element import Button
@@ -120,11 +121,13 @@ class PageElements(CommonObject):
             self._page_elements = []
             for order, web_element in enumerate(self.web_elements):
                 # Create multiple PageElement with original locator and order
-                page_element =\
-                    self.page_element_class(self.locator[0], self.locator[1], parent=self.parent,
-                                            order=order, webview=self.webview,
-                                            webview_context_selection_callback=self.webview_context_selection_callback,
-                                            webview_csc_args=self.webview_csc_args)
+                # Optional parameters are passed only if they are defined in the PageElement constructor
+                signature = inspect.signature(self.page_element_class.__init__)
+                opt_names = ['parent', 'webview', 'webview_context_selection_callback', 'webview_csc_args']
+                opt_params = {name: getattr(self, name) for name in opt_names if name in signature.parameters}
+                if 'order' in signature.parameters:
+                    opt_params['order'] = order
+                page_element = self.page_element_class(self.locator[0], self.locator[1], **opt_params)
                 page_element.reset_object(self.driver_wrapper)
                 page_element._web_element = web_element
                 self._page_elements.append(page_element)

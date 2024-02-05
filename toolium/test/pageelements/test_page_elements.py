@@ -44,28 +44,33 @@ class LoginPageObject(PageObject):
         self.inputs_with_webview_parent = PageElements(By.XPATH, '//input', parent=self.parent_webview, webview=True)
 
 
-class CustomElementAllFields(PageElement):
+class CustomElementAllAttributes(PageElement):
     def __init__(self, by, value, parent=None, order=None, wait=False, shadowroot=None, webview=False,
                  webview_context_selection_callback=None, webview_csc_args=None):
-        super(CustomElementAllFields, self).__init__(by, value, parent, order, wait, shadowroot, webview,
-                                                     webview_context_selection_callback, webview_csc_args)
+        super(CustomElementAllAttributes, self).__init__(by, value, parent, order, wait, shadowroot, webview,
+                                                         webview_context_selection_callback, webview_csc_args)
 
 
-class CustomElementSomeFields(PageElement):
+class CustomElementSomeAttributes(PageElement):
     def __init__(self, by, value, parent=None, order=None, wait=False, shadowroot=None):
-        super(CustomElementSomeFields, self).__init__(by, value, parent, order, wait, shadowroot)
+        super(CustomElementSomeAttributes, self).__init__(by, value, parent, order, wait, shadowroot)
 
 
-class CustomElementMandatoryFields(PageElement):
+class CustomElementMandatoryAttributes(PageElement):
     def __init__(self, by, value):
-        super(CustomElementMandatoryFields, self).__init__(by, value)
+        super(CustomElementMandatoryAttributes, self).__init__(by, value)
 
 
 class LoginWithPageElementsPageObject(PageObject):
     def init_page_elements(self):
-        self.all_optional_fields = PageElements(By.XPATH, '//input', page_element_class=CustomElementAllFields)
-        self.some_optional_fields = PageElements(By.XPATH, '//input', page_element_class=CustomElementSomeFields)
-        self.only_mandatory_fields = PageElements(By.XPATH, '//input', page_element_class=CustomElementMandatoryFields)
+        self.all_optional_attrs = PageElements(By.XPATH, '//input', page_element_class=CustomElementAllAttributes,
+                                               webview_context_selection_callback=lambda a, b: (a, b),
+                                               webview_csc_args=['WEBVIEW_fake.other', "CDwindow-0123456789"],
+                                               webview=True)
+        self.some_optional_attrs = PageElements(By.XPATH, '//input', page_element_class=CustomElementSomeAttributes,
+                                                parent=(By.ID, 'parent'))
+        self.only_mandatory_attrs = PageElements(By.XPATH, '//input',
+                                                 page_element_class=CustomElementMandatoryAttributes)
 
 
 @pytest.fixture
@@ -198,7 +203,7 @@ def test_reset_object(driver_wrapper):
 
 def test_get_page_elements_custom_element_class_all_optional(driver_wrapper):
     driver_wrapper.driver.find_elements.return_value = child_elements
-    page_elements = LoginWithPageElementsPageObject().all_optional_fields.page_elements
+    page_elements = LoginWithPageElementsPageObject().all_optional_attrs.page_elements
 
     # Check that find_elements has been called just one time
     driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
@@ -206,41 +211,61 @@ def test_get_page_elements_custom_element_class_all_optional(driver_wrapper):
 
     # Check that the response is a list of 2 CustomElementAllFields with the expected web element
     assert len(page_elements) == 2
-    assert isinstance(page_elements[0], CustomElementAllFields)
+    assert isinstance(page_elements[0], CustomElementAllAttributes)
     assert page_elements[0]._web_element == child_elements[0]
-    assert isinstance(page_elements[1], CustomElementAllFields)
+    assert isinstance(page_elements[1], CustomElementAllAttributes)
     assert page_elements[1]._web_element == child_elements[1]
+
+    # Check that the optional attributes are set correctly
+    assert page_elements[0].order == 0
+    assert page_elements[0].webview is True
+    assert page_elements[0].webview_context_selection_callback
+    assert page_elements[0].webview_csc_args == ['WEBVIEW_fake.other', "CDwindow-0123456789"]
+    assert page_elements[1].order == 1
+    assert page_elements[1].webview is True
+    assert page_elements[1].webview_context_selection_callback
+    assert page_elements[1].webview_csc_args == ['WEBVIEW_fake.other', "CDwindow-0123456789"]
 
 
 def test_get_page_elements_custom_element_class_some_optional(driver_wrapper):
-    driver_wrapper.driver.find_elements.return_value = child_elements
-    page_elements = LoginWithPageElementsPageObject().some_optional_fields.page_elements
+    # Create a mock element
+    mock_element = mock.MagicMock(spec=WebElement)
+    mock_element.find_elements.return_value = child_elements
+
+    driver_wrapper.driver.find_element.return_value = mock_element
+    page_elements = LoginWithPageElementsPageObject().some_optional_attrs.page_elements
 
     # Check that find_elements has been called just one time
-    driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
-    driver_wrapper.driver.find_element.assert_not_called()
+    driver_wrapper.driver.find_element.assert_called_once_with(By.ID, 'parent')
+    mock_element.find_elements.assert_called_once_with(By.XPATH, '//input')
 
-    # Check that the response is a list of 2 CustomElementSomeFields with the expected web element
+    # Check that the response is a list of 2 CustomElementSomeAttributes with the expected web element
     assert len(page_elements) == 2
-    assert isinstance(page_elements[0], CustomElementSomeFields)
+    assert isinstance(page_elements[0], CustomElementSomeAttributes)
     assert page_elements[0]._web_element == child_elements[0]
-    assert isinstance(page_elements[1], CustomElementSomeFields)
+    assert isinstance(page_elements[1], CustomElementSomeAttributes)
     assert page_elements[1]._web_element == child_elements[1]
+
+    # Check that the optional attributes are set correctly
+    assert page_elements[0].order == 0
+    assert page_elements[0].parent == (By.ID, 'parent')
+    assert page_elements[1].order == 1
+    assert page_elements[0].parent == (By.ID, 'parent')
 
 
 def test_get_page_elements_custom_element_class_only_mandatory(driver_wrapper):
     driver_wrapper.driver.find_elements.return_value = child_elements
-    page_elements = LoginWithPageElementsPageObject().only_mandatory_fields.page_elements
+    page_elements = LoginWithPageElementsPageObject().only_mandatory_attrs.page_elements
 
     # Check that find_elements has been called just one time
     driver_wrapper.driver.find_elements.assert_called_once_with(By.XPATH, '//input')
     driver_wrapper.driver.find_element.assert_not_called()
 
-    # Check that the response is a list of 2 CustomElementMandatoryFields with the expected web element
+    # Check that the response is a list of 2 CustomElementMandatoryAttributes with the expected web element
     assert len(page_elements) == 2
-    assert isinstance(page_elements[0], CustomElementMandatoryFields)
+    assert isinstance(page_elements[0], CustomElementMandatoryAttributes)
     assert page_elements[0]._web_element == child_elements[0]
-    assert isinstance(page_elements[1], CustomElementMandatoryFields)
+    assert isinstance(page_elements[1], CustomElementMandatoryAttributes)
     assert page_elements[1]._web_element == child_elements[1]
 
 
@@ -249,8 +274,8 @@ def test_get_page_elements_without_webview(driver_wrapper):
     page_elements = LoginPageObject().inputs.page_elements
 
     # Check webview attribute is set to false by default in child elements
-    assert not page_elements[0].webview
-    assert not page_elements[1].webview
+    assert page_elements[0].webview is False
+    assert page_elements[1].webview is False
 
 
 def test_get_page_elements_with_webview(driver_wrapper):
@@ -259,8 +284,8 @@ def test_get_page_elements_with_webview(driver_wrapper):
 
     # Check webview attribute is set to true in child element when a Pagelements element
     # is created with the webview attribute
-    assert page_elements[0].webview
-    assert page_elements[1].webview
+    assert page_elements[0].webview is True
+    assert page_elements[1].webview is True
 
 
 def test_get_page_elements_with_context_selection_callback_provided(driver_wrapper):
@@ -269,9 +294,9 @@ def test_get_page_elements_with_context_selection_callback_provided(driver_wrapp
 
     # Check context selection callback provided is set correctly to pageelements
     assert page_elements[0].webview_context_selection_callback
-    assert page_elements[0].webview_csc_args
+    assert page_elements[0].webview_csc_args == ['WEBVIEW_fake.other', "CDwindow-0123456789"]
     assert page_elements[1].webview_context_selection_callback
-    assert page_elements[1].webview_csc_args
+    assert page_elements[1].webview_csc_args == ['WEBVIEW_fake.other', "CDwindow-0123456789"]
 
 
 def test_mobile_automatic_context_selection_switch_to_new_webview_context_in_pagelements_without_parent(driver_wrapper):
