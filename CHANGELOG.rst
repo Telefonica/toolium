@@ -6,6 +6,8 @@ v3.1.3
 
 *Release date: In development*
 
+- Fix `PageElements` class initialization when custom page element classes don't have all optional attributes
+
 v3.1.2
 ------
 
@@ -22,6 +24,7 @@ v3.1.1
 - Upgrade Sphinx version from 4.* to 7.* to fix readthedocs theme format
 - Upgrade readthedocs-sphinx-search to 0.3.2 to fix security vulnerability
 - Do not log warning messages when toolium system properties are used
+- Allow to initialize a `PageElements` class with webview attributes
 
 v3.1.0
 ------
