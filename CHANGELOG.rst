@@ -4,7 +4,7 @@ Toolium Changelog
 v3.1.3
 ------
 
-*Release date: In development*
+*Release date: 2024-02-06*
 
 - Fix `PageElements` class initialization when custom page element classes don't have all optional attributes
 
