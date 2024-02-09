@@ -46,6 +46,7 @@ In your project configuration dictionary (saved in dataset.project_config), add 
     "prefixes": [],
     "key_field": "reference",
     "search_type": "contains",
+    "ignore_empty": False,
     "file_path": "output/poeditor_terms.json",
     "mode": "online"
 }
