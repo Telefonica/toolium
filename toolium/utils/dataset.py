@@ -690,6 +690,8 @@ def get_translation_by_poeditor_reference(reference, poeditor_terms):
     poeditor_config = project_config['poeditor'] if project_config and 'poeditor' in project_config else {}
     key = poeditor_config['key_field'] if 'key_field' in poeditor_config else 'reference'
     search_type = poeditor_config['search_type'] if 'search_type' in poeditor_config else 'contains'
+    ignore_empty = poeditor_config['ignore_empty'] if 'ignore_empty' in poeditor_config else False
+    ignored_definitions = [None, ''] if ignore_empty else [None]
     # Get POEditor prefixes and add no prefix option
     poeditor_prefixes = poeditor_config['prefixes'] if 'prefixes' in poeditor_config else []
     poeditor_prefixes.append('')
@@ -702,10 +704,10 @@ def get_translation_by_poeditor_reference(reference, poeditor_terms):
             complete_reference = '%s%s' % (prefix, reference)
         if search_type == 'exact':
             translation = [term['definition'] for term in poeditor_terms
-                           if complete_reference == term[key] and term['definition'] is not None]
+                           if complete_reference == term[key] and term['definition'] not in ignored_definitions]
         else:
             translation = [term['definition'] for term in poeditor_terms
-                           if complete_reference in term[key] and term['definition'] is not None]
+                           if complete_reference in term[key] and term['definition'] not in ignored_definitions]
         if len(translation) > 0:
             break
     assert len(translation) > 0, 'No translations found in POEditor for reference %s' % reference

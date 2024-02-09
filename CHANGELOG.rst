@@ -6,6 +6,8 @@ v3.1.4
 
 *Release date: In development*
 
+- Add `ignore_empty` optional parameter to POEditor configuration to ignore empty translations
+
 v3.1.3
 ------
 
