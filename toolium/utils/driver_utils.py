@@ -324,7 +324,7 @@ class Utils(WaitUtils):
         self.logger.debug('Converted web coords %s into native coords %s', coords, native_coords)
         return native_coords
 
-    def swipe(self, element, x, y, duration=None):
+    def swipe(self, element, x, y, duration: int = 0):
         """Swipe over an element
 
         :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value)
