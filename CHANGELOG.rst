@@ -7,6 +7,7 @@ v3.1.1
 *Release date: In development*
 
 - Upgrade Sphinx version from 4.* to 7.* to fix readthedocs theme format
+- Fix on swipe method. Duration from None to 0.
 
 v3.1.0
 ------
