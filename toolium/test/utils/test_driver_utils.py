@@ -488,7 +488,7 @@ def test_swipe_android_native(driver_wrapper, utils):
     element = get_mock_element(x=250, y=40, height=40, width=300)
 
     utils.swipe(element, 50, 100)
-    driver_wrapper.driver.swipe.assert_called_once_with(400, 60, 450, 160, None)
+    driver_wrapper.driver.swipe.assert_called_once_with(400, 60, 450, 160, 0)
 
 
 def test_swipe_android_web(driver_wrapper, utils):
@@ -505,7 +505,7 @@ def test_swipe_android_web(driver_wrapper, utils):
     element = get_mock_element(x=250, y=40, height=40, width=300)
 
     utils.swipe(element, 50, 100)
-    driver_wrapper.driver.swipe.assert_called_once_with(200, 30, 250, 130, None)
+    driver_wrapper.driver.swipe.assert_called_once_with(200, 30, 250, 130, 0)
 
 
 def test_swipe_android_hybrid(driver_wrapper, utils):
@@ -522,7 +522,7 @@ def test_swipe_android_hybrid(driver_wrapper, utils):
     element = get_mock_element(x=250, y=40, height=40, width=300)
 
     utils.swipe(element, 50, 100)
-    driver_wrapper.driver.swipe.assert_called_once_with(200, 30, 250, 130, None)
+    driver_wrapper.driver.swipe.assert_called_once_with(200, 30, 250, 130, 0)
 
 
 def test_swipe_ios_web(driver_wrapper, utils):
@@ -538,7 +538,7 @@ def test_swipe_ios_web(driver_wrapper, utils):
     element = get_mock_element(x=250, y=40, height=40, width=300)
 
     utils.swipe(element, 50, 100)
-    driver_wrapper.driver.swipe.assert_called_once_with(200, 94, 50, 100, None)
+    driver_wrapper.driver.swipe.assert_called_once_with(200, 94, 50, 100, 0)
 
 
 def test_swipe_web(driver_wrapper, utils):
