@@ -1,13 +1,38 @@
 Toolium Changelog
 =================
 
-v3.1.1
+v3.1.4
 ------
 
 *Release date: In development*
 
-- Upgrade Sphinx version from 4.* to 7.* to fix readthedocs theme format
+- Add `ignore_empty` optional parameter to POEditor configuration to ignore empty translations
 - Fix on swipe method. Duration from None to 0.
+
+v3.1.3
+------
+
+*Release date: 2024-02-06*
+
+- Fix `PageElements` class initialization when custom page element classes don't have all optional attributes
+
+v3.1.2
+------
+
+*Release date: 2024-02-05*
+
+- Upgrade Pillow version to 10.1.* to fix compatibility with Python 3.12
+
+v3.1.1
+------
+
+*Release date: 2024-02-02*
+
+- Add support for Python 3.12
+- Upgrade Sphinx version from 4.* to 7.* to fix readthedocs theme format
+- Upgrade readthedocs-sphinx-search to 0.3.2 to fix security vulnerability
+- Do not log warning messages when toolium system properties are used
+- Allow to initialize a `PageElements` class with webview attributes
 
 v3.1.0
 ------

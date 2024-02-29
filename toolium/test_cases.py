@@ -73,7 +73,7 @@ class BasicTestCase(unittest.TestCase):
                 error_message = get_error_message_from_exception(exception)
         elif not hasattr(self._outcome, 'errors') and hasattr(self._outcome.result, 'failures') \
                 and len(self._outcome.result.failures) > 0:
-            # Python 3.11
+            # Python >=3.11
             traceback = self._outcome.result.failures[0][1]
             error_message = get_error_message_from_traceback(traceback)
 

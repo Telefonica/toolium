@@ -212,6 +212,22 @@ def test_a_poe_param_single_result():
     assert result == expected
 
 
+def test_a_poe_param_with_empty_definition_single_result():
+    """
+    Verification of a POE mapped parameter with empty definition
+    """
+    dataset.poeditor_terms = [
+        {
+            "term": "Poniendo mute",
+            "definition": "",
+            "reference": "home:home.tv.mute",
+        }
+    ]
+    result = map_param('[POE:home.tv.mute]')
+    expected = ""
+    assert result == expected
+
+
 def test_a_poe_param_no_result_assertion():
     """
     Verification of a POE mapped parameter without result
@@ -226,6 +242,39 @@ def test_a_poe_param_no_result_assertion():
     with pytest.raises(Exception) as excinfo:
         map_param('[POE:home.tv.off]')
     assert "No translations found in POEditor for reference home.tv.off" in str(excinfo.value)
+
+
+def test_a_poe_param_with_no_definition_no_result_assertion_():
+    """
+    Verification of a POE mapped parameter without definition and without result
+    """
+    dataset.poeditor_terms = [
+        {
+            "term": "Poniendo mute",
+            "definition": None,
+            "reference": "home:home.tv.mute",
+        }
+    ]
+    with pytest.raises(Exception) as excinfo:
+        map_param('[POE:home.tv.mute]')
+    assert "No translations found in POEditor for reference home.tv.mute" in str(excinfo.value)
+
+
+def test_a_poe_param_with_empty_definition_no_result_assertion():
+    """
+    Verification of a POE mapped parameter with empty definition and without result (configured ignore_empty)
+    """
+    dataset.project_config = {'poeditor': {'key_field': 'reference', 'search_type': 'contains', 'ignore_empty': True}}
+    dataset.poeditor_terms = [
+        {
+            "term": "Poniendo mute",
+            "definition": "",
+            "reference": "home:home.tv.mute",
+        }
+    ]
+    with pytest.raises(Exception) as excinfo:
+        map_param('[POE:home.tv.mute]')
+    assert "No translations found in POEditor for reference home.tv.mute" in str(excinfo.value)
 
 
 def test_a_poe_param_prefix_with_no_definition():
