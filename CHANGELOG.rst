@@ -8,6 +8,7 @@ v3.1.4
 
 - Add `ignore_empty` optional parameter to POEditor configuration to ignore empty translations
 - Fix on swipe method. Duration from None to 0.
+- Ignore not found excluded elements in visual tests
 
 v3.1.3
 ------

@@ -105,9 +105,13 @@ class VisualTest(object):
         exclude_web_elements = []
         for exclude_element in exclude_elements:
             try:
-                exclude_web_elements.append(self.utils.get_web_element(exclude_element))
+                exclude_web_element = self.utils.get_web_element(exclude_element)
+                if exclude_web_element:
+                    exclude_web_elements.append(exclude_web_element)
+                else:
+                    self.logger.warning('Element to be excluded not found')
             except NoSuchElementException as e:
-                self.logger.warning("Element to be excluded not found: %s", str(e))
+                self.logger.warning(f'Element to be excluded not found: {str(e)}')
 
         baseline_path = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
