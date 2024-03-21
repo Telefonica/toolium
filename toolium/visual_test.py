@@ -102,7 +102,7 @@ class VisualTest(object):
 
         # Search elements
         web_element = self.utils.get_web_element(element)
-        exclude_web_elements = _get_exclude_web_elements(self, exclude_elements)
+        exclude_web_elements = self._get_exclude_web_elements(exclude_elements)
 
         baseline_path = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
