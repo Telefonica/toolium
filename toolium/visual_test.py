@@ -102,12 +102,7 @@ class VisualTest(object):
 
         # Search elements
         web_element = self.utils.get_web_element(element)
-        exclude_web_elements = []
-        for exclude_element in exclude_elements:
-            try:
-                exclude_web_elements.append(self.utils.get_web_element(exclude_element))
-            except NoSuchElementException as e:
-                self.logger.warning("Element to be excluded not found: %s", str(e))
+        exclude_web_elements = self._get_exclude_web_elements(exclude_elements)
 
         baseline_path = os.path.join(self.baseline_directory, '{}.png'.format(filename))
         filename_with_suffix = '{0}__{1}'.format(filename, file_suffix) if file_suffix else filename
@@ -146,6 +141,25 @@ class VisualTest(object):
         else:
             # Compare the screenshots
             self.compare_files(report_name, output_path, baseline_path, threshold)
+
+    def _get_exclude_web_elements(self, exclude_elements):
+        """Get WebElements from exclude_elements list ignoring not found elements
+
+        :param exclude_elements: list of WebElements, PageElements or element locators as a tuple (locator_type,
+                                 locator_value) that must be searched
+        :returns: list of WebElements to be excluded
+        """
+        exclude_web_elements = []
+        for exclude_element in exclude_elements:
+            try:
+                exclude_web_element = self.utils.get_web_element(exclude_element)
+                if exclude_web_element:
+                    exclude_web_elements.append(exclude_web_element)
+                else:
+                    self.logger.warning('Element to be excluded not found')
+            except NoSuchElementException as e:
+                self.logger.warning(f'Element to be excluded not found: {str(e)}')
+        return exclude_web_elements
 
     def get_scrolls_size(self):
         """Return Chrome and Explorer scrolls sizes if they are visible
