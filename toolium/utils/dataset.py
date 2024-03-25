@@ -308,11 +308,16 @@ def _replace_param_fixed_length(param):
     :param param: parameter value
     :return: tuple with replaced value and boolean to know if replacement has been done
     """
+    string_seed = 'a'
+    integer_seed = '1'
     new_param = param
     param_replaced = False
+    # we allow partial replacements for STRING
+    string_expression = re.compile(r'\[STRING_WITH_LENGTH_([0-9]+)\]')
+    new_param = string_expression.sub(lambda x: int(x.group(1)) * 'a', param)
     if param.startswith('[') and param.endswith(']'):
         if any(x in param for x in ['STRING_ARRAY_WITH_LENGTH_', 'INTEGER_ARRAY_WITH_LENGTH_']):
-            seeds = {'STRING': 'a', 'INTEGER': 1}
+            seeds = {'STRING': string_seed, 'INTEGER': int(integer_seed)}
             seed, length = param[1:-1].split('_ARRAY_WITH_LENGTH_')
             new_param = list(seeds[seed] for x in range(int(length)))
             param_replaced = True
@@ -320,18 +325,10 @@ def _replace_param_fixed_length(param):
             length = int(param[1:-1].split('JSON_WITH_LENGTH_')[1])
             new_param = dict((str(x), str(x)) for x in range(length))
             param_replaced = True
-        elif any(x in param for x in ['STRING_WITH_LENGTH_', 'INTEGER_WITH_LENGTH_']):
-            seeds = {'STRING': 'a', 'INTEGER': '1'}
-            # The chain to be generated can be just a part of param
-            start = param.find('[')
-            end = param.find(']')
-            seed, length = param[start + 1:end].split('_WITH_LENGTH_')
-            generated_part = seeds[seed] * int(length)
-            placeholder = '[' + seed + '_WITH_LENGTH_' + length + ']'
-            new_param = param.replace(placeholder, generated_part)
+        elif any(x in param for x in ['INTEGER_WITH_LENGTH_']):
+            length = param[len('[INTEGER_WITH_LENGTH_'):-1]
+            new_param = int(integer_seed * int(length))
             param_replaced = True
-            if seed == 'INTEGER':
-                new_param = int(new_param)
     return new_param, param_replaced
 
 

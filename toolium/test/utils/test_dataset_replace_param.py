@@ -429,3 +429,12 @@ def test_replace_param_type_inference_disabled():
     assert param == '{"a":"test1", "b":true, "c":null}'
     param = replace_param('["1", true, null]', infer_param_type=False)
     assert param == '["1", true, null]'
+
+
+def test_replace_param_partial_string_with_length():
+    param = replace_param('parameter=[STRING_WITH_LENGTH_5]')
+    assert param == 'parameter=aaaaa'
+    param = replace_param('[STRING_WITH_LENGTH_5] is string')
+    assert param == 'aaaaa is string'
+    param = replace_param('parameter [STRING_WITH_LENGTH_5] is string')
+    assert param == 'parameter aaaaa is string'
