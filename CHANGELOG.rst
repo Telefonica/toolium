@@ -4,11 +4,12 @@ Toolium Changelog
 v3.1.4
 ------
 
-*Release date: In development*
+*Release date: 2024-03-25*
 
 - Add `ignore_empty` optional parameter to POEditor configuration to ignore empty translations
-- Fix on swipe method. Duration from None to 0.
 - Ignore not found excluded elements in visual tests
+- Fix duration calling to Appium `swipe` method
+- Fix `[STRING_WITH_LENGTH_NN]` replacement for string with length inside a longer string
 
 v3.1.3
 ------
