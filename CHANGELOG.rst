@@ -6,6 +6,8 @@ v3.1.5
 
 *Release date: In development*
 
+- Fix `export_poeditor_project` method allowing empty export response
+
 v3.1.4
 ------
 
