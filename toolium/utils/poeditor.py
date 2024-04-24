@@ -168,7 +168,7 @@ def export_poeditor_project(project_info, lang, file_type):
     filename = response_data['result']['url'].split('/')[-1]
 
     r = send_poeditor_request(ENDPOINT_POEDITOR_DOWNLOAD_FILE + '/' + filename, "GET", {}, 200)
-    poeditor_terms = r.json()
+    poeditor_terms = r.json() if r.content else []
     logger.info('POEditor terms in "%s" project with "%s" language: %s' % (project_info['name'], lang,
                                                                            len(poeditor_terms)))
     return poeditor_terms
