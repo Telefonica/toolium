@@ -229,7 +229,7 @@ def after_scenario(context, scenario):
                                      test_passed=scenario.status in ['passed', 'skipped'], context=context)
 
     # Stop playwright
-    if context.toolium_config.get_optional('Driver', 'web_library') == 'playwright':
+    if context.toolium_config.get_optional('Driver', 'web_library') == 'playwright' and hasattr(context, 'playwright'):
         # TODO: reuse driver like in close_drivers
         loop = context.async_context.loop
         loop.run_until_complete(context.playwright.stop())
