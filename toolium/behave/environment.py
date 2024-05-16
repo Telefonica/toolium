@@ -20,6 +20,9 @@ import logging
 import os
 import re
 
+from behave.api.async_step import use_or_create_async_context
+from playwright.async_api import async_playwright
+
 from toolium.utils import dataset
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
@@ -225,6 +228,12 @@ def after_scenario(context, scenario):
     DriverWrappersPool.close_drivers(scope='function', test_name=scenario.name,
                                      test_passed=scenario.status in ['passed', 'skipped'], context=context)
 
+    # Stop playwright
+    if context.toolium_config.get_optional('Driver', 'web_library') == 'playwright' and hasattr(context, 'playwright'):
+        # TODO: reuse driver like in close_drivers
+        loop = context.async_context.loop
+        loop.run_until_complete(context.playwright.stop())
+
     # Save test status to be updated later
     if jira_test_status:
         add_jira_status(get_jira_key_from_scenario(scenario), jira_test_status, jira_test_comment)
@@ -281,6 +290,22 @@ def start_driver(context, no_driver):
     :param context: behave context
     :param no_driver: True if this is an api test and driver should not be started
     """
-    create_and_configure_wrapper(context)
-    if not no_driver:
-        connect_wrapper(context)
+    if context.toolium_config.get_optional('Driver', 'web_library') == 'playwright':
+        start_playwright(context)
+    else:
+        create_and_configure_wrapper(context)
+        if not no_driver:
+            connect_wrapper(context)
+
+
+def start_playwright(context):
+    """Start playwright with configured values
+
+    :param context: behave context
+    """
+    use_or_create_async_context(context)
+    loop = context.async_context.loop
+    context.playwright = loop.run_until_complete(async_playwright().start())
+    # TODO: select browser from config
+    context.browser = loop.run_until_complete(context.playwright.chromium.launch(headless=False))
+    context.page = loop.run_until_complete(context.browser.new_page())
