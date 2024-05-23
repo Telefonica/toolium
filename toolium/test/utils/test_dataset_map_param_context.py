@@ -329,7 +329,7 @@ def test_a_context_param_list_default_no_index():
 
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.text]")
-    assert "the element 'text' must be a numeric index or a valid key=value expression to select an element in a list" == str(excinfo.value)
+    assert "the expression 'text' was not able to select an element in the list" == str(excinfo.value)
 
 
 def test_a_context_param_list_correct_index():
@@ -411,11 +411,11 @@ def test_a_context_param_list_no_numeric_index():
 
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.prueba.id]")
-    assert "the element 'prueba' must be a numeric index or a valid key=value expression to select an element in a list" == str(excinfo.value)
+    assert "the expression 'prueba' was not able to select an element in the list" == str(excinfo.value)
 
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.'36'.id]")
-    assert "the element ''36'' must be a numeric index or a valid key=value expression to select an element in a list" == str(excinfo.value)
+    assert "the expression ''36'' was not able to select an element in the list" == str(excinfo.value)
 
 
 def test_a_context_param_class_no_numeric_index():
@@ -441,8 +441,176 @@ def test_a_context_param_class_no_numeric_index():
     print(context)
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.prueba.id]")
-    assert "the element 'prueba' must be a numeric index or a valid key=value expression to select an element in a list" == str(excinfo.value)
+    assert "the expression 'prueba' was not able to select an element in the list" == str(excinfo.value)
 
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.'36'.id]")
-    assert "the element ''36'' must be a numeric index or a valid key=value expression to select an element in a list" == str(excinfo.value)
+    assert "the expression ''36'' was not able to select an element in the list" == str(excinfo.value)
+
+
+def test_a_context_param_list_correct_select_expression():
+    """
+    Verification of a list with a correct select expression as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            }
+        ]
+    }
+    dataset.behave_context = context
+    assert map_param("[CONTEXT:list.cmsScrollableActions.id=ask-for-qa.text]") == 'QA no duplica'
+
+
+def test_a_context_param_list_correct_select_expression_with_value_single_quotes():
+    """
+    Verification of a list with a correct select expression as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            }
+        ]
+    }
+    dataset.behave_context = context
+    assert map_param("[CONTEXT:list.cmsScrollableActions.id='ask-for-qa'.text]") == 'QA no duplica'
+
+
+def test_a_context_param_list_correct_select_expression_with_value_double_quotes():
+    """
+    Verification of a list with a correct select expression as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            }
+        ]
+    }
+    dataset.behave_context = context
+    assert map_param('[CONTEXT:list.cmsScrollableActions.id="ask-for-qa".text]') == 'QA no duplica'
+
+
+def test_a_context_param_list_correct_select_expression_with_key_single_quotes():
+    """
+    Verification of a list with a correct select expression as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            }
+        ]
+    }
+    dataset.behave_context = context
+    assert map_param("[CONTEXT:list.cmsScrollableActions.'id'=ask-for-qa.text]") == 'QA no duplica'
+
+
+def test_a_context_param_list_correct_select_expression_with_key_double_quotes():
+    """
+    Verification of a list with a correct select expression as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            }
+        ]
+    }
+    dataset.behave_context = context
+    assert map_param('[CONTEXT:list.cmsScrollableActions."id"=ask-for-qa.text]') == 'QA no duplica'
+
+
+def test_a_context_param_list_correct_select_expression_with_key_and_value_with_quotes():
+    """
+    Verification of a list with a correct select expression as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            }
+        ]
+    }
+    dataset.behave_context = context
+    assert map_param('[CONTEXT:list.cmsScrollableActions."id"="ask-for-qa".text]') == 'QA no duplica'
+
+
+def test_a_context_param_list_correct_select_expression_with_blanks():
+    """
+    Verification of a list with a correct select expression as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            }
+        ]
+    }
+    dataset.behave_context = context
+    assert map_param('[CONTEXT:list.cmsScrollableActions.text="QA no duplica".id]') == 'ask-for-qa'

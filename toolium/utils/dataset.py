@@ -629,6 +629,14 @@ def _select_element_in_list(the_list, expression):
     if len(key) == 0:
         return None
     value = tokens[1]
+
+    def _trim_quotes(value):
+        if len(value) > 2 and value[0] == value[-1] and value[0] in ['"', "'"]:
+            return value[1:-1]
+        return value
+ 
+    key = _trim_quotes(key)
+    value = _trim_quotes(value)
     for idx, item in enumerate(the_list):
         if key in item and item[key] == value:
             return the_list[idx]
@@ -649,7 +657,7 @@ def _get_value_context_error_msg(value, part):
         if part.isdigit():
             return f"Invalid index '{part}', list size is '{len(value)}'. {part} >= {len(value)}."
         else:
-            return f"the element '{part}' must be a numeric index or a valid key=value expression to select an element in a list"
+            return f"the expression '{part}' was not able to select an element in the list"
     else:
         return f"'{part}' attribute not found in {type(value).__name__} class in context"
 
