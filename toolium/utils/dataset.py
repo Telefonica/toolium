@@ -631,7 +631,7 @@ def _select_element_in_list(the_list, expression):
     value = tokens[1]
 
     def _trim_quotes(value):
-        if len(value) > 2 and value[0] == value[-1] and value[0] in ['"', "'"]:
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ['"', "'"]:
             return value[1:-1]
         return value
  
