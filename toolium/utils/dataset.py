@@ -589,8 +589,8 @@ def get_value_from_context(param, context):
         {"key": "value1", "attr": "attr1"},
         {"key": "value2", "attr": "attr2"}
     ]
-    then "list.key=value2" returns the second element in the list. Also does "list.'key'='value2'", "list.'key'=\"value2\"",
-    "list.\"key\"='value2'" or "list.\"key\"=\"value2\"".
+    then "list.key=value2" returns the second element in the list. Also does "list.'key'='value2'",
+    "list.'key'=\"value2\"", "list.\"key\"='value2'" or "list.\"key\"=\"value2\"".
 
     There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
 
@@ -633,7 +633,7 @@ def get_value_from_context(param, context):
 def _select_element_in_list(the_list, expression):
     """
     Select an element in the list that matches the key=value expression.
-    
+
     :param the_list: list of dictionaries
     :param expression: key=value expression
     :return: the element in the list that matches the key=value expression
@@ -652,7 +652,7 @@ def _select_element_in_list(the_list, expression):
         if len(value) >= 2 and value[0] == value[-1] and value[0] in ['"', "'"]:
             return value[1:-1]
         return value
- 
+
     key = _trim_quotes(key)
     value = _trim_quotes(value)
     for idx, item in enumerate(the_list):
