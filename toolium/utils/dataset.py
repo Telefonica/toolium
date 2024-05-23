@@ -620,19 +620,18 @@ def get_value_from_context(param, context):
 
 
 def _select_element_in_list(the_list, expression):
-    if len(expression) < 3:
+    if not expression:
         return None
-    if expression[0] != '[' or expression[-1] != ']':
-        return None
-    expression = expression[1:-1]
     tokens = expression.split('=')
     if len(tokens) != 2:
         return None
     key = tokens[0]
+    if len(key) == 0:
+        return None
     value = tokens[1]
     for idx, item in enumerate(the_list):
         if key in item and item[key] == value:
-            return idx
+            return the_list[idx]
     return None
 
 
@@ -650,7 +649,7 @@ def _get_value_context_error_msg(value, part):
         if part.isdigit():
             return f"Invalid index '{part}', list size is '{len(value)}'. {part} >= {len(value)}."
         else:
-            return f"the expression '{part}' must be a numeric index or a valid key=value expression to select an element in a list"
+            return f"the element '{part}' must be a numeric index or a valid key=value expression to select an element in a list"
     else:
         return f"'{part}' attribute not found in {type(value).__name__} class in context"
 

@@ -329,7 +329,7 @@ def test_a_context_param_list_default_no_index():
 
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.text]")
-    assert "the index 'text' must be a numeric index" == str(excinfo.value)
+    assert "the element 'text' must be a numeric index or a valid key=value expression to select an element in a list" == str(excinfo.value)
 
 
 def test_a_context_param_list_correct_index():
@@ -411,11 +411,11 @@ def test_a_context_param_list_no_numeric_index():
 
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.prueba.id]")
-    assert "the index 'prueba' must be a numeric index" == str(excinfo.value)
+    assert "the element 'prueba' must be a numeric index or a valid key=value expression to select an element in a list" == str(excinfo.value)
 
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.'36'.id]")
-    assert "the index ''36'' must be a numeric index" == str(excinfo.value)
+    assert "the element ''36'' must be a numeric index or a valid key=value expression to select an element in a list" == str(excinfo.value)
 
 
 def test_a_context_param_class_no_numeric_index():
@@ -441,8 +441,8 @@ def test_a_context_param_class_no_numeric_index():
     print(context)
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.prueba.id]")
-    assert "the index 'prueba' must be a numeric index" == str(excinfo.value)
+    assert "the element 'prueba' must be a numeric index or a valid key=value expression to select an element in a list" == str(excinfo.value)
 
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.'36'.id]")
-    assert "the index ''36'' must be a numeric index" == str(excinfo.value)
+    assert "the element ''36'' must be a numeric index or a valid key=value expression to select an element in a list" == str(excinfo.value)
