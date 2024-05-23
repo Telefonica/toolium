@@ -596,17 +596,44 @@ def get_value_from_context(param, context):
     msg = None
 
     for part in parts[1:]:
+        # the regular case is having a key in a dict
         if isinstance(value, dict) and part in value:
             value = value[part]
-        elif isinstance(value, list) and part.isdigit() and int(part) < len(value):
-            value = value[int(part)]
-        elif hasattr(value, part):
+            continue
+        # evaluate if in an array, access is requested by index or by a key=value expression
+        if isinstance(value, list):
+            if part.isdigit() and int(part) < len(value):
+                value = value[int(part)]
+                continue
+            if element := _select_element_in_list(value, part):
+                value = element
+                continue
+        # look for an attribute in an object
+        if hasattr(value, part):
             value = getattr(value, part)
-        else:
-            msg = _get_value_context_error_msg(value, part)
-            logger.error(msg)
-            raise Exception(msg)
+            continue
+        # raise an exception if not possible to resolve the current part against the current value
+        msg = _get_value_context_error_msg(value, part)
+        logger.error(msg)
+        raise ValueError(msg)
     return value
+
+
+def _select_element_in_list(the_list, expression):
+    if len(expression) < 3:
+        return None
+    if expression[0] != '[' or expression[-1] != ']':
+        return None
+    expression = expression[1:-1]
+    tokens = expression.split('=')
+    if len(tokens) != 2:
+        return None
+    key = tokens[0]
+    value = tokens[1]
+    for idx, item in enumerate(the_list):
+        if key in item and item[key] == value:
+            return idx
+    return None
 
 
 def _get_value_context_error_msg(value, part):
@@ -623,7 +650,7 @@ def _get_value_context_error_msg(value, part):
         if part.isdigit():
             return f"Invalid index '{part}', list size is '{len(value)}'. {part} >= {len(value)}."
         else:
-            return f"the index '{part}' must be a numeric index"
+            return f"the expression '{part}' must be a numeric index or a valid key=value expression to select an element in a list"
     else:
         return f"'{part}' attribute not found in {type(value).__name__} class in context"
 
