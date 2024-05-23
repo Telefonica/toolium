@@ -610,23 +610,20 @@ def get_value_from_context(param, context):
         # the regular case is having a key in a dict
         if isinstance(value, dict) and part in value:
             value = value[part]
-            continue
-        # evaluate if in an array, access is requested by index or by a key=value expression
-        if isinstance(value, list):
-            if part.isdigit() and int(part) < len(value):
-                value = value[int(part)]
-                continue
-            if element := _select_element_in_list(value, part):
-                value = element
-                continue
+        # evaluate if in an array, access is requested by index
+        elif isinstance(value, list) and part.isdigit() and int(part) < len(value):
+            value = value[int(part)]
+        # or by a key=value expression
+        elif isinstance(value, list) and (element := _select_element_in_list(value, part)):
+            value = element
         # look for an attribute in an object
-        if hasattr(value, part):
+        elif hasattr(value, part):
             value = getattr(value, part)
-            continue
-        # raise an exception if not possible to resolve the current part against the current value
-        msg = _get_value_context_error_msg(value, part)
-        logger.error(msg)
-        raise ValueError(msg)
+        else:
+            # raise an exception if not possible to resolve the current part against the current value
+            msg = _get_value_context_error_msg(value, part)
+            logger.error(msg)
+            raise ValueError(msg)
     return value
 
 
@@ -641,20 +638,16 @@ def _select_element_in_list(the_list, expression):
     if not expression:
         return None
     tokens = expression.split('=')
-    if len(tokens) != 2:
+    if len(tokens) != 2 or len(tokens[0]) == 0:
         return None
-    key = tokens[0]
-    if len(key) == 0:
-        return None
-    value = tokens[1]
 
     def _trim_quotes(value):
         if len(value) >= 2 and value[0] == value[-1] and value[0] in ['"', "'"]:
             return value[1:-1]
         return value
 
-    key = _trim_quotes(key)
-    value = _trim_quotes(value)
+    key = _trim_quotes(tokens[0])
+    value = _trim_quotes(tokens[1])
     for idx, item in enumerate(the_list):
         if key in item and item[key] == value:
             return the_list[idx]
