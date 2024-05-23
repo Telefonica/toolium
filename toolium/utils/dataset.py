@@ -578,8 +578,19 @@ def get_value_from_context(param, context):
     storages or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
     in the context storages or as a property of the context object whose name is last_request. In both cases, when
     found, "result" is considered (and resolved) as a property or a key into the returned value.
+
     If the resolved element at one of the tokens is a list, then the next token (if present) is used as the index
-    to select one of its elements, e.g. "list.1" returns the second element of the list "list".
+    to select one of its elements in case it is a number, e.g. "list.1" returns the second element of the list "list".
+
+    If the resolved element at one of the tokens is a list and the next token is a key=value expression, then the
+    element in the list that matches the key=value expression is selected, e.g. "list.key=value" returns the element
+    in the list "list" that has the value for key attribute. So, for example, if the list is:
+    [
+        {"key": "value1", "attr": "attr1"},
+        {"key": "value2", "attr": "attr2"}
+    ]
+    then "list.key=value2" returns the second element in the list. Also does "list.'key'='value2'", "list.'key'=\"value2\"",
+    "list.\"key\"='value2'" or "list.\"key\"=\"value2\"".
 
     There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
 
@@ -620,6 +631,13 @@ def get_value_from_context(param, context):
 
 
 def _select_element_in_list(the_list, expression):
+    """
+    Select an element in the list that matches the key=value expression.
+    
+    :param the_list: list of dictionaries
+    :param expression: key=value expression
+    :return: the element in the list that matches the key=value expression
+    """
     if not expression:
         return None
     tokens = expression.split('=')
