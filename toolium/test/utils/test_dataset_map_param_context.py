@@ -727,3 +727,25 @@ def test_a_context_param_list_invalid_select_expression_having_empty_key():
         "the expression '='not-existing-id'' was not able to select an element in the list"
         == str(excinfo.value)
     )
+
+
+def test_a_context_param_list_invalid_structure_for_valid_select():
+    """
+    Verification of a list with a invalid structure for a valid select as CONTEXT
+    """
+
+    class Context(object):
+        pass
+
+    context = Context()
+
+    context.list = {
+        "cmsScrollableActions": {"id": "ask-for-duplicate", "text": "QA duplica"},
+    }
+    dataset.behave_context = context
+    with pytest.raises(Exception) as excinfo:
+        map_param("[CONTEXT:list.cmsScrollableActions.id=ask-for-duplicate.text]")
+    assert (
+        "'id=ask-for-duplicate' key not found in {'id': 'ask-for-duplicate', 'text': 'QA duplica'} value in context"
+        == str(excinfo.value)
+    )
