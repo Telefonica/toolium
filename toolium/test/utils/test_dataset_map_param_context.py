@@ -452,294 +452,278 @@ def test_a_context_param_list_correct_select_expression():
     """
     Verification of a list with a correct select expression as CONTEXT
     """
+
     class Context(object):
         pass
+
     context = Context()
 
     context.list = {
-        'cmsScrollableActions': [
-            {
-                'id': 'ask-for-duplicate',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
+        "cmsScrollableActions": [
+            {"id": "ask-for-duplicate", "text": "QA duplica"},
+            {"id": "ask-for-qa", "text": "QA no duplica"},
         ]
     }
     dataset.behave_context = context
-    assert map_param("[CONTEXT:list.cmsScrollableActions.id=ask-for-qa.text]") == 'QA no duplica'
+    assert (
+        map_param("[CONTEXT:list.cmsScrollableActions.id=ask-for-qa.text]")
+        == "QA no duplica"
+    )
 
 
 def test_a_context_param_list_correct_select_expression_with_value_single_quotes():
     """
     Verification of a list with a correct select expression having single quotes for value as CONTEXT
     """
+
     class Context(object):
         pass
+
     context = Context()
 
     context.list = {
-        'cmsScrollableActions': [
-            {
-                'id': 'ask-for-duplicate',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
+        "cmsScrollableActions": [
+            {"id": "ask-for-duplicate", "text": "QA duplica"},
+            {"id": "ask-for-qa", "text": "QA no duplica"},
         ]
     }
     dataset.behave_context = context
-    assert map_param("[CONTEXT:list.cmsScrollableActions.id='ask-for-qa'.text]") == 'QA no duplica'
+    assert (
+        map_param("[CONTEXT:list.cmsScrollableActions.id='ask-for-qa'.text]")
+        == "QA no duplica"
+    )
 
 
 def test_a_context_param_list_correct_select_expression_with_value_double_quotes():
     """
     Verification of a list with a correct select expression having double quotes for value as CONTEXT
     """
+
     class Context(object):
         pass
+
     context = Context()
 
     context.list = {
-        'cmsScrollableActions': [
-            {
-                'id': 'ask-for-duplicate',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
+        "cmsScrollableActions": [
+            {"id": "ask-for-duplicate", "text": "QA duplica"},
+            {"id": "ask-for-qa", "text": "QA no duplica"},
         ]
     }
     dataset.behave_context = context
-    assert map_param('[CONTEXT:list.cmsScrollableActions.id="ask-for-qa".text]') == 'QA no duplica'
+    assert (
+        map_param('[CONTEXT:list.cmsScrollableActions.id="ask-for-qa".text]')
+        == "QA no duplica"
+    )
 
 
 def test_a_context_param_list_correct_select_expression_with_key_single_quotes():
     """
     Verification of a list with a correct select expression having single quotes for the value as CONTEXT
     """
+
     class Context(object):
         pass
+
     context = Context()
 
     context.list = {
-        'cmsScrollableActions': [
-            {
-                'id': 'ask-for-duplicate',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
+        "cmsScrollableActions": [
+            {"id": "ask-for-duplicate", "text": "QA duplica"},
+            {"id": "ask-for-qa", "text": "QA no duplica"},
         ]
     }
     dataset.behave_context = context
-    assert map_param("[CONTEXT:list.cmsScrollableActions.'id'=ask-for-qa.text]") == 'QA no duplica'
+    assert (
+        map_param("[CONTEXT:list.cmsScrollableActions.'id'=ask-for-qa.text]")
+        == "QA no duplica"
+    )
 
 
 def test_a_context_param_list_correct_select_expression_with_key_double_quotes():
     """
     Verification of a list with a correct select expression having double quotes for the key as CONTEXT
     """
+
     class Context(object):
         pass
+
     context = Context()
 
     context.list = {
-        'cmsScrollableActions': [
-            {
-                'id': 'ask-for-duplicate',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
+        "cmsScrollableActions": [
+            {"id": "ask-for-duplicate", "text": "QA duplica"},
+            {"id": "ask-for-qa", "text": "QA no duplica"},
         ]
     }
     dataset.behave_context = context
-    assert map_param('[CONTEXT:list.cmsScrollableActions."id"=ask-for-qa.text]') == 'QA no duplica'
+    assert (
+        map_param('[CONTEXT:list.cmsScrollableActions."id"=ask-for-qa.text]')
+        == "QA no duplica"
+    )
 
 
 def test_a_context_param_list_correct_select_expression_with_key_and_value_with_quotes():
     """
     Verification of a list with a correct select expression having quotes for both key and value as CONTEXT
     """
+
     class Context(object):
         pass
+
     context = Context()
 
     context.list = {
-        'cmsScrollableActions': [
-            {
-                'id': 'ask-for-duplicate',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
+        "cmsScrollableActions": [
+            {"id": "ask-for-duplicate", "text": "QA duplica"},
+            {"id": "ask-for-qa", "text": "QA no duplica"},
         ]
     }
     dataset.behave_context = context
-    assert map_param('[CONTEXT:list.cmsScrollableActions."id"="ask-for-qa".text]') == 'QA no duplica'
+    assert (
+        map_param('[CONTEXT:list.cmsScrollableActions."id"="ask-for-qa".text]')
+        == "QA no duplica"
+    )
 
 
 def test_a_context_param_list_correct_select_expression_with_blanks():
     """
     Verification of a list with a correct select expression with blanks in the text to search for as CONTEXT
     """
+
     class Context(object):
         pass
+
     context = Context()
 
     context.list = {
-        'cmsScrollableActions': [
-            {
-                'id': 'ask-for-duplicate',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
+        "cmsScrollableActions": [
+            {"id": "ask-for-duplicate", "text": "QA duplica"},
+            {"id": "ask-for-qa", "text": "QA no duplica"},
         ]
     }
     dataset.behave_context = context
-    assert map_param('[CONTEXT:list.cmsScrollableActions.text="QA no duplica".id]') == 'ask-for-qa'
+    assert (
+        map_param('[CONTEXT:list.cmsScrollableActions.text="QA no duplica".id]')
+        == "ask-for-qa"
+    )
 
 
 def test_a_context_param_list_correct_select_expression_finds_nothing():
     """
     Verification of a list with a correct select expression which obtains no result as CONTEXT
     """
+
     class Context(object):
         pass
+
     context = Context()
 
     context.list = {
-        'cmsScrollableActions': [
-            {
-                'id': 'ask-for-duplicate',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
+        "cmsScrollableActions": [
+            {"id": "ask-for-duplicate", "text": "QA duplica"},
+            {"id": "ask-for-qa", "text": "QA no duplica"},
         ]
     }
     dataset.behave_context = context
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.id='not-existing-id'.text]")
-    assert "the expression 'id='not-existing-id'' was not able to select an element in the list" == str(excinfo.value)
+    assert (
+        "the expression 'id='not-existing-id'' was not able to select an element in the list"
+        == str(excinfo.value)
+    )
 
 
 def test_a_context_param_list_correct_select_expression_with_empty_value_finds_nothing():
     """
     Verification of a list with a correct select expression with empty value which obtains no result as CONTEXT
     """
+
     class Context(object):
         pass
+
     context = Context()
 
     context.list = {
-        'cmsScrollableActions': [
-            {
-                'id': 'ask-for-duplicate',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
+        "cmsScrollableActions": [
+            {"id": "ask-for-duplicate", "text": "QA duplica"},
+            {"id": "ask-for-qa", "text": "QA no duplica"},
         ]
     }
     dataset.behave_context = context
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.id=''.text]")
-    assert "the expression 'id=''' was not able to select an element in the list" == str(excinfo.value)
+    assert (
+        "the expression 'id=''' was not able to select an element in the list"
+        == str(excinfo.value)
+    )
 
 
 def test_a_context_param_list_correct_select_expression_with_empty_value_hits_value():
     """
     Verification of a list with a correct select expression with empty value which obtains no result as CONTEXT
     """
+
     class Context(object):
         pass
+
     context = Context()
 
     context.list = {
-        'cmsScrollableActions': [
-            {
-                'id': '',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
+        "cmsScrollableActions": [
+            {"id": "", "text": "QA duplica"},
+            {"id": "ask-for-qa", "text": "QA no duplica"},
         ]
     }
     dataset.behave_context = context
-    assert map_param("[CONTEXT:list.cmsScrollableActions.id=''.text]") == 'QA duplica'
+    assert map_param("[CONTEXT:list.cmsScrollableActions.id=''.text]") == "QA duplica"
 
 
 def test_a_context_param_list_invalid_select_expression():
     """
     Verification of a list with an invalid select expression as CONTEXT
     """
+
     class Context(object):
         pass
+
     context = Context()
 
     context.list = {
-        'cmsScrollableActions': [
-            {
-                'id': 'ask-for-duplicate',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
+        "cmsScrollableActions": [
+            {"id": "ask-for-duplicate", "text": "QA duplica"},
+            {"id": "ask-for-qa", "text": "QA no duplica"},
         ]
     }
     dataset.behave_context = context
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.invalidexpression.text]")
-    assert "the expression 'invalidexpression' was not able to select an element in the list" == str(excinfo.value)
+    assert (
+        "the expression 'invalidexpression' was not able to select an element in the list"
+        == str(excinfo.value)
+    )
 
 
 def test_a_context_param_list_invalid_select_expression_having_empty_key():
     """
     Verification of a list with a invalid select expression having empty key as CONTEXT
     """
+
     class Context(object):
         pass
+
     context = Context()
 
     context.list = {
-        'cmsScrollableActions': [
-            {
-                'id': 'ask-for-duplicate',
-                'text': 'QA duplica'
-            },
-            {
-                'id': 'ask-for-qa',
-                'text': 'QA no duplica'
-            }
+        "cmsScrollableActions": [
+            {"id": "ask-for-duplicate", "text": "QA duplica"},
+            {"id": "ask-for-qa", "text": "QA no duplica"},
         ]
     }
     dataset.behave_context = context
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.='not-existing-id'.text]")
-    assert "the expression '='not-existing-id'' was not able to select an element in the list" == str(excinfo.value)
-
+    assert (
+        "the expression '='not-existing-id'' was not able to select an element in the list"
+        == str(excinfo.value)
+    )
