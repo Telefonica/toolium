@@ -578,8 +578,19 @@ def get_value_from_context(param, context):
     storages or the context object itself. In a dotted case, "last_request.result" is searched as a "last_request" key
     in the context storages or as a property of the context object whose name is last_request. In both cases, when
     found, "result" is considered (and resolved) as a property or a key into the returned value.
+
     If the resolved element at one of the tokens is a list, then the next token (if present) is used as the index
-    to select one of its elements, e.g. "list.1" returns the second element of the list "list".
+    to select one of its elements in case it is a number, e.g. "list.1" returns the second element of the list "list".
+
+    If the resolved element at one of the tokens is a list and the next token is a key=value expression, then the
+    element in the list that matches the key=value expression is selected, e.g. "list.key=value" returns the element
+    in the list "list" that has the value for key attribute. So, for example, if the list is:
+    [
+        {"key": "value1", "attr": "attr1"},
+        {"key": "value2", "attr": "attr2"}
+    ]
+    then "list.key=value2" returns the second element in the list. Also does "list.'key'='value2'",
+    "list.'key'=\"value2\"", "list.\"key\"='value2'" or "list.\"key\"=\"value2\"".
 
     There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
 
@@ -596,17 +607,51 @@ def get_value_from_context(param, context):
     msg = None
 
     for part in parts[1:]:
+        # the regular case is having a key in a dict
         if isinstance(value, dict) and part in value:
             value = value[part]
+        # evaluate if in an array, access is requested by index
         elif isinstance(value, list) and part.isdigit() and int(part) < len(value):
             value = value[int(part)]
+        # or by a key=value expression
+        elif isinstance(value, list) and (element := _select_element_in_list(value, part)):
+            value = element
+        # look for an attribute in an object
         elif hasattr(value, part):
             value = getattr(value, part)
         else:
+            # raise an exception if not possible to resolve the current part against the current value
             msg = _get_value_context_error_msg(value, part)
             logger.error(msg)
-            raise Exception(msg)
+            raise ValueError(msg)
     return value
+
+
+def _select_element_in_list(the_list, expression):
+    """
+    Select an element in the list that matches the key=value expression.
+
+    :param the_list: list of dictionaries
+    :param expression: key=value expression
+    :return: the element in the list that matches the key=value expression
+    """
+    if not expression:
+        return None
+    tokens = expression.split('=')
+    if len(tokens) != 2 or len(tokens[0]) == 0:
+        return None
+
+    def _trim_quotes(value):
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ['"', "'"]:
+            return value[1:-1]
+        return value
+
+    key = _trim_quotes(tokens[0])
+    value = _trim_quotes(tokens[1])
+    for idx, item in enumerate(the_list):
+        if key in item and item[key] == value:
+            return the_list[idx]
+    return None
 
 
 def _get_value_context_error_msg(value, part):
@@ -623,7 +668,7 @@ def _get_value_context_error_msg(value, part):
         if part.isdigit():
             return f"Invalid index '{part}', list size is '{len(value)}'. {part} >= {len(value)}."
         else:
-            return f"the index '{part}' must be a numeric index"
+            return f"the expression '{part}' was not able to select an element in the list"
     else:
         return f"'{part}' attribute not found in {type(value).__name__} class in context"
 
