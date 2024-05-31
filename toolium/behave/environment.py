@@ -21,7 +21,6 @@ import os
 import re
 
 from behave.api.async_step import use_or_create_async_context
-from playwright.async_api import async_playwright
 
 from toolium.utils import dataset
 from toolium.config_files import ConfigFiles
@@ -291,21 +290,9 @@ def start_driver(context, no_driver):
     :param no_driver: True if this is an api test and driver should not be started
     """
     if context.toolium_config.get_optional('Driver', 'web_library') == 'playwright':
-        start_playwright(context)
-    else:
-        create_and_configure_wrapper(context)
-        if not no_driver:
-            connect_wrapper(context)
-
-
-def start_playwright(context):
-    """Start playwright with configured values
-
-    :param context: behave context
-    """
-    use_or_create_async_context(context)
-    loop = context.async_context.loop
-    context.playwright = loop.run_until_complete(async_playwright().start())
-    # TODO: select browser from config
-    context.browser = loop.run_until_complete(context.playwright.chromium.launch(headless=False))
-    context.page = loop.run_until_complete(context.browser.new_page())
+        # Activate behave async context to execute playwright
+        use_or_create_async_context(context)
+        context.driver_wrapper.async_loop = context.async_context.loop
+    create_and_configure_wrapper(context)
+    if not no_driver:
+        connect_wrapper(context)

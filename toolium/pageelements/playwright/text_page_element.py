@@ -16,17 +16,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from playwright.async_api import Page
-from toolium.pageobjects.page_object import PageObject
+from toolium.pageelements.playwright.page_element import PageElement
 
 
-class PlaywrightPageObject(PageObject):
-    """Class to represent a playwright web page"""
+class Text(PageElement):
+    async def get_text(self):
+        """Get the text of the element
 
-    def __init__(self, page: Page):
-        """Initialize page object properties
-
-        :param page: playwright page instance
+        :returns: the text of the element
         """
-        self.page = page
-        super(PlaywrightPageObject, self).__init__()
+        return await (await self.web_element).text_content()

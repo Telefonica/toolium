@@ -20,6 +20,7 @@ import logging.config
 import os
 
 import screeninfo
+from playwright.async_api import async_playwright
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
@@ -54,6 +55,7 @@ class DriverWrapper(object):
     remote_node = None  #: remote grid node
     remote_node_video_enabled = False  #: True if the remote grid node has the video recorder enabled
     logger = None  #: logger instance
+    async_loop = None  #: async loop for playwright tests
 
     # Configuration and output files
     config_properties_filenames = None  #: configuration filenames separated by commas
@@ -204,10 +206,15 @@ class DriverWrapper(object):
     def connect(self):
         """Set up the selenium driver and connect to the server
 
-        :returns: selenium driver
+        :returns: selenium or playwright driver
         """
         if not self.config.get('Driver', 'type') or self.config.get('Driver', 'type') in ['api', 'no_driver']:
             return None
+
+        if self.async_loop:
+            # Connect playwright driver
+            self.driver = self.connect_playwright(self.async_loop)
+            return self.driver
 
         self.driver = ConfigDriver(self.config, self.utils).create_driver()
 
@@ -238,6 +245,18 @@ class DriverWrapper(object):
         self.utils.set_implicitly_wait()
 
         return self.driver
+
+    def connect_playwright(self, async_loop):
+        """Set up the playwright page
+
+        :returns: playwright page
+        """
+        # TODO: should playwright and browser be saved in driver_wrapper?
+        playwright = async_loop.run_until_complete(async_playwright().start())
+        # TODO: select browser from config
+        browser = async_loop.run_until_complete(playwright.chromium.launch(headless=False))
+        page = async_loop.run_until_complete(browser.new_page())
+        return page
 
     def resize_window(self):
         """Resize and move browser window"""
