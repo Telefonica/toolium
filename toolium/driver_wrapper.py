@@ -254,7 +254,8 @@ class DriverWrapper(object):
         # TODO: should playwright and browser be saved in driver_wrapper?
         playwright = async_loop.run_until_complete(async_playwright().start())
         # TODO: select browser from config
-        browser = async_loop.run_until_complete(playwright.chromium.launch(headless=False))
+        headless_mode = self.config.getboolean_optional('Driver', 'headless')
+        browser = async_loop.run_until_complete(playwright.chromium.launch(headless=headless_mode))
         page = async_loop.run_until_complete(browser.new_page())
         return page
 
