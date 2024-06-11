@@ -56,6 +56,8 @@ class DriverWrapper(object):
     remote_node_video_enabled = False  #: True if the remote grid node has the video recorder enabled
     logger = None  #: logger instance
     async_loop = None  #: async loop for playwright tests
+    playwright = None  #: playwright instance
+    playwright_browser = None  #: playwright browser instance
 
     # Configuration and output files
     config_properties_filenames = None  #: configuration filenames separated by commas
@@ -70,6 +72,9 @@ class DriverWrapper(object):
             default_wrapper = DriverWrappersPool.get_default_wrapper()
             self.config = default_wrapper.config.deepcopy()
             self.logger = default_wrapper.logger
+            self.async_loop = default_wrapper.async_loop
+            self.playwright = default_wrapper.playwright
+            self.playwright_browser = default_wrapper.playwright_browser
             self.config_properties_filenames = default_wrapper.config_properties_filenames
             self.config_log_filename = default_wrapper.config_log_filename
             self.output_log_filename = default_wrapper.output_log_filename
@@ -204,7 +209,7 @@ class DriverWrapper(object):
             self.configure_visual_baseline()
 
     def connect(self):
-        """Set up the selenium driver and connect to the server
+        """Set up the driver and connect to the server
 
         :returns: selenium or playwright driver
         """
@@ -212,10 +217,17 @@ class DriverWrapper(object):
             return None
 
         if self.async_loop:
-            # Connect playwright driver
-            self.driver = self.connect_playwright(self.async_loop)
-            return self.driver
+            self.connect_playwright()
+        else:
+            self.connect_selenium()
 
+        return self.driver
+
+    def connect_selenium(self):
+        """Set up selenium driver
+
+        :returns: selenium driver
+        """
         self.driver = ConfigDriver(self.config, self.utils).create_driver()
 
         # Save session id and remote node to download video after the test execution
@@ -244,20 +256,37 @@ class DriverWrapper(object):
         # Set implicitly wait timeout
         self.utils.set_implicitly_wait()
 
-        return self.driver
-
-    def connect_playwright(self, async_loop):
+    def connect_playwright(self):
         """Set up the playwright page
+        It is a sync method because it is called from sync behave initialization method
 
         :returns: playwright page
         """
-        # TODO: should playwright and browser be saved in driver_wrapper?
-        playwright = async_loop.run_until_complete(async_playwright().start())
+        async_loop = self.async_loop
+        self.playwright = async_loop.run_until_complete(async_playwright().start())
         # TODO: select browser from config
         headless_mode = self.config.getboolean_optional('Driver', 'headless')
-        browser = async_loop.run_until_complete(playwright.chromium.launch(headless=headless_mode))
-        page = async_loop.run_until_complete(browser.new_page())
-        return page
+        self.playwright_browser = async_loop.run_until_complete(self.playwright.chromium.launch(headless=headless_mode))
+        self.driver = async_loop.run_until_complete(self.playwright_browser.new_page())
+
+    async def connect_playwright_new_page(self):
+        """Set up and additional playwright driver creating a new context and page in current browser instance
+        It is an async method to be called from async steps or page objects
+
+        :returns: playwright driver
+        """
+        context = await self.playwright_browser.new_context()
+        self.driver = await context.new_page()
+        return self.driver
+
+    def stop(self):
+        """Stop selenium or playwright driver"""
+        if self.async_loop:
+            # Stop playwright driver
+            self.async_loop.run_until_complete(self.driver.close())
+        else:
+            # Stop selenium driver
+            self.driver.quit()
 
     def resize_window(self):
         """Resize and move browser window"""

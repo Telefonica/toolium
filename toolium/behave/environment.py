@@ -156,6 +156,12 @@ def create_and_configure_wrapper(context):
     # Configure wrapper
     context.driver_wrapper.configure(context.config_files, behave_properties=behave_properties)
 
+    # Activate behave async context to execute playwright
+    if (context.driver_wrapper.config.get_optional('Driver', 'web_library') == 'playwright'
+            and context.driver_wrapper.async_loop is None):
+        use_or_create_async_context(context)
+        context.driver_wrapper.async_loop = context.async_context.loop
+
     # Copy config object
     context.toolium_config = context.driver_wrapper.config
 
@@ -227,12 +233,6 @@ def after_scenario(context, scenario):
     DriverWrappersPool.close_drivers(scope='function', test_name=scenario.name,
                                      test_passed=scenario.status in ['passed', 'skipped'], context=context)
 
-    # Stop playwright
-    if context.toolium_config.get_optional('Driver', 'web_library') == 'playwright' and hasattr(context, 'playwright'):
-        # TODO: reuse driver like in close_drivers
-        loop = context.async_context.loop
-        loop.run_until_complete(context.playwright.stop())
-
     # Save test status to be updated later
     if jira_test_status:
         add_jira_status(get_jira_key_from_scenario(scenario), jira_test_status, jira_test_comment)
@@ -289,10 +289,6 @@ def start_driver(context, no_driver):
     :param context: behave context
     :param no_driver: True if this is an api test and driver should not be started
     """
-    if context.toolium_config.get_optional('Driver', 'web_library') == 'playwright':
-        # Activate behave async context to execute playwright
-        use_or_create_async_context(context)
-        context.driver_wrapper.async_loop = context.async_context.loop
     create_and_configure_wrapper(context)
     if not no_driver:
         connect_wrapper(context)
