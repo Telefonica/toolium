@@ -4,5 +4,5 @@ Appium-Python-Client~=2.3 # mobile tests
 Pillow~=10.1              # visual testing
 screeninfo~=0.8
 lxml~=5.1
-Faker~=18.3
+Faker~=25.9
 phonenumbers~=8.13
