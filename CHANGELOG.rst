@@ -7,8 +7,10 @@ v3.1.5
 *Release date: In development*
 
 - Fix `export_poeditor_project` method allowing empty export response
-- Add `key=value` expressions for selecting elements in the context storage
-- Upgrade Faker version to 25.9.*
+- Add key=value expressions for selecting elements in the context storage
+- Added run_storage to store information during the whole test execution
+- Merge storages (context.storage, context.feature_storage and context.run_storage)
+- In steps, be able to store values into desire storage by using [key], [FEATURE:key] and [RUN:key]
 
 v3.1.4
 ------

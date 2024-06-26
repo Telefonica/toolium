@@ -19,6 +19,7 @@ limitations under the License.
 import logging
 import os
 import re
+import collections
 
 from toolium.utils import dataset
 from toolium.config_files import ConfigFiles
@@ -49,6 +50,12 @@ def before_all(context):
 
     context.global_status = {'test_passed': True}
     create_and_configure_wrapper(context)
+
+    # Dictionary to store information during the whole test execution
+    context.run_storage = dict()
+
+    # Method in context to store values in context.storage, context.feature_storage or context.run_storage from steps
+    context.store_by_storage_type = dataset.store_by_storage_type
 
     # Behave dynamic environment
     context.dyn_env = DynamicEnvironment(logger=context.logger)
@@ -129,8 +136,9 @@ def before_scenario(context, scenario):
 
     context.logger.info("Running new scenario: %s", scenario.name)
 
-    # Make sure storage dict are empty in each scenario
+    # Make sure context storage dict is empty in each scenario and merge with the rest of storages
     context.storage = dict()
+    context.storage = collections.ChainMap(context.storage, context.feature_storage, context.run_storage)
 
     # Behave dynamic environment
     context.dyn_env.execute_before_scenario_steps(context)

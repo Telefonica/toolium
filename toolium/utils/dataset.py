@@ -813,3 +813,32 @@ def convert_file_to_base64(file_path):
     except Exception as e:
         raise Exception(f' ERROR - converting the "{file_path}" file to Base64...: {e}')
     return file_content
+
+
+def store_by_storage_type(context, key, value):
+    """
+    Store values in context.storage, context.feature_storage or context.run_storage,
+    using [FEATURE:xxxx] OR [RUN:xxxx] from steps.
+    By default, values are stored in context.storage.
+
+    :param key: key to store the value in proper storage
+    :param value: value to store in key
+    :param context: behave context
+    :return: 
+    """
+    clean_key = re.sub(r'[\[\]]','', key)
+    if ":" in clean_key:
+        context_type = clean_key.split(":")[0]
+        context_key = clean_key.split(":")[1]
+        acccepted_context_types = ["FEATURE", "RUN"]
+        assert context_type in acccepted_context_types, f"Invalid key: {context_key}. Accepted keys: {acccepted_context_types}"
+
+        if context_type == "FEATURE":
+            context.feature_storage[context_key] = value
+            context.storage.update(context.feature_storage)
+        elif context_type == "RUN":
+            context.run_storage[context_key] = value
+            context.feature_storage.update(context.feature_storage)
+            context.storage.update(context.feature_storage)
+    else:
+        context.storage[clean_key] = value
