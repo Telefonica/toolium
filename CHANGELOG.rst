@@ -7,7 +7,8 @@ v3.1.5
 *Release date: In development*
 
 - Fix `export_poeditor_project` method allowing empty export response
-- Add key=value expressions for selecting elements in the context storage
+- Add `key=value` expressions for selecting elements in the context storage
+- Upgrade Faker version to 25.9.*
 
 v3.1.4
 ------
