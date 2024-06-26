@@ -684,8 +684,11 @@ def _get_initial_value_from_context(initial_key, context):
     """
     context_storage = context.storage if hasattr(context, 'storage') else {}
     if hasattr(context, 'feature_storage'):
-        # context.feature_storage is initialized only when before_feature method is called
-        context_storage = collections.ChainMap(context.storage, context.feature_storage)
+        # Merge feature to storage, context.feature_storage is initialized only when before_feature method is called
+        context_storage.update(context.feature_storage)
+    if hasattr(context, 'run_storage'):
+        # Merge run to storage, context.run_storage is initialized only when before_all method is called
+        context_storage.update(context.run_storage)
     if initial_key in context_storage:
         value = context_storage[initial_key]
     elif hasattr(context, initial_key):
