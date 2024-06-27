@@ -55,7 +55,7 @@ def before_all(context):
     context.run_storage = dict()
 
     # Method in context to store values in context.storage, context.feature_storage or context.run_storage from steps
-    context.store_by_storage_type = dataset.store_by_storage_type
+    context.store_key_in_storage = dataset.store_key_in_storage
 
     # Behave dynamic environment
     context.dyn_env = DynamicEnvironment(logger=context.logger)

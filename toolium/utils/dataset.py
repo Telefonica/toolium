@@ -817,7 +817,7 @@ def convert_file_to_base64(file_path):
     return file_content
 
 
-def store_by_storage_type(context, key, value):
+def store_key_in_storage_type(context, key, value):
     """
     Store values in context.storage, context.feature_storage or context.run_storage,
     using [FEATURE:xxxx] OR [RUN:xxxx] from steps.
@@ -840,7 +840,7 @@ def store_by_storage_type(context, key, value):
             context.storage.update(context.feature_storage)
         elif context_type == "RUN":
             context.run_storage[context_key] = value
-            context.feature_storage.update(context.feature_storage)
+            context.feature_storage.update(context.run_storage)
             context.storage.update(context.feature_storage)
     else:
         context.storage[clean_key] = value
