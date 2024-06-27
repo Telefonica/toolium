@@ -135,6 +135,7 @@ def test_store_key_in_run_storage():
     context.attribute = "attribute value"
     context.storage = {"storage_key": "storage entry value"}
     context.run_storage = {}
+    context.feature_storage = {}
     dataset.store_key_in_storage(context, "[RUN:storage_key]", "run storage entry value")
     dataset.behave_context = context
 
