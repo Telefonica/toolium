@@ -819,7 +819,7 @@ def convert_file_to_base64(file_path):
     return file_content
 
 
-def store_key_in_storage_type(context, key, value):
+def store_key_in_storage(context, key, value):
     """
     Store values in context.storage, context.feature_storage or context.run_storage,
     using [FEATURE:xxxx] OR [RUN:xxxx] from steps.
