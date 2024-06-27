@@ -828,12 +828,13 @@ def store_by_storage_type(context, key, value):
     :param context: behave context
     :return: 
     """
-    clean_key = re.sub(r'[\[\]]','', key)
+    clean_key = re.sub(r'[\[\]]', '', key)
     if ":" in clean_key:
         context_type = clean_key.split(":")[0]
         context_key = clean_key.split(":")[1]
         acccepted_context_types = ["FEATURE", "RUN"]
-        assert context_type in acccepted_context_types, f"Invalid key: {context_key}. Accepted keys: {acccepted_context_types}"
+        assert context_type in acccepted_context_types, (f"Invalid key: {context_key}. "
+                                                         f"Accepted keys: {acccepted_context_types}")
 
         if context_type == "FEATURE":
             context.feature_storage[context_key] = value
