@@ -152,8 +152,9 @@ def test_a_context_param_using_store_key_in_storage():
     context = Context()
     context.attribute = "attribute value"
     context.feature_storage = {}
+    context.storage = {"storage_key": "previous storage entry value"}
     dataset.store_key_in_storage(context, "[FEATURE:storage_key]", "feature storage entry value")
-    context.storage = {"storage_key": "storage entry value"}
+    dataset.store_key_in_storage(context, "[storage_key]", "storage entry value")
     dataset.behave_context = context
 
     result_st = map_param("[CONTEXT:storage_key]")
