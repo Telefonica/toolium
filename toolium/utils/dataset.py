@@ -837,13 +837,11 @@ def store_key_in_storage(context, key, value):
         acccepted_context_types = ["FEATURE", "RUN"]
         assert context_type in acccepted_context_types, (f"Invalid key: {context_key}. "
                                                          f"Accepted keys: {acccepted_context_types}")
-
-        if context_type == "FEATURE":
-            context.feature_storage[context_key] = value
-            context.storage.update(context.feature_storage)
-        elif context_type == "RUN":
+        if context_type == "RUN":
             context.run_storage[context_key] = value
-            context.feature_storage.update(context.run_storage)
-            context.storage.update(context.feature_storage)
+            context.feature_storage[context_key] = value
+        elif context_type == "FEATURE":
+            context.feature_storage[context_key] = value
+        context.storage[context_key] = value
     else:
         context.storage[clean_key] = value
