@@ -17,7 +17,6 @@ limitations under the License.
 """
 
 import base64
-import collections
 import datetime
 import json
 import logging
@@ -682,10 +681,15 @@ def _get_initial_value_from_context(initial_key, context):
     :param context: behave context
     :return: mapped value
     """
-    context_storage = context.storage if hasattr(context, 'storage') else {}
+    context_storage = dict()
+    if hasattr(context, 'run_storage'):
+        # Merge run to storage, context.run_storage is initialized only when before_all method is called
+        context_storage.update(context.run_storage)
     if hasattr(context, 'feature_storage'):
-        # context.feature_storage is initialized only when before_feature method is called
-        context_storage = collections.ChainMap(context.storage, context.feature_storage)
+        # Merge feature to storage, context.feature_storage is initialized only when before_feature method is called
+        context_storage.update(context.feature_storage)
+    context_storage.update(context.storage if hasattr(context, 'storage') else {})
+
     if initial_key in context_storage:
         value = context_storage[initial_key]
     elif hasattr(context, initial_key):
@@ -813,3 +817,31 @@ def convert_file_to_base64(file_path):
     except Exception as e:
         raise Exception(f' ERROR - converting the "{file_path}" file to Base64...: {e}')
     return file_content
+
+
+def store_key_in_storage(context, key, value):
+    """
+    Store values in context.storage, context.feature_storage or context.run_storage,
+    using [FEATURE:xxxx] OR [RUN:xxxx] from steps.
+    By default, values are stored in context.storage.
+
+    :param key: key to store the value in proper storage
+    :param value: value to store in key
+    :param context: behave context
+    :return:
+    """
+    clean_key = re.sub(r'[\[\]]', '', key)
+    if ":" in clean_key:
+        context_type = clean_key.split(":")[0]
+        context_key = clean_key.split(":")[1]
+        acccepted_context_types = ["FEATURE", "RUN"]
+        assert context_type in acccepted_context_types, (f"Invalid key: {context_key}. "
+                                                         f"Accepted keys: {acccepted_context_types}")
+        if context_type == "RUN":
+            context.run_storage[context_key] = value
+            context.feature_storage[context_key] = value
+        elif context_type == "FEATURE":
+            context.feature_storage[context_key] = value
+        context.storage[context_key] = value
+    else:
+        context.storage[clean_key] = value
