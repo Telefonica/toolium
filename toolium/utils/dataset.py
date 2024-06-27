@@ -826,7 +826,7 @@ def store_by_storage_type(context, key, value):
     :param key: key to store the value in proper storage
     :param value: value to store in key
     :param context: behave context
-    :return: 
+    :return:
     """
     clean_key = re.sub(r'[\[\]]', '', key)
     if ":" in clean_key:
