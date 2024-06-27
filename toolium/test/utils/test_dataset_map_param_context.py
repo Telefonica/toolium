@@ -109,7 +109,7 @@ def test_a_context_param_storage_and_run_storage():
 
 def test_store_key_in_feature_storage():
     """
-    Verification of a mapped parameter as CONTEXT saved in storage and run storage
+    Verification of method store_key_in_storage with a mapped parameter as FEATURE saved in feature storage
     """
     class Context(object):
         pass
@@ -121,13 +121,13 @@ def test_store_key_in_feature_storage():
     dataset.behave_context = context
 
     result_st = map_param("[CONTEXT:storage_key]")
-    expected_st = "storage entry value"
+    expected_st = "feature storage entry value"
     assert expected_st == result_st
 
 
 def test_store_key_in_run_storage():
     """
-    Verification of a mapped parameter as CONTEXT saved in storage and run storage
+    Verification of method store_key_in_storage with a mapped parameter as RUN saved in run storage
     """
     class Context(object):
         pass
@@ -136,6 +136,24 @@ def test_store_key_in_run_storage():
     context.storage = {"storage_key": "storage entry value"}
     context.run_storage = {}
     dataset.store_key_in_storage(context, "[RUN:storage_key]", "run storage entry value")
+    dataset.behave_context = context
+
+    result_st = map_param("[CONTEXT:storage_key]")
+    expected_st = "run storage entry value"
+    assert expected_st == result_st
+
+
+def test_a_context_param_using_store_key_in_storage():
+    """
+    Verification of a mapped parameter as CONTEXT saved in storage and run storage
+    """
+    class Context(object):
+        pass
+    context = Context()
+    context.attribute = "attribute value"
+    context.feature_storage = {}
+    dataset.store_key_in_storage(context, "[FEATURE:storage_key]", "feature storage entry value")
+    context.storage = {"storage_key": "storage entry value"}
     dataset.behave_context = context
 
     result_st = map_param("[CONTEXT:storage_key]")
