@@ -19,9 +19,6 @@ limitations under the License.
 import sys
 import warnings
 
-# Behave is an optional dependency in toolium, so it is imported here
-from behave.model_core import Status
-
 # Actions types defined in feature files
 ACTIONS_BEFORE_FEATURE = 'actions before the feature'
 ACTIONS_BEFORE_SCENARIO = 'actions before each scenario'
@@ -313,6 +310,8 @@ class DynamicEnvironment:
         :param scenario: Behave's Scenario
         :param error_message: Exception message
         """
+        # Behave is an optional dependency in toolium, so it is imported here
+        from behave.model_core import Status
         if len(scenario.steps) > 0:
             scenario.steps[0].status = Status.failed
             scenario.steps[0].exception = Exception('Preconditions failed')
