@@ -19,6 +19,9 @@ limitations under the License.
 import sys
 import warnings
 
+# Behave is an optional dependency in toolium, so it is imported here
+from behave.model_core import Status
+
 # Actions types defined in feature files
 ACTIONS_BEFORE_FEATURE = 'actions before the feature'
 ACTIONS_BEFORE_SCENARIO = 'actions before each scenario'
@@ -279,7 +282,7 @@ class DynamicEnvironment:
             self.scenario_error = False
             self.before_error_message = None
             context.scenario.reset()
-            self.fail_first_step_precondition_exception(context.scenario)
+            self.fail_first_step_precondition_exception(context.scenario, error_message)
             raise Exception(f'Before scenario steps have failed: {error_message}')
 
     def execute_after_feature_steps(self, context):
@@ -298,18 +301,23 @@ class DynamicEnvironment:
             context.feature.reset()
             for scenario in context.feature.walk_scenarios():
                 if scenario.should_run(context.config):
-                    self.fail_first_step_precondition_exception(scenario)
+                    self.fail_first_step_precondition_exception(scenario, error_message)
+                    if len(scenario.background_steps) > 0:
+                        context.logger.warn(f'Background from scenario status udpated to fail')
             raise Exception(f'Before feature steps have failed: {error_message}')
 
-    def fail_first_step_precondition_exception(self, scenario):
+    def fail_first_step_precondition_exception(self, scenario, error_message):
         """
         Fail first step in the given Scenario and add exception message for the output.
         This is needed because xUnit exporter in Behave fails if there are not failed steps.
         :param scenario: Behave's Scenario
+        :param error_message: Exception message
         """
         if len(scenario.steps) > 0:
-            # Behave is an optional dependency in toolium, so it is imported here
-            from behave.model_core import Status
             scenario.steps[0].status = Status.failed
             scenario.steps[0].exception = Exception('Preconditions failed')
-            scenario.steps[0].error_message = str(self.before_error_message)
+            scenario.steps[0].error_message = str(error_message)
+        if len(scenario.background_steps) > 0:
+            scenario.background_steps[0].status = Status.failed
+            scenario.background_steps[0].exception = Exception('Preconditions failed')
+            scenario.background_steps[0].error_message = str(error_message)
