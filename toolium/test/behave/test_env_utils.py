@@ -222,7 +222,8 @@ def test_execute_after_feature_steps_failed_before_feature(context, dyn_env):
     assert dyn_env.before_error_message is None
     context.execute_steps.assert_called_with('Given after feature step')
     context.feature.reset.assert_called_once_with()
-    dyn_env.fail_first_step_precondition_exception.assert_called_once_with(context.scenario, 'Exception in before feature step')
+    dyn_env.fail_first_step_precondition_exception.assert_called_once_with(
+        context.scenario, 'Exception in before feature step')
 
 
 def test_execute_after_feature_steps_failed_actions_failed_before_feature(context, dyn_env):
@@ -241,7 +242,8 @@ def test_execute_after_feature_steps_failed_actions_failed_before_feature(contex
     assert dyn_env.before_error_message is None
     context.execute_steps.assert_called_with('Given after feature step')
     context.feature.reset.assert_called_once_with()
-    dyn_env.fail_first_step_precondition_exception.assert_called_once_with(context.scenario, 'Exception in before feature step')
+    dyn_env.fail_first_step_precondition_exception.assert_called_once_with(
+        context.scenario, 'Exception in before feature step')
 
 
 def test_fail_first_step_precondition_exception(dyn_env):

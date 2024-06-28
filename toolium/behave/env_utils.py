@@ -303,7 +303,7 @@ class DynamicEnvironment:
                 if scenario.should_run(context.config):
                     self.fail_first_step_precondition_exception(scenario, error_message)
                     if len(scenario.background_steps) > 0:
-                        context.logger.warn(f'Background from scenario status udpated to fail')
+                        context.logger.warn('Background from scenario status udpated to fail')
             raise Exception(f'Before feature steps have failed: {error_message}')
 
     def fail_first_step_precondition_exception(self, scenario, error_message):
