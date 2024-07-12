@@ -92,7 +92,7 @@ class ConfigDriver(object):
             raise
 
         return driver
-    
+
     def create_playwright_browser(self):
         """
         Create a playwright browser using specified config properties
@@ -194,16 +194,16 @@ class ConfigDriver(object):
             driver = driver_setup_method()
 
         return driver
-    
+
     def _create_playwright_browser(self):
         """Create a browser in local machine using Playwright
-        
+
         :returns: a new browser Playwright
         """
         driver_name = self.utils.get_driver_name()
         if driver_name in ('android', 'ios', 'iphone'):
             raise Exception('Playwright does not support mobile devices')
-        else:            
+        else:
             if driver_name in ['chrome', 'chromium']:
                 browser = self._setup_playwright_chrome()
             elif driver_name == 'firefox':
@@ -213,16 +213,16 @@ class ConfigDriver(object):
             else:
                 raise Exception(f'Playwright does not support {driver_name} driver')
         return browser
-    
+
     def _create_playwright_persistent_browser_context(self):
         """Create a browser in local machine using Playwright
-                
+
         :returns: a new persistent browser context Playwright
         """
         driver_name = self.utils.get_driver_name()
         if driver_name in ('android', 'ios', 'iphone'):
             raise Exception('Playwright does not support mobile devices')
-        else:            
+        else:
             if driver_name in ['chrome', 'chromium']:
                 browser_context = self._setup_playwright_persistent_chrome()
             elif driver_name == 'firefox':
@@ -250,7 +250,7 @@ class ConfigDriver(object):
         if window_width and window_height:
             context_options['viewport'] = {'width': int(window_width), 'height': int(window_height)}
         return context_options
-    
+
     def get_playwright_page_options(self):
         """Get Playwright page options from properties file
 
@@ -264,7 +264,6 @@ class ConfigDriver(object):
         except NoSectionError:
             pass
         return page_options
-
 
     def _get_capabilities_from_driver_type(self):
         """Extract browserVersion and platformName from driver type and add them to capabilities
@@ -415,7 +414,7 @@ class ConfigDriver(object):
             headless=headless_mode,
             **browser_options
         )
-    
+
     def _setup_playwright_persistent_firefox(self):
         """Setup Playwright Firefox persistent browser context
 
@@ -430,11 +429,11 @@ class ConfigDriver(object):
         context_options = self.get_playwright_context_options()
         context_options = self._update_dict(context_options, {'args': arguments})
         context_options = self._update_dict(context_options, {'firefox_user_prefs': preferences})
-        return self.playwright.firefox.launch_persistent_context(            
+        return self.playwright.firefox.launch_persistent_context(
             headless=headless_mode,
             **context_options
         )
-        
+
     def _add_playwright_firefox_arguments(self, arguments):
         """Add Firefox arguments from properties file prepared for Playwright
 
@@ -526,7 +525,7 @@ class ConfigDriver(object):
         self._update_dict(options.capabilities, capabilities)
 
         return options
-        
+
     def _get_playwright_browser_options(self):
         """
         Get Playwright browser options from properties file
@@ -541,7 +540,7 @@ class ConfigDriver(object):
         except NoSectionError:
             pass
         return browser_options
-    
+
     def _setup_playwright_chrome(self):
         """
         Setup Playwright Chrome browser
@@ -558,7 +557,7 @@ class ConfigDriver(object):
             headless=headless_mode,
             **browser_options
         )
-    
+
     def _setup_playwright_persistent_chrome(self):
         """
         Setup Playwright Chrome persistent browser context
@@ -571,7 +570,7 @@ class ConfigDriver(object):
         self._add_playwright_chrome_extensions(arguments)
         context_options = self.get_playwright_context_options()
         context_options = self._update_dict(context_options, {'args': arguments})
-        return self.playwright.chromium.launch_persistent_context(            
+        return self.playwright.chromium.launch_persistent_context(
             headless=headless_mode,
             **context_options
         )
@@ -587,7 +586,7 @@ class ConfigDriver(object):
                 self.logger.debug("Added Chrome argument: %s%s", pref, pref_value)
                 arguments.append('--{}{}'.format(pref, self._convert_property_type(pref_value)))
         except NoSectionError:
-            pass 
+            pass
 
     def _add_playwright_chrome_extensions(self, arguments):
         """Add Chrome extensions from properties file
@@ -599,7 +598,7 @@ class ConfigDriver(object):
                 self.logger.debug("Added Chrome extension: %s = %s", pref, pref_value)
                 arguments.append('--load-extension={}'.format(pref_value))
         except NoSectionError:
-            pass          
+            pass
 
     def _add_chrome_options(self, options, option_name):
         """Add Chrome options from properties file
@@ -697,7 +696,7 @@ class ConfigDriver(object):
         self._add_capabilities_from_properties(capabilities, 'Capabilities')
         self._update_dict(options.capabilities, capabilities)
         return options
-    
+
     def _setup_playwright_webkit(self):
         """Setup Playwright Webkit browser
 
@@ -709,10 +708,10 @@ class ConfigDriver(object):
             headless=headless_mode,
             **browser_options
         )
-    
+
     def _setup_playwright_persistent_webkit(self):
         """Setup Playwright Webkit persistent browser context
-        
+
         :returns: a new Playwright Webkit persistent browser context
         """
         headless_mode = self.config.getboolean_optional('Driver', 'headless')
@@ -720,7 +719,7 @@ class ConfigDriver(object):
         return self.playwright.webkit.launch_persistent_context(
             headless=headless_mode,
             **context_options
-        )  
+        )
 
     def _setup_explorer(self):
         """Setup Internet Explorer webdriver
