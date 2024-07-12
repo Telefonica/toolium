@@ -269,12 +269,13 @@ class DriverWrapper(object):
 
         # In case of using a persistent context this property must be set and a BrowserContext is returned instead of a Browser
         user_data_dir = self.config.get_optional('PlaywrightContextOptions', 'user_data_dir', None)
+        config_driver = ConfigDriver(self.config, self.utils, self.playwright)
         if user_data_dir:
-            self.playwright_context =  async_loop.run_until_complete(ConfigDriver(self.config, self.utils, self.playwright).create_playwright_persistent_browser_context())
+            self.playwright_context =  async_loop.run_until_complete(config_driver.create_playwright_persistent_browser_context())
         else:    
-            self.playwright_browser = async_loop.run_until_complete(ConfigDriver(self.config, self.utils, self.playwright).create_playwright_browser())
-            self.playwright_context = async_loop.run_until_complete(self.playwright_browser.new_context(**ConfigDriver(self.config, self.utils, self.playwright).get_playwright_context_options()))
-        self.driver = async_loop.run_until_complete(self.playwright_context.new_page(**ConfigDriver(self.config, self.utils, self.playwright).get_playwright_page_options()))
+            self.playwright_browser = async_loop.run_until_complete(config_driver.create_playwright_browser())
+            self.playwright_context = async_loop.run_until_complete(self.playwright_browser.new_context(**config_driver.get_playwright_context_options()))
+        self.driver = async_loop.run_until_complete(self.playwright_context.new_page(**config_driver.get_playwright_page_options()))
 
     async def connect_playwright_new_page(self):
         """Set up and additional playwright driver creating a new page in current browser and context instance
