@@ -4,7 +4,7 @@ Toolium Changelog
 v3.1.5
 ------
 
-*Release date: In development*
+*Release date: 2024-07-15*
 
 - Fix `export_poeditor_project` method allowing empty export response
 - Add `key=value` expressions for selecting elements in the context storage
