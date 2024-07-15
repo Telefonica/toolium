@@ -292,6 +292,7 @@ class DriverWrapper(object):
 
         :returns: playwright driver
         """
+
         self.driver = await self.playwright_context.new_page(
             **ConfigDriver(self.config, self.utils).get_playwright_page_options()
         )
