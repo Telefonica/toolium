@@ -167,7 +167,7 @@ class DriverWrappersPool(object):
             if not driver_wrapper.driver:
                 continue
             try:
-                driver_wrapper.driver.quit()
+                driver_wrapper.stop()
             except Exception as e:
                 driver_wrapper.logger.warning(
                     "Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s" % e)
