@@ -58,6 +58,7 @@ class DriverWrapper(object):
     async_loop = None  #: async loop for playwright tests
     playwright = None  #: playwright instance
     playwright_browser = None  #: playwright browser instance
+    playwright_context = None  #: playwright context instance
 
     # Configuration and output files
     config_properties_filenames = None  #: configuration filenames separated by commas
@@ -75,6 +76,7 @@ class DriverWrapper(object):
             self.async_loop = default_wrapper.async_loop
             self.playwright = default_wrapper.playwright
             self.playwright_browser = default_wrapper.playwright_browser
+            self.playwright_context = default_wrapper.playwright_context
             self.config_properties_filenames = default_wrapper.config_properties_filenames
             self.config_log_filename = default_wrapper.config_log_filename
             self.output_log_filename = default_wrapper.output_log_filename
@@ -264,26 +266,43 @@ class DriverWrapper(object):
         """
         async_loop = self.async_loop
         self.playwright = async_loop.run_until_complete(async_playwright().start())
-        # TODO: select browser from config
-        headless_mode = self.config.getboolean_optional('Driver', 'headless')
-        self.playwright_browser = async_loop.run_until_complete(self.playwright.chromium.launch(headless=headless_mode))
-        self.driver = async_loop.run_until_complete(self.playwright_browser.new_page())
+
+        # In case of using a persistent context this property must be set and
+        # a BrowserContext is returned instead of a Browser
+        user_data_dir = self.config.get_optional('PlaywrightContextOptions', 'user_data_dir', None)
+        config_driver = ConfigDriver(self.config, self.utils, self.playwright)
+        if user_data_dir:
+            self.playwright_context = async_loop.run_until_complete(
+                config_driver.create_playwright_persistent_browser_context()
+            )
+        else:
+            self.playwright_browser = async_loop.run_until_complete(
+                config_driver.create_playwright_browser()
+            )
+            self.playwright_context = async_loop.run_until_complete(
+                self.playwright_browser.new_context(**config_driver.get_playwright_context_options())
+            )
+        self.driver = async_loop.run_until_complete(
+            self.playwright_context.new_page(**config_driver.get_playwright_page_options())
+        )
 
     async def connect_playwright_new_page(self):
-        """Set up and additional playwright driver creating a new context and page in current browser instance
+        """Set up and additional playwright driver creating a new page in current browser and context instance
         It is an async method to be called from async steps or page objects
 
         :returns: playwright driver
         """
-        context = await self.playwright_browser.new_context()
-        self.driver = await context.new_page()
+
+        self.driver = await self.playwright_context.new_page(
+            **ConfigDriver(self.config, self.utils).get_playwright_page_options()
+        )
         return self.driver
 
     def stop(self):
         """Stop selenium or playwright driver"""
         if self.async_loop:
             # Stop playwright driver
-            self.async_loop.run_until_complete(self.driver.close())
+            self.async_loop.run_until_complete(self.playwright_context.close())
         else:
             # Stop selenium driver
             self.driver.quit()

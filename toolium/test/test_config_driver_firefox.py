@@ -27,6 +27,7 @@ from toolium.driver_wrappers_pool import DriverWrappersPool
 
 DEFAULT_CAPABILITIES = {'acceptInsecureCerts': True, 'browserName': 'firefox', 'moz:debuggerAddress': True,
                         'pageLoadStrategy': 'normal'}
+DEFAULT_PREFERENCES = {'remote.active-protocols': 3}
 
 
 @pytest.fixture
@@ -130,7 +131,7 @@ def test_create_local_driver_firefox_extension(webdriver_mock, config, utils):
 def test_get_firefox_options(config, utils):
     config_driver = ConfigDriver(config, utils)
     expected_arguments = []
-    expected_preferences = {}
+    expected_preferences = DEFAULT_PREFERENCES
     expected_capabilities = DEFAULT_CAPABILITIES
 
     options = config_driver._get_firefox_options()
@@ -145,7 +146,7 @@ def test_get_firefox_options_arguments(config, utils):
     config.set('FirefoxArguments', '-private', '')
     config_driver = ConfigDriver(config, utils)
     expected_arguments = ['-private']
-    expected_preferences = {}
+    expected_preferences = DEFAULT_PREFERENCES
     expected_capabilities = DEFAULT_CAPABILITIES
 
     options = config_driver._get_firefox_options()
@@ -160,7 +161,8 @@ def test_get_firefox_options_preferences(config, utils):
     config.set('FirefoxPreferences', 'browser.download.folderList', '2')
     config_driver = ConfigDriver(config, utils)
     expected_arguments = []
-    expected_preferences = {'browser.download.folderList': 2}
+    expected_preferences = DEFAULT_PREFERENCES.copy()
+    expected_preferences['browser.download.folderList'] = 2
     expected_capabilities = DEFAULT_CAPABILITIES
 
     options = config_driver._get_firefox_options()
@@ -175,7 +177,8 @@ def test_get_firefox_options_profile(config, utils):
     config.set('Firefox', 'profile', '/tmp')
     config_driver = ConfigDriver(config, utils)
     expected_arguments = []
-    expected_preferences = {'profile': '/tmp'}
+    expected_preferences = DEFAULT_PREFERENCES.copy()
+    expected_preferences['profile'] = '/tmp'
     expected_capabilities = DEFAULT_CAPABILITIES
 
     options = config_driver._get_firefox_options()
@@ -190,7 +193,7 @@ def test_get_firefox_options_capabilities_update(config, utils):
     config.set('Capabilities', 'pageLoadStrategy', 'eager')
     config_driver = ConfigDriver(config, utils)
     expected_arguments = []
-    expected_preferences = {}
+    expected_preferences = DEFAULT_PREFERENCES
     expected_capabilities = DEFAULT_CAPABILITIES.copy()
     expected_capabilities['pageLoadStrategy'] = 'eager'
 
@@ -208,7 +211,7 @@ def test_get_firefox_options_capabilities_new(config, utils):
     config.set('Capabilities', 'pageLoadStrategy', 'normal')
     config_driver = ConfigDriver(config, utils)
     expected_arguments = []
-    expected_preferences = {}
+    expected_preferences = DEFAULT_PREFERENCES
     expected_capabilities = DEFAULT_CAPABILITIES.copy()
     expected_capabilities['browserVersion'] = '50'
 
@@ -222,7 +225,7 @@ def test_get_firefox_options_capabilities_new(config, utils):
 def test_get_firefox_options_with_previous_capabilities(config, utils):
     config_driver = ConfigDriver(config, utils)
     expected_arguments = []
-    expected_preferences = {}
+    expected_preferences = DEFAULT_PREFERENCES
     expected_capabilities = DEFAULT_CAPABILITIES.copy()
     expected_capabilities['browserVersion'] = '100'
 
