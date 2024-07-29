@@ -29,7 +29,7 @@ class InputText(PageElement):
         if self.driver_wrapper.is_web_test() or self.webview:
             return self.web_element.get_attribute("value")
         elif self.driver_wrapper.is_ios_test():
-            return self.web_element.get_attribute("label")
+            return self.web_element.get_attribute("value")
         elif self.driver_wrapper.is_android_test():
             return self.web_element.get_attribute("text")
 
