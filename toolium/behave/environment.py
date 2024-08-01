@@ -53,6 +53,7 @@ def before_all(context):
 
     # Dictionary to store information during the whole test execution
     context.run_storage = dict()
+    context.storage = context.run_storage
 
     # Method in context to store values in context.storage, context.feature_storage or context.run_storage from steps
     context.store_key_in_storage = dataset.store_key_in_storage
@@ -79,10 +80,9 @@ def before_feature(context, feature):
         no_driver = 'no_driver' in feature.tags
         start_driver(context, no_driver)
 
-    # Dictionary to store information between steps
-    context.storage = dict()
     # Dictionary to store information between features
     context.feature_storage = dict()
+    context.storage = collections.ChainMap(dict(), context.feature_storage, context.run_storage)
 
     # Behave dynamic environment
     context.dyn_env.get_steps_from_feature_description(feature.description)
@@ -137,8 +137,7 @@ def before_scenario(context, scenario):
     context.logger.info("Running new scenario: %s", scenario.name)
 
     # Make sure context storage dict is empty in each scenario and merge with the rest of storages
-    context.storage = dict()
-    context.storage = collections.ChainMap(context.storage, context.feature_storage, context.run_storage)
+    context.storage = collections.ChainMap(dict(), context.feature_storage, context.run_storage)
 
     # Behave dynamic environment
     context.dyn_env.execute_before_scenario_steps(context)

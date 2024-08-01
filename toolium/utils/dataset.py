@@ -681,17 +681,8 @@ def _get_initial_value_from_context(initial_key, context):
     :param context: behave context
     :return: mapped value
     """
-    context_storage = dict()
-    if hasattr(context, 'run_storage'):
-        # Merge run to storage, context.run_storage is initialized only when before_all method is called
-        context_storage.update(context.run_storage)
-    if hasattr(context, 'feature_storage'):
-        # Merge feature to storage, context.feature_storage is initialized only when before_feature method is called
-        context_storage.update(context.feature_storage)
-    context_storage.update(context.storage if hasattr(context, 'storage') else {})
-
-    if initial_key in context_storage:
-        value = context_storage[initial_key]
+    if initial_key in context.storage:
+        value = context.storage[initial_key]
     elif hasattr(context, initial_key):
         value = getattr(context, initial_key)
     else:
@@ -839,9 +830,7 @@ def store_key_in_storage(context, key, value):
                                                          f"Accepted keys: {acccepted_context_types}")
         if context_type == "RUN":
             context.run_storage[context_key] = value
-            context.feature_storage[context_key] = value
         elif context_type == "FEATURE":
             context.feature_storage[context_key] = value
-        context.storage[context_key] = value
     else:
         context.storage[clean_key] = value
