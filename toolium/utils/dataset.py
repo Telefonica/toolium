@@ -682,7 +682,7 @@ def _get_initial_value_from_context(initial_key, context):
     :param context: behave context
     :return: mapped value
     """
-    #If dynamic env is not initialized, the storages are initialized if needed
+    # If dynamic env is not initialized, the storages are initialized if needed
     context_storage = context.storage if hasattr(context, 'storage') else {}
     if not isinstance(context_storage, collections.ChainMap):
         if hasattr(context, 'run_storage'):
@@ -844,7 +844,7 @@ def store_key_in_storage(context, key, value):
             context.run_storage[context_key] = value
         elif context_type == "FEATURE":
             context.feature_storage[context_key] = value
-        #If dynamic env is not initialized linked or the key exists in context.storage, the value must be updated in context.storage
+        # If dynamic env is not initialized linked or the key exists in context.storage, the value must be updated in context.storage
         if hasattr(context.storage, context_key) or not isinstance(context.storage, collections.ChainMap):
             context.storage[context_key] = value
     else:
