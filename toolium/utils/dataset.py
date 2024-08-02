@@ -702,28 +702,6 @@ def _get_initial_value_from_context(initial_key, context):
     raise Exception(msg)
 
 
-
-
-#    context_storage = context.storage if hasattr(context, 'storage') else {}
-#    if not isinstance(context_storage, collections.ChainMap):
-#        if hasattr(context, 'run_storage'):
-#            context_storage = collections.ChainMap(context.storage, context.run_storage)
-#        if hasattr(context, 'feature_storage'):
-#            if not hasattr(context, 'run_storage'):
-#                context.run_storage = dict()
-#            context_storage = collections.ChainMap(context.storage, context.feature_storage, context.run_storage)
-#
-#    if initial_key in context_storage:
-#        value = context_storage[initial_key]
-#    elif hasattr(context, initial_key):
-#        value = getattr(context, initial_key)
-#    else:
-#        msg = f"'{initial_key}' key not found in context"
-#        logger.error(msg)
-#        raise Exception(msg)
-#    return value
-
-
 def get_message_property(param, language_terms, language_key):
     """
     Return the message for the given param, using it as a key in the list of language properties.
