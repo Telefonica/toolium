@@ -683,24 +683,45 @@ def _get_initial_value_from_context(initial_key, context):
     :return: mapped value
     """
     # If dynamic env is not initialized, the storages are initialized if needed
-    context_storage = context.storage if hasattr(context, 'storage') else {}
+
+    context_storage = getattr(context, 'storage', {})
+    run_storage = getattr(context, 'run_storage', {})
+    feature_storage = getattr(context, 'feature_storage', {})
+
     if not isinstance(context_storage, collections.ChainMap):
-        if hasattr(context, 'run_storage'):
-            context_storage = collections.ChainMap(context.storage, context.run_storage)
-        if hasattr(context, 'feature_storage'):
-            if not hasattr(context, 'run_storage'):
-                context.run_storage = dict()
-            context_storage = collections.ChainMap(context.storage, context.feature_storage, context.run_storage)
+        context_storage = collections.ChainMap(context_storage, run_storage, feature_storage)
 
     if initial_key in context_storage:
-        value = context_storage[initial_key]
-    elif hasattr(context, initial_key):
-        value = getattr(context, initial_key)
-    else:
-        msg = f"'{initial_key}' key not found in context"
-        logger.error(msg)
-        raise Exception(msg)
-    return value
+        return context_storage[initial_key]
+
+    if hasattr(context, initial_key):
+        return getattr(context, initial_key)
+
+    msg = f"'{initial_key}' key not found in context"
+    logger.error(msg)
+    raise Exception(msg)
+
+
+
+
+#    context_storage = context.storage if hasattr(context, 'storage') else {}
+#    if not isinstance(context_storage, collections.ChainMap):
+#        if hasattr(context, 'run_storage'):
+#            context_storage = collections.ChainMap(context.storage, context.run_storage)
+#        if hasattr(context, 'feature_storage'):
+#            if not hasattr(context, 'run_storage'):
+#                context.run_storage = dict()
+#            context_storage = collections.ChainMap(context.storage, context.feature_storage, context.run_storage)
+#
+#    if initial_key in context_storage:
+#        value = context_storage[initial_key]
+#    elif hasattr(context, initial_key):
+#        value = getattr(context, initial_key)
+#    else:
+#        msg = f"'{initial_key}' key not found in context"
+#        logger.error(msg)
+#        raise Exception(msg)
+#    return value
 
 
 def get_message_property(param, language_terms, language_key):
