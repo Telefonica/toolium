@@ -68,6 +68,9 @@ def test_a_context_param_feature_storage():
     context.feature_storage = {"feature_storage_key": "feature storage entry value"}
     dataset.behave_context = context
 
+    print(f'{context.storage=}')
+    print(f'{context.feature_storage=}')
+
     result_st = map_param("[CONTEXT:feature_storage_key]")
     expected_st = "feature storage entry value"
     assert expected_st == result_st
@@ -84,6 +87,9 @@ def test_a_context_param_storage_and_feature_storage():
     context.storage = {"storage_key": "storage entry value"}
     context.feature_storage = {"storage_key": "feature storage entry value"}
     dataset.behave_context = context
+
+    print(f'{context.storage=}')
+    print(f'{context.feature_storage=}')
 
     result_st = map_param("[CONTEXT:storage_key]")
     expected_st = "storage entry value"
