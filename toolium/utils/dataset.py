@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import base64
+import collections
 import datetime
 import json
 import logging
@@ -681,8 +682,18 @@ def _get_initial_value_from_context(initial_key, context):
     :param context: behave context
     :return: mapped value
     """
-    if initial_key in context.storage:
-        value = context.storage[initial_key]
+    #If dynamic env is not initialized, the storages are initialized if needed
+    context_storage = context.storage if hasattr(context, 'storage') else {}
+    if not isinstance(context_storage, collections.ChainMap):
+        if hasattr(context, 'run_storage'):
+            context_storage = collections.ChainMap(context.storage, context.run_storage)
+        if hasattr(context, 'feature_storage'):
+            if not hasattr(context, 'run_storage'):
+                context.run_storage = dict()
+            context_storage = collections.ChainMap(context.storage, context.feature_storage, context.run_storage)
+
+    if initial_key in context_storage:
+        value = context_storage[initial_key]
     elif hasattr(context, initial_key):
         value = getattr(context, initial_key)
     else:
@@ -813,7 +824,8 @@ def convert_file_to_base64(file_path):
 def store_key_in_storage(context, key, value):
     """
     Store values in context.storage, context.feature_storage or context.run_storage,
-    using [FEATURE:xxxx] OR [RUN:xxxx] from steps.
+    using [key], [FEATURE:key] OR [RUN:key] from steps.
+    context.storage is also updated with given key,value
     By default, values are stored in context.storage.
 
     :param key: key to store the value in proper storage
@@ -832,5 +844,8 @@ def store_key_in_storage(context, key, value):
             context.run_storage[context_key] = value
         elif context_type == "FEATURE":
             context.feature_storage[context_key] = value
+        #If dynamic env is not initialized linked or the key exists in context.storage, the value must be updated in context.storage
+        if hasattr(context.storage, context_key) or not isinstance(context.storage, collections.ChainMap):
+            context.storage[context_key] = value
     else:
         context.storage[clean_key] = value
