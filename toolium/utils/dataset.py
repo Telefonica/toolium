@@ -844,7 +844,7 @@ def store_key_in_storage(context, key, value):
             context.run_storage[context_key] = value
         elif context_type == "FEATURE":
             context.feature_storage[context_key] = value
-        # If dynamic env is not initialized linked or the key exists in context.storage, the value must be updated in context.storage
+        # If dynamic env is not initialized linked or key exists in context.storage, the value is updated in it
         if hasattr(context.storage, context_key) or not isinstance(context.storage, collections.ChainMap):
             context.storage[context_key] = value
     else:
