@@ -82,7 +82,7 @@ def before_feature(context, feature):
 
     # Dictionary to store information between features
     context.feature_storage = dict()
-    context.storage = collections.ChainMap(dict(), context.feature_storage, context.run_storage)
+    context.storage = collections.ChainMap(context.feature_storage, context.run_storage)
 
     # Behave dynamic environment
     context.dyn_env.get_steps_from_feature_description(feature.description)
