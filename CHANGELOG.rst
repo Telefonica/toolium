@@ -6,6 +6,10 @@ v3.1.6
 
 *Release date: In development*
 
+- Added `run_storage` to store information during the whole test execution
+- ChainMap storages (context.storage, context.feature_storage and context.run_storage)
+- In steps, be able to store values into desire storage by using [key], [FEATURE:key] and [RUN:key]
+
 v3.1.5
 ------
 

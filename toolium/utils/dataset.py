@@ -682,19 +682,24 @@ def _get_initial_value_from_context(initial_key, context):
     :param context: behave context
     :return: mapped value
     """
-    context_storage = context.storage if hasattr(context, 'storage') else {}
-    if hasattr(context, 'feature_storage'):
-        # context.feature_storage is initialized only when before_feature method is called
-        context_storage = collections.ChainMap(context.storage, context.feature_storage)
+    # If dynamic env is not initialized, the storages are initialized if needed
+
+    context_storage = getattr(context, 'storage', {})
+    run_storage = getattr(context, 'run_storage', {})
+    feature_storage = getattr(context, 'feature_storage', {})
+
+    if not isinstance(context_storage, collections.ChainMap):
+        context_storage = collections.ChainMap(context_storage, run_storage, feature_storage)
+
     if initial_key in context_storage:
-        value = context_storage[initial_key]
-    elif hasattr(context, initial_key):
-        value = getattr(context, initial_key)
-    else:
-        msg = f"'{initial_key}' key not found in context"
-        logger.error(msg)
-        raise Exception(msg)
-    return value
+        return context_storage[initial_key]
+
+    if hasattr(context, initial_key):
+        return getattr(context, initial_key)
+
+    msg = f"'{initial_key}' key not found in context"
+    logger.error(msg)
+    raise Exception(msg)
 
 
 def get_message_property(param, language_terms, language_key):
@@ -813,3 +818,33 @@ def convert_file_to_base64(file_path):
     except Exception as e:
         raise Exception(f' ERROR - converting the "{file_path}" file to Base64...: {e}')
     return file_content
+
+
+def store_key_in_storage(context, key, value):
+    """
+    Store values in context.storage, context.feature_storage or context.run_storage,
+    using [key], [FEATURE:key] OR [RUN:key] from steps.
+    context.storage is also updated with given key,value
+    By default, values are stored in context.storage.
+
+    :param key: key to store the value in proper storage
+    :param value: value to store in key
+    :param context: behave context
+    :return:
+    """
+    clean_key = re.sub(r'[\[\]]', '', key)
+    if ":" in clean_key:
+        context_type = clean_key.split(":")[0]
+        context_key = clean_key.split(":")[1]
+        acccepted_context_types = ["FEATURE", "RUN"]
+        assert context_type in acccepted_context_types, (f"Invalid key: {context_key}. "
+                                                         f"Accepted keys: {acccepted_context_types}")
+        if context_type == "RUN":
+            context.run_storage[context_key] = value
+        elif context_type == "FEATURE":
+            context.feature_storage[context_key] = value
+        # If dynamic env is not initialized linked or key exists in context.storage, the value is updated in it
+        if hasattr(context.storage, context_key) or not isinstance(context.storage, collections.ChainMap):
+            context.storage[context_key] = value
+    else:
+        context.storage[clean_key] = value
