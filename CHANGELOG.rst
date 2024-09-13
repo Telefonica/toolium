@@ -1,14 +1,14 @@
 Toolium Changelog
 =================
 
-v3.1.6
+v3.2.0
 ------
 
-*Release date: In development*
+*Release date: 2024-09-13*
 
-- Added `run_storage` to store information during the whole test execution
-- ChainMap storages (context.storage, context.feature_storage and context.run_storage)
-- In steps, be able to store values into desire storage by using [key], [FEATURE:key] and [RUN:key]
+- Add `run_storage` dictionary to context to store information during the whole test execution
+- Update current ChainMap context storages (context.storage, context.feature_storage and context.run_storage)
+- Allow to store values from steps into desire storage by using [key], [FEATURE:key] and [RUN:key]
 
 v3.1.5
 ------
