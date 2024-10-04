@@ -5,6 +5,14 @@ v3.2.1
 ------
 
 *Release date: In development*
+- Fix `get_value_from_context` allow negative numbers. Example: element.-1
+- Update `_replace_param_date`remove deprecated function .utcnow(), update with pytz.timezone('Europe/Madrid')
+- Update `_replace_param_transform_string_replace_param_transform_string` include new options
+  * JSON -> format string to json. Example: [JSON:{'key': 'value'}]
+  * REPLACE -> replace elements in string. Example: [REPLACE:[CONTEXT:some_url]::https::http]
+  * DATE -> format date. Example: [DATE:[CONTEXT:actual_date]::%d %b %Y]
+  * TITLE -> apply .title() to string value. Example: [TITLE:the title]
+
 
 v3.2.0
 ------

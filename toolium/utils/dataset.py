@@ -26,6 +26,8 @@ import random as r
 import re
 import string
 import uuid
+import pytz
+import locale
 
 from ast import literal_eval
 from copy import deepcopy
@@ -88,6 +90,10 @@ def replace_param(param, language='es', infer_param_type=True):
         [DICT:xxxx] Cast xxxx to a dict
         [UPPER:xxxx] Converts xxxx to upper case
         [LOWER:xxxx] Converts xxxx to lower case
+        [JSON:xxxxx] Format string to json. Example: [JSON:{'key': 'value'}]
+        [REPLACE:xxxxx::xx::zz] Replace elements in string. Example: [REPLACE:[CONTEXT:some_url]::https::http]
+        [DATE:xxxx::{date-format}] Format date. Example: [DATE:[CONTEXT:actual_date]::%d %b %Y]
+        [TITLE:xxxxx] Apply .title() to string value. Example: [TITLE:the title]
     If infer_param_type is True and the result of the replacement process is a string,
     this function also tries to infer and cast the result to the most appropriate data type,
     attempting first the direct conversion to a Python built-in data type and then,
@@ -223,31 +229,76 @@ def _get_random_phone_number():
     return DataGenerator().phone_number
 
 
+def _format_date_spanish(date, date_expected_format, date_actual_format='%Y-%m-%dT%H:%M:%SZ', capitalize=True):
+    """_format_date_spanish 
+    Format date to spanish
+
+    :param str date: actual date
+    :param str date_expected_format: expected returned date format
+    :param str date_actual_format: date acual format, defaults to '%Y-%m-%dT%H:%M:%SZ'
+    :param bool capitalize: capitalize month result, defaults to True
+    :return str: Date with expected format
+    """
+    if '%p' not in date_expected_format and '%P' not in date_expected_format:
+        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+    date = datetime.strptime(date, date_actual_format)
+    formated_date = date.strftime(date_expected_format)
+    if capitalize:
+        position = next((idx for idx, letter in enumerate(formated_date) if letter.isalpha()), None)
+        if position is not None:
+            formated_date = formated_date.replace(formated_date[position], formated_date[position].upper(), 1)
+            formated_date = formated_date if formated_date[0] != '0' else formated_date[1:]
+
+    return formated_date
+
 def _replace_param_transform_string(param):
     """
     Transform param value according to the specified prefix.
-    Available transformations: DICT, LIST, INT, FLOAT, STR, UPPER, LOWER
+    Available transformations: DICT, LIST, INT, FLOAT, JSON, STR, UPPER, LOWER, REPLACE, DATE, TITLE
 
     :param param: parameter value
     :return: tuple with replaced value and boolean to know if replacement has been done
     """
-    type_mapping_regex = r'\[(DICT|LIST|INT|FLOAT|STR|UPPER|LOWER):(.*)\]'
+    type_mapping_regex = r'\[(DICT|LIST|INT|FLOAT|JSON|STR|UPPER|LOWER|REPLACE|DATE|TITLE):([\w\W]*)\]'
     type_mapping_match_group = re.match(type_mapping_regex, param)
     new_param = param
     param_transformed = False
 
     if type_mapping_match_group:
         param_transformed = True
-        if type_mapping_match_group.group(1) == 'STR':
-            new_param = type_mapping_match_group.group(2)
-        elif type_mapping_match_group.group(1) in ['LIST', 'DICT', 'INT', 'FLOAT']:
-            exec('exec_param = {type}({value})'.format(type=type_mapping_match_group.group(1).lower(),
-                                                       value=type_mapping_match_group.group(2)))
-            new_param = locals()['exec_param']
-        elif type_mapping_match_group.group(1) == 'UPPER':
-            new_param = type_mapping_match_group.group(2).upper()
-        elif type_mapping_match_group.group(1) == 'LOWER':
-            new_param = type_mapping_match_group.group(2).lower()
+        if type_mapping_match_group.group(1) in ['DICT', 'LIST', 'INT', 'FLOAT', 'JSON']:
+            if '::' in type_mapping_match_group.group() and 'FLOAT' in type_mapping_match_group.group():
+                params_to_replace = type_mapping_match_group.group(
+                    2).split('::')
+                float_formatted = "{:.2f}".format(round(float(params_to_replace[0]), int(params_to_replace[1])))
+                new_param = float_formatted
+            elif type_mapping_match_group.group(1) == 'JSON':
+                new_param = json.loads(type_mapping_match_group.group(2))
+            else:
+                exec(f'exec_param = {type_mapping_match_group.group(1).lower()}({type_mapping_match_group.group(2)})')
+                new_param = locals()['exec_param']
+        else:
+            if type_mapping_match_group.group(1) == 'STR':
+                replace_param = type_mapping_match_group.group(2)
+            elif type_mapping_match_group.group(1) == 'UPPER':
+                replace_param = type_mapping_match_group.group(2).upper()
+            elif type_mapping_match_group.group(1) == 'LOWER':
+                replace_param = type_mapping_match_group.group(2).lower()
+            elif type_mapping_match_group.group(1) == 'REPLACE':
+                params_to_replace = type_mapping_match_group.group(2).split('::')
+                replace_param = params_to_replace[2] if len(params_to_replace) > 2 else ''
+                param_to_replace = params_to_replace[1] if params_to_replace[1] != '\\n' else '\n'
+                param_to_replace = params_to_replace[1] if params_to_replace[1] != '\\r' else '\r'
+                replace_param = params_to_replace[0].replace(param_to_replace, replace_param).replace('  ', ' ').replace('  ', ' ')
+            elif type_mapping_match_group.group(1) == 'DATE':
+                params_to_replace = type_mapping_match_group.group(2).split('::')
+                date_actual_format='%Y/%m/%d %H:%M:%S'
+                replace_param = _format_date_spanish(params_to_replace[0], params_to_replace[1], date_actual_format, capitalize=False)
+            elif type_mapping_match_group.group(1) == 'TITLE':
+                replace_param = "".join(map(min, zip(type_mapping_match_group.group(2),
+                                                     type_mapping_match_group.group(2).title())))
+            new_param = new_param.replace(
+                type_mapping_match_group.group(), replace_param)
     return new_param, param_transformed
 
 
@@ -266,8 +317,8 @@ def _replace_param_date(param, language):
     def _date_matcher():
         return re.match(r'\[(NOW(?:\((?:.*)\)|)|TODAY)(?:\s*([\+|-]\s*\d+)\s*(\w+)\s*)?\]', param)
 
-    def _offset_datetime(amount, units):
-        now = datetime.datetime.utcnow()
+    def _offset_datetime(amount, units): 
+        now = datetime.datetime.now(pytz.timezone('Europe/Madrid'))
         if not amount or not units:
             return now
         the_amount = int(amount.replace(' ', ''))
@@ -611,7 +662,7 @@ def get_value_from_context(param, context):
         if isinstance(value, dict) and part in value:
             value = value[part]
         # evaluate if in an array, access is requested by index
-        elif isinstance(value, list) and part.isdigit() and int(part) < len(value):
+        elif isinstance(value, list) and part.lstrip('-+').isdigit() and int(part) < len(value):
             value = value[int(part)]
         # or by a key=value expression
         elif isinstance(value, list) and (element := _select_element_in_list(value, part)):
