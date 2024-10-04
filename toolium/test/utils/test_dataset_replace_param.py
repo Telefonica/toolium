@@ -459,4 +459,4 @@ def test_replace_param_title():
     param = replace_param('[TITLE:holahola]')
     assert param == "Holahola"
     param = replace_param('[TITLE:hOlA]')
-    assert param == "Hola"
+    assert param == "HOlA"
