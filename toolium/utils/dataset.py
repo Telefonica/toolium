@@ -226,6 +226,7 @@ def _get_random_phone_number():
     # Method to avoid executing data generator when it is not needed
     return DataGenerator().phone_number
 
+
 def _replace_param_transform_string(param):
     """
     Transform param value according to the specified prefix.
