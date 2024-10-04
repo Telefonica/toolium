@@ -308,7 +308,7 @@ def _update_param_transform_string(type_mapping_match_group):
     elif type_mapping_match_group.group(1) == 'DATE':
         params_to_replace = type_mapping_match_group.group(2).split('::')
         date_actual_format = '%Y/%m/%d %H:%M:%S'
-        replace_param = _format_date_spanish(params_to_replace[0], params_to_replace[1], date_actual_format, 
+        replace_param = _format_date_spanish(params_to_replace[0], params_to_replace[1], date_actual_format,
                                              capitalize=False)
     elif type_mapping_match_group.group(1) == 'TITLE':
         replace_param = "".join(map(min, zip(type_mapping_match_group.group(2),
