@@ -5,7 +5,7 @@ v3.2.1
 ------
 
 *Release date: In development*
-- Update `get_value_from_context` allow negative numbers, and dictionaries elements. Example: element.-1 or element.0.value.1.key
+- Update `get_value_from_context` allow negative numbers. Example: element.-1
 - Update `_replace_param_transform_string_replace_param_transform_string` include new options
   * JSON -> format string to json. Example: [JSON:{'key': 'value'}]
   * REPLACE -> replace elements in string. Example: [REPLACE:[CONTEXT:some_url]::https::http]
