@@ -26,8 +26,8 @@ import random as r
 import re
 import string
 import uuid
-import pytz
-import locale
+
+
 
 from ast import literal_eval
 from copy import deepcopy
@@ -228,39 +228,15 @@ def _get_random_phone_number():
     # Method to avoid executing data generator when it is not needed
     return DataGenerator().phone_number
 
-
-def _format_date_spanish(date, date_expected_format, date_actual_format='%Y-%m-%dT%H:%M:%SZ', capitalize=True):
-    """_format_date_spanish
-    Format date to spanish
-
-    :param str date: actual date
-    :param str date_expected_format: expected returned date format
-    :param str date_actual_format: date acual format, defaults to '%Y-%m-%dT%H:%M:%SZ'
-    :param bool capitalize: capitalize month result, defaults to True
-    :return str: Date with expected format
-    """
-    if '%p' not in date_expected_format and '%P' not in date_expected_format:
-        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-    date = datetime.strptime(date, date_actual_format)
-    formated_date = date.strftime(date_expected_format)
-    if capitalize:
-        position = next((idx for idx, letter in enumerate(formated_date) if letter.isalpha()), None)
-        if position is not None:
-            formated_date = formated_date.replace(formated_date[position], formated_date[position].upper(), 1)
-            formated_date = formated_date if formated_date[0] != '0' else formated_date[1:]
-
-    return formated_date
-
-
 def _replace_param_transform_string(param):
     """
     Transform param value according to the specified prefix.
-    Available transformations: DICT, LIST, INT, FLOAT, JSON, STR, UPPER, LOWER, REPLACE, DATE, TITLE
+    Available transformations: DICT, LIST, INT, FLOAT, JSON, STR, UPPER, LOWER, REPLACE, TITLE
 
     :param param: parameter value
     :return: tuple with replaced value and boolean to know if replacement has been done
     """
-    type_mapping_regex = r'\[(DICT|LIST|INT|FLOAT|JSON|STR|UPPER|LOWER|REPLACE|DATE|TITLE):([\w\W]*)\]'
+    type_mapping_regex = r'\[(DICT|LIST|INT|FLOAT|JSON|STR|UPPER|LOWER|REPLACE|TITLE):([\w\W]*)\]'
     type_mapping_match_group = re.match(type_mapping_regex, param)
     new_param = param
     param_transformed = False
@@ -305,11 +281,6 @@ def _update_param_transform_string(type_mapping_match_group):
         param_to_replace = params_to_replace[1] if params_to_replace[1] != '\\r' else '\r'
         replace_param = params_to_replace[0].replace(param_to_replace, replace_param)\
             .replace('  ', ' ').replace('  ', ' ')
-    elif type_mapping_match_group.group(1) == 'DATE':
-        params_to_replace = type_mapping_match_group.group(2).split('::')
-        date_actual_format = '%Y/%m/%d %H:%M:%S'
-        replace_param = _format_date_spanish(params_to_replace[0], params_to_replace[1], date_actual_format,
-                                             capitalize=False)
     elif type_mapping_match_group.group(1) == 'TITLE':
         replace_param = "".join(map(min, zip(type_mapping_match_group.group(2),
                                              type_mapping_match_group.group(2).title())))
@@ -332,7 +303,7 @@ def _replace_param_date(param, language):
         return re.match(r'\[(NOW(?:\((?:.*)\)|)|TODAY)(?:\s*([\+|-]\s*\d+)\s*(\w+)\s*)?\]', param)
 
     def _offset_datetime(amount, units):
-        now = datetime.datetime.now(pytz.timezone('Europe/Madrid'))
+        now = datetime.datetime.utcnow()
         if not amount or not units:
             return now
         the_amount = int(amount.replace(' ', ''))
@@ -677,7 +648,12 @@ def get_value_from_context(param, context):
             value = value[part]
         # evaluate if in an array, access is requested by index
         elif isinstance(value, list) and part.lstrip('-+').isdigit() and int(part) < len(value):
-            value = value[int(part)]
+            try:
+                value = value[int(part)] if part.lstrip('-+').isdigit() else value[part]
+            except (TypeError, KeyError):
+                value = getattr(value, part)
+            except AttributeError as exc:
+                raise AttributeError(context.logger.info) from exc
         # or by a key=value expression
         elif isinstance(value, list) and (element := _select_element_in_list(value, part)):
             value = element
