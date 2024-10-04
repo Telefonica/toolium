@@ -288,30 +288,31 @@ def _update_param_transform_string(type_mapping_match_group):
     """
     Transform param value according to the specified prefix.
     Available transformations: STR, UPPER, LOWER, REPLACE, DATE, TITLE
-    
+
     :param type_mapping_match_group: match group
     :return: return the string with the replaced param
     """
     if type_mapping_match_group.group(1) == 'STR':
         replace_param = type_mapping_match_group.group(2)
-    elif type_mapping_match_group.group(1)  == 'UPPER':
+    elif type_mapping_match_group.group(1) == 'UPPER':
         replace_param = type_mapping_match_group.group(2).upper()
-    elif type_mapping_match_group.group(1)  == 'LOWER':
+    elif type_mapping_match_group.group(1) == 'LOWER':
         replace_param = type_mapping_match_group.group(2).lower()
-    elif type_mapping_match_group.group(1)  == 'REPLACE':
+    elif type_mapping_match_group.group(1) == 'REPLACE':
         params_to_replace = type_mapping_match_group.group(2).split('::')
         replace_param = params_to_replace[2] if len(params_to_replace) > 2 else ''
         param_to_replace = params_to_replace[1] if params_to_replace[1] != '\\n' else '\n'
         param_to_replace = params_to_replace[1] if params_to_replace[1] != '\\r' else '\r'
         replace_param = params_to_replace[0].replace(param_to_replace, replace_param)\
             .replace('  ', ' ').replace('  ', ' ')
-    elif type_mapping_match_group.group(1)  == 'DATE':
+    elif type_mapping_match_group.group(1) == 'DATE':
         params_to_replace = type_mapping_match_group.group(2).split('::')
         date_actual_format = '%Y/%m/%d %H:%M:%S'
-        replace_param = _format_date_spanish(params_to_replace[0], params_to_replace[1], date_actual_format, \
-            capitalize=False)
-    elif type_mapping_match_group.group(1)  == 'TITLE':
-        replace_param = "".join(map(min, zip(type_mapping_match_group.group(2), type_mapping_match_group.group(2).title())))
+        replace_param = _format_date_spanish(params_to_replace[0], params_to_replace[1], date_actual_format, 
+                                            capitalize=False)
+    elif type_mapping_match_group.group(1) == 'TITLE':
+        replace_param = "".join(map(min, zip(type_mapping_match_group.group(2), 
+                                             type_mapping_match_group.group(2).title())))
     return replace_param
 
 
