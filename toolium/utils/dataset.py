@@ -27,8 +27,6 @@ import re
 import string
 import uuid
 
-
-
 from ast import literal_eval
 from copy import deepcopy
 from inspect import isfunction
@@ -648,12 +646,7 @@ def get_value_from_context(param, context):
             value = value[part]
         # evaluate if in an array, access is requested by index
         elif isinstance(value, list) and part.lstrip('-+').isdigit() and int(part) < len(value):
-            try:
-                value = value[int(part)] if part.lstrip('-+').isdigit() else value[part]
-            except (TypeError, KeyError):
-                value = getattr(value, part)
-            except AttributeError as exc:
-                raise AttributeError(context.logger.info) from exc
+            value = value[int(part)]
         # or by a key=value expression
         elif isinstance(value, list) and (element := _select_element_in_list(value, part)):
             value = element
