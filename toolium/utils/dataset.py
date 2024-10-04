@@ -230,7 +230,7 @@ def _get_random_phone_number():
 
 
 def _format_date_spanish(date, date_expected_format, date_actual_format='%Y-%m-%dT%H:%M:%SZ', capitalize=True):
-    """_format_date_spanish 
+    """_format_date_spanish
     Format date to spanish
 
     :param str date: actual date
@@ -250,6 +250,7 @@ def _format_date_spanish(date, date_expected_format, date_actual_format='%Y-%m-%
             formated_date = formated_date if formated_date[0] != '0' else formated_date[1:]
 
     return formated_date
+
 
 def _replace_param_transform_string(param):
     """
@@ -292,8 +293,9 @@ def _replace_param_transform_string(param):
                 replace_param = params_to_replace[0].replace(param_to_replace, replace_param).replace('  ', ' ').replace('  ', ' ')
             elif type_mapping_match_group.group(1) == 'DATE':
                 params_to_replace = type_mapping_match_group.group(2).split('::')
-                date_actual_format='%Y/%m/%d %H:%M:%S'
-                replace_param = _format_date_spanish(params_to_replace[0], params_to_replace[1], date_actual_format, capitalize=False)
+                date_actual_format = '%Y/%m/%d %H:%M:%S'
+                replace_param = _format_date_spanish(params_to_replace[0], params_to_replace[1], date_actual_format,\
+                    capitalize=False)
             elif type_mapping_match_group.group(1) == 'TITLE':
                 replace_param = "".join(map(min, zip(type_mapping_match_group.group(2),
                                                      type_mapping_match_group.group(2).title())))
@@ -317,7 +319,7 @@ def _replace_param_date(param, language):
     def _date_matcher():
         return re.match(r'\[(NOW(?:\((?:.*)\)|)|TODAY)(?:\s*([\+|-]\s*\d+)\s*(\w+)\s*)?\]', param)
 
-    def _offset_datetime(amount, units): 
+    def _offset_datetime(amount, units):
         now = datetime.datetime.now(pytz.timezone('Europe/Madrid'))
         if not amount or not units:
             return now

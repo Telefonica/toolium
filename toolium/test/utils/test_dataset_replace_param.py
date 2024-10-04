@@ -439,29 +439,33 @@ def test_replace_param_partial_string_with_length():
     param = replace_param('parameter [STRING_WITH_LENGTH_5] is string')
     assert param == 'parameter aaaaa is string'
 
+
 def test_replace_param_json():
     test_json = '{"key": "value", "key_1": true}'
     param = replace_param(f'[JSON:{test_json}]')
     assert param == {"key": "value", "key_1": True}
 
-def test_replace_param_json():
-    param = replace_param(f'[REPLACE:https://url.com::https::http]')
+
+def test_replace_param_replace():
+    param = replace_param('[REPLACE:https://url.com::https::http]')
     assert param == "http://url.com"
-    param = replace_param(f'[REPLACE:https://url.com::https://]')
+    param = replace_param('[REPLACE:https://url.com::https://]')
     assert param == "url.com"
-    
+
+
 def test_replace_param_date():
-    param = replace_param(f'[DATE:1994-06-13T07:00:00::%d %m %Y]')
+    param = replace_param('[DATE:1994-06-13T07:00:00::%d %m %Y]')
     assert param == "13 06 1994"
-    param = replace_param(f'[DATE:1994-06-13T07:00:00::%d %b %Y]')
+    param = replace_param('[DATE:1994-06-13T07:00:00::%d %b %Y]')
     assert param == "13 JUN 1994"
-    param = replace_param(f'[DATE:1994-06-13T07:00:00::%H:%M]')
+    param = replace_param('[DATE:1994-06-13T07:00:00::%H:%M]')
     assert param == "07:00"
-    
+
+
 def test_replace_param_title():
-    param = replace_param(f'[TITLE:hola hola]')
+    param = replace_param('[TITLE:hola hola]')
     assert param == "Hola Hola"
-    param = replace_param(f'[TITLE:holahola]')
+    param = replace_param('[TITLE:holahola]')
     assert param == "Holahola"
-    param = replace_param(f'[TITLE:hOlA]')
+    param = replace_param('[TITLE:hOlA]')
     assert param == "Hola"
