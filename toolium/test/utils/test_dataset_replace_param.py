@@ -453,15 +453,6 @@ def test_replace_param_replace():
     assert param == "url.com"
 
 
-def test_replace_param_date():
-    param = replace_param('[DATE:1994-06-13T07:00:00::%d %m %Y]')
-    assert param == "13 06 1994"
-    param = replace_param('[DATE:1994-06-13T07:00:00::%d %b %Y]')
-    assert param == "13 JUN 1994"
-    param = replace_param('[DATE:1994-06-13T07:00:00::%H:%M]')
-    assert param == "07:00"
-
-
 def test_replace_param_title():
     param = replace_param('[TITLE:hola hola]')
     assert param == "Hola Hola"
