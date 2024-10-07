@@ -646,7 +646,7 @@ def get_value_from_context(param, context):
         if isinstance(value, dict) and part in value:
             value = value[part]
         # evaluate if in an array, access is requested by index
-        elif isinstance(value, list) and part.lstrip('-+').isdigit() and int(part) < len(value):
+        elif isinstance(value, list) and part.lstrip('-+').isdigit() and int(part) <= len(value):
             value = value[int(part)]
         # or by a key=value expression
         elif isinstance(value, list) and (element := _select_element_in_list(value, part)):
