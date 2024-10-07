@@ -5,11 +5,10 @@ v3.2.1
 ------
 
 *Release date: In development*
-- Update `get_value_from_context` allow negative numbers. Example: element.-1
-- Update `_replace_param_transform_string_replace_param_transform_string` include new options
-  * JSON -> format string to json. Example: [JSON:{'key': 'value'}]
-  * REPLACE -> replace elements in string. Example: [REPLACE:[CONTEXT:some_url]::https::http]
-  * TITLE -> apply .title() to string value. Example: [TITLE:the title]
+- Allow negative indexes for list elements in context searches. Example: [CONTEXT:element.-1]
+- Add support for JSON strings to the `DICT` replacement. Example: [DICT:{"key": true}]
+- Add `REPLACE` replacement, to replace a substring with another. Example: [REPLACE:[CONTEXT:some_url]::https::http]
+- Add `TITLE` replacement, to apply Python's title() function. Example: [TITLE:the title]
 
 
 v3.2.0
