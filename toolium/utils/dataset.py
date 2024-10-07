@@ -88,7 +88,6 @@ def replace_param(param, language='es', infer_param_type=True):
         [DICT:xxxx] Cast xxxx to a dict
         [UPPER:xxxx] Converts xxxx to upper case
         [LOWER:xxxx] Converts xxxx to lower case
-        [JSON:xxxxx] Format string to json. Example: [JSON:{'key': 'value'}]
         [REPLACE:xxxxx::xx::zz] Replace elements in string. Example: [REPLACE:[CONTEXT:some_url]::https::http]
         [TITLE:xxxxx] Apply .title() to string value. Example: [TITLE:the title]
     If infer_param_type is True and the result of the replacement process is a string,
@@ -229,26 +228,29 @@ def _get_random_phone_number():
 def _replace_param_transform_string(param):
     """
     Transform param value according to the specified prefix.
-    Available transformations: DICT, LIST, INT, FLOAT, JSON, STR, UPPER, LOWER, REPLACE, TITLE
+    Available transformations: DICT, LIST, INT, FLOAT, STR, UPPER, LOWER, REPLACE, TITLE
 
     :param param: parameter value
     :return: tuple with replaced value and boolean to know if replacement has been done
     """
-    type_mapping_regex = r'\[(DICT|LIST|INT|FLOAT|JSON|STR|UPPER|LOWER|REPLACE|TITLE):([\w\W]*)\]'
+    type_mapping_regex = r'\[(DICT|LIST|INT|FLOAT|STR|UPPER|LOWER|REPLACE|TITLE):([\w\W]*)\]'
     type_mapping_match_group = re.match(type_mapping_regex, param)
     new_param = param
     param_transformed = False
 
     if type_mapping_match_group:
         param_transformed = True
-        if type_mapping_match_group.group(1) in ['DICT', 'LIST', 'INT', 'FLOAT', 'JSON']:
+        if type_mapping_match_group.group(1) in ['DICT', 'LIST', 'INT', 'FLOAT']:
             if '::' in type_mapping_match_group.group() and 'FLOAT' in type_mapping_match_group.group():
                 params_to_replace = type_mapping_match_group.group(
                     2).split('::')
                 float_formatted = "{:.2f}".format(round(float(params_to_replace[0]), int(params_to_replace[1])))
                 new_param = float_formatted
-            elif type_mapping_match_group.group(1) == 'JSON':
-                new_param = json.loads(type_mapping_match_group.group(2))
+            elif type_mapping_match_group.group(1) == 'DICT':
+                try:
+                    new_param = json.loads(type_mapping_match_group.group(2).strip())
+                except json.decoder.JSONDecodeError:
+                    new_param = eval(type_mapping_match_group.group(2))
             else:
                 exec(f'exec_param = {type_mapping_match_group.group(1).lower()}({type_mapping_match_group.group(2)})')
                 new_param = locals()['exec_param']
