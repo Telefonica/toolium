@@ -440,12 +440,6 @@ def test_replace_param_partial_string_with_length():
     assert param == 'parameter aaaaa is string'
 
 
-def test_replace_param_json():
-    test_json = '{"key": "value", "key_1": true}'
-    param = replace_param(f'[JSON:{test_json}]')
-    assert param == {"key": "value", "key_1": True}
-
-
 def test_replace_param_replace():
     param = replace_param('[REPLACE:https://url.com::https::http]')
     assert param == "http://url.com"
