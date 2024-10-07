@@ -90,7 +90,6 @@ def replace_param(param, language='es', infer_param_type=True):
         [LOWER:xxxx] Converts xxxx to lower case
         [JSON:xxxxx] Format string to json. Example: [JSON:{'key': 'value'}]
         [REPLACE:xxxxx::xx::zz] Replace elements in string. Example: [REPLACE:[CONTEXT:some_url]::https::http]
-        [DATE:xxxx::{date-format}] Format date. Example: [DATE:[CONTEXT:actual_date]::%d %b %Y]
         [TITLE:xxxxx] Apply .title() to string value. Example: [TITLE:the title]
     If infer_param_type is True and the result of the replacement process is a string,
     this function also tries to infer and cast the result to the most appropriate data type,
@@ -262,7 +261,7 @@ def _replace_param_transform_string(param):
 def _update_param_transform_string(type_mapping_match_group):
     """
     Transform param value according to the specified prefix.
-    Available transformations: STR, UPPER, LOWER, REPLACE, DATE, TITLE
+    Available transformations: STR, UPPER, LOWER, REPLACE, TITLE
 
     :param type_mapping_match_group: match group
     :return: return the string with the replaced param
@@ -278,8 +277,7 @@ def _update_param_transform_string(type_mapping_match_group):
         replace_param = params_to_replace[2] if len(params_to_replace) > 2 else ''
         param_to_replace = params_to_replace[1] if params_to_replace[1] != '\\n' else '\n'
         param_to_replace = params_to_replace[1] if params_to_replace[1] != '\\r' else '\r'
-        replace_param = params_to_replace[0].replace(param_to_replace, replace_param)\
-            .replace('  ', ' ').replace('  ', ' ')
+        replace_param = params_to_replace[0].replace(param_to_replace, replace_param)
     elif type_mapping_match_group.group(1) == 'TITLE':
         replace_param = "".join(map(min, zip(type_mapping_match_group.group(2),
                                              type_mapping_match_group.group(2).title())))
