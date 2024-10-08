@@ -376,10 +376,8 @@ def test_replace_param_dict():
 
 
 def test_replace_param_dict_json_format():
-    param = replace_param('[DICT:{"key": "value", "key_2": true}]')
-    assert param == {"key": "value", "key_2": True}
-    param = replace_param('[DICT:{"key": "value", "key_2": null}]')
-    assert param == {"key": "value", "key_2": None}
+    param = replace_param('[DICT:{"key": "value", "key_2": true, "key_3": null}]')
+    assert param == {"key": "value", "key_2": True, "key_3": None}
 
 
 def test_replace_param_upper():
