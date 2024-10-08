@@ -231,7 +231,7 @@ def _get_rounded_float_number(param):
     """
     type_mapping_regex = r'\[(ROUND):([\w\W]*)\]'
     type_mapping_match_group = re.match(type_mapping_regex, param)
-    if type_mapping_match_group and type_mapping_match_group.group(1) == 'ROUND':     
+    if type_mapping_match_group and type_mapping_match_group.group(1) == 'ROUND':
         replace_params = type_mapping_match_group.group(2).split('::')
         replace_param = f"{round(float(replace_params[0]), int(replace_params[1])):.{int(replace_params[1])}f}"
         return replace_param
