@@ -259,7 +259,7 @@ def _replace_param_transform_string(param):
 def _update_param_transform_string(type_mapping_match_group):
     """
     Transform param value according to the specified prefix.
-    Available transformations: STR, UPPER, LOWER, REPLACE, TITLE
+    Available transformations: STR, UPPER, LOWER, REPLACE, TITLE, ROUND
 
     :param type_mapping_match_group: match group
     :return: return the string with the replaced param
@@ -281,7 +281,7 @@ def _update_param_transform_string(type_mapping_match_group):
                                              type_mapping_match_group.group(2).title())))
     elif type_mapping_match_group.group(1) == 'ROUND':
         replace_params = type_mapping_match_group.group(2).split('::')
-        replace_param = f"{round(float(replace_params[0]), int(replace_params[1])):.{int(replace_params[1])} f }"
+        replace_param = f"{round(float(replace_params[0]), int(replace_params[1])):.{int(replace_params[1])}f}"
     return replace_param
 
 
