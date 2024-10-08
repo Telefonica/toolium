@@ -205,7 +205,6 @@ def _replace_param_replacement(param, language):
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),
         '[TODAY]': str(datetime.datetime.utcnow().strftime(date_day_format)),
         '[ROUND:.*::.*]': _get_rounded_float_number(param)
-        
     }
 
     # append date expressions found in param to the replacement dict
