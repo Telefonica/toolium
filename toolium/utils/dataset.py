@@ -81,10 +81,10 @@ def replace_param(param, language='es', infer_param_type=True):
         [NOW(%Y-%m-%dT%H:%M:%SZ) - 7 DAYS] Similar to NOW but seven days before and with the indicated format
         [TODAY] Similar to NOW without time; the format depends on the language
         [TODAY + 2 DAYS] Similar to NOW, but two days later
+        [ROUND:xxxx::y] Generates a string from a float number (xxxx) with the indicated number of decimals (y)
         [STR:xxxx] Cast xxxx to a string
         [INT:xxxx] Cast xxxx to an int
         [FLOAT:xxxx] Cast xxxx to a float
-        [ROUND:xxxx::y] Generates a string from a float number (xxxx) with the indicated number of decimals (y)
         [LIST:xxxx] Cast xxxx to a list
         [DICT:xxxx] Cast xxxx to a dict
         [UPPER:xxxx] Converts xxxx to upper case
