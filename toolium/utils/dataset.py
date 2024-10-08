@@ -84,7 +84,7 @@ def replace_param(param, language='es', infer_param_type=True):
         [STR:xxxx] Cast xxxx to a string
         [INT:xxxx] Cast xxxx to an int
         [FLOAT:xxxx] Cast xxxx to a float
-        [ROUND:xxxx::d] String float with the expected decimals
+        [ROUND:xxxx::y] Generates a string from a float number (xxxx) with the indicated number of decimals (y)
         [LIST:xxxx] Cast xxxx to a list
         [DICT:xxxx] Cast xxxx to a dict
         [UPPER:xxxx] Converts xxxx to upper case
@@ -221,6 +221,7 @@ def _replace_param_replacement(param, language):
             new_param = new_param.replace(key, new_value)
             param_replaced = True
     return new_param, param_replaced
+
 
 def _get_rounded_float_number(param):
     """
