@@ -456,6 +456,7 @@ def test_a_context_param_list_correct_negative_index():
     dataset.behave_context = context
     assert map_param("[CONTEXT:list.cmsScrollableActions.-1.id]") == 'ask-for-negative'
 
+
 def test_a_context_param_list_incorrect_negative_index():
     """
     Verification of a list with a incorrect negative index (In bounds) as CONTEXT
@@ -482,7 +483,7 @@ def test_a_context_param_list_incorrect_negative_index():
     }
     dataset.behave_context = context
     assert map_param("[CONTEXT:list.cmsScrollableActions.-5.id]")
-    
+
 
 def test_a_context_param_list_oob_index():
     """

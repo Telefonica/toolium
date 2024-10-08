@@ -241,11 +241,8 @@ def _replace_param_transform_string(param):
 
     if type_mapping_match_group:
         param_transformed = True
-        if type_mapping_match_group.group(1) in ['DICT', 'LIST', 'INT', 'FLOAT', 'ROUND']:
-            if '::' in type_mapping_match_group.group() and 'ROUND' in type_mapping_match_group.group():
-                params_to_replace = type_mapping_match_group.group(2).split('::')
-                new_param = f"{round(float(params_to_replace[0]), int(params_to_replace[1])):.{int(params_to_replace[1])}f}"
-            elif type_mapping_match_group.group(1) == 'DICT':
+        if type_mapping_match_group.group(1) in ['DICT', 'LIST', 'INT', 'FLOAT']:
+            if type_mapping_match_group.group(1) == 'DICT':
                 try:
                     new_param = json.loads(type_mapping_match_group.group(2).strip())
                 except json.decoder.JSONDecodeError:
@@ -282,6 +279,9 @@ def _update_param_transform_string(type_mapping_match_group):
     elif type_mapping_match_group.group(1) == 'TITLE':
         replace_param = "".join(map(min, zip(type_mapping_match_group.group(2),
                                              type_mapping_match_group.group(2).title())))
+    elif type_mapping_match_group.group(1) == 'ROUND':
+        replace_params = type_mapping_match_group.group(2).split('::')
+        replace_param = f"{round(float(replace_params[0]), int(replace_params[1])):.{int(replace_params[1])} f }"
     return replace_param
 
 
