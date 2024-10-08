@@ -89,7 +89,7 @@ def replace_param(param, language='es', infer_param_type=True):
         [DICT:xxxx] Cast xxxx to a dict
         [UPPER:xxxx] Converts xxxx to upper case
         [LOWER:xxxx] Converts xxxx to lower case
-        [REPLACE:xxxxx::xx::zz] Replace elements in string. Example: [REPLACE:[CONTEXT:some_url]::https::http]
+        [REPLACE:xxxxx::yy::zz] Replace elements in string. Example: [REPLACE:[CONTEXT:some_url]::https::http]
         [TITLE:xxxxx] Apply .title() to string value. Example: [TITLE:the title]
     If infer_param_type is True and the result of the replacement process is a string,
     this function also tries to infer and cast the result to the most appropriate data type,
