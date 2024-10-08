@@ -84,7 +84,7 @@ def replace_param(param, language='es', infer_param_type=True):
         [STR:xxxx] Cast xxxx to a string
         [INT:xxxx] Cast xxxx to an int
         [FLOAT:xxxx] Cast xxxx to a float
-        [ROUND:xxxx::2] String float with the expected decimals
+        [ROUND:xxxx::d] String float with the expected decimals
         [LIST:xxxx] Cast xxxx to a list
         [DICT:xxxx] Cast xxxx to a dict
         [UPPER:xxxx] Converts xxxx to upper case
@@ -203,7 +203,9 @@ def _replace_param_replacement(param, language):
         '[TIMESTAMP]': str(int(datetime.datetime.timestamp(datetime.datetime.utcnow()))),
         '[DATETIME]': str(datetime.datetime.utcnow()),
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),
-        '[TODAY]': str(datetime.datetime.utcnow().strftime(date_day_format))
+        '[TODAY]': str(datetime.datetime.utcnow().strftime(date_day_format)),
+        '[ROUND:.*::.*]': _get_rounded_float_number(param)
+        
     }
 
     # append date expressions found in param to the replacement dict
@@ -220,6 +222,20 @@ def _replace_param_replacement(param, language):
             param_replaced = True
     return new_param, param_replaced
 
+def _get_rounded_float_number(param):
+    """
+    Round float number with the expected decimals
+
+    :param param: param to format
+    :return: float as string with the expected decimals
+    """
+    type_mapping_regex = r'\[(ROUND):([\w\W]*)::(\d)\]'
+    type_mapping_match_group = re.match(type_mapping_regex, param)
+
+    replace_params = type_mapping_match_group.group(2).split('::')
+    replace_param = f"{round(float(replace_params[0]), int(replace_params[1])):.{int(replace_params[1])}f}"
+    return replace_param
+
 
 def _get_random_phone_number():
     # Method to avoid executing data generator when it is not needed
@@ -229,12 +245,12 @@ def _get_random_phone_number():
 def _replace_param_transform_string(param):
     """
     Transform param value according to the specified prefix.
-    Available transformations: DICT, LIST, INT, FLOAT, ROUND, STR, UPPER, LOWER, REPLACE, TITLE
+    Available transformations: DICT, LIST, INT, FLOAT, STR, UPPER, LOWER, REPLACE, TITLE
 
     :param param: parameter value
     :return: tuple with replaced value and boolean to know if replacement has been done
     """
-    type_mapping_regex = r'\[(DICT|LIST|INT|FLOAT|STR|UPPER|LOWER|REPLACE|TITLE|ROUND):([\w\W]*)\]'
+    type_mapping_regex = r'\[(DICT|LIST|INT|FLOAT|STR|UPPER|LOWER|REPLACE|TITLE):([\w\W]*)\]'
     type_mapping_match_group = re.match(type_mapping_regex, param)
     new_param = param
     param_transformed = False
@@ -259,7 +275,7 @@ def _replace_param_transform_string(param):
 def _get_substring_replacement(type_mapping_match_group):
     """
     Transform param value according to the specified prefix.
-    Available transformations: STR, UPPER, LOWER, REPLACE, TITLE, ROUND
+    Available transformations: STR, UPPER, LOWER, REPLACE, TITLE
 
     :param type_mapping_match_group: match group
     :return: return the string with the replaced param
@@ -279,9 +295,6 @@ def _get_substring_replacement(type_mapping_match_group):
     elif type_mapping_match_group.group(1) == 'TITLE':
         replace_param = "".join(map(min, zip(type_mapping_match_group.group(2),
                                              type_mapping_match_group.group(2).title())))
-    elif type_mapping_match_group.group(1) == 'ROUND':
-        replace_params = type_mapping_match_group.group(2).split('::')
-        replace_param = f"{round(float(replace_params[0]), int(replace_params[1])):.{int(replace_params[1])}f}"
     return replace_param
 
 
