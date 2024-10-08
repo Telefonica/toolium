@@ -84,6 +84,7 @@ def replace_param(param, language='es', infer_param_type=True):
         [STR:xxxx] Cast xxxx to a string
         [INT:xxxx] Cast xxxx to an int
         [FLOAT:xxxx] Cast xxxx to a float
+        [ROUND:xxxx::2] String float with the expected decimals
         [LIST:xxxx] Cast xxxx to a list
         [DICT:xxxx] Cast xxxx to a dict
         [UPPER:xxxx] Converts xxxx to upper case
@@ -228,24 +229,22 @@ def _get_random_phone_number():
 def _replace_param_transform_string(param):
     """
     Transform param value according to the specified prefix.
-    Available transformations: DICT, LIST, INT, FLOAT, STR, UPPER, LOWER, REPLACE, TITLE
+    Available transformations: DICT, LIST, INT, FLOAT, ROUND, STR, UPPER, LOWER, REPLACE, TITLE
 
     :param param: parameter value
     :return: tuple with replaced value and boolean to know if replacement has been done
     """
-    type_mapping_regex = r'\[(DICT|LIST|INT|FLOAT|STR|UPPER|LOWER|REPLACE|TITLE):([\w\W]*)\]'
+    type_mapping_regex = r'\[(DICT|LIST|INT|FLOAT|STR|UPPER|LOWER|REPLACE|TITLE|ROUND):([\w\W]*)\]'
     type_mapping_match_group = re.match(type_mapping_regex, param)
     new_param = param
     param_transformed = False
 
     if type_mapping_match_group:
         param_transformed = True
-        if type_mapping_match_group.group(1) in ['DICT', 'LIST', 'INT', 'FLOAT']:
-            if '::' in type_mapping_match_group.group() and 'FLOAT' in type_mapping_match_group.group():
-                params_to_replace = type_mapping_match_group.group(
-                    2).split('::')
-                float_formatted = "{:.2f}".format(round(float(params_to_replace[0]), int(params_to_replace[1])))
-                new_param = float_formatted
+        if type_mapping_match_group.group(1) in ['DICT', 'LIST', 'INT', 'FLOAT', 'ROUND']:
+            if '::' in type_mapping_match_group.group() and 'ROUND' in type_mapping_match_group.group():
+                params_to_replace = type_mapping_match_group.group(2).split('::')
+                new_param = f"{round(float(params_to_replace[0]), int(params_to_replace[1])):.{int(params_to_replace[1])}f}"
             elif type_mapping_match_group.group(1) == 'DICT':
                 try:
                     new_param = json.loads(type_mapping_match_group.group(2).strip())
@@ -646,7 +645,8 @@ def get_value_from_context(param, context):
         if isinstance(value, dict) and part in value:
             value = value[part]
         # evaluate if in an array, access is requested by index
-        elif isinstance(value, list) and part.lstrip('-+').isdigit() and int(part) < len(value):
+        elif isinstance(value, list) and part.lstrip('-+').isdigit() \
+                and int(part) < (len(value) + 1 if part.startswith("-") else len(value)):
             value = value[int(part)]
         # or by a key=value expression
         elif isinstance(value, list) and (element := _select_element_in_list(value, part)):

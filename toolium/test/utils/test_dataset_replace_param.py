@@ -375,6 +375,13 @@ def test_replace_param_dict():
     assert param == {'a': 'test1', 'b': 'test2', 'c': 'test3'}
 
 
+def test_replace_param_dict_json_format():
+    param = replace_param('[DICT:{"key": "value", "key_2": true}]')
+    assert param == '{"key": "value", "key_2": true}'
+    param = replace_param('[DICT:{"key": "value", "key_2": null}]')
+    assert param == '{"key": "value", "key_2": null}'
+
+
 def test_replace_param_upper():
     param = replace_param('[UPPER:test]')
     assert param == 'TEST'
@@ -454,3 +461,10 @@ def test_replace_param_title():
     assert param == "Holahola"
     param = replace_param('[TITLE:hOlA]')
     assert param == "HOlA"
+
+
+def test_replace_param_round():
+    param = replace_param('[ROUND:7.5::2]')
+    assert param == "7.50"
+    param = replace_param('[ROUND:3.33333333::3]')
+    assert param == "3.333"
