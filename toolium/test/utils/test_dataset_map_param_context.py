@@ -484,7 +484,7 @@ def test_a_context_param_list_incorrect_negative_index():
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.-5.id]")
     assert "IndexError: list index out of range" == str(excinfo.value)
-    
+
 
 def test_a_context_param_list_oob_index():
     """
