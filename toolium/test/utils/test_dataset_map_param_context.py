@@ -458,7 +458,7 @@ def test_a_context_param_list_correct_negative_index():
 
 def test_a_context_param_list_incorrect_negative_index():
     """
-    Verification of a list with a correct negative index (In bounds) as CONTEXT
+    Verification of a list with a incorrect negative index (In bounds) as CONTEXT
     """
     class Context(object):
         pass
