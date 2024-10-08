@@ -9,7 +9,7 @@ v3.2.1
 - Add support for JSON strings to the `DICT` replacement. Example: [DICT:{"key": true}]
 - Add `REPLACE` replacement, to replace a substring with another. Example: [REPLACE:[CONTEXT:some_url]::https::http]
 - Add `TITLE` replacement, to apply Python's title() function. Example: [TITLE:the title]
-- Add `ROUND` replacement, float number to a string with the expected decimals. Example: [ROUND:3.3333::2]
+- Add `ROUND` replacement, float number to a string with the indicated number of decimals. Example: [ROUND:3.3333::2]
 
 v3.2.0
 ------
