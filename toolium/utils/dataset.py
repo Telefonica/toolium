@@ -229,13 +229,12 @@ def _get_rounded_float_number(param):
     :param param: param to format
     :return: float as string with the expected decimals
     """
-    type_mapping_regex = r'\[(ROUND):([\w\W]*)\]'
-    type_mapping_match_group = re.match(type_mapping_regex, param)
-    if type_mapping_match_group and type_mapping_match_group.group(1) == 'ROUND':
-        replace_params = type_mapping_match_group.group(2).split('::')
-        replace_param = f"{round(float(replace_params[0]), int(replace_params[1])):.{int(replace_params[1])}f}"
-        return replace_param
-    return ''
+    type_regex = r'\[(ROUND):(.*)::(\d)*\]'
+    type_match = re.match(type_regex, param)
+    if type_match and type_match.group(1) == 'ROUND':
+        if type_match.group(3).isdigit():
+            replace_param = f"{round(float(type_match.group(2)), int(type_match.group(3))):.{int(type_match.group(3))}f}"
+            return replace_param
 
 
 def _get_random_phone_number():
