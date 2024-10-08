@@ -251,12 +251,12 @@ def _replace_param_transform_string(param):
                 exec(f'exec_param = {type_mapping_match_group.group(1).lower()}({type_mapping_match_group.group(2)})')
                 new_param = locals()['exec_param']
         else:
-            replace_param = _update_param_transform_string(type_mapping_match_group)
+            replace_param = _get_substring_replacement(type_mapping_match_group)
             new_param = new_param.replace(type_mapping_match_group.group(), replace_param)
     return new_param, param_transformed
 
 
-def _update_param_transform_string(type_mapping_match_group):
+def _get_substring_replacement(type_mapping_match_group):
     """
     Transform param value according to the specified prefix.
     Available transformations: STR, UPPER, LOWER, REPLACE, TITLE, ROUND
@@ -646,7 +646,7 @@ def get_value_from_context(param, context):
             value = value[part]
         # evaluate if in an array, access is requested by index
         elif isinstance(value, list) and part.lstrip('-+').isdigit() \
-                and int(part) < (len(value) + 1 if part.startswith("-") else len(value)):
+                and abs(int(part)) < (len(value) + 1 if part.startswith("-") else len(value)):
             value = value[int(part)]
         # or by a key=value expression
         elif isinstance(value, list) and (element := _select_element_in_list(value, part)):
