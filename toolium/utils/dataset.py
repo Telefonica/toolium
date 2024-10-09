@@ -256,7 +256,7 @@ def _replace_param_transform_string(param):
 
     if type_mapping_match_group:
         param_transformed = True
-        if type_mapping_match_group.group(1) == ['DICT', 'LIST']:
+        if type_mapping_match_group.group(1) in ['DICT', 'LIST']:
             try:
                 new_param = json.loads(type_mapping_match_group.group(2).strip())
             except json.decoder.JSONDecodeError:
