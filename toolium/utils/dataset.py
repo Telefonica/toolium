@@ -224,8 +224,6 @@ def _replace_param_replacement(param, language):
             new_value = value(match)  # a function to parse the values is always required
             new_param = new_param.replace(match.group(), new_value)
             param_replaced = True
-    print(new_param)
-    print(param_replaced)
     return new_param, param_replaced
 
 
