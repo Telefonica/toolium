@@ -256,15 +256,14 @@ def _replace_param_transform_string(param):
 
     if type_mapping_match_group:
         param_transformed = True
-        if type_mapping_match_group.group(1) in ['DICT', 'LIST', 'INT', 'FLOAT']:
-            if type_mapping_match_group.group(1) == 'DICT':
-                try:
-                    new_param = json.loads(type_mapping_match_group.group(2).strip())
-                except json.decoder.JSONDecodeError:
-                    new_param = eval(type_mapping_match_group.group(2))
-            else:
-                exec(f'exec_param = {type_mapping_match_group.group(1).lower()}({type_mapping_match_group.group(2)})')
-                new_param = locals()['exec_param']
+        if type_mapping_match_group.group(1) == 'DICT':
+            try:
+                new_param = json.loads(type_mapping_match_group.group(2).strip())
+            except json.decoder.JSONDecodeError:
+                new_param = eval(type_mapping_match_group.group(2))
+        elif type_mapping_match_group.group(1) in ['DICT', 'LIST', 'INT', 'FLOAT']:
+            exec(f'exec_param = {type_mapping_match_group.group(1).lower()}({type_mapping_match_group.group(2)})')
+            new_param = locals()['exec_param']
         else:
             replace_param = _get_substring_replacement(type_mapping_match_group)
             new_param = new_param.replace(type_mapping_match_group.group(), replace_param)
