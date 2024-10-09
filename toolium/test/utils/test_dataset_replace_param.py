@@ -461,8 +461,15 @@ def test_replace_param_title():
     assert param == "HOlA"
 
 
-def test_replace_param_round():
+def test_replace_param_round_with_type_inference():
     param = replace_param('[ROUND:7.5::2]')
     assert param == 7.5
     param = replace_param('[ROUND:3.33333333::3]')
     assert param == 3.333
+
+
+def test_replace_param_round_without_type_inference():
+    param = replace_param('[ROUND:7.500::2]', infer_param_type=False)
+    assert param == '7.50'
+    param = replace_param('[ROUND:3.33333333::3]', infer_param_type=False)
+    assert param == '3.333'
