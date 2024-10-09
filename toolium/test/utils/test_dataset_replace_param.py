@@ -383,6 +383,11 @@ def test_replace_param_list_strings():
     assert param == ['1', '2', '3']
 
 
+def test_replace_param_list_json_format():
+    param = replace_param('[LIST:["value", true, null]]')
+    assert param == ["value", True, None]
+
+
 def test_replace_param_dict():
     param = replace_param("[DICT:{'a':'test1','b':'test2','c':'test3'}]")
     assert isinstance(param, dict)
