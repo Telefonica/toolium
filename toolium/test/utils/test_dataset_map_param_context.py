@@ -568,7 +568,6 @@ def test_a_context_param_class_no_numeric_index():
     context.list = ExampleClass()
     dataset.behave_context = context
 
-    print(context)
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.prueba.id]")
     assert "the expression 'prueba' was not able to select an element in the list" == str(excinfo.value)

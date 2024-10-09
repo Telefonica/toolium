@@ -463,6 +463,6 @@ def test_replace_param_title():
 
 def test_replace_param_round():
     param = replace_param('[ROUND:7.5::2]')
-    assert param == "7.50"
+    assert param == 7.5
     param = replace_param('[ROUND:3.33333333::3]')
-    assert param == "3.333"
+    assert param == 3.333
