@@ -184,7 +184,7 @@ def _replace_param_replacement(param, language):
     """
     Replace param with a new param value.
     Available replacements: [EMPTY], [B], [UUID], [RANDOM], [RANDOM_PHONE_NUMBER],
-                            [TIMESTAMP], [DATETIME], [NOW], [TODAY]
+                            [TIMESTAMP], [DATETIME], [NOW], [TODAY], [ROUND:xxxxx::d]
 
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY
@@ -204,7 +204,7 @@ def _replace_param_replacement(param, language):
         '[DATETIME]': str(datetime.datetime.utcnow()),
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),
         '[TODAY]': str(datetime.datetime.utcnow().strftime(date_day_format)),
-        '[ROUND:.*::.*]': _get_rounded_float_number(param)
+        r'\[ROUND:(.*?)::(\d*)\]': _get_rounded_float_number
     }
 
     # append date expressions found in param to the replacement dict
@@ -214,27 +214,28 @@ def _replace_param_replacement(param, language):
 
     new_param = param
     param_replaced = False
-    for key in replacements.keys():
-        if key in new_param:
-            new_value = replacements[key]() if isfunction(replacements[key]) else replacements[key]
-            new_param = new_param.replace(key, new_value)
+    for key, value in replacements.items():
+        if key.startswith('['):  # tags without placeholders
+            if key in new_param:
+                new_value = value() if isfunction(value) else value
+                new_param = new_param.replace(key, new_value)
+                param_replaced = True
+        elif match := re.search(key, new_param):  # tags with placeholders
+            new_value = value(match)  # a function to parse the values is always required
+            new_param = new_param.replace(match.group(), new_value)
             param_replaced = True
+    print(new_param)
+    print(param_replaced)
     return new_param, param_replaced
 
 
-def _get_rounded_float_number(param):
+def _get_rounded_float_number(match):
     """
     Round float number with the expected decimals
-
-    :param param: param to format
+    :param match: match object of the regex for this transformation: [ROUND:(.*?)::(d*)]
     :return: float as string with the expected decimals
     """
-    type_regex = r'\[(ROUND):(.*)::(\d)*\]'
-    type_match = re.match(type_regex, param)
-    if type_match and type_match.group(1) == 'ROUND':
-        if type_match.group(3).isdigit():
-            replace_param = f"{round(float(type_match.group(2)), int(type_match.group(3))):.{int(type_match.group(3))}f}"
-            return replace_param
+    return f"{round(float(match.group(1)), int(match.group(2))):.{int(match.group(2))}f}"
 
 
 def _get_random_phone_number():
