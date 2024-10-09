@@ -455,6 +455,7 @@ def test_a_context_param_list_correct_negative_index():
     }
     dataset.behave_context = context
     assert map_param("[CONTEXT:list.cmsScrollableActions.-1.id]") == 'ask-for-negative'
+    assert map_param("[CONTEXT:list.cmsScrollableActions.-3.id]") == 'ask-for-duplicate'
 
 
 def test_a_context_param_list_incorrect_negative_index():
