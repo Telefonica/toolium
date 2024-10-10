@@ -6,7 +6,7 @@ v3.2.1
 
 *Release date: In development*
 - Allow negative indexes for list elements in context searches. Example: [CONTEXT:element.-1]
-- Add support for JSON strings to the `DICT` and `LIST`` replacement. Example: [DICT:{"key": true}], [LIST: null]
+- Add support for JSON strings to the `DICT` and `LIST`` replacement. Example: [DICT:{"key": true}], [LIST:[null]]
 - Add `REPLACE` replacement, to replace a substring with another. Example: [REPLACE:[CONTEXT:some_url]::https::http]
 - Add `TITLE` replacement, to apply Python's title() function. Example: [TITLE:the title]
 - Add `ROUND` replacement, float number to a string with the indicated number of decimals. Example: [ROUND:3.3333::2]
