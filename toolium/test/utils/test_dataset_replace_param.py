@@ -333,6 +333,20 @@ def test_replace_param_now_offsets_with_and_without_format_and_more():
     assert param == f'The date {offset_date} was yesterday and I have an appointment at {offset_datetime}'
 
 
+def test_replace_param_round_with_type_inference():
+    param = replace_param('[ROUND:7.5::2]')
+    assert param == 7.5
+    param = replace_param('[ROUND:3.33333333::3]')
+    assert param == 3.333
+
+
+def test_replace_param_round_without_type_inference():
+    param = replace_param('[ROUND:7.500::2]', infer_param_type=False)
+    assert param == '7.50'
+    param = replace_param('[ROUND:3.33333333::3]', infer_param_type=False)
+    assert param == '3.333'
+
+
 def test_replace_param_str_int():
     param = replace_param('[STR:28]')
     assert isinstance(param, str)
@@ -369,10 +383,20 @@ def test_replace_param_list_strings():
     assert param == ['1', '2', '3']
 
 
+def test_replace_param_list_json_format():
+    param = replace_param('[LIST:["value", true, null]]')
+    assert param == ["value", True, None]
+
+
 def test_replace_param_dict():
     param = replace_param("[DICT:{'a':'test1','b':'test2','c':'test3'}]")
     assert isinstance(param, dict)
     assert param == {'a': 'test1', 'b': 'test2', 'c': 'test3'}
+
+
+def test_replace_param_dict_json_format():
+    param = replace_param('[DICT:{"key": "value", "key_2": true, "key_3": null}]')
+    assert param == {"key": "value", "key_2": True, "key_3": None}
 
 
 def test_replace_param_upper():
@@ -438,3 +462,19 @@ def test_replace_param_partial_string_with_length():
     assert param == 'aaaaa is string'
     param = replace_param('parameter [STRING_WITH_LENGTH_5] is string')
     assert param == 'parameter aaaaa is string'
+
+
+def test_replace_param_replace():
+    param = replace_param('[REPLACE:https://url.com::https::http]')
+    assert param == "http://url.com"
+    param = replace_param('[REPLACE:https://url.com::https://]')
+    assert param == "url.com"
+
+
+def test_replace_param_title():
+    param = replace_param('[TITLE:hola hola]')
+    assert param == "Hola Hola"
+    param = replace_param('[TITLE:holahola]')
+    assert param == "Holahola"
+    param = replace_param('[TITLE:hOlA]')
+    assert param == "HOlA"

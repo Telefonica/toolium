@@ -429,6 +429,64 @@ def test_a_context_param_list_correct_index():
     assert map_param("[CONTEXT:list.cmsScrollableActions.1.id]") == 'ask-for-qa'
 
 
+def test_a_context_param_list_correct_negative_index():
+    """
+    Verification of a list with a correct negative index (In bounds) as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            },
+            {
+                'id': 'ask-for-negative',
+                'text': 'QA negative index'
+            }
+        ]
+    }
+    dataset.behave_context = context
+    assert map_param("[CONTEXT:list.cmsScrollableActions.-1.id]") == 'ask-for-negative'
+    assert map_param("[CONTEXT:list.cmsScrollableActions.-3.id]") == 'ask-for-duplicate'
+
+
+def test_a_context_param_list_incorrect_negative_index():
+    """
+    Verification of a list with a incorrect negative index (In bounds) as CONTEXT
+    """
+    class Context(object):
+        pass
+    context = Context()
+
+    context.list = {
+        'cmsScrollableActions': [
+            {
+                'id': 'ask-for-duplicate',
+                'text': 'QA duplica'
+            },
+            {
+                'id': 'ask-for-qa',
+                'text': 'QA no duplica'
+            },
+            {
+                'id': 'ask-for-negative',
+                'text': 'QA negative index'
+            }
+        ]
+    }
+    with pytest.raises(Exception) as excinfo:
+        map_param("[CONTEXT:list.cmsScrollableActions.-5.id]")
+    assert "the expression '-5' was not able to select an element in the list" == str(excinfo.value)
+
+
 def test_a_context_param_list_oob_index():
     """
     Verification of a list with an incorrect index (Out of bounds) as CONTEXT
@@ -511,7 +569,6 @@ def test_a_context_param_class_no_numeric_index():
     context.list = ExampleClass()
     dataset.behave_context = context
 
-    print(context)
     with pytest.raises(Exception) as excinfo:
         map_param("[CONTEXT:list.cmsScrollableActions.prueba.id]")
     assert "the expression 'prueba' was not able to select an element in the list" == str(excinfo.value)
