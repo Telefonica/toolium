@@ -26,12 +26,10 @@ class InputText(PageElement):
 
         :returns: element text value
         """
-        if self.driver_wrapper.is_web_test() or self.webview:
-            return self.web_element.get_attribute("value")
-        elif self.driver_wrapper.is_ios_test():
-            return self.web_element.get_attribute("value")
-        elif self.driver_wrapper.is_android_test():
+        if self.driver_wrapper.is_android_test() and not self.webview:
             return self.web_element.get_attribute("text")
+        else:
+            return self.web_element.get_attribute("value")
 
     @text.setter
     def text(self, value):
@@ -39,9 +37,7 @@ class InputText(PageElement):
 
         :param value: value to be set
         """
-        if self.driver_wrapper.is_ios_test() and not self.driver_wrapper.is_web_test():
-            self.web_element.set_value(value)
-        elif self.shadowroot:
+        if self.shadowroot:
             value = value.replace("\"", "\\\"")
             self.driver.execute_script('return document.querySelector("%s")'
                                        '.shadowRoot.querySelector("%s")'
