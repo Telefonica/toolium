@@ -1,7 +1,7 @@
-requests~=2.27            # api tests
-selenium~=4.0             # web tests
-Appium-Python-Client~=2.3 # mobile tests
-Pillow~=10.1              # visual testing
+requests~=2.27                      # api tests
+selenium>=4.1.0,<4.9.0              # web tests
+Appium-Python-Client>=2.2.0,<2.10.0 # mobile tests
+Pillow~=10.1                        # visual testing
 screeninfo~=0.8
 lxml~=5.1
 Faker~=25.9
