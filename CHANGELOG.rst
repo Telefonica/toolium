@@ -7,7 +7,7 @@ v3.1.6
 *Release date: In development*
 
 - Update Appium-Python-Client requirement to enable 3 and 4 versions
-- Deprecate set_text method in InputText class to make it compatible with Appium-Python-Client 4
+- Deprecate set_text method in InputText class to make it compatible with Appium-Python-Client 3 and 4
 
 v3.1.5
 ------
