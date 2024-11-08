@@ -105,9 +105,11 @@ def test_get_text(driver_wrapper):
 
 def test_get_input_text(driver_wrapper):
     driver_wrapper.driver.find_element.return_value = mock_element
+    driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
 
     username_value = LoginPageObject().username.text
 
+    mock_element.get_attribute.assert_called_once_with('value')
     assert username_value == 'input text value'
 
 
