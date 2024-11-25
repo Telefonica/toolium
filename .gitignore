@@ -10,6 +10,7 @@ target
 .vscode
 
 # virtualenv
+.venv
 venv/
 VENV/
 ENV/

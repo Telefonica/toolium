@@ -1,13 +1,28 @@
 Toolium Changelog
 =================
 
-v3.1.6
+v3.2.1
 ------
 
 *Release date: In development*
 
+- Allow negative indexes for list elements in context searches. Example: [CONTEXT:element.-1]
+- Add support for JSON strings to the `DICT` and `LIST`` replacement. Example: [DICT:{"key": true}], [LIST:[null]]
+- Add `REPLACE` replacement, to replace a substring with another. Example: [REPLACE:[CONTEXT:some_url]::https::http]
+- Add `TITLE` replacement, to apply Python's title() function. Example: [TITLE:the title]
+- Add `ROUND` replacement, float number to a string with the indicated number of decimals. Example: [ROUND:3.3333::2]
+- Remove accents from generated file names to avoid errors in some filesystems
 - Update Appium-Python-Client requirement to enable 3 and 4 versions
 - Deprecate set_text method in InputText class to make it compatible with Appium-Python-Client 3 and 4
+
+v3.2.0
+------
+
+*Release date: 2024-09-13*
+
+- Add `run_storage` dictionary to context to store information during the whole test execution
+- Update current ChainMap context storages (context.storage, context.feature_storage and context.run_storage)
+- Allow to store values from steps into desire storage by using [key], [FEATURE:key] and [RUN:key]
 
 v3.1.5
 ------
