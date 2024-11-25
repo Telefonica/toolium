@@ -12,6 +12,8 @@ v3.2.1
 - Add `TITLE` replacement, to apply Python's title() function. Example: [TITLE:the title]
 - Add `ROUND` replacement, float number to a string with the indicated number of decimals. Example: [ROUND:3.3333::2]
 - Remove accents from generated file names to avoid errors in some filesystems
+- Update Appium-Python-Client requirement to enable 3 and 4 versions
+- Deprecate set_text method in InputText class to make it compatible with Appium-Python-Client 3 and 4
 
 v3.2.0
 ------
