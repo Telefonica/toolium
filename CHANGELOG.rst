@@ -1,10 +1,10 @@
 Toolium Changelog
 =================
 
-v3.2.1
+v3.3.0
 ------
 
-*Release date: In development*
+*Release date: 2024-11-26*
 
 - Allow negative indexes for list elements in context searches. Example: [CONTEXT:element.-1]
 - Add support for JSON strings to the `DICT` and `LIST`` replacement. Example: [DICT:{"key": true}], [LIST:[null]]
