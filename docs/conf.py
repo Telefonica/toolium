@@ -289,7 +289,6 @@ texinfo_documents = [
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 
-
 def remove_module_docstring(app, what, name, obj, options, lines):
     """Remove all module docstrings to exclude license header"""
     if what == "module":

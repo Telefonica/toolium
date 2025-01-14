@@ -334,6 +334,7 @@ def test_replace_param_now_offsets_with_and_without_format_and_more():
         datetime.datetime.utcnow() + datetime.timedelta(minutes=10), '%d/%m/%Y %H:%M:%S')
     assert param == f'The date {offset_date} was yesterday and I have an appointment at {offset_datetime}'
 
+
 @pytest.mark.parametrize('in_param, number_of_digits_in_fractional_part, out_param',
                          [['7.5', '2', 7.5],
                           ['3.33333333', '3', 3.333],
@@ -345,6 +346,7 @@ def test_replace_param_now_offsets_with_and_without_format_and_more():
 def test_replace_param_round_with_type_inference(in_param, number_of_digits_in_fractional_part, out_param):
     param = replace_param(f'[ROUND:{in_param}::{number_of_digits_in_fractional_part}]')
     assert param == out_param
+
 
 @pytest.mark.parametrize('in_param, number_of_digits_in_fractional_part, out_param',
                          [['7.5', '2', '7.50'],
