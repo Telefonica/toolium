@@ -38,7 +38,7 @@ driver_utils
 driver_wait_utils
 -----------------
 
-.. automodule:: toolium.utils.driver_utils
+.. automodule:: toolium.utils.driver_wait_utils
     :members:
     :undoc-members:
     :show-inheritance:
