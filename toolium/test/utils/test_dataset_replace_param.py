@@ -19,6 +19,8 @@ limitations under the License.
 import datetime
 from uuid import UUID
 
+import pytest
+
 from toolium.utils import dataset
 from toolium.utils.dataset import replace_param
 
@@ -333,18 +335,30 @@ def test_replace_param_now_offsets_with_and_without_format_and_more():
     assert param == f'The date {offset_date} was yesterday and I have an appointment at {offset_datetime}'
 
 
-def test_replace_param_round_with_type_inference():
-    param = replace_param('[ROUND:7.5::2]')
-    assert param == 7.5
-    param = replace_param('[ROUND:3.33333333::3]')
-    assert param == 3.333
+@pytest.mark.parametrize('in_param, number_of_digits_in_fractional_part, out_param',
+                         [['7.5', '2', 7.5],
+                          ['3.33333333', '3', 3.333],
+                          ['123', '5', 123.0],
+                          ['0.001', '2', 0.0],
+                          ['0.4', '0', 0],
+                          ['0.6', '0', 1]
+                          ])
+def test_replace_param_round_with_type_inference(in_param, number_of_digits_in_fractional_part, out_param):
+    param = replace_param(f'[ROUND:{in_param}::{number_of_digits_in_fractional_part}]')
+    assert param == out_param
 
 
-def test_replace_param_round_without_type_inference():
-    param = replace_param('[ROUND:7.500::2]', infer_param_type=False)
-    assert param == '7.50'
-    param = replace_param('[ROUND:3.33333333::3]', infer_param_type=False)
-    assert param == '3.333'
+@pytest.mark.parametrize('in_param, number_of_digits_in_fractional_part, out_param',
+                         [['7.5', '2', '7.50'],
+                          ['3.33333333', '3', '3.333'],
+                          ['123', '5', '123.00000'],
+                          ['0.001', '2', '0.00'],
+                          ['0.4', '0', '0'],
+                          ['0.6', '0', '1']
+                          ])
+def test_replace_param_round_without_type_inference(in_param, number_of_digits_in_fractional_part, out_param):
+    param = replace_param(f'[ROUND:{in_param}::{number_of_digits_in_fractional_part}]', infer_param_type=False)
+    assert param == out_param
 
 
 def test_replace_param_str_int():

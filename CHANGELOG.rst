@@ -584,7 +584,8 @@ v1.2.0
 
    | If it's false, the WebElement is searched whenever is needed (default value)
    | If it's true, the WebElement is saved in PageElement to avoid searching for the same element multiple times. Useful
-   in mobile testing when searching for an element can take a long time.
+     in mobile testing when searching for an element can take a long time.
+
 - New config property 'restart_driver_fail' in [Driver] section to restart the driver when the test fails even though
   the value of *reuse_driver* property is *true*
 - System property 'Config_environment' is used to select config files, e.g., to read android-properties.cfg file:

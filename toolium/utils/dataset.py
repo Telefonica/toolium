@@ -56,41 +56,43 @@ def replace_param(param, language='es', infer_param_type=True):
     """
     Apply transformations to the given param based on specific patterns.
     Available replacements:
-        [STRING_WITH_LENGTH_XX] Generates a fixed length string
-        [INTEGER_WITH_LENGTH_XX] Generates a fixed length integer
-        [STRING_ARRAY_WITH_LENGTH_XX] Generates a fixed length array of strings
-        [INTEGER_ARRAY_WITH_LENGTH_XX] Generates a fixed length array of integers
-        [JSON_WITH_LENGTH_XX] Generates a fixed length JSON
-        [MISSING_PARAM] Generates a None object
-        [NULL] Generates a None object
-        [TRUE] Generates a boolean True
-        [FALSE] Generates a boolean False
-        [EMPTY] Generates an empty string
-        [B] Generates a blank space
-        [UUID] Generates a v4 UUID
-        [RANDOM] Generates a random value
-        [RANDOM_PHONE_NUMBER] Generates a random phone number for language and country configured in dataset.language
-            and dataset.country
-        [TIMESTAMP] Generates a timestamp from the current time
-        [DATETIME] Generates a datetime from the current time
-        [NOW] Similar to DATETIME without milliseconds; the format depends on the language
-        [NOW(%Y-%m-%dT%H:%M:%SZ)] Same as NOW but using an specific format by the python strftime function of the
-            datetime module
-        [NOW + 2 DAYS] Similar to NOW but two days later
-        [NOW - 1 MINUTES] Similar to NOW but one minute earlier
-        [NOW(%Y-%m-%dT%H:%M:%SZ) - 7 DAYS] Similar to NOW but seven days before and with the indicated format
-        [TODAY] Similar to NOW without time; the format depends on the language
-        [TODAY + 2 DAYS] Similar to NOW, but two days later
-        [ROUND:xxxx::y] Generates a string from a float number (xxxx) with the indicated number of decimals (y)
-        [STR:xxxx] Cast xxxx to a string
-        [INT:xxxx] Cast xxxx to an int
-        [FLOAT:xxxx] Cast xxxx to a float
-        [LIST:xxxx] Cast xxxx to a list
-        [DICT:xxxx] Cast xxxx to a dict
-        [UPPER:xxxx] Converts xxxx to upper case
-        [LOWER:xxxx] Converts xxxx to lower case
-        [REPLACE:xxxxx::yy::zz] Replace elements in string. Example: [REPLACE:[CONTEXT:some_url]::https::http]
-        [TITLE:xxxxx] Apply .title() to string value. Example: [TITLE:the title]
+
+    - [STRING_WITH_LENGTH_XX] Generates a fixed length string
+    - [INTEGER_WITH_LENGTH_XX] Generates a fixed length integer
+    - [STRING_ARRAY_WITH_LENGTH_XX] Generates a fixed length array of strings
+    - [INTEGER_ARRAY_WITH_LENGTH_XX] Generates a fixed length array of integers
+    - [JSON_WITH_LENGTH_XX] Generates a fixed length JSON
+    - [MISSING_PARAM] Generates a None object
+    - [NULL] Generates a None object
+    - [TRUE] Generates a boolean True
+    - [FALSE] Generates a boolean False
+    - [EMPTY] Generates an empty string
+    - [B] Generates a blank space
+    - [UUID] Generates a v4 UUID
+    - [RANDOM] Generates a random value
+    - [RANDOM_PHONE_NUMBER] Generates a random phone number for language and country configured
+      in dataset.language and dataset.country
+    - [TIMESTAMP] Generates a timestamp from the current time
+    - [DATETIME] Generates a datetime from the current time
+    - [NOW] Similar to DATETIME without milliseconds; the format depends on the language
+    - [NOW(%Y-%m-%dT%H:%M:%SZ)] Same as NOW but using an specific format by the python strftime function of
+      the datetime module
+    - [NOW + 2 DAYS] Similar to NOW but two days later
+    - [NOW - 1 MINUTES] Similar to NOW but one minute earlier
+    - [NOW(%Y-%m-%dT%H:%M:%SZ) - 7 DAYS] Similar to NOW but seven days before and with the indicated format
+    - [TODAY] Similar to NOW without time; the format depends on the language
+    - [TODAY + 2 DAYS] Similar to NOW, but two days later
+    - [ROUND:xxxx::y] Generates a string from a float number (xxxx) with the indicated number of decimals (y)
+    - [STR:xxxx] Cast xxxx to a string
+    - [INT:xxxx] Cast xxxx to an int
+    - [FLOAT:xxxx] Cast xxxx to a float
+    - [LIST:xxxx] Cast xxxx to a list
+    - [DICT:xxxx] Cast xxxx to a dict
+    - [UPPER:xxxx] Converts xxxx to upper case
+    - [LOWER:xxxx] Converts xxxx to lower case
+    - [REPLACE:xxxxx::yy::zz] Replace elements in string. Example: [REPLACE:[CONTEXT:some_url]::https::http]
+    - [TITLE:xxxxx] Apply .title() to string value. Example: [TITLE:the title]
+
     If infer_param_type is True and the result of the replacement process is a string,
     this function also tries to infer and cast the result to the most appropriate data type,
     attempting first the direct conversion to a Python built-in data type and then,
@@ -437,18 +439,19 @@ def map_one_param(param):
     """
     Analyze the pattern in the given string and find out its transformed value.
     Available tags and replacement values:
-        [CONF:xxxx] Value from the config dict in project_config global variable for the key xxxx (dot notation is used
-        for keys, e.g. key_1.key_2.0.key_3)
-        [LANG:xxxx] String from the texts dict in language_terms global variable for the key xxxx, using the language
-        specified in language global variable (dot notation is used for keys, e.g. button.label)
-        [POE:xxxx] Definition(s) from the POEditor terms list in poeditor_terms global variable for the term xxxx
-        [TOOLIUM:xxxx] Value from the toolium config in toolium_config global variable for the key xxxx (key format is
-        section_option, e.g. Driver_type)
-        [CONTEXT:xxxx] Value from the behave context storage dict in behave_context global variable for the key xxxx, or
-        value of the behave context attribute xxxx, if the former does not exist
-        [ENV:xxxx] Value of the OS environment variable xxxx
-        [FILE:xxxx] String with the content of the file in the path xxxx
-        [BASE64:xxxx] String with the base64 representation of the file content in the path xxxx
+
+    - [CONF:xxxx] Value from the config dict in project_config global variable for the key xxxx (dot notation is used
+      for keys, e.g. key_1.key_2.0.key_3)
+    - [LANG:xxxx] String from the texts dict in language_terms global variable for the key xxxx, using the language
+      specified in language global variable (dot notation is used for keys, e.g. button.label)
+    - [POE:xxxx] Definition(s) from the POEditor terms list in poeditor_terms global variable for the term xxxx
+    - [TOOLIUM:xxxx] Value from the toolium config in toolium_config global variable for the key xxxx (key format is
+      section_option, e.g. Driver_type)
+    - [CONTEXT:xxxx] Value from the behave context storage dict in behave_context global variable for the key xxxx, or
+      value of the behave context attribute xxxx, if the former does not exist
+    - [ENV:xxxx] Value of the OS environment variable xxxx
+    - [FILE:xxxx] String with the content of the file in the path xxxx
+    - [BASE64:xxxx] String with the base64 representation of the file content in the path xxxx
 
     :param param: string parameter
     :return: transformed value or the original string if no transformation could be applied
@@ -525,19 +528,22 @@ def map_json_param(param, config, copy=True):
     """
     Find the value of the given param using it as a key in the given dictionary. Dot notation is used,
     so for example "service.vamps.user" could be used to retrieve the email in the following config example:
-    {
-        "services":{
-            "vamps":{
-                "user": "cyber-sec-user@11paths.com",
-                "password": "MyPassword"
+
+    .. code-block:: json
+
+        {
+            "services":{
+                "vamps":{
+                    "user": "cyber-sec-user@11paths.com",
+                    "password": "MyPassword"
+                }
             }
         }
-    }
 
     :param param: key to be searched (dot notation is used, e.g. "service.vamps.user").
     :param config: configuration dictionary
     :param copy: boolean value to indicate whether to work with a copy of the given dictionary or not,
-    in which case, the dictionary content might be changed by this function (True by default)
+     in which case, the dictionary content might be changed by this function (True by default)
     :return: mapped value
     """
     properties_list = param.split(".")
@@ -630,18 +636,19 @@ def get_value_from_context(param, context):
     If the resolved element at one of the tokens is a list and the next token is a key=value expression, then the
     element in the list that matches the key=value expression is selected, e.g. "list.key=value" returns the element
     in the list "list" that has the value for key attribute. So, for example, if the list is:
-    [
-        {"key": "value1", "attr": "attr1"},
-        {"key": "value2", "attr": "attr2"}
-    ]
+
+    .. code-block:: json
+
+        [
+            {"key": "value1", "attr": "attr1"},
+            {"key": "value2", "attr": "attr2"}
+        ]
+
     then "list.key=value2" returns the second element in the list. Also does "list.'key'='value2'",
     "list.'key'=\"value2\"", "list.\"key\"='value2'" or "list.\"key\"=\"value2\"".
 
     There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
-
-    context.storage['a'].b.c.d
-        or
-    context.a.b.c.d
+    context.storage['a'].b.c.d or context.a.b.c.d
 
     :param param: key to be searched (e.g. "last_request_result" / "last_request.result")
     :param context: behave context

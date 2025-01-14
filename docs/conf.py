@@ -286,7 +286,7 @@ texinfo_documents = [
 # texinfo_no_detailmenu = False
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 
 def remove_module_docstring(app, what, name, obj, options, lines):
