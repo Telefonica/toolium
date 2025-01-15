@@ -305,7 +305,7 @@ class VisualTest(object):
                 baseline_max.paste(baseline.convert('RGB'))
 
         # Generate and save diff image
-        diff_path = image_path.replace('.png', '.diff.png')
+        diff_path = image_path.replace('.png', '.diff.png').replace('.jpg', '.diff.jpg')
         diff_pixels_percentage = self.save_differences_image(image_max, baseline_max, diff_path)
 
         # Check differences and add to report

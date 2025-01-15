@@ -6,6 +6,8 @@ v3.3.1
 
 *Release date: In development*
 
+ - Allow to save the diff image in jpg format for visual tests working with jpg
+
 v3.3.0
 ------
 
