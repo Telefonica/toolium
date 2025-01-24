@@ -165,9 +165,9 @@ class DynamicEnvironment:
         step_text_start = False
         for row in description:
             if label_exists != EMPTY:
-                # in case of a line with a comment, it is removed
-                if "#" in row:
-                    row = row[0:row.find("#")].strip()
+                # The row is removed if it's a comment 
+                if row.strip().startswith("#"):
+                    row = ""
 
                 if any(row.startswith(x) for x in KEYWORDS):
                     self.actions[label_exists].append(row)
