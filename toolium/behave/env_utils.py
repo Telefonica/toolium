@@ -165,7 +165,7 @@ class DynamicEnvironment:
         step_text_start = False
         for row in description:
             if label_exists != EMPTY:
-                # The row is removed if it's a comment 
+                # The row is removed if it's a comment
                 if row.strip().startswith("#"):
                     row = ""
 
