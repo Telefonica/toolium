@@ -7,6 +7,7 @@ v3.3.1
 *Release date: In development*
 
  - Allow to save the diff image in jpg format for visual tests working with jpg
+ - Fix the use of the # character in the actions defined in the feature description (Actions Before/After...)
 
 v3.3.0
 ------
