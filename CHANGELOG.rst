@@ -1,13 +1,18 @@
 Toolium Changelog
 =================
 
+v3.3.2
+------
+
+*Release date: In development*
+
 v3.3.1
 ------
 
 *Release date: 2025-02-05*
 
- - Allow to save the diff image in jpg format for visual tests working with jpg
- - Fix the use of the # character in the actions defined in the feature description (Actions Before/After...)
+- Allow to save the diff image in jpg format for visual tests working with jpg
+- Fix the use of the # character in the actions defined in the feature description (Actions Before/After...)
 
 v3.3.0
 ------
