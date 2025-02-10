@@ -10,6 +10,7 @@ target
 .vscode
 
 # virtualenv
+.venv
 venv/
 VENV/
 ENV/
@@ -87,6 +88,7 @@ output
 .eggs
 .tox
 .env
+.autoenv
 
 # Database
 *.sqlite3

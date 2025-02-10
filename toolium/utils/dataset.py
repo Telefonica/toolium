@@ -56,38 +56,43 @@ def replace_param(param, language='es', infer_param_type=True):
     """
     Apply transformations to the given param based on specific patterns.
     Available replacements:
-        [STRING_WITH_LENGTH_XX] Generates a fixed length string
-        [INTEGER_WITH_LENGTH_XX] Generates a fixed length integer
-        [STRING_ARRAY_WITH_LENGTH_XX] Generates a fixed length array of strings
-        [INTEGER_ARRAY_WITH_LENGTH_XX] Generates a fixed length array of integers
-        [JSON_WITH_LENGTH_XX] Generates a fixed length JSON
-        [MISSING_PARAM] Generates a None object
-        [NULL] Generates a None object
-        [TRUE] Generates a boolean True
-        [FALSE] Generates a boolean False
-        [EMPTY] Generates an empty string
-        [B] Generates a blank space
-        [UUID] Generates a v4 UUID
-        [RANDOM] Generates a random value
-        [RANDOM_PHONE_NUMBER] Generates a random phone number for language and country configured in dataset.language
-            and dataset.country
-        [TIMESTAMP] Generates a timestamp from the current time
-        [DATETIME] Generates a datetime from the current time
-        [NOW] Similar to DATETIME without milliseconds; the format depends on the language
-        [NOW(%Y-%m-%dT%H:%M:%SZ)] Same as NOW but using an specific format by the python strftime function of the
-            datetime module
-        [NOW + 2 DAYS] Similar to NOW but two days later
-        [NOW - 1 MINUTES] Similar to NOW but one minute earlier
-        [NOW(%Y-%m-%dT%H:%M:%SZ) - 7 DAYS] Similar to NOW but seven days before and with the indicated format
-        [TODAY] Similar to NOW without time; the format depends on the language
-        [TODAY + 2 DAYS] Similar to NOW, but two days later
-        [STR:xxxx] Cast xxxx to a string
-        [INT:xxxx] Cast xxxx to an int
-        [FLOAT:xxxx] Cast xxxx to a float
-        [LIST:xxxx] Cast xxxx to a list
-        [DICT:xxxx] Cast xxxx to a dict
-        [UPPER:xxxx] Converts xxxx to upper case
-        [LOWER:xxxx] Converts xxxx to lower case
+
+    - [STRING_WITH_LENGTH_XX] Generates a fixed length string
+    - [INTEGER_WITH_LENGTH_XX] Generates a fixed length integer
+    - [STRING_ARRAY_WITH_LENGTH_XX] Generates a fixed length array of strings
+    - [INTEGER_ARRAY_WITH_LENGTH_XX] Generates a fixed length array of integers
+    - [JSON_WITH_LENGTH_XX] Generates a fixed length JSON
+    - [MISSING_PARAM] Generates a None object
+    - [NULL] Generates a None object
+    - [TRUE] Generates a boolean True
+    - [FALSE] Generates a boolean False
+    - [EMPTY] Generates an empty string
+    - [B] Generates a blank space
+    - [UUID] Generates a v4 UUID
+    - [RANDOM] Generates a random value
+    - [RANDOM_PHONE_NUMBER] Generates a random phone number for language and country configured
+      in dataset.language and dataset.country
+    - [TIMESTAMP] Generates a timestamp from the current time
+    - [DATETIME] Generates a datetime from the current time
+    - [NOW] Similar to DATETIME without milliseconds; the format depends on the language
+    - [NOW(%Y-%m-%dT%H:%M:%SZ)] Same as NOW but using an specific format by the python strftime function of
+      the datetime module
+    - [NOW + 2 DAYS] Similar to NOW but two days later
+    - [NOW - 1 MINUTES] Similar to NOW but one minute earlier
+    - [NOW(%Y-%m-%dT%H:%M:%SZ) - 7 DAYS] Similar to NOW but seven days before and with the indicated format
+    - [TODAY] Similar to NOW without time; the format depends on the language
+    - [TODAY + 2 DAYS] Similar to NOW, but two days later
+    - [ROUND:xxxx::y] Generates a string from a float number (xxxx) with the indicated number of decimals (y)
+    - [STR:xxxx] Cast xxxx to a string
+    - [INT:xxxx] Cast xxxx to an int
+    - [FLOAT:xxxx] Cast xxxx to a float
+    - [LIST:xxxx] Cast xxxx to a list
+    - [DICT:xxxx] Cast xxxx to a dict
+    - [UPPER:xxxx] Converts xxxx to upper case
+    - [LOWER:xxxx] Converts xxxx to lower case
+    - [REPLACE:xxxxx::yy::zz] Replace elements in string. Example: [REPLACE:[CONTEXT:some_url]::https::http]
+    - [TITLE:xxxxx] Apply .title() to string value. Example: [TITLE:the title]
+
     If infer_param_type is True and the result of the replacement process is a string,
     this function also tries to infer and cast the result to the most appropriate data type,
     attempting first the direct conversion to a Python built-in data type and then,
@@ -181,7 +186,7 @@ def _replace_param_replacement(param, language):
     """
     Replace param with a new param value.
     Available replacements: [EMPTY], [B], [UUID], [RANDOM], [RANDOM_PHONE_NUMBER],
-                            [TIMESTAMP], [DATETIME], [NOW], [TODAY]
+                            [TIMESTAMP], [DATETIME], [NOW], [TODAY], [ROUND:xxxxx::d]
 
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY
@@ -200,7 +205,8 @@ def _replace_param_replacement(param, language):
         '[TIMESTAMP]': str(int(datetime.datetime.timestamp(datetime.datetime.utcnow()))),
         '[DATETIME]': str(datetime.datetime.utcnow()),
         '[NOW]': str(datetime.datetime.utcnow().strftime(date_format)),
-        '[TODAY]': str(datetime.datetime.utcnow().strftime(date_day_format))
+        '[TODAY]': str(datetime.datetime.utcnow().strftime(date_day_format)),
+        r'\[ROUND:(.*?)::(\d*)\]': _get_rounded_float_number
     }
 
     # append date expressions found in param to the replacement dict
@@ -210,12 +216,26 @@ def _replace_param_replacement(param, language):
 
     new_param = param
     param_replaced = False
-    for key in replacements.keys():
-        if key in new_param:
-            new_value = replacements[key]() if isfunction(replacements[key]) else replacements[key]
-            new_param = new_param.replace(key, new_value)
+    for key, value in replacements.items():
+        if key.startswith('['):  # tags without placeholders
+            if key in new_param:
+                new_value = value() if isfunction(value) else value
+                new_param = new_param.replace(key, new_value)
+                param_replaced = True
+        elif match := re.search(key, new_param):  # tags with placeholders
+            new_value = value(match)  # a function to parse the values is always required
+            new_param = new_param.replace(match.group(), new_value)
             param_replaced = True
     return new_param, param_replaced
+
+
+def _get_rounded_float_number(match):
+    """
+    Round float number with the expected decimals
+    :param match: match object of the regex for this transformation: [ROUND:(.*?)::(d*)]
+    :return: float as string with the expected decimals
+    """
+    return f"{round(float(match.group(1)), int(match.group(2))):.{int(match.group(2))}f}"
 
 
 def _get_random_phone_number():
@@ -226,29 +246,56 @@ def _get_random_phone_number():
 def _replace_param_transform_string(param):
     """
     Transform param value according to the specified prefix.
-    Available transformations: DICT, LIST, INT, FLOAT, STR, UPPER, LOWER
+    Available transformations: DICT, LIST, INT, FLOAT, STR, UPPER, LOWER, REPLACE, TITLE
 
     :param param: parameter value
     :return: tuple with replaced value and boolean to know if replacement has been done
     """
-    type_mapping_regex = r'\[(DICT|LIST|INT|FLOAT|STR|UPPER|LOWER):(.*)\]'
+    type_mapping_regex = r'\[(DICT|LIST|INT|FLOAT|STR|UPPER|LOWER|REPLACE|TITLE):([\w\W]*)\]'
     type_mapping_match_group = re.match(type_mapping_regex, param)
     new_param = param
     param_transformed = False
 
     if type_mapping_match_group:
         param_transformed = True
-        if type_mapping_match_group.group(1) == 'STR':
-            new_param = type_mapping_match_group.group(2)
-        elif type_mapping_match_group.group(1) in ['LIST', 'DICT', 'INT', 'FLOAT']:
-            exec('exec_param = {type}({value})'.format(type=type_mapping_match_group.group(1).lower(),
-                                                       value=type_mapping_match_group.group(2)))
+        if type_mapping_match_group.group(1) in ['DICT', 'LIST']:
+            try:
+                new_param = json.loads(type_mapping_match_group.group(2).strip())
+            except json.decoder.JSONDecodeError:
+                new_param = eval(type_mapping_match_group.group(2))
+        elif type_mapping_match_group.group(1) in ['INT', 'FLOAT']:
+            exec(f'exec_param = {type_mapping_match_group.group(1).lower()}({type_mapping_match_group.group(2)})')
             new_param = locals()['exec_param']
-        elif type_mapping_match_group.group(1) == 'UPPER':
-            new_param = type_mapping_match_group.group(2).upper()
-        elif type_mapping_match_group.group(1) == 'LOWER':
-            new_param = type_mapping_match_group.group(2).lower()
+        else:
+            replace_param = _get_substring_replacement(type_mapping_match_group)
+            new_param = new_param.replace(type_mapping_match_group.group(), replace_param)
     return new_param, param_transformed
+
+
+def _get_substring_replacement(type_mapping_match_group):
+    """
+    Transform param value according to the specified prefix.
+    Available transformations: STR, UPPER, LOWER, REPLACE, TITLE
+
+    :param type_mapping_match_group: match group
+    :return: return the string with the replaced param
+    """
+    if type_mapping_match_group.group(1) == 'STR':
+        replace_param = type_mapping_match_group.group(2)
+    elif type_mapping_match_group.group(1) == 'UPPER':
+        replace_param = type_mapping_match_group.group(2).upper()
+    elif type_mapping_match_group.group(1) == 'LOWER':
+        replace_param = type_mapping_match_group.group(2).lower()
+    elif type_mapping_match_group.group(1) == 'REPLACE':
+        params_to_replace = type_mapping_match_group.group(2).split('::')
+        replace_param = params_to_replace[2] if len(params_to_replace) > 2 else ''
+        param_to_replace = params_to_replace[1] if params_to_replace[1] != '\\n' else '\n'
+        param_to_replace = params_to_replace[1] if params_to_replace[1] != '\\r' else '\r'
+        replace_param = params_to_replace[0].replace(param_to_replace, replace_param)
+    elif type_mapping_match_group.group(1) == 'TITLE':
+        replace_param = "".join(map(min, zip(type_mapping_match_group.group(2),
+                                             type_mapping_match_group.group(2).title())))
+    return replace_param
 
 
 def _replace_param_date(param, language):
@@ -392,18 +439,19 @@ def map_one_param(param):
     """
     Analyze the pattern in the given string and find out its transformed value.
     Available tags and replacement values:
-        [CONF:xxxx] Value from the config dict in project_config global variable for the key xxxx (dot notation is used
-        for keys, e.g. key_1.key_2.0.key_3)
-        [LANG:xxxx] String from the texts dict in language_terms global variable for the key xxxx, using the language
-        specified in language global variable (dot notation is used for keys, e.g. button.label)
-        [POE:xxxx] Definition(s) from the POEditor terms list in poeditor_terms global variable for the term xxxx
-        [TOOLIUM:xxxx] Value from the toolium config in toolium_config global variable for the key xxxx (key format is
-        section_option, e.g. Driver_type)
-        [CONTEXT:xxxx] Value from the behave context storage dict in behave_context global variable for the key xxxx, or
-        value of the behave context attribute xxxx, if the former does not exist
-        [ENV:xxxx] Value of the OS environment variable xxxx
-        [FILE:xxxx] String with the content of the file in the path xxxx
-        [BASE64:xxxx] String with the base64 representation of the file content in the path xxxx
+
+    - [CONF:xxxx] Value from the config dict in project_config global variable for the key xxxx (dot notation is used
+      for keys, e.g. key_1.key_2.0.key_3)
+    - [LANG:xxxx] String from the texts dict in language_terms global variable for the key xxxx, using the language
+      specified in language global variable (dot notation is used for keys, e.g. button.label)
+    - [POE:xxxx] Definition(s) from the POEditor terms list in poeditor_terms global variable for the term xxxx
+    - [TOOLIUM:xxxx] Value from the toolium config in toolium_config global variable for the key xxxx (key format is
+      section_option, e.g. Driver_type)
+    - [CONTEXT:xxxx] Value from the behave context storage dict in behave_context global variable for the key xxxx, or
+      value of the behave context attribute xxxx, if the former does not exist
+    - [ENV:xxxx] Value of the OS environment variable xxxx
+    - [FILE:xxxx] String with the content of the file in the path xxxx
+    - [BASE64:xxxx] String with the base64 representation of the file content in the path xxxx
 
     :param param: string parameter
     :return: transformed value or the original string if no transformation could be applied
@@ -480,19 +528,22 @@ def map_json_param(param, config, copy=True):
     """
     Find the value of the given param using it as a key in the given dictionary. Dot notation is used,
     so for example "service.vamps.user" could be used to retrieve the email in the following config example:
-    {
-        "services":{
-            "vamps":{
-                "user": "cyber-sec-user@11paths.com",
-                "password": "MyPassword"
+
+    .. code-block:: json
+
+        {
+            "services":{
+                "vamps":{
+                    "user": "cyber-sec-user@11paths.com",
+                    "password": "MyPassword"
+                }
             }
         }
-    }
 
     :param param: key to be searched (dot notation is used, e.g. "service.vamps.user").
     :param config: configuration dictionary
     :param copy: boolean value to indicate whether to work with a copy of the given dictionary or not,
-    in which case, the dictionary content might be changed by this function (True by default)
+     in which case, the dictionary content might be changed by this function (True by default)
     :return: mapped value
     """
     properties_list = param.split(".")
@@ -585,18 +636,19 @@ def get_value_from_context(param, context):
     If the resolved element at one of the tokens is a list and the next token is a key=value expression, then the
     element in the list that matches the key=value expression is selected, e.g. "list.key=value" returns the element
     in the list "list" that has the value for key attribute. So, for example, if the list is:
-    [
-        {"key": "value1", "attr": "attr1"},
-        {"key": "value2", "attr": "attr2"}
-    ]
+
+    .. code-block:: json
+
+        [
+            {"key": "value1", "attr": "attr1"},
+            {"key": "value2", "attr": "attr2"}
+        ]
+
     then "list.key=value2" returns the second element in the list. Also does "list.'key'='value2'",
     "list.'key'=\"value2\"", "list.\"key\"='value2'" or "list.\"key\"=\"value2\"".
 
     There is not limit in the nested levels of dotted tokens, so a key like a.b.c.d will be tried to be resolved as:
-
-    context.storage['a'].b.c.d
-        or
-    context.a.b.c.d
+    context.storage['a'].b.c.d or context.a.b.c.d
 
     :param param: key to be searched (e.g. "last_request_result" / "last_request.result")
     :param context: behave context
@@ -611,7 +663,8 @@ def get_value_from_context(param, context):
         if isinstance(value, dict) and part in value:
             value = value[part]
         # evaluate if in an array, access is requested by index
-        elif isinstance(value, list) and part.isdigit() and int(part) < len(value):
+        elif isinstance(value, list) and part.lstrip('-+').isdigit() \
+                and abs(int(part)) < (len(value) + 1 if part.startswith("-") else len(value)):
             value = value[int(part)]
         # or by a key=value expression
         elif isinstance(value, list) and (element := _select_element_in_list(value, part)):
@@ -682,19 +735,24 @@ def _get_initial_value_from_context(initial_key, context):
     :param context: behave context
     :return: mapped value
     """
-    context_storage = context.storage if hasattr(context, 'storage') else {}
-    if hasattr(context, 'feature_storage'):
-        # context.feature_storage is initialized only when before_feature method is called
-        context_storage = collections.ChainMap(context.storage, context.feature_storage)
+    # If dynamic env is not initialized, the storages are initialized if needed
+
+    context_storage = getattr(context, 'storage', {})
+    run_storage = getattr(context, 'run_storage', {})
+    feature_storage = getattr(context, 'feature_storage', {})
+
+    if not isinstance(context_storage, collections.ChainMap):
+        context_storage = collections.ChainMap(context_storage, run_storage, feature_storage)
+
     if initial_key in context_storage:
-        value = context_storage[initial_key]
-    elif hasattr(context, initial_key):
-        value = getattr(context, initial_key)
-    else:
-        msg = f"'{initial_key}' key not found in context"
-        logger.error(msg)
-        raise Exception(msg)
-    return value
+        return context_storage[initial_key]
+
+    if hasattr(context, initial_key):
+        return getattr(context, initial_key)
+
+    msg = f"'{initial_key}' key not found in context"
+    logger.error(msg)
+    raise Exception(msg)
 
 
 def get_message_property(param, language_terms, language_key):
@@ -813,3 +871,33 @@ def convert_file_to_base64(file_path):
     except Exception as e:
         raise Exception(f' ERROR - converting the "{file_path}" file to Base64...: {e}')
     return file_content
+
+
+def store_key_in_storage(context, key, value):
+    """
+    Store values in context.storage, context.feature_storage or context.run_storage,
+    using [key], [FEATURE:key] OR [RUN:key] from steps.
+    context.storage is also updated with given key,value
+    By default, values are stored in context.storage.
+
+    :param key: key to store the value in proper storage
+    :param value: value to store in key
+    :param context: behave context
+    :return:
+    """
+    clean_key = re.sub(r'[\[\]]', '', key)
+    if ":" in clean_key:
+        context_type = clean_key.split(":")[0]
+        context_key = clean_key.split(":")[1]
+        acccepted_context_types = ["FEATURE", "RUN"]
+        assert context_type in acccepted_context_types, (f"Invalid key: {context_key}. "
+                                                         f"Accepted keys: {acccepted_context_types}")
+        if context_type == "RUN":
+            context.run_storage[context_key] = value
+        elif context_type == "FEATURE":
+            context.feature_storage[context_key] = value
+        # If dynamic env is not initialized linked or key exists in context.storage, the value is updated in it
+        if hasattr(context.storage, context_key) or not isinstance(context.storage, collections.ChainMap):
+            context.storage[context_key] = value
+    else:
+        context.storage[clean_key] = value

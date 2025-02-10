@@ -1,10 +1,46 @@
 Toolium Changelog
 =================
 
-v3.1.5
+v3.3.2
 ------
 
 *Release date: In development*
+
+v3.3.1
+------
+
+*Release date: 2025-02-05*
+
+- Allow to save the diff image in jpg format for visual tests working with jpg
+- Fix the use of the # character in the actions defined in the feature description (Actions Before/After...)
+
+v3.3.0
+------
+
+*Release date: 2024-11-26*
+
+- Allow negative indexes for list elements in context searches. Example: [CONTEXT:element.-1]
+- Add support for JSON strings to the `DICT` and `LIST`` replacement. Example: [DICT:{"key": true}], [LIST:[null]]
+- Add `REPLACE` replacement, to replace a substring with another. Example: [REPLACE:[CONTEXT:some_url]::https::http]
+- Add `TITLE` replacement, to apply Python's title() function. Example: [TITLE:the title]
+- Add `ROUND` replacement, float number to a string with the indicated number of decimals. Example: [ROUND:3.3333::2]
+- Remove accents from generated file names to avoid errors in some filesystems
+- Update Appium-Python-Client requirement to enable 3 and 4 versions
+- Deprecate set_text method in InputText class to make it compatible with Appium-Python-Client 3 and 4
+
+v3.2.0
+------
+
+*Release date: 2024-09-13*
+
+- Add `run_storage` dictionary to context to store information during the whole test execution
+- Update current ChainMap context storages (context.storage, context.feature_storage and context.run_storage)
+- Allow to store values from steps into desire storage by using [key], [FEATURE:key] and [RUN:key]
+
+v3.1.5
+------
+
+*Release date: 2024-07-15*
 
 - Fix `export_poeditor_project` method allowing empty export response
 - Add `key=value` expressions for selecting elements in the context storage
@@ -556,7 +592,8 @@ v1.2.0
 
    | If it's false, the WebElement is searched whenever is needed (default value)
    | If it's true, the WebElement is saved in PageElement to avoid searching for the same element multiple times. Useful
-   in mobile testing when searching for an element can take a long time.
+     in mobile testing when searching for an element can take a long time.
+
 - New config property 'restart_driver_fail' in [Driver] section to restart the driver when the test fails even though
   the value of *reuse_driver* property is *true*
 - System property 'Config_environment' is used to select config files, e.g., to read android-properties.cfg file:

@@ -16,9 +16,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from os import makedirs
 import errno
 import re
+import unicodedata
+from os import makedirs
 
 FILENAME_MAX_LENGTH = 100
 
@@ -34,6 +35,9 @@ def get_valid_filename(s, max_length=FILENAME_MAX_LENGTH):
     """
     s = str(s).strip().replace(' -- @', '_')
     s = re.sub(r'(?u)[^-\w]', '_', s).strip('_')
+    # Remove accents to avoid errors in some filesystems
+    nfkd_form = unicodedata.normalize('NFKD', s)
+    s = ''.join([c for c in nfkd_form if not unicodedata.combining(c)])
     return s[:max_length]
 
 

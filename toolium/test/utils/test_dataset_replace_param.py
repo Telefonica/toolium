@@ -19,6 +19,8 @@ limitations under the License.
 import datetime
 from uuid import UUID
 
+import pytest
+
 from toolium.utils import dataset
 from toolium.utils.dataset import replace_param
 
@@ -333,6 +335,32 @@ def test_replace_param_now_offsets_with_and_without_format_and_more():
     assert param == f'The date {offset_date} was yesterday and I have an appointment at {offset_datetime}'
 
 
+@pytest.mark.parametrize('in_param, number_of_digits_in_fractional_part, out_param',
+                         [['7.5', '2', 7.5],
+                          ['3.33333333', '3', 3.333],
+                          ['123', '5', 123.0],
+                          ['0.001', '2', 0.0],
+                          ['0.4', '0', 0],
+                          ['0.6', '0', 1]
+                          ])
+def test_replace_param_round_with_type_inference(in_param, number_of_digits_in_fractional_part, out_param):
+    param = replace_param(f'[ROUND:{in_param}::{number_of_digits_in_fractional_part}]')
+    assert param == out_param
+
+
+@pytest.mark.parametrize('in_param, number_of_digits_in_fractional_part, out_param',
+                         [['7.5', '2', '7.50'],
+                          ['3.33333333', '3', '3.333'],
+                          ['123', '5', '123.00000'],
+                          ['0.001', '2', '0.00'],
+                          ['0.4', '0', '0'],
+                          ['0.6', '0', '1']
+                          ])
+def test_replace_param_round_without_type_inference(in_param, number_of_digits_in_fractional_part, out_param):
+    param = replace_param(f'[ROUND:{in_param}::{number_of_digits_in_fractional_part}]', infer_param_type=False)
+    assert param == out_param
+
+
 def test_replace_param_str_int():
     param = replace_param('[STR:28]')
     assert isinstance(param, str)
@@ -369,10 +397,20 @@ def test_replace_param_list_strings():
     assert param == ['1', '2', '3']
 
 
+def test_replace_param_list_json_format():
+    param = replace_param('[LIST:["value", true, null]]')
+    assert param == ["value", True, None]
+
+
 def test_replace_param_dict():
     param = replace_param("[DICT:{'a':'test1','b':'test2','c':'test3'}]")
     assert isinstance(param, dict)
     assert param == {'a': 'test1', 'b': 'test2', 'c': 'test3'}
+
+
+def test_replace_param_dict_json_format():
+    param = replace_param('[DICT:{"key": "value", "key_2": true, "key_3": null}]')
+    assert param == {"key": "value", "key_2": True, "key_3": None}
 
 
 def test_replace_param_upper():
@@ -438,3 +476,19 @@ def test_replace_param_partial_string_with_length():
     assert param == 'aaaaa is string'
     param = replace_param('parameter [STRING_WITH_LENGTH_5] is string')
     assert param == 'parameter aaaaa is string'
+
+
+def test_replace_param_replace():
+    param = replace_param('[REPLACE:https://url.com::https::http]')
+    assert param == "http://url.com"
+    param = replace_param('[REPLACE:https://url.com::https://]')
+    assert param == "url.com"
+
+
+def test_replace_param_title():
+    param = replace_param('[TITLE:hola hola]')
+    assert param == "Hola Hola"
+    param = replace_param('[TITLE:holahola]')
+    assert param == "Holahola"
+    param = replace_param('[TITLE:hOlA]')
+    assert param == "HOlA"

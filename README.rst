@@ -30,6 +30,9 @@ The main dependencies are:
   in Android or iOS devices/emulators.
 - `requests <http://docs.python-requests.org>`_: to test APIs
 
+You might need to adjust the Selenium and Appium-Python-Client versions in your project.
+In that case follow the `compatibility matrix <https://github.com/appium/python-client?tab=readme-ov-file#compatibility-matrix>`_
+
 **Using toolium-template**
 
 The easiest way of getting started is to clone `toolium-template <https://github.com/Telefonica/toolium-template>`_
