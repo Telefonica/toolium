@@ -23,6 +23,7 @@ import screeninfo
 from playwright.async_api import async_playwright
 
 from toolium.config_driver import ConfigDriver
+from toolium.config_driver_playwright import ConfigDriverPlayWright
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.driver_utils import Utils
@@ -270,7 +271,7 @@ class DriverWrapper(object):
         # In case of using a persistent context this property must be set and
         # a BrowserContext is returned instead of a Browser
         user_data_dir = self.config.get_optional('PlaywrightContextOptions', 'user_data_dir', None)
-        config_driver = ConfigDriver(self.config, self.utils, self.playwright)
+        config_driver = ConfigDriverPlayWright(self.config, self.utils, self.playwright)
         if user_data_dir:
             self.playwright_context = async_loop.run_until_complete(
                 config_driver.create_playwright_persistent_browser_context()
@@ -294,7 +295,7 @@ class DriverWrapper(object):
         """
 
         self.driver = await self.playwright_context.new_page(
-            **ConfigDriver(self.config, self.utils).get_playwright_page_options()
+            **ConfigDriverPlayWright(self.config, self.utils).get_playwright_page_options()
         )
         return self.driver
 
