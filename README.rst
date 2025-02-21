@@ -3,7 +3,7 @@ Toolium
 
 |Build Status| |Coverage Status| |CodeClimate| |Documentation Status|
 
-Toolium is a Python wrapper tool of Selenium and Appium libraries to test web and mobile applications in a single
+Toolium is a Python wrapper tool of Selenium, Playwright and Appium libraries to test web and mobile applications in a single
 project. It provides a way of choosing and configuring the driver through a configuration file, implements a Page Object
 pattern and includes a simple visual testing solution.
 
@@ -26,6 +26,8 @@ The main dependencies are:
 
 - `Selenium <http://docs.seleniumhq.org/>`_: to test web applications in major browsers (Firefox, Chrome, Internet
   Explorer, Edge or Safari)
+- `Playwright <https://playwright.dev/>`_: to test web applications in major browsers (Firefox, Chrome, Edge or Safari)
+  as an alternative to Selenium (Beta integration in toolium)
 - `Appium-Python-Client <https://github.com/appium/python-client>`_: to test mobile applications (native, hybrid or web)
   in Android or iOS devices/emulators.
 - `requests <http://docs.python-requests.org>`_: to test APIs

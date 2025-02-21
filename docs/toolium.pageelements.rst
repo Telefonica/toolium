@@ -100,3 +100,7 @@ page_elements
     :members:
     :undoc-members:
     :show-inheritance:
+
+.. toctree::
+
+    toolium.pageelements.playwright
