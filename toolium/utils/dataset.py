@@ -73,10 +73,11 @@ def replace_param(param, language='es', infer_param_type=True):
     - [RANDOM_PHONE_NUMBER] Generates a random phone number for language and country configured
       in dataset.language and dataset.country
     - [TIMESTAMP] Generates a timestamp from the current time
-    - [DATETIME] Generates a datetime from the current time
-    - [NOW] Similar to DATETIME without milliseconds; the format depends on the language
+    - [DATETIME] Generates a datetime from the current time (UTC)
+    - [NOW] Similar to DATETIME without microseconds; the format depends on the language
     - [NOW(%Y-%m-%dT%H:%M:%SZ)] Same as NOW but using an specific format by the python strftime function of
-      the datetime module
+      the datetime module. In the case of the %f placeholder, the syntax has been extended to allow setting
+      an arbitrary number of digits (e.g. %3f would leave just the 3 most significant digits and truncate the rest)
     - [NOW + 2 DAYS] Similar to NOW but two days later
     - [NOW - 1 MINUTES] Similar to NOW but one minute earlier
     - [NOW(%Y-%m-%dT%H:%M:%SZ) - 7 DAYS] Similar to NOW but seven days before and with the indicated format
@@ -304,7 +305,9 @@ def _replace_param_date(param, language):
     E.g. [TODAY - 2 DAYS], [NOW - 10 MINUTES]
     An specific format could be defined in the case of NOW this way: NOW('THEFORMAT')
     where THEFORMAT is any valid format accepted by the python
-    [datetime.strftime](https://docs.python.org/3/library/datetime.html#datetime.date.strftime) function
+    [datetime.strftime](https://docs.python.org/3/library/datetime.html#datetime.date.strftime) function.
+    In the case of the %f placeholder, the syntax has been extended to allow setting an arbitrary number of digits
+    (e.g. %3f would leave just the 3 most significant digits and truncate the rest).
 
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY
@@ -331,18 +334,24 @@ def _replace_param_date(param, language):
         return f'{date_format} %H:%M:%S'
 
     def _get_format(base):
-        format_matcher = re.match(r'.*\((.*)\).*', base)
+        format_matcher = re.search(r'\((.*)\)', base)
         if format_matcher and len(format_matcher.groups()) == 1:
-            return format_matcher.group(1)
-        return _default_format(base)
+            decimals_limit = re.search(r'%(\d+)f', format_matcher.group(1))
+            if decimals_limit and len(decimals_limit.groups()) == 1:
+                return format_matcher.group(1).replace(decimals_limit.group(0), '%f'), int(decimals_limit.group(1))
+            return format_matcher.group(1), None
+        return _default_format(base), None
 
     matcher = _date_matcher()
     if not matcher:
         return param, False
 
     base, amount, units = list(matcher.groups())
-    format_str = _get_format(base)
+    format_str, decimals_limit = _get_format(base)
     date = _offset_datetime(amount, units)
+    if decimals_limit:
+        decimals = f"{date.microsecond / 1_000_000:.{decimals_limit}f}"[2:]
+        format_str = format_str.replace("%f", decimals)
     return date.strftime(format_str), True
 
 

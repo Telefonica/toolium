@@ -6,6 +6,8 @@ v3.3.2
 
 *Release date: In development*
 
+- Allow setting the number of decimal places for seconds when using the `[NOW]` replacement with a specific format
+
 v3.3.1
 ------
 
