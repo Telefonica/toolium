@@ -299,7 +299,7 @@ def _get_substring_replacement(type_mapping_match_group):
     return replace_param
 
 
-def _get_format_with_number_of_decimals(base):
+def _get_format_with_number_of_decimals(base, language):
     """
     Get the format and the number of decimals from the base string.
     """
@@ -352,7 +352,7 @@ def _replace_param_date(param, language):
         return param, False
 
     base, amount, units = list(matcher.groups())
-    format_str, number_of_decimals = _get_format_with_number_of_decimals(base)
+    format_str, number_of_decimals = _get_format_with_number_of_decimals(base, language)
     date = _offset_datetime(amount, units)
     if number_of_decimals:
         decimals = f"{date.microsecond / 1_000_000:.{number_of_decimals}f}"[2:]
