@@ -336,9 +336,9 @@ def _replace_param_date(param, language):
     def _get_format(base):
         format_matcher = re.search(r'\((.*)\)', base)
         if format_matcher and len(format_matcher.groups()) == 1:
-            decimals_limit = re.search(r'%(\d+)f', format_matcher.group(1))
-            if decimals_limit and len(decimals_limit.groups()) == 1:
-                return format_matcher.group(1).replace(decimals_limit.group(0), '%f'), int(decimals_limit.group(1))
+            decimal_matcher = re.search(r'%(\d+)f', format_matcher.group(1))
+            if decimal_matcher and len(decimal_matcher.groups()) == 1:
+                return format_matcher.group(1).replace(decimal_matcher.group(0), '%f'), int(decimal_matcher.group(1))
             return format_matcher.group(1), None
         return _default_format(base), None
 
@@ -347,10 +347,10 @@ def _replace_param_date(param, language):
         return param, False
 
     base, amount, units = list(matcher.groups())
-    format_str, decimals_limit = _get_format(base)
+    format_str, decimal_places = _get_format(base)
     date = _offset_datetime(amount, units)
-    if decimals_limit:
-        decimals = f"{date.microsecond / 1_000_000:.{decimals_limit}f}"[2:]
+    if decimal_places:
+        decimals = f"{date.microsecond / 1_000_000:.{decimal_places}f}"[2:]
         format_str = format_str.replace("%f", decimals)
     return date.strftime(format_str), True
 
