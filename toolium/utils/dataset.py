@@ -299,6 +299,29 @@ def _get_substring_replacement(type_mapping_match_group):
     return replace_param
 
 
+def _get_format_with_number_of_decimals(base):
+    """
+    Get the format and the number of decimals from the base string.
+    """
+    def _is_only_date(base):
+        return 'TODAY' in base
+
+    def _default_format(base):
+        date_format = '%d/%m/%Y' if language == 'es' else '%Y/%m/%d'
+        if _is_only_date(base):
+            return date_format
+        return f'{date_format} %H:%M:%S'
+
+    format_matcher = re.search(r'\((.*)\)', base)
+    if format_matcher and len(format_matcher.groups()) == 1:
+        time_format = format_matcher.group(1)
+        decimal_matcher = re.search(r'%(\d+)f', time_format)
+        if decimal_matcher and len(decimal_matcher.groups()) == 1:
+            return time_format.replace(decimal_matcher.group(0), '%f'), int(decimal_matcher.group(1))
+        return time_format, None
+    return _default_format(base), None
+
+
 def _replace_param_date(param, language):
     """
     Transform param value in a date after applying the specified delta.
@@ -324,33 +347,15 @@ def _replace_param_date(param, language):
         the_units = units.lower()
         return now + datetime.timedelta(**dict([(the_units, the_amount)]))
 
-    def _is_only_date(base):
-        return 'TODAY' in base
-
-    def _default_format(base):
-        date_format = '%d/%m/%Y' if language == 'es' else '%Y/%m/%d'
-        if _is_only_date(base):
-            return date_format
-        return f'{date_format} %H:%M:%S'
-
-    def _get_format(base):
-        format_matcher = re.search(r'\((.*)\)', base)
-        if format_matcher and len(format_matcher.groups()) == 1:
-            decimal_matcher = re.search(r'%(\d+)f', format_matcher.group(1))
-            if decimal_matcher and len(decimal_matcher.groups()) == 1:
-                return format_matcher.group(1).replace(decimal_matcher.group(0), '%f'), int(decimal_matcher.group(1))
-            return format_matcher.group(1), None
-        return _default_format(base), None
-
     matcher = _date_matcher()
     if not matcher:
         return param, False
 
     base, amount, units = list(matcher.groups())
-    format_str, decimal_places = _get_format(base)
+    format_str, number_of_decimals = _get_format_with_number_of_decimals(base)
     date = _offset_datetime(amount, units)
-    if decimal_places:
-        decimals = f"{date.microsecond / 1_000_000:.{decimal_places}f}"[2:]
+    if number_of_decimals:
+        decimals = f"{date.microsecond / 1_000_000:.{number_of_decimals}f}"[2:]
         format_str = format_str.replace("%f", decimals)
     return date.strftime(format_str), True
 
