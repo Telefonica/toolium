@@ -21,6 +21,8 @@ import os
 import re
 import collections
 
+from behave.api.async_step import use_or_create_async_context
+
 from toolium.utils import dataset
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
@@ -160,6 +162,12 @@ def create_and_configure_wrapper(context):
 
     # Configure wrapper
     context.driver_wrapper.configure(context.config_files, behave_properties=behave_properties)
+
+    # Activate behave async context to execute playwright
+    if (context.driver_wrapper.config.get_optional('Driver', 'web_library') == 'playwright'
+            and context.driver_wrapper.async_loop is None):
+        use_or_create_async_context(context)
+        context.driver_wrapper.async_loop = context.async_context.loop
 
     # Copy config object
     context.toolium_config = context.driver_wrapper.config

@@ -1,10 +1,12 @@
 Toolium Changelog
 =================
 
-v3.3.2
+v3.4.0
 ------
 
 *Release date: In development*
+
+- Now Playwright is available to run web tests instead of Selenium
 
 v3.3.1
 ------

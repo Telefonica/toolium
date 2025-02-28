@@ -20,8 +20,10 @@ import logging.config
 import os
 
 import screeninfo
+from playwright.async_api import async_playwright
 
 from toolium.config_driver import ConfigDriver
+from toolium.config_driver_playwright import ConfigDriverPlayWright
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.driver_utils import Utils
@@ -54,6 +56,10 @@ class DriverWrapper(object):
     remote_node = None  #: remote grid node
     remote_node_video_enabled = False  #: True if the remote grid node has the video recorder enabled
     logger = None  #: logger instance
+    async_loop = None  #: async loop for playwright tests
+    playwright = None  #: playwright instance
+    playwright_browser = None  #: playwright browser instance
+    playwright_context = None  #: playwright context instance
 
     # Configuration and output files
     config_properties_filenames = None  #: configuration filenames separated by commas
@@ -68,6 +74,10 @@ class DriverWrapper(object):
             default_wrapper = DriverWrappersPool.get_default_wrapper()
             self.config = default_wrapper.config.deepcopy()
             self.logger = default_wrapper.logger
+            self.async_loop = default_wrapper.async_loop
+            self.playwright = default_wrapper.playwright
+            self.playwright_browser = default_wrapper.playwright_browser
+            self.playwright_context = default_wrapper.playwright_context
             self.config_properties_filenames = default_wrapper.config_properties_filenames
             self.config_log_filename = default_wrapper.config_log_filename
             self.output_log_filename = default_wrapper.output_log_filename
@@ -202,13 +212,25 @@ class DriverWrapper(object):
             self.configure_visual_baseline()
 
     def connect(self):
-        """Set up the selenium driver and connect to the server
+        """Set up the driver and connect to the server
 
-        :returns: selenium driver
+        :returns: selenium or playwright driver
         """
         if not self.config.get('Driver', 'type') or self.config.get('Driver', 'type') in ['api', 'no_driver']:
             return None
 
+        if self.async_loop:
+            self.connect_playwright()
+        else:
+            self.connect_selenium()
+
+        return self.driver
+
+    def connect_selenium(self):
+        """Set up selenium driver
+
+        :returns: selenium driver
+        """
         self.driver = ConfigDriver(self.config, self.utils).create_driver()
 
         # Save session id and remote node to download video after the test execution
@@ -237,7 +259,54 @@ class DriverWrapper(object):
         # Set implicitly wait timeout
         self.utils.set_implicitly_wait()
 
+    def connect_playwright(self):
+        """Set up the playwright page
+        It is a sync method because it is called from sync behave initialization method
+
+        :returns: playwright page
+        """
+        async_loop = self.async_loop
+        self.playwright = async_loop.run_until_complete(async_playwright().start())
+
+        # In case of using a persistent context this property must be set and
+        # a BrowserContext is returned instead of a Browser
+        user_data_dir = self.config.get_optional('PlaywrightContextOptions', 'user_data_dir', None)
+        config_driver = ConfigDriverPlayWright(self.config, self.utils, self.playwright)
+        if user_data_dir:
+            self.playwright_context = async_loop.run_until_complete(
+                config_driver.create_playwright_persistent_browser_context()
+            )
+        else:
+            self.playwright_browser = async_loop.run_until_complete(
+                config_driver.create_playwright_browser()
+            )
+            self.playwright_context = async_loop.run_until_complete(
+                self.playwright_browser.new_context(**config_driver.get_playwright_context_options())
+            )
+        self.driver = async_loop.run_until_complete(
+            self.playwright_context.new_page(**config_driver.get_playwright_page_options())
+        )
+
+    async def connect_playwright_new_page(self):
+        """Set up and additional playwright driver creating a new page in current browser and context instance
+        It is an async method to be called from async steps or page objects
+
+        :returns: playwright driver
+        """
+
+        self.driver = await self.playwright_context.new_page(
+            **ConfigDriverPlayWright(self.config, self.utils).get_playwright_page_options()
+        )
         return self.driver
+
+    def stop(self):
+        """Stop selenium or playwright driver"""
+        if self.async_loop:
+            # Stop playwright driver
+            self.async_loop.run_until_complete(self.playwright_context.close())
+        else:
+            # Stop selenium driver
+            self.driver.quit()
 
     def resize_window(self):
         """Resize and move browser window"""
