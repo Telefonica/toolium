@@ -6,8 +6,8 @@ Browser Configuration
 Common Configuration
 --------------------
 
-To choose the browser in which Selenium will execute the tests, configure *type* property in *[Driver]* section in
-properties.cfg file with one of these values: firefox, chrome, iexplore, edge or safari.
+To choose the browser in which Selenium or Playwright will execute the tests, configure *type* property in *[Driver]*
+section in properties.cfg file with one of these values: firefox, chrome, iexplore, edge or safari.
 
 The following example shows how to choose Firefox::
 
