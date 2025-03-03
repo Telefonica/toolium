@@ -427,7 +427,7 @@ class ConfigDriver(object):
         :param initial: initial dict to be updated
         :param update: new dict
         :param initial_key: update only one key in initial dicts
-        :return: merged dict
+        :returns: merged dict
         """
         for key, value in update.items():
             if initial_key is None or key == initial_key:

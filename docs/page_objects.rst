@@ -6,8 +6,8 @@ Page Objects
 Toolium implements Page Object pattern, where a page object represents a web page or a mobile screen (or a part of them)
 and a page element is any of the elements contained in those pages (inputs, buttons, texts, ...).
 
-Toolium loads page elements in lazy loading, so they are searched in Selenium or Appium when they are used, not when
-they are defined.
+Toolium loads page elements in lazy loading, so they are searched in Selenium, Playwright or Appium when they are used,
+not when they are defined.
 
 Basic usage
 -----------
@@ -41,6 +41,8 @@ Example of a test using the previous page object:
         LoginPageObject().login('user', 'pass')
         ...
 
+.. _page_element_types:
+
 Page element types
 ------------------
 
@@ -68,8 +70,8 @@ element (Button), for example.
     username.text = 'username'
 
 Page elements only implement the most commonly used methods. When performing any other action with the element, get the
-web element of the page element and execute the action. *web_element* property returns the Selenium or Appium
-WebElement.
+web element of the page element and execute the action. *web_element* property returns the Selenium, Playwright or
+Appium WebElement.
 
 .. code-block:: python
 
@@ -77,6 +79,8 @@ WebElement.
 
     # Check if the element is enabled
     enabled = username.web_element.is_enabled()
+
+.. _page_element_parent:
 
 Parent
 ~~~~~~
