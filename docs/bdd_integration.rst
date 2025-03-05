@@ -166,9 +166,9 @@ functions or check the :ref:`dataset <dataset>` module for more implementation d
 * :code:`[RANDOM]`: Generates a random value
 * :code:`[RANDOM_PHONE_NUMBER]`: Generates a random phone number for language and country configured in dataset.language and dataset.country
 * :code:`[TIMESTAMP]`: Generates a timestamp from the current time
-* :code:`[DATETIME]`: Generates a datetime from the current time
-* :code:`[NOW]`: Similar to DATETIME without milliseconds; the format depends on the language
-* :code:`[NOW(%Y-%m-%dT%H:%M:%SZ)]`: Same as NOW but using an specific format by the python strftime function of the datetime module
+* :code:`[DATETIME]`: Generates a datetime from the current time (UTC)
+* :code:`[NOW]`: Similar to DATETIME without microseconds; the format depends on the language
+* :code:`[NOW(%Y-%m-%dT%H:%M:%SZ)]`: Same as NOW but using an specific format by the python strftime function of the datetime module. When using the %f placeholder, the number of digits to be used can be set like this: %3f
 * :code:`[NOW + 2 DAYS]`: Similar to NOW but two days later
 * :code:`[NOW - 1 MINUTES]`: Similar to NOW but one minute earlier
 * :code:`[NOW(%Y-%m-%dT%H:%M:%SZ) - 7 DAYS]`: Similar to NOW but seven days before and with the indicated format
