@@ -3,9 +3,9 @@
 Mobile Configuration
 ====================
 
-To choose mobile operating system in which Appium will execute the tests, configure *type* property in *[Driver]*
-section in properties.cfg file with one of these values: :code:`ios` or :code:`android`. Moreover, configure Appium
-properties in *[AppiumCapabilities]* section in properties.cfg file.
+To choose mobile operating system in which Appium will execute the tests, configure :code:`type` property in
+:code:`[Driver]` section in :code:`conf/properties.cfg` file with one of these values: :code:`ios` or :code:`android`.
+Moreover, configure Appium properties in :code:`[AppiumCapabilities]` section in :code:`conf/properties.cfg` file.
 
 The following example shows how to configure Appium to run tests over TestApp app on an iPhone 14 with iOS 16.1::
 
