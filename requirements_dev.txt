@@ -4,8 +4,7 @@ coveralls~=3.3
 mock~=5.0
 requests-mock~=1.10
 Pygments~=2.14
-flake8~=5.0; python_version < '3.8'
-flake8~=6.0; python_version >= '3.8'
+flake8~=6.0
 build~=0.10
 wheel~=0.40
 twine~=4.0
