@@ -146,10 +146,7 @@ Behave variables transformation
 -------------------------------
 
 Toolium provides a set of functions that allow the transformation of specific string tags into different values.
-These are the main ones, along with the list of tags they support and their associated replacement logic (click on the
-functions or check the :ref:`dataset <dataset>` module for more implementation details):
-
-`replace_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.replace_param>`_:
+See below their values, along with their associated replacement logic (click `here <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.replace_param>`_  or check the :ref:`dataset <dataset>` module for more implementation details):
 
 * :code:`[STRING_WITH_LENGTH_XX]`: Generates a fixed length string
 * :code:`[INTEGER_WITH_LENGTH_XX]`: Generates a fixed length integer
@@ -181,8 +178,33 @@ functions or check the :ref:`dataset <dataset>` module for more implementation d
 * :code:`[DICT:xxxx]`: Cast xxxx to a dict
 * :code:`[UPPER:xxxx]`: Converts xxxx to upper case
 * :code:`[LOWER:xxxx]`: Converts xxxx to lower case
+* :code:`[REPLACE:xxxx::SUBSTRING_TO_BE_REPLACED::SUBSTRING_TO_USE_AS_REPLACEMENT]`: Replaces a substring with another in xxxx string
+* :code:`[TITLE:xxxx]`: Applies python's string title() method to xxxx string
+* :code:`[ROUND:xxxx::N]`: Rounds given number xxxx to N digits in its fractional part
 
-`map_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.map_param>`_:
+
+Previous variable replacements apply also to behave table values, but there is a special case to indicate that a row has
+to be deleted from the table. This is done by using the tag `[MISSING_PARAM]` in the cell value of a param_name and
+param_value table. E.g.:
+
+.. code:: console
+
+    When I send the HTTP "POST" request with body parameters
+      | param_name  | param_value     |
+      | id          | [MISSING_PARAM] |
+      | name        | test            |
+      | description | [NULL]          |
+
+Previous step sends the following body:
+
+.. code:: console
+
+    {
+        "name": "test",
+        "description": null
+    }
+
+There are also some special tags that allow to use parameter values configured at different sources defined by the `map_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.map_param>`_ method:
 
 * :code:`[CONF:xxxx]`: Value from the config dict in dataset.project_config for the key xxxx
 * :code:`[LANG:xxxx]`: String from the texts dict in dataset.language_terms for the key xxxx, using the language specified in dataset.language
@@ -192,3 +214,117 @@ functions or check the :ref:`dataset <dataset>` module for more implementation d
 * :code:`[ENV:xxxx]`: Value of the OS environment variable xxxx
 * :code:`[FILE:xxxx]`: String with the content of the file in the path xxxx
 * :code:`[BASE64:xxxx]`: String with the base64 representation of the file content in the path xxxx
+
+This feature can be customized by defining your own map_param function, the same way as for replace_param, but again,
+it is something not recommended unless very well justified.
+
+In order to apply string replacements at code level, the following functions are available in the context:
+
+.. code:: console
+
+    context.map_param(parameter)
+    context.replace_param(parameter)
+
+These replacements and mappings are automatically applied to all the steps of the Toolium's catalogue.
+
+The configuration and context replacements are made first, followed by the rest of variable replacements (i.e.
+`map_param` is always executed before `replace_param`), and they apply to all the possible parameters of the step:
+
+* context.text
+* context.table (each of the cells within the table)
+* parameters of the function that implements the step, e.g. `param1` and `param2` in `my_step_impl(context, param1, param2)`
+
+If you implement your own steps, remember to use the `@step` decorator implemented by Toolium to take advantage of
+this feature:
+
+.. code:: console
+
+    from toolium_telefonica.behave import step
+
+    @step('my custom step with params "param"')
+    def clean_table(context, param):
+        # mapping and replacements will be automatically applied
+        ...
+
+
+Type inference
+^^^^^^^^^^^^^^
+
+By default, the param replacements do not infer primitive types. To enable the type inference
+when using the `replace_param` function or the custom `@step` decorator, you have to add the
+following configuration:
+
+.. code:: console
+
+    [TestExecution]
+    infer_datatypes: true
+
+Both replace_param and map_param methods can be customized by defining your own replace_param method, which must match the replace_param method
+signature and return value and assigning it to the corresponding context variable storing the method. However, it is something not recommended unless very well justified. E.g. for replace_param:
+
+.. code:: console
+
+    def custom_replace_param(param, language='es', infer_param_type=True):
+        ...
+        ...
+        return new_param
+
+and assign it to context.replace_param in your environment, after toolium telefonica before_all has been executed.
+
+.. code:: console
+
+    from toolium_telefonica.behave.environment import before_all as toolium_before_all
+
+    def before_all(context):
+        ...
+        toolium_before_all(context)
+        context.replace_param = custom_replace_param
+        ...
+
+POEditor tags
+^^^^^^^^^^^^^
+
+POE tag returns a list of texts or a single text (if only one result) from POEditor for the given resource.
+
+Language used to get texts in POEditor will be get from toolium config file ([TestExecution] language):
+
+.. code:: console
+
+    [TestExecution]
+    language: es-es
+    poeditor_mode: offline
+
+poeditor_mode with value offline will try to get a local copy of POEditor terms from output directory, online mode (by default if not provided) will download always terms from POEditor.
+If provided will override poeditor mode parameter defined in properties file.
+
+In your ENV-properties.json file add this block:
+
+.. code:: console
+
+    "poeditor": {
+        "base_url": "https://api.poeditor.com",
+        "api_token": "XXXXX",
+        "project_name": "Aura-Bot",
+        "prefixes": [],
+        "key_field": "reference",
+        "search_type": "contains",
+        "mode": "online",
+        "file_path": "resources/poeditor/poeditor_terms.json"
+    }
+
+* api_token can be generated from POEditor in this url: https://poeditor.com/account/api
+
+* api_token can also be configured from a system property called `poeditor_api_token`
+
+* prefixes contains a list of references prefixes that can be used to search the reference
+
+For example, if prefixes = ['PRE.'], POE returns the value of 'PRE.reference' if this reference exists otherwise it
+returns the value of 'reference'
+
+* key_field can be any field of POEditor text structure. The default value is "reference"
+
+* search_type can be "contains" if more than one result is expected or "exact" if only one result is expected. The default value is "contains"
+
+* mode with value offline will try to get a local copy of POEditor terms from output directory, online mode (by default if not provided) will download always terms from POEditor
+
+* file_path contains relative path of downloaded POEditor terms file (default value: _output/poeditor_terms.json)
