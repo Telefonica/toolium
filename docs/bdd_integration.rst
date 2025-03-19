@@ -183,27 +183,6 @@ See below their values, along with their associated replacement logic (click `he
 * :code:`[ROUND:xxxx::N]`: Rounds given number xxxx to N digits in its fractional part
 
 
-Previous variable replacements apply also to behave table values, but there is a special case to indicate that a row has
-to be deleted from the table. This is done by using the tag `[MISSING_PARAM]` in the cell value of a param_name and
-param_value table. E.g.:
-
-.. code:: console
-
-    When I send the HTTP "POST" request with body parameters
-      | param_name  | param_value     |
-      | id          | [MISSING_PARAM] |
-      | name        | test            |
-      | description | [NULL]          |
-
-Previous step sends the following body:
-
-.. code:: console
-
-    {
-        "name": "test",
-        "description": null
-    }
-
 There are also some special tags that allow to use parameter values configured at different sources defined by the `map_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.map_param>`_ method:
 
 * :code:`[CONF:xxxx]`: Value from the config dict in dataset.project_config for the key xxxx
@@ -215,71 +194,27 @@ There are also some special tags that allow to use parameter values configured a
 * :code:`[FILE:xxxx]`: String with the content of the file in the path xxxx
 * :code:`[BASE64:xxxx]`: String with the base64 representation of the file content in the path xxxx
 
-This feature can be customized by defining your own map_param function, the same way as for replace_param, but again,
-it is something not recommended unless very well justified.
-
-In order to apply string replacements at code level, the following functions are available in the context:
+In order to apply string replacements at code level, the following functions are available in the context. E.g.::
 
 .. code:: console
 
-    context.map_param(parameter)
-    context.replace_param(parameter)
+    from toolium.utils.dataset import map_param, replace_param
 
-These replacements and mappings are automatically applied to all the steps of the Toolium's catalogue.
-
-The configuration and context replacements are made first, followed by the rest of variable replacements (i.e.
-`map_param` is always executed before `replace_param`), and they apply to all the possible parameters of the step:
-
-* context.text
-* context.table (each of the cells within the table)
-* parameters of the function that implements the step, e.g. `param1` and `param2` in `my_step_impl(context, param1, param2)`
-
-If you implement your own steps, remember to use the `@step` decorator implemented by Toolium to take advantage of
-this feature:
-
-.. code:: console
-
-    from toolium_telefonica.behave import step
-
-    @step('my custom step with params "param"')
-    def clean_table(context, param):
-        # mapping and replacements will be automatically applied
-        ...
+    mapped_param = map_param('[TOOLIUM:Driver_chrome_driver_path]')
+    replaced_param = replace_param('[NOW - 1 MINUTES]')
 
 
 Type inference
 ^^^^^^^^^^^^^^
 
 By default, the param replacements do not infer primitive types. To enable the type inference
-when using the `replace_param` function or the custom `@step` decorator, you have to add the
-following configuration:
+when using the `replace_param` function you have to add the following configuration:
 
 .. code:: console
 
     [TestExecution]
     infer_datatypes: true
 
-Both replace_param and map_param methods can be customized by defining your own replace_param method, which must match the replace_param method
-signature and return value and assigning it to the corresponding context variable storing the method. However, it is something not recommended unless very well justified. E.g. for replace_param:
-
-.. code:: console
-
-    def custom_replace_param(param, language='es', infer_param_type=True):
-        ...
-        ...
-        return new_param
-
-and assign it to context.replace_param in your environment, after toolium telefonica before_all has been executed.
-
-.. code:: console
-
-    from toolium_telefonica.behave.environment import before_all as toolium_before_all
-
-    def before_all(context):
-        ...
-        toolium_before_all(context)
-        context.replace_param = custom_replace_param
-        ...
 
 POEditor tags
 ^^^^^^^^^^^^^
