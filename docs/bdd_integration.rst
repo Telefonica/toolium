@@ -232,7 +232,7 @@ Language used to get texts in POEditor will be get from toolium config file ([Te
 poeditor_mode with value offline will try to get a local copy of POEditor terms from output directory, online mode (by default if not provided) will download always terms from POEditor.
 If provided will override poeditor mode parameter defined in properties file.
 
-In your ENV-properties.json file add this block:
+In your project config, add this block:
 
 .. code:: console
 
