@@ -194,7 +194,7 @@ There are also some special tags that allow to use parameter values configured a
 * :code:`[FILE:xxxx]`: String with the content of the file in the path xxxx
 * :code:`[BASE64:xxxx]`: String with the base64 representation of the file content in the path xxxx
 
-In order to apply string replacements at code level, the following functions are available in the context. E.g.::
+In order to apply the string replacements in your code, import and call the corresponding function. E.g.::
 
 .. code:: console
 
