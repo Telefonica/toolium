@@ -203,17 +203,7 @@ In order to apply the string replacements in your code, import and call the corr
     mapped_param = map_param('[TOOLIUM:Driver_chrome_driver_path]')
     replaced_param = replace_param('[NOW - 1 MINUTES]')
 
-
-Type inference
-^^^^^^^^^^^^^^
-
-By default, the param replacements do not infer primitive types. To enable the type inference
-when using the `replace_param` function you have to add the following configuration:
-
-.. code:: console
-
-    [TestExecution]
-    infer_datatypes: true
+Please note that, by default, the `replace_param` function tries to convert the resulting value to a native Python datatype. If that does not work for you, do not forget to set the `infer_param_type` parameter to `False`.
 
 
 POEditor tags
