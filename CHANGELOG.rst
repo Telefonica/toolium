@@ -6,6 +6,8 @@ v3.4.1
 
 *Release date: In development*
 
+- Remove Python 3.8 support (Python 3.8 reached the end of its life on October 14th, 2024)
+
 v3.4.0
 ------
 
