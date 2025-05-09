@@ -27,7 +27,7 @@ from toolium.driver_wrappers_pool import DriverWrappersPool
 
 DEFAULT_CAPABILITIES = {'acceptInsecureCerts': True, 'browserName': 'firefox', 'moz:debuggerAddress': True,
                         'pageLoadStrategy': 'normal'}
-DEFAULT_PREFERENCES = {'remote.active-protocols': 3}
+DEFAULT_PREFERENCES = {'remote.active-protocols': 1}
 
 
 @pytest.fixture
