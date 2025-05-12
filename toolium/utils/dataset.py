@@ -265,8 +265,9 @@ def _replace_param_transform_string(param):
             except json.decoder.JSONDecodeError:
                 new_param = eval(type_mapping_match_group.group(2))
         elif type_mapping_match_group.group(1) in ['INT', 'FLOAT']:
-            exec(f'exec_param = {type_mapping_match_group.group(1).lower()}({type_mapping_match_group.group(2)})')
-            new_param = locals()['exec_param']
+            exec_env = {}
+            exec(f"exec_param = {type_mapping_match_group.group(1).lower()}({type_mapping_match_group.group(2)})", {}, exec_env)
+            new_param = exec_env['exec_param']
         else:
             replace_param = _get_substring_replacement(type_mapping_match_group)
             new_param = new_param.replace(type_mapping_match_group.group(), replace_param)
