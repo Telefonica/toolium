@@ -266,7 +266,10 @@ def _replace_param_transform_string(param):
                 new_param = eval(type_mapping_match_group.group(2))
         elif type_mapping_match_group.group(1) in ['INT', 'FLOAT']:
             exec_env = {}
-            exec(f"exec_param = {type_mapping_match_group.group(1).lower()}({type_mapping_match_group.group(2)})", {}, exec_env)
+            type_str = type_mapping_match_group.group(1).lower()
+            value_str = type_mapping_match_group.group(2)
+            exec_code = f"exec_param = {type_str}({value_str})"
+            exec(exec_code, {}, exec_env)
             new_param = exec_env['exec_param']
         else:
             replace_param = _get_substring_replacement(type_mapping_match_group)
