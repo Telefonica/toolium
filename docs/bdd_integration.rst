@@ -187,6 +187,7 @@ There are also some special tags that allow to use parameter values configured a
 
 * :code:`[CONF:xxxx]`: Value from the config dict in dataset.project_config for the key xxxx
 * :code:`[LANG:xxxx]`: String from the texts dict in dataset.language_terms for the key xxxx, using the language specified in dataset.language
+* :code:`[LANG:xxxx::OTHER_LANGUAGE]`: String from the texts dict in dataset.language terms for the key xxxx, using the language specified in OTHER_LANGUAGE
 * :code:`[POE:xxxx]`: Definition(s) from the POEditor terms list in dataset.poeditor_terms for the term xxxx (see :ref:`poeditor <poeditor>` module for details)
 * :code:`[TOOLIUM:xxxx]`: Value from the toolium config in dataset.toolium_config for the key xxxx
 * :code:`[CONTEXT:xxxx]`: Value from the behave context storage dict in dataset.behave_context for the key xxxx, or value of the behave context attribute xxxx, if the former does not exist
