@@ -783,18 +783,20 @@ def get_message_property(param, language_terms, language_key):
     :param language_key: language key
     :return: the message mapped to the given key in the given language
     """
-    key_list = param.split(".")
-    language_terms_aux = deepcopy(language_terms)
+    lang_param, expected_lang = param.split('::', 1) if '::' in param else (param, language_key)
+
+    key_list = lang_param.split(".")
+    lang_terms_aux = deepcopy(language_terms)
     try:
         for key in key_list:
-            language_terms_aux = language_terms_aux[key]
-        logger.debug(f"Mapping language param '{param}' to its configured value '{language_terms_aux[language_key]}'")
+            lang_terms_aux = lang_terms_aux[key]
+        logger.debug(f"Mapping language param '{lang_param}' to its configured value '{lang_terms_aux[language_key]}'")
     except KeyError:
-        msg = f"Mapping chain '{param}' not found in the language properties file"
+        msg = f"Mapping chain '{lang_param}' not found in the language properties file"
         logger.error(msg)
         raise KeyError(msg)
 
-    return language_terms_aux[language_key]
+    return lang_terms_aux[expected_lang]
 
 
 def get_translation_by_poeditor_reference(reference, poeditor_terms):
