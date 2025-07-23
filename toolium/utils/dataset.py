@@ -783,11 +783,7 @@ def get_message_property(param, language_terms, language_key):
     :param language_key: language key
     :return: the message mapped to the given key in the given language
     """
-    if '::' in param:
-        lang_param, expected_lang = param.split('::')
-    else:
-        lang_param = param
-        expected_lang = language_key
+    lang_param, expected_lang = param.split('::', 1) if '::' in param else (param, language_key)
 
     key_list = lang_param.split(".")
     language_terms_aux = deepcopy(language_terms)
