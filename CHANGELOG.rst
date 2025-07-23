@@ -8,6 +8,7 @@ v3.5.0
 
 - Add support for Python 3.13
 - Remove Python 3.8 support (Python 3.8 reached the end of its life on October 14th, 2024)
+- Add `LANG` replacement, to use different language translations. Example: [LANG:some_text::new_language]
 
 v3.4.0
 ------
