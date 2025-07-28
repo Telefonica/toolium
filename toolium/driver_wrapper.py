@@ -20,7 +20,10 @@ import logging.config
 import os
 
 import screeninfo
-from playwright.async_api import async_playwright
+try:
+    from playwright.async_api import async_playwright
+except ImportError:
+    async_playwright = None
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_driver_playwright import ConfigDriverPlayWright
@@ -265,6 +268,10 @@ class DriverWrapper(object):
 
         :returns: playwright page
         """
+        if async_playwright is None:
+            raise ImportError("Playwright is not installed. Please run 'pip install toolium[playwright]' to use"
+                              " Playwright features")
+
         async_loop = self.async_loop
         self.playwright = async_loop.run_until_complete(async_playwright().start())
 

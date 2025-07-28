@@ -61,6 +61,9 @@ setup(
     install_requires=read_file('requirements.txt').splitlines(),
     setup_requires=['pytest-runner'],
     tests_require=read_file('requirements_dev.txt').splitlines(),
+    extras_require={
+        "playwright": ["playwright~=1.43"],
+    },
     test_suite='toolium.test',
     author='Rubén González Alonso, Telefónica I+D',
     author_email='ruben.gonzalezalonso@telefonica.com',
