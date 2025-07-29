@@ -4,7 +4,7 @@ Toolium Changelog
 v3.5.0
 ------
 
-*Release date: In development*
+*Release date: 2025-07-29*
 
 - Add support for Python 3.13
 - Remove Python 3.8 support (Python 3.8 reached the end of its life on October 14th, 2024)
