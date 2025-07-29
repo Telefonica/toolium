@@ -16,6 +16,12 @@ The following example shows how to configure toolium to run tests on Chrome usin
     web_library: playwright
     type: chrome
 
+To run Playwright tests, you must install Playwright dependencies. You can do it by running the following command:
+
+.. code:: console
+
+    $ pip install toolium[playwright]
+
 Features not supported yet
 --------------------------
 
