@@ -1,6 +1,12 @@
 Toolium Changelog
 =================
 
+v3.6.0
+------
+
+*Release date: In development*
+
+
 v3.5.0
 ------
 
