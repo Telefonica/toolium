@@ -6,6 +6,11 @@ v3.6.0
 
 *Release date: In development*
 
+- Add text comparison methods based on AI libraries. To use them, install the `ai` extra dependency:
+
+.. code:: console
+
+    $ pip install toolium[ai]
 
 v3.5.0
 ------
