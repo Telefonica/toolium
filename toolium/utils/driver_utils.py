@@ -305,7 +305,8 @@ class Utils(WaitUtils):
                 window_height = self.driver_wrapper.driver.execute_script("return window.screen.height")
                 self._window_size = {'width': window_width, 'height': window_height}
             else:
-                self._window_size = self.driver_wrapper.driver.get_window_size()
+                window_rect = self.driver_wrapper.driver.get_window_rect()
+                self._window_size = {'width': window_rect['width'], 'height': window_rect['height']}
         return self._window_size
 
     def get_native_coords(self, coords):
@@ -317,7 +318,8 @@ class Utils(WaitUtils):
         """
         web_window_size = self.get_window_size()
         self.driver_wrapper.driver.switch_to.context('NATIVE_APP')
-        native_window_size = self.driver_wrapper.driver.get_window_size()
+        native_window_rect = self.driver_wrapper.driver.get_window_rect()
+        native_window_size = {'width': native_window_rect['width'], 'height': native_window_rect['height']}
         scale = native_window_size['width'] / web_window_size['width']
         offset_y = self.get_safari_navigation_bar_height()
         native_coords = {'x': coords['x'] * scale, 'y': coords['y'] * scale + offset_y}

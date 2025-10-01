@@ -320,15 +320,21 @@ class DriverWrapper(object):
         if self.is_maximizable():
             # Configure window bounds
             bounds_x, bounds_y = self.get_config_window_bounds()
-            self.driver.set_window_position(bounds_x, bounds_y)
-            self.logger.debug('Window bounds: %s x %s', bounds_x, bounds_y)
 
             # Set window size or maximize
             window_width = self.config.get_optional('Driver', 'window_width')
             window_height = self.config.get_optional('Driver', 'window_height')
             if window_width and window_height:
-                self.driver.set_window_size(window_width, window_height)
+                # for XCUITest >9 compatibility (Appium 2.x)
+                self.driver.set_window_rect(x=bounds_x, y=bounds_y, width=int(window_width),
+                                           height=int(window_height))
+                self.logger.debug('Window rect: x=%s, y=%s, width=%s, height=%s',
+                                 bounds_x, bounds_y, window_width, window_height)
             else:
+                # For maximize, still need to set position first if bounds are specified
+                if bounds_x != 0 or bounds_y != 0:
+                    self.driver.set_window_rect(x=bounds_x, y=bounds_y)
+                    self.logger.debug('Window bounds: %s x %s', bounds_x, bounds_y)
                 self.driver.maximize_window()
 
     def get_config_window_bounds(self):
