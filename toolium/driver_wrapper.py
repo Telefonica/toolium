@@ -333,9 +333,9 @@ class DriverWrapper(object):
             if window_width and window_height:
                 # for XCUITest >9 compatibility (Appium 2.x)
                 self.driver.set_window_rect(x=bounds_x, y=bounds_y, width=int(window_width),
-                                           height=int(window_height))
+                                            height=int(window_height))
                 self.logger.debug('Window rect: x=%s, y=%s, width=%s, height=%s',
-                                 bounds_x, bounds_y, window_width, window_height)
+                                  bounds_x, bounds_y, window_width, window_height)
             else:
                 # For maximize, still need to set position first if bounds are specified
                 if bounds_x != 0 or bounds_y != 0:
