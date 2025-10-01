@@ -244,7 +244,13 @@ class DriverWrapper(object):
         # Save app_strings in mobile tests
         if (self.is_mobile_test() and not self.is_web_test()
                 and self.config.getboolean_optional('Driver', 'appium_app_strings')):
-            self.app_strings = self.driver.app_strings()
+            try:
+                self.app_strings = self.driver.app_strings()
+                self.logger.debug('App strings retrieved successfully: %d strings found', len(self.app_strings))
+            except Exception as exc:
+                # app_strings() may not be available in some Appium/UIAutomator2 versions or configurations
+                self.logger.warning("Could not retrieve app_strings: %s. Continuing without app strings.", str(exc))
+                self.app_strings = {}
 
         # Resize and move browser
         self.resize_window()
