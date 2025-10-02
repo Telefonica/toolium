@@ -331,7 +331,6 @@ class DriverWrapper(object):
             window_width = self.config.get_optional('Driver', 'window_width')
             window_height = self.config.get_optional('Driver', 'window_height')
             if window_width and window_height:
-                # for XCUITest >9 compatibility (Appium 2.x)
                 self.driver.set_window_rect(x=bounds_x, y=bounds_y, width=int(window_width),
                                             height=int(window_height))
                 self.logger.debug('Window rect: x=%s, y=%s, width=%s, height=%s',
