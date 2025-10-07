@@ -4,7 +4,6 @@ on: [push, pull_request]
 
 jobs:
   test:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -22,10 +21,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements_dev.txt
+        python -m spacy download en_core_web_sm
     - name: Lint with flake8
       run: |
         flake8 . --count --max-complexity=10 --max-line-length=121 --show-source --statistics
     - name: Test with pytest and coverage
+      env:
+        AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+        AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+        OPENAI_API_VERSION: ${{ secrets.OPENAI_API_VERSION }}
       run: |
         coverage run --source=toolium -m pytest toolium/test
     - name: Publish on coveralls.io

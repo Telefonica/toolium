@@ -12,6 +12,7 @@ Main Features
 - :ref:`Choosing driver through a configuration file <driver_configuration>`
 - :ref:`Page Object pattern <page_objects>`
 - :ref:`BDD integration <bdd_integration>`
+- :ref:`AI utils <ai_utils>`
 - :ref:`Visual testing solution <visual_testing>`
 - :ref:`Tests result analysis <tests_result_analysis>`
 
@@ -24,6 +25,7 @@ Library Reference
    driver_configuration.rst
    page_objects.rst
    bdd_integration.rst
+   ai_utils.rst
    visual_testing.rst
    tests_result_analysis.rst
    Changelog <changelog.rst>
