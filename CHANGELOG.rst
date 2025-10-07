@@ -6,6 +6,7 @@ v3.6.0
 
 *Release date: In development*
 
+- Removed xcuitest deprecated get_window_size() method and replaced it with get_window_rect() in all mobile actions
 - Add text comparison methods based on AI libraries. To use them, install the `ai` extra dependency:
 
 .. code:: console
