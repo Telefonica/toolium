@@ -10,3 +10,7 @@ wheel~=0.40
 twine~=4.0
 behave==1.2.6  # behave tests
 importlib_metadata==7.2.1
+spacy~=3.8.7
+sentence-transformers~=5.1
+transformers==4.56.2; python_version < '3.10'  # Issue https://github.com/huggingface/transformers/issues/41339
+openai~=1.108

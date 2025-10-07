@@ -63,6 +63,12 @@ setup(
     tests_require=read_file('requirements_dev.txt').splitlines(),
     extras_require={
         "playwright": ["playwright~=1.43"],
+        "ai": [
+            "spacy~=3.8.7",
+            "sentence-transformers~=5.1",
+            "transformers==4.56.2; python_version < '3.10'",
+            "openai~=1.108"
+        ]
     },
     test_suite='toolium.test',
     author='Rubén González Alonso, Telefónica I+D',
@@ -71,7 +77,19 @@ setup(
     description='Wrapper tool of Selenium and Appium libraries to test web and mobile applications in a single project',
     long_description_content_type='text/x-rst',
     long_description=get_long_description(),
-    keywords='selenium appium webdriver web_automation mobile_automation page_object visual_testing bdd behave pytest',
+    keywords=[
+        'selenium',
+        'appium',
+        'webdriver',
+        'web_automation',
+        'mobile_automation',
+        'page_object',
+        'visual_testing',
+        'ai',
+        'bdd',
+        'behave',
+        'pytest'
+    ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
