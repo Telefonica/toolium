@@ -120,8 +120,9 @@ def get_text_similarity_with_openai(text, expected_text, azure=False):
     """
     system_message = (
         "You have to decide if the LLM answer is correct or not, comparing it with the expected answer."
-        " Respond with a percentage between 0 and 1 depending on how correct you think the answer is and with an"
-        " explanation of why, returning a json object: {{\"similarity\": {PERCENTAGE}, \"explanation\": {EXPLANATION}}}"
+        " Respond with a percentage between 0 and 1 (in <PERCENTAGE>) depending on how correct you think the answer is"
+        " and with an explanation of why (in <EXPLANATION>), returning a json object:"
+        " {\"similarity\": <PERCENTAGE>, \"explanation\": <EXPLANATION>}"
         " The answer is correct if it is semantically similar to the expected answer, it does not have to be identical,"
         " but its meaning should be similar."
     )
