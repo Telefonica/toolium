@@ -24,6 +24,18 @@ from toolium.utils.ai_utils import (get_text_similarity_with_spacy, get_text_sim
                                     get_text_similarity_with_azure_openai, assert_text_similarity)
 
 
+def configure_default_openai_model():
+    """
+    Configure OpenAI model used in unit tests
+    """
+    config = DriverWrappersPool.get_default_wrapper().config
+    try:
+        config.add_section('AI')
+    except Exception:
+        pass
+    config.set('AI', 'openai_model', 'gpt-4o-mini')
+
+
 get_similarity_examples = (
     ('Today it will be sunny', 'Today it will be sunny', 0.9, 1),
     ('Today is sunny', 'Today it will be sunny', 0.6, 0.9),
@@ -56,6 +68,7 @@ get_openai_similarity_examples = (
 
 @pytest.mark.parametrize('input_text, expected_text, expected_low, expected_high', get_openai_similarity_examples)
 def test_get_text_similarity_with_azure_openai(input_text, expected_text, expected_low, expected_high):
+    configure_default_openai_model()
     similarity = get_text_similarity_with_azure_openai(input_text, expected_text)
     assert expected_low <= similarity <= expected_high
 
@@ -79,6 +92,7 @@ def test_assert_text_similarity_with_sentence_transformers_passed(input_text, ex
 
 @pytest.mark.parametrize('input_text, expected_text, threshold', assert_similarity_passed_examples)
 def test_assert_text_similarity_with_openai_passed(input_text, expected_text, threshold):
+    configure_default_openai_model()
     assert_text_similarity(input_text, expected_text, threshold=threshold, similarity_method='azure_openai')
 
 
@@ -110,6 +124,7 @@ assert_openai_similarity_failed_examples = (
 
 @pytest.mark.parametrize('input_text, expected_text, threshold', assert_openai_similarity_failed_examples)
 def test_assert_text_similarity_with_openai_failed(input_text, expected_text, threshold):
+    configure_default_openai_model()
     with pytest.raises(Exception) as excinfo:
         assert_text_similarity(input_text, expected_text, threshold=threshold, similarity_method='azure_openai')
     assert str(excinfo.value).startswith('Similarity between received and expected texts is below threshold')
