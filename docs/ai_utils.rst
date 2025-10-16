@@ -34,8 +34,8 @@ methods. You can specify the method to use with the `similarity_method` paramete
 Configuration
 ~~~~~~~~~~~~~
 
-Default similarity method can be set in the properties.cfg file with the property
-`text_similarity_method <https://toolium.readthedocs.io/en/latest/ai_utils.html#configuration>`_ in *[AI]* section::
+Default similarity method can be set in the properties.cfg file with the property *text_similarity_method* in
+*[AI]* section::
 
     [AI]
     text_similarity_method: openai  # Options: 'spacy' (default), 'sentence_transformers', 'openai', 'azure_openai'
@@ -45,9 +45,9 @@ Default similarity method can be set in the properties.cfg file with the propert
 
 To select models for each method, you can refer to the following links:
 
-* SpaCy: `https://spacy.io/models`
-* Sentence Transformers: `https://github.com/UKPLab/sentence-transformers`
-* OpenAI: `https://platform.openai.com/docs/models`
+* `Spacy models <https://spacy.io/models>`_
+* `Sentence Transformers models <https://github.com/UKPLab/sentence-transformers>`_
+* `OpenAI models <https://platform.openai.com/docs/models>`_
 
 Installation
 ~~~~~~~~~~~~
@@ -61,13 +61,13 @@ can install them with the following command:
 
 **Additional Requirements:**
 
-For SpaCy, you also need to download the language model, i.e. for small English model::
+For SpaCy, you also need to download the language model, i.e. for small English model:
 
 .. code-block:: bash
 
     python -m spacy download en_core_web_sm
 
-For OpenAI LLM, you need to set up your configuration in environment variables, that it may depend on the type of access you have (direct OpenAI access or Azure OpenAI).
+For OpenAI LLM, you need to set up your configuration in environment variables, that it may depend on the type of access you have (direct OpenAI access or Azure OpenAI):
 
 .. code-block:: bash
 
