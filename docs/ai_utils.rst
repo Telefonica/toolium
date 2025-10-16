@@ -9,9 +9,11 @@ Toolium provides several methods to compare and validate text similarity using d
 
 1. `SpaCy <https://spacy.io/>`_: Uses the SpaCy library to compute text similarity with pre-trained NLP models. Fast,
 lightweight and good for general-purpose text analysis.
+
 2. `Sentence Transformers <https://github.com/UKPLab/sentence-transformers>`_: Leverages Sentence Transformers for
 semantic textual similarity using deep learning embeddings. Best balance of accuracy and performance for semantic
 similarity.
+
 3. `OpenAI <https://github.com/openai/openai-python>`_: Utilizes OpenAI's language models for advanced semantic text
 comparison. Provides the most sophisticated analysis but requires API access and it may incur costs.
 
