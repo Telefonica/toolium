@@ -36,6 +36,60 @@ from toolium.utils.ai_utils.openai import openai_request
 # Configure logger
 logger = logging.getLogger(__name__)
 
+def is_negator(tok):
+    """
+    Check if a token is a negator using Universal Dependencies guidelines
+    Note: some languages may have different negation markers. That's why we use UD guidelines.
+
+    :param tok: spaCy token
+    """
+    # Universal Dependencies negation detection (e.g., Spanish "no", "nunca", etc.)
+    if tok.dep_ == "neg":
+        return True
+    # Some languages use Polarity=Neg for negation words (e.g., Spanish "no", "sin", etc.)
+    if "Neg" in tok.morph.get("Polarity"):
+        return True
+    # Some languages use PronType=Neg for negation words (e.g., Spanish "nunca", "nadie", etc.)
+    if "Neg" in tok.morph.get("PronType"):
+        return True
+    return False
+
+def preprocess_with_ud_negation(text, nlp):
+    """
+    Preprocess text using Universal Dependencies negation handling.
+    It tags negated words with "NEG_" prefix and replaces negators with "NEGATOR" token.
+    Stop words are removed.
+
+    :param text: input text
+    :param nlp: spaCy language model
+    """
+    doc = nlp(text)
+    # 1) Negators indexes
+    neg_idxs = {t.i for t in doc if is_negator(t)}
+    # 2) Negated heads indexes
+    negated_heads = set()
+    for i in neg_idxs:
+        head = doc[i].head
+        if head.is_alpha and not head.is_stop:
+            negated_heads.add(head.i)
+
+    toks = []
+    for t in doc:
+        if not t.is_alpha:
+            continue
+        # Keep negators as is
+        if is_negator(t):
+            toks.append("NEGATOR")
+            continue
+        if t.is_stop:
+            continue
+
+        lemma = t.lemma_.lower()
+        if t.i in negated_heads:
+            toks.append("NEG_" + lemma)
+        else:
+            toks.append(lemma)
+    return " ".join(toks)
 
 def get_text_similarity_with_spacy(text, expected_text, model_name=None):
     """
@@ -46,11 +100,18 @@ def get_text_similarity_with_spacy(text, expected_text, model_name=None):
     :param model_name: name of the spaCy model to use
     :returns: similarity score between the two texts
     """
+    # NOTE: spaCy similarity performance can be enhanced using some strategies like:
+    # - Normalizing texts (lowercase, extra points, etc.)
+    # - Use only models that include word vectors (e.g., 'en_core_news_md' or 'en_core_news_lg')
+    # - Preprocessing texts. In this approach, we only preprocess negations.
     if spacy is None:
         raise ImportError("spaCy is not installed. Please run 'pip install toolium[ai]' to use spaCy features")
     config = DriverWrappersPool.get_default_wrapper().config
-    model_name = model_name or config.get_optional('AI', 'spacy_model', 'en_core_web_sm')
+    model_name = model_name or config.get_optional('AI', 'spacy_model', 'es_core_news_md')
+    # TODO: Cache loaded models to improve performance using @lru_cache(maxsize=N) as decorator
     model = spacy.load(model_name)
+    text = model(preprocess_with_ud_negation(text, model))
+    expected_text = model(preprocess_with_ud_negation(expected_text, model))
     similarity = model(text).similarity(model(expected_text))
     logger.info(f"spaCy similarity: {similarity} between '{text}' and '{expected_text}'")
     return similarity
