@@ -397,25 +397,27 @@ def test_get_safari_navigation_bar_height(driver_type, appium_app, browser_name,
 def test_get_window_size_android_native(driver_wrapper, utils):
     # Configure driver mock
     window_size = {'width': 375, 'height': 667}
-    driver_wrapper.driver.get_window_size.return_value = window_size
+    window_rect = {'x': 0, 'y': 0, 'width': 375, 'height': 667}
+    driver_wrapper.driver.get_window_rect.return_value = window_rect
     driver_wrapper.config.set('Driver', 'type', 'android')
     driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
     assert utils.get_window_size() == window_size
-    driver_wrapper.driver.get_window_size.assert_called_once_with()
+    driver_wrapper.driver.get_window_rect.assert_called_once_with()
 
 
 def test_get_window_size_android_native_two_times(driver_wrapper, utils):
     # Configure driver mock
     window_size = {'width': 375, 'height': 667}
-    driver_wrapper.driver.get_window_size.return_value = window_size
+    window_rect = {'x': 0, 'y': 0, 'width': 375, 'height': 667}
+    driver_wrapper.driver.get_window_rect.return_value = window_rect
     driver_wrapper.config.set('Driver', 'type', 'android')
     driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
     assert utils.get_window_size() == window_size
     assert utils.get_window_size() == window_size
     # Check that window size is calculated only one time
-    driver_wrapper.driver.get_window_size.assert_called_once_with()
+    driver_wrapper.driver.get_window_rect.assert_called_once_with()
 
 
 def test_get_window_size_android_web(driver_wrapper, utils):
@@ -449,10 +451,10 @@ def test_get_window_size_android_web_two_times(driver_wrapper, utils):
 def test_get_native_coords_android_web(driver_wrapper, utils):
     # Configure driver mock
     web_window_size = {'width': 500, 'height': 667}
-    native_window_size = {'width': 250, 'height': 450}
+    native_window_rect = {'x': 0, 'y': 0, 'width': 250, 'height': 450}
     driver_wrapper.driver.current_context = 'WEBVIEW'
     driver_wrapper.driver.execute_script.side_effect = [web_window_size['width'], web_window_size['height']]
-    driver_wrapper.driver.get_window_size.side_effect = [native_window_size]
+    driver_wrapper.driver.get_window_rect.return_value = native_window_rect
     driver_wrapper.config.set('Driver', 'type', 'android')
     driver_wrapper.config.set('Capabilities', 'browserName', 'chrome')
 
@@ -464,8 +466,8 @@ def test_get_native_coords_android_web(driver_wrapper, utils):
 def test_get_native_coords_ios_web(driver_wrapper, utils):
     # Configure driver mock
     web_window_size = {'width': 500, 'height': 667}
-    native_window_size = {'width': 250, 'height': 450}
-    driver_wrapper.driver.get_window_size.return_value = native_window_size
+    native_window_rect = {'x': 0, 'y': 0, 'width': 250, 'height': 450}
+    driver_wrapper.driver.get_window_rect.return_value = native_window_rect
     utils.get_window_size = mock.MagicMock(return_value=web_window_size)
     driver_wrapper.config.set('Driver', 'type', 'ios')
     driver_wrapper.config.set('Capabilities', 'browserName', 'safari')
@@ -477,9 +479,6 @@ def test_get_native_coords_ios_web(driver_wrapper, utils):
 
 def test_swipe_android_native(driver_wrapper, utils):
     # Configure driver mock
-    web_window_size = {'width': 500, 'height': 667}
-    native_window_size = {'width': 250, 'height': 450}
-    driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
     driver_wrapper.driver.current_context = 'NATIVE_APP'
     driver_wrapper.config.set('Driver', 'type', 'android')
     driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
@@ -488,16 +487,25 @@ def test_swipe_android_native(driver_wrapper, utils):
     element = get_mock_element(x=250, y=40, height=40, width=300)
 
     utils.swipe(element, 50, 100)
-    driver_wrapper.driver.swipe.assert_called_once_with(400, 60, 450, 160, 0)
+
+    driver_wrapper.driver.execute_script.assert_called_once()
+    call_args = driver_wrapper.driver.execute_script.call_args
+    assert call_args[0][0] == 'mobile: swipeGesture'
+    assert call_args[0][1]['direction'] == 'down'
+    assert call_args[0][1]['percent'] == 1.0
 
 
 def test_swipe_android_web(driver_wrapper, utils):
     # Configure driver mock
     web_window_size = {'width': 500, 'height': 667}
-    native_window_size = {'width': 250, 'height': 450}
+    native_window_rect = {'x': 0, 'y': 0, 'width': 250, 'height': 450}
     driver_wrapper.driver.current_context = 'WEBVIEW'
-    driver_wrapper.driver.execute_script.side_effect = [web_window_size['width'], web_window_size['height']]
-    driver_wrapper.driver.get_window_size.side_effect = [native_window_size]
+    driver_wrapper.driver.execute_script.side_effect = [
+        web_window_size['width'],
+        web_window_size['height'],
+        None
+    ]
+    driver_wrapper.driver.get_window_rect.return_value = native_window_rect
     driver_wrapper.config.set('Driver', 'type', 'android')
     driver_wrapper.config.set('Capabilities', 'browserName', 'chrome')
 
@@ -505,16 +513,21 @@ def test_swipe_android_web(driver_wrapper, utils):
     element = get_mock_element(x=250, y=40, height=40, width=300)
 
     utils.swipe(element, 50, 100)
-    driver_wrapper.driver.swipe.assert_called_once_with(200, 30, 250, 130, 0)
+
+    assert driver_wrapper.driver.execute_script.call_count == 3
+    swipe_call = driver_wrapper.driver.execute_script.call_args_list[2]
+    assert swipe_call[0][0] == 'mobile: swipeGesture'
+    assert swipe_call[0][1]['direction'] == 'down'
+    assert swipe_call[0][1]['percent'] == 1.0
 
 
 def test_swipe_android_hybrid(driver_wrapper, utils):
     # Configure driver mock
     web_window_size = {'width': 500, 'height': 667}
-    native_window_size = {'width': 250, 'height': 450}
-    # driver_wrapper.utils
-    driver_wrapper.driver.get_window_size.side_effect = [web_window_size, native_window_size]
+    native_window_rect = {'x': 0, 'y': 0, 'width': 250, 'height': 450}
     driver_wrapper.driver.current_context = 'WEBVIEW'
+    driver_wrapper.driver.get_window_rect.return_value = native_window_rect
+    utils._window_size = web_window_size
     driver_wrapper.config.set('Driver', 'type', 'android')
     driver_wrapper.config.set('AppiumCapabilities', 'app', 'C:/Demo.apk')
 
@@ -522,14 +535,19 @@ def test_swipe_android_hybrid(driver_wrapper, utils):
     element = get_mock_element(x=250, y=40, height=40, width=300)
 
     utils.swipe(element, 50, 100)
-    driver_wrapper.driver.swipe.assert_called_once_with(200, 30, 250, 130, 0)
+
+    driver_wrapper.driver.execute_script.assert_called_once()
+    call_args = driver_wrapper.driver.execute_script.call_args
+    assert call_args[0][0] == 'mobile: swipeGesture'
+    assert call_args[0][1]['direction'] == 'down'  # y=100 > x=50
+    assert call_args[0][1]['percent'] == 1.0
 
 
 def test_swipe_ios_web(driver_wrapper, utils):
     # Configure driver mock
     web_window_size = {'width': 500, 'height': 667}
-    native_window_size = {'width': 250, 'height': 450}
-    driver_wrapper.driver.get_window_size.return_value = native_window_size
+    native_window_rect = {'x': 0, 'y': 0, 'width': 250, 'height': 450}
+    driver_wrapper.driver.get_window_rect.return_value = native_window_rect
     utils.get_window_size = mock.MagicMock(return_value=web_window_size)
     driver_wrapper.config.set('Driver', 'type', 'ios')
     driver_wrapper.config.set('Capabilities', 'browserName', 'safari')
@@ -538,7 +556,12 @@ def test_swipe_ios_web(driver_wrapper, utils):
     element = get_mock_element(x=250, y=40, height=40, width=300)
 
     utils.swipe(element, 50, 100)
-    driver_wrapper.driver.swipe.assert_called_once_with(200, 94, 50, 100, 0)
+
+    driver_wrapper.driver.execute_script.assert_called_once()
+    call_args = driver_wrapper.driver.execute_script.call_args
+    assert call_args[0][0] == 'mobile: swipe'
+    assert call_args[0][1]['direction'] == 'down'  # y=100 > x=50
+    assert 'element' in call_args[0][1]
 
 
 def test_swipe_web(driver_wrapper, utils):

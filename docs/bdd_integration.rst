@@ -48,7 +48,7 @@ After initialization, the following attributes will be available in behave conte
 
 - :code:`context.toolium_config`: dictionary with Toolium configuration, readed from properties.cfg
 - :code:`context.driver_wrapper`: :ref:`DriverWrapper <driver_wrapper>` instance
-- :code:`context.driver`: Selenium or Appium driver instance
+- :code:`context.driver`: Selenium, Playwright or Appium driver instance
 - :code:`context.utils`: :ref:`Utils <utils>` instance
 
 Behave userdata properties
@@ -146,10 +146,7 @@ Behave variables transformation
 -------------------------------
 
 Toolium provides a set of functions that allow the transformation of specific string tags into different values.
-These are the main ones, along with the list of tags they support and their associated replacement logic (click on the
-functions or check the :ref:`dataset <dataset>` module for more implementation details):
-
-`replace_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.replace_param>`_:
+See below their values, along with their associated replacement logic (click `here <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.replace_param>`_  or check the :ref:`dataset <dataset>` module for more implementation details):
 
 * :code:`[STRING_WITH_LENGTH_XX]`: Generates a fixed length string
 * :code:`[INTEGER_WITH_LENGTH_XX]`: Generates a fixed length integer
@@ -166,9 +163,9 @@ functions or check the :ref:`dataset <dataset>` module for more implementation d
 * :code:`[RANDOM]`: Generates a random value
 * :code:`[RANDOM_PHONE_NUMBER]`: Generates a random phone number for language and country configured in dataset.language and dataset.country
 * :code:`[TIMESTAMP]`: Generates a timestamp from the current time
-* :code:`[DATETIME]`: Generates a datetime from the current time
-* :code:`[NOW]`: Similar to DATETIME without milliseconds; the format depends on the language
-* :code:`[NOW(%Y-%m-%dT%H:%M:%SZ)]`: Same as NOW but using an specific format by the python strftime function of the datetime module
+* :code:`[DATETIME]`: Generates a datetime from the current time (UTC)
+* :code:`[NOW]`: Similar to DATETIME without microseconds; the format depends on the language
+* :code:`[NOW(%Y-%m-%dT%H:%M:%SZ)]`: Same as NOW but using an specific format by the python strftime function of the datetime module. When using the %f placeholder, the number of digits to be used can be set like this: %3f
 * :code:`[NOW + 2 DAYS]`: Similar to NOW but two days later
 * :code:`[NOW - 1 MINUTES]`: Similar to NOW but one minute earlier
 * :code:`[NOW(%Y-%m-%dT%H:%M:%SZ) - 7 DAYS]`: Similar to NOW but seven days before and with the indicated format
@@ -181,14 +178,79 @@ functions or check the :ref:`dataset <dataset>` module for more implementation d
 * :code:`[DICT:xxxx]`: Cast xxxx to a dict
 * :code:`[UPPER:xxxx]`: Converts xxxx to upper case
 * :code:`[LOWER:xxxx]`: Converts xxxx to lower case
+* :code:`[REPLACE:xxxx::SUBSTRING_TO_BE_REPLACED::SUBSTRING_TO_USE_AS_REPLACEMENT]`: Replaces a substring with another in xxxx string
+* :code:`[TITLE:xxxx]`: Applies python's string title() method to xxxx string
+* :code:`[ROUND:xxxx::N]`: Rounds given number xxxx to N digits in its fractional part
 
-`map_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.map_param>`_:
+
+There are also some special tags that allow to use parameter values configured at different sources defined by the `map_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.map_param>`_ method:
 
 * :code:`[CONF:xxxx]`: Value from the config dict in dataset.project_config for the key xxxx
 * :code:`[LANG:xxxx]`: String from the texts dict in dataset.language_terms for the key xxxx, using the language specified in dataset.language
+* :code:`[LANG:xxxx::OTHER_LANGUAGE]`: String from the texts dict in dataset.language terms for the key xxxx, using the language specified in OTHER_LANGUAGE
 * :code:`[POE:xxxx]`: Definition(s) from the POEditor terms list in dataset.poeditor_terms for the term xxxx (see :ref:`poeditor <poeditor>` module for details)
 * :code:`[TOOLIUM:xxxx]`: Value from the toolium config in dataset.toolium_config for the key xxxx
 * :code:`[CONTEXT:xxxx]`: Value from the behave context storage dict in dataset.behave_context for the key xxxx, or value of the behave context attribute xxxx, if the former does not exist
 * :code:`[ENV:xxxx]`: Value of the OS environment variable xxxx
 * :code:`[FILE:xxxx]`: String with the content of the file in the path xxxx
 * :code:`[BASE64:xxxx]`: String with the base64 representation of the file content in the path xxxx
+
+In order to apply the string replacements in your code, import and call the corresponding function. E.g.::
+
+.. code:: console
+
+    from toolium.utils.dataset import map_param, replace_param
+
+    mapped_param = map_param('[TOOLIUM:Driver_chrome_driver_path]')
+    replaced_param = replace_param('[NOW - 1 MINUTES]')
+
+Please note that, by default, the `replace_param` function tries to convert the resulting value to a native Python datatype. If that does not work for you, do not forget to set the `infer_param_type` parameter to `False`.
+
+
+POEditor tags
+^^^^^^^^^^^^^
+
+POE tag returns a list of texts or a single text (if only one result) from POEditor for the given resource.
+
+Language used to get texts in POEditor will be get from toolium config file ([TestExecution] language):
+
+.. code:: console
+
+    [TestExecution]
+    language: es-es
+    poeditor_mode: offline
+
+poeditor_mode with value offline will try to get a local copy of POEditor terms from output directory, online mode (by default if not provided) will download always terms from POEditor.
+If provided will override poeditor mode parameter defined in properties file.
+
+In your project config, add this block:
+
+.. code:: console
+
+    "poeditor": {
+        "base_url": "https://api.poeditor.com",
+        "api_token": "XXXXX",
+        "project_name": "Aura-Bot",
+        "prefixes": [],
+        "key_field": "reference",
+        "search_type": "contains",
+        "mode": "online",
+        "file_path": "resources/poeditor/poeditor_terms.json"
+    }
+
+* api_token can be generated from POEditor in this url: https://poeditor.com/account/api
+
+* api_token can also be configured from a system property called `poeditor_api_token`
+
+* prefixes contains a list of references prefixes that can be used to search the reference
+
+For example, if prefixes = ['PRE.'], POE returns the value of 'PRE.reference' if this reference exists otherwise it
+returns the value of 'reference'
+
+* key_field can be any field of POEditor text structure. The default value is "reference"
+
+* search_type can be "contains" if more than one result is expected or "exact" if only one result is expected. The default value is "contains"
+
+* mode with value offline will try to get a local copy of POEditor terms from output directory, online mode (by default if not provided) will download always terms from POEditor
+
+* file_path contains relative path of downloaded POEditor terms file (default value: _output/poeditor_terms.json)

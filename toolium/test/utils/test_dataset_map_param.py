@@ -112,6 +112,17 @@ def test_a_lang_param():
     assert expected == result
 
 
+def test_a_lang_param_modified():
+    """
+    Verification of a mapped parameter as LANG
+    """
+    dataset.language_terms = {"home": {"button": {"send": {"es": "enviar", "en": "send"}}}}
+    dataset.language = "es"
+    result = map_param("[LANG:home.button.send::en]")
+    expected = "send"
+    assert expected == result
+
+
 unknown_lang_keys = [
     ('unknown'),
     ('home.unknown'),

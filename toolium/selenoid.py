@@ -132,62 +132,66 @@ class Selenoid(object):
         """
         Is the GGR session still active? Associated to a browser and the sessionId
         Example of GGR status:
-        {
-          "browsers": {
-            "MicrosoftEdge": {
-              "latest": {}
-            },
-            "android": {
-              "8.1": {}
-            },
-            "chrome": {
-              "70.0": {},
-              "latest": {
-                "test_tef": {
-                  "count": 1,
-                  "sessions": [
-                    {
-                      "caps": {
-                        "browserName": "chrome",
-                        "enableVNC": true,
-                        "enableVideo": true,
-                        "platformName": "ANY",
-                        "screenResolution": "1280x1024x24",
-                        'browserVersion': "latest",
-                        "videoName": "selenoide952e551bb9395e16d060f28c54e5d31.mp4",
-                        "videoScreenSize": "1280x1024"
-                      },
-                      "container": "8489205e28c9781472e99c3921a6240de3894a3603ed9e187ad6360b6b013b8b",
-                      "containerInfo": {
-                        "id": "8489205e28c9781472e99c3921a6240de3894a3603ed9e187ad6360b6b013b8b",
-                        "ip": "172.17.0.4"
-                      },
-                      "id": "1345506093dfed8dbcef610da476911a228ca315978e5464ae49fb1142bbc49b",
-                      "screen": "1280x1024x24",
-                      "vnc": true
+
+        .. code-block:: json
+
+            {
+            "browsers": {
+                "MicrosoftEdge": {
+                "latest": {}
+                },
+                "android": {
+                "8.1": {}
+                },
+                "chrome": {
+                "70.0": {},
+                "latest": {
+                    "test_tef": {
+                    "count": 1,
+                    "sessions": [
+                        {
+                        "caps": {
+                            "browserName": "chrome",
+                            "enableVNC": true,
+                            "enableVideo": true,
+                            "platformName": "ANY",
+                            "screenResolution": "1280x1024x24",
+                            "browserVersion": "latest",
+                            "videoName": "selenoide952e551bb9395e16d060f28c54e5d31.mp4",
+                            "videoScreenSize": "1280x1024"
+                        },
+                        "container": "8489205e28c9781472e99c3921a6240de3894a3603ed9e187ad6360b6b013b8b",
+                        "containerInfo": {
+                            "id": "8489205e28c9781472e99c3921a6240de3894a3603ed9e187ad6360b6b013b8b",
+                            "ip": "172.17.0.4"
+                        },
+                        "id": "1345506093dfed8dbcef610da476911a228ca315978e5464ae49fb1142bbc49b",
+                        "screen": "1280x1024x24",
+                        "vnc": true
+                        }
+                    ]
                     }
-                  ]
                 }
-              }
+                },
+                "firefox": {
+                "59.0": {},
+                "63.0": {},
+                "64.0": {},
+                "latest": {}
+                },
+                "internet explorer": {
+                "11": {}
+                },
+                "safari": {
+                "latest": {}
+                }
             },
-            "firefox": {
-              "59.0": {},
-              "63.0": {},
-              "64.0": {},
-              "latest": {}
-            },
-            "internet explorer": {
-              "11": {}
-            },
-            "safari": {
-              "latest": {}
+            "pending": 0,
+            "queued": 0,
+            "total": 30,
+            "used": 1
             }
-          },
-          "pending": 0,
-          "queued": 0,
-          "total": 30,
-          "used": 1
-        }
+
         :return boolean (although in case of error in the request will be returned None)
         """
         server_url_splitted = self.server_url.split(':')
@@ -224,7 +228,7 @@ class Selenoid(object):
         """
         download the execution video file if the scenario fails or the video is enabled,
         renaming the file to scenario name and removing the video file in the server.
-             GGR request: http://<username>:<password>@<ggr_host>:<ggr_port>/video/<session_id>
+        GGR request: http://<username>:<password>@<ggr_host>:<ggr_port>/video/<session_id>
         selenoid request: http://<username>:<password>@<ggr_host>:<ggr_port>/video/<session_id>.mp4
         :param scenario_name: scenario name
         :param timeout: threshold until the video file is downloaded
@@ -249,7 +253,7 @@ class Selenoid(object):
         """
         download the session log file from remote selenoid,
         renaming the file to scenario name and removing the log file in the server.
-             GGR request: http://<username>:<password>@<ggr_host>:<ggr_port>/logs/<ggr_session_id>
+        GGR request: http://<username>:<password>@<ggr_host>:<ggr_port>/logs/<ggr_session_id>
         selenoid request: http://<username>:<password>@<ggr_host>:<ggr_port>/logs/<ggr_session_id>.log
         :param scenario_name: scenario name
         :param timeout: threshold until the log file is downloaded

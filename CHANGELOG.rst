@@ -1,10 +1,49 @@
 Toolium Changelog
 =================
 
-v3.3.1
+v3.6.0
 ------
 
 *Release date: In development*
+
+- Removed xcuitest deprecated get_window_size() method and replaced it with get_window_rect() in all mobile actions
+- Add text comparison methods based on AI libraries. To use them, install the `ai` extra dependency:
+
+.. code:: console
+
+    $ pip install toolium[ai]
+
+v3.5.0
+------
+
+*Release date: 2025-07-29*
+
+- Add support for Python 3.13
+- Remove Python 3.8 support (Python 3.8 reached the end of its life on October 14th, 2024)
+- Add `LANG` replacement, to use different language translations. Example: [LANG:some_text::new_language]
+- Playwright installation is now optional, it can be installed with the `playwright` extra dependency. To install
+  Toolium with Playwright support, use:
+
+.. code:: console
+
+    $ pip install toolium[playwright]
+
+v3.4.0
+------
+
+*Release date: 2025-03-06*
+
+- Now Playwright is available to run web tests instead of Selenium by configuring `web_library: playwright` in [Driver]
+  section
+- Allow setting the number of decimal places for seconds when using the `[NOW]` replacement with a specific format
+
+v3.3.1
+------
+
+*Release date: 2025-02-05*
+
+- Allow to save the diff image in jpg format for visual tests working with jpg
+- Fix the use of the # character in the actions defined in the feature description (Actions Before/After...)
 
 v3.3.0
 ------
@@ -584,7 +623,8 @@ v1.2.0
 
    | If it's false, the WebElement is searched whenever is needed (default value)
    | If it's true, the WebElement is saved in PageElement to avoid searching for the same element multiple times. Useful
-   in mobile testing when searching for an element can take a long time.
+     in mobile testing when searching for an element can take a long time.
+
 - New config property 'restart_driver_fail' in [Driver] section to restart the driver when the test fails even though
   the value of *reuse_driver* property is *true*
 - System property 'Config_environment' is used to select config files, e.g., to read android-properties.cfg file:
