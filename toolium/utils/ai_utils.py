@@ -46,7 +46,7 @@ Prompt Injection cases summary:
  - Indirect Attack: The user inputs data that, when processed by the AI, leads to unintended behavior.
  - Multilingual / obfuscated attacks: The user uses different languages or obfuscation techniques to bypass filters.
  - Concatenation Attack: The user inputs data that, when concatenated with existing prompts alters the intended behavior.
- - Adversarial suffix: The user appends a carefully crafted suffix to the original prompt to manipulate the AI's response.
+ - Adversarial suffix: The user appends a carefully crafted suffix to the original prompt to manipulate the AI response.
 
 References:
  https://owasp.org/www-community/attacks/PromptInjection
