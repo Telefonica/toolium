@@ -88,3 +88,31 @@ you have (direct OpenAI access or Azure OpenAI):
     AZURE_OPENAI_API_KEY=<your_api_key>
     AZURE_OPENAI_ENDPOINT=<your_endpoint>
     OPENAI_API_VERSION=<your_api_version>
+
+
+Accuracy tag for Behave scenarios
+---------------------------------
+
+You can use accuracy tags in your Behave scenarios to specify the desired accuracy level and number of retries for
+scenarios that involve AI-generated content. The accuracy tag follows the format `@accuracy_<percent>_<retries>`,
+where `<percent>` is the desired accuracy percentage (0-100) and `<retries>` is the number of retries to achieve that
+accuracy. For example, `@accuracy_80_10` indicates that the scenario should achieve at least 80% accuracy retrying the
+scenario execution 10 times.
+
+.. code-block:: bash
+
+    @accuracy_80_10
+    Scenario: Validate AI-generated response accuracy
+      Given the AI model generates a response
+      When the user sends a message
+      Then the AI response should be accurate
+
+When a scenario is tagged with an accuracy tag, Toolium will automatically execute the scenario multiple times. If the
+scenario does not meet the specified accuracy after the given number of retries, it will be marked as failed.
+
+Other examples of accuracy tags:
+- `@accuracy_percent_85_retries_10`: 85% accuracy, 10 retries
+- `@accuracy_percent_75`: 75% accuracy, default 10 retries
+- `@accuracy_90_5`: 90% accuracy, 5 retries
+- `@accuracy_80`: 80% accuracy, default 10 retries
+- `@accuracy`: default 90% accuracy, 10 retries

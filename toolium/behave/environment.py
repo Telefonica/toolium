@@ -23,13 +23,14 @@ import collections
 
 from behave.api.async_step import use_or_create_async_context
 
-from toolium.utils import dataset
+from toolium.behave.env_utils import DynamicEnvironment
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.jira import add_jira_status, change_all_jira_status, save_jira_conf
-from toolium.visual_test import VisualTest
 from toolium.pageelements import PageElement
-from toolium.behave.env_utils import DynamicEnvironment
+from toolium.utils import dataset
+from toolium.utils.ai_utils.accuracy import patch_feature_scenarios_with_accuracy
+from toolium.visual_test import VisualTest
 
 
 def before_all(context):
@@ -85,6 +86,9 @@ def before_feature(context, feature):
     # Dictionary to store information between features
     context.feature_storage = dict()
     context.storage = collections.ChainMap(context.feature_storage, context.run_storage)
+
+    # Patch scenarios when accuracy tags are present
+    patch_feature_scenarios_with_accuracy(context, feature)
 
     # Behave dynamic environment
     context.dyn_env.get_steps_from_feature_description(feature.description)
