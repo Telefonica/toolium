@@ -20,14 +20,14 @@ comparison. Provides the most sophisticated analysis but requires API access and
 Usage
 ~~~~~
 
-You can use the function `assert_text_similarity` from `toolium.utils.ai_utils` module to compare two texts using any of
-these methods. You can specify the method to use with the `similarity_method` parameter and set a threshold for
-similarity with the `threshold` parameter (a value between 0 and 1, where 1 means identical and 0 means completely
-different).
+You can use the function `assert_text_similarity` from `toolium.utils.ai_utils.text_similarity` module to compare
+two texts using any of these methods. You can specify the method to use with the `similarity_method` parameter and set a
+threshold for similarity with the `threshold` parameter (a value between 0 and 1, where 1 means identical and 0 means
+completely different).
 
 .. code-block:: python
 
-    from toolium.utils.ai_utils import assert_text_similarity
+    from toolium.utils.ai_utils.text_similarity import assert_text_similarity
 
     # Basic usage
     input_text = "The quick brown fox jumps over the lazy dog"
