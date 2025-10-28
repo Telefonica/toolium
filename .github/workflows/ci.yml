@@ -31,7 +31,7 @@ jobs:
         AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
         OPENAI_API_VERSION: ${{ secrets.OPENAI_API_VERSION }}
       run: |
-        coverage run --source=toolium -m pytest toolium/test
+        coverage run --source=toolium -m pytest toolium/testa
     - name: Publish on coveralls.io
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

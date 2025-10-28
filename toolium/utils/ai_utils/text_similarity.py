@@ -18,7 +18,6 @@ limitations under the License.
 
 import json
 import logging
-from functools import lru_cache
 
 # AI library imports must be optional to allow installing Toolium without `ai` extra dependency
 try:
@@ -32,79 +31,11 @@ except ImportError:
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.ai_utils.openai import openai_request
+from toolium.utils.ai_utils.spacy import get_nlp, preprocess_with_ud_negation
 
 
 # Configure logger
 logger = logging.getLogger(__name__)
-
-
-@lru_cache(maxsize=8)
-def get_nlp(model_name):
-    """
-    get spaCy model.
-    This method uses lru cache to get spaCy model to improve performance.
-
-    :param model_name: spaCy model name
-    :return: spaCy model
-    """
-    return spacy.load(model_name)
-
-
-def is_negator(tok):
-    """
-    Check if a token is a negator using Universal Dependencies guidelines
-    Note: some languages may have different negation markers. That's why we use UD guidelines.
-
-    :param tok: spaCy token
-    """
-    # Universal Dependencies negation detection (e.g., Spanish "no", "nunca", etc.)
-    if tok.dep_ == "neg":
-        return True
-    # Some languages use Polarity=Neg for negation words (e.g., Spanish "no", "sin", etc.)
-    if "Neg" in tok.morph.get("Polarity"):
-        return True
-    # Some languages use PronType=Neg for negation words (e.g., Spanish "nunca", "nadie", etc.)
-    if "Neg" in tok.morph.get("PronType"):
-        return True
-    return False
-
-
-def preprocess_with_ud_negation(text, nlp):
-    """
-    Preprocess text using Universal Dependencies negation handling.
-    It tags negated words with "NEG_" prefix and replaces negators with "NEGATOR" token.
-    Stop words are removed.
-
-    :param text: input text
-    :param nlp: spaCy language model
-    """
-    doc = nlp(text)
-    # 1) Negators indexes
-    neg_idxs = {t.i for t in doc if is_negator(t)}
-    # 2) Negated heads indexes
-    negated_heads = set()
-    for i in neg_idxs:
-        head = doc[i].head
-        if head.is_alpha and not head.is_stop:
-            negated_heads.add(head.i)
-
-    toks = []
-    for t in doc:
-        if not t.is_alpha:
-            continue
-        # Keep negators as is
-        if is_negator(t):
-            toks.append("NEGATOR")
-            continue
-        if t.is_stop:
-            continue
-
-        lemma = t.lemma_.lower()
-        if t.i in negated_heads:
-            toks.append("NEG_" + lemma)
-        else:
-            toks.append(lemma)
-    return " ".join(toks)
 
 
 def get_text_similarity_with_spacy(text, expected_text, model_name=None):
@@ -124,7 +55,7 @@ def get_text_similarity_with_spacy(text, expected_text, model_name=None):
     if spacy is None:
         raise ImportError("spaCy is not installed. Please run 'pip install toolium[ai]' to use spaCy features")
     config = DriverWrappersPool.get_default_wrapper().config
-    model_name = model_name or config.get_optional('AI', 'spacy_model', 'es_core_news_md')
+    model_name = model_name or config.get_optional('AI', 'spacy_model', 'en_core_web_md')
     model = get_nlp(model_name)
     text = model(preprocess_with_ud_negation(text, model))
     expected_text = model(preprocess_with_ud_negation(expected_text, model))
