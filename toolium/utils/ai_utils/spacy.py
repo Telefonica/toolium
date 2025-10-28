@@ -39,6 +39,8 @@ def get_spacy_model(model_name):
     :param model_name: spaCy model name
     :return: spaCy model
     """
+    if spacy is None:
+        return None
     return spacy.load(model_name)
 
 
