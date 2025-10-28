@@ -31,7 +31,7 @@ except ImportError:
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.ai_utils.openai import openai_request
-from toolium.utils.ai_utils.spacy import get_nlp, preprocess_with_ud_negation
+from toolium.utils.ai_utils.spacy import get_spacy_model, preprocess_with_ud_negation
 
 
 # Configure logger
@@ -56,7 +56,7 @@ def get_text_similarity_with_spacy(text, expected_text, model_name=None):
         raise ImportError("spaCy is not installed. Please run 'pip install toolium[ai]' to use spaCy features")
     config = DriverWrappersPool.get_default_wrapper().config
     model_name = model_name or config.get_optional('AI', 'spacy_model', 'en_core_web_md')
-    model = get_nlp(model_name)
+    model = get_spacy_model(model_name)
     text = model(preprocess_with_ud_negation(text, model))
     expected_text = model(preprocess_with_ud_negation(expected_text, model))
     similarity = model(text).similarity(model(expected_text))

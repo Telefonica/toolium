@@ -24,10 +24,6 @@ try:
     import spacy
 except ImportError:
     spacy = None
-try:
-    from sentence_transformers import SentenceTransformer
-except ImportError:
-    SentenceTransformer = None
 
 
 # Configure logger
@@ -35,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 @lru_cache(maxsize=8)
-def get_nlp(model_name):
+def get_spacy_model(model_name):
     """
     get spaCy model.
     This method uses lru cache to get spaCy model to improve performance.
