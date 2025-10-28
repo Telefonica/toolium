@@ -50,6 +50,7 @@ setup(
         'toolium.pageelements.playwright',
         'toolium.behave',
         'toolium.utils',
+        'toolium.utils.ai_utils',
     ],
     package_data={
         '': [
