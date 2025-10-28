@@ -37,6 +37,7 @@ from toolium.utils.ai_utils.openai import openai_request
 # Configure logger
 logger = logging.getLogger(__name__)
 
+
 @lru_cache(maxsize=8)
 def get_nlp(model_name):
     """
@@ -47,6 +48,7 @@ def get_nlp(model_name):
     :return: spaCy model
     """
     return spacy.load(model_name)
+
 
 def is_negator(tok):
     """
@@ -65,6 +67,7 @@ def is_negator(tok):
     if "Neg" in tok.morph.get("PronType"):
         return True
     return False
+
 
 def preprocess_with_ud_negation(text, nlp):
     """
@@ -102,6 +105,7 @@ def preprocess_with_ud_negation(text, nlp):
         else:
             toks.append(lemma)
     return " ".join(toks)
+
 
 def get_text_similarity_with_spacy(text, expected_text, model_name=None):
     """
