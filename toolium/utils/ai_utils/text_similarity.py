@@ -18,6 +18,7 @@ limitations under the License.
 
 import json
 import logging
+from functools import lru_cache
 
 # AI library imports must be optional to allow installing Toolium without `ai` extra dependency
 try:
@@ -35,6 +36,17 @@ from toolium.utils.ai_utils.openai import openai_request
 
 # Configure logger
 logger = logging.getLogger(__name__)
+
+@lru_cache(maxsize=8)
+def get_nlp(model_name):
+    """
+    get spaCy model.
+    This method uses lru cache to get spaCy model to improve performance.
+
+    :param model_name: spaCy model name
+    :return: spaCy model
+    """
+    return spacy.load(model_name)
 
 def is_negator(tok):
     """
@@ -93,7 +105,8 @@ def preprocess_with_ud_negation(text, nlp):
 
 def get_text_similarity_with_spacy(text, expected_text, model_name=None):
     """
-    Return similarity between two texts using spaCy
+    Return similarity between two texts using spaCy.
+    This method normalize both texts before comparing them.
 
     :param text: string to compare
     :param expected_text: string with the expected text
@@ -103,13 +116,12 @@ def get_text_similarity_with_spacy(text, expected_text, model_name=None):
     # NOTE: spaCy similarity performance can be enhanced using some strategies like:
     # - Normalizing texts (lowercase, extra points, etc.)
     # - Use only models that include word vectors (e.g., 'en_core_news_md' or 'en_core_news_lg')
-    # - Preprocessing texts. In this approach, we only preprocess negations.
+    # - Preprocessing texts. Now we only preprocess negations.
     if spacy is None:
         raise ImportError("spaCy is not installed. Please run 'pip install toolium[ai]' to use spaCy features")
     config = DriverWrappersPool.get_default_wrapper().config
     model_name = model_name or config.get_optional('AI', 'spacy_model', 'es_core_news_md')
-    # TODO: Cache loaded models to improve performance using @lru_cache(maxsize=N) as decorator
-    model = spacy.load(model_name)
+    model = get_nlp(model_name)
     text = model(preprocess_with_ud_negation(text, model))
     expected_text = model(preprocess_with_ud_negation(expected_text, model))
     similarity = model(text).similarity(model(expected_text))
