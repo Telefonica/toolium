@@ -70,13 +70,17 @@ Toolium defines three tags to configure driver:
 * :code:`@reset_driver`: identifies a scenario that should not reuse the driver. The browser will be closed and reopen before this test.
 * :code:`@no_driver`: identifies a scenario or feature that should not start the driver, typically in API tests.
 
-And other scenario tags to configure Appium tests:
+It also supports other scenario tags to configure Appium tests:
 
 * :code:`@no_reset_app`: mobile app will not be reset before test (i.e. no-reset Appium capability is set to true)
 * :code:`@reset_app`: mobile app will be reset before test (i.e. no-reset and full-reset Appium capabilities are set to false)
 * :code:`@full_reset_app`: mobile app will be full reset before test (i.e. full-reset Appium capability is set to true)
 * :code:`@android_only`: identifies a scenario that should only be executed in Android
 * :code:`@ios_only`: identifies a scenario that should only be executed in iOS
+
+And it supports accuracy tag for AI related scenarios:
+
+* :code:`@accuracy_<percent>_<retries>`: identifies a scenario that should achieve at least `<percent>` accuracy retrying up to `<retries>` times (view :ref:`Accuracy tag for Behave scenarios <ai_utils>` for more details)
 
 Behave - Dynamic Environment
 ----------------------------

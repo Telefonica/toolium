@@ -7,6 +7,7 @@ toolium packages
     toolium.pageelements
     toolium.pageobjects
     toolium.utils
+    toolium.utils.ai_utils
 
 toolium modules
 ===============

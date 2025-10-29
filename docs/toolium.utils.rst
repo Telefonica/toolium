@@ -3,16 +3,6 @@
 utils
 =====
 
-.. _ai_utils:
-
-ai_utils
---------
-
-.. automodule:: toolium.utils.ai_utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 .. _dataset:
 
 dataset

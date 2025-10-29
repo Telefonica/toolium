@@ -106,8 +106,8 @@ def get_text_similarity_with_openai(text, expected_text, azure=False):
         explanation = response['explanation']
     except (KeyError, ValueError, TypeError) as e:
         raise ValueError(f"Unexpected response format from OpenAI: {response}") from e
-    logger.info(f"OpenAI LLM similarity: {similarity} between '{text}' and '{expected_text}'."
-                f" LLM explanation: {explanation}")
+    logger.info(f"OpenAI LLM similarity: {similarity} between '{text}' and '{expected_text}'")
+    logger.info(f"OpenAI LLM explanation: {explanation}")
     return similarity
 
 
