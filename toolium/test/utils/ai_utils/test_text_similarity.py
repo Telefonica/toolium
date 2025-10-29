@@ -39,8 +39,8 @@ def configure_default_openai_model():
 
 get_similarity_examples = (
     ('Today it will be sunny', 'Today it will be sunny', 0.9, 1),
-    ('Today is sunny', 'Today it will be sunny', 0.6, 0.9),
-    ('It is sunny', 'Today it will be sunny', 0.5, 0.7),
+    ('Today is sunny', 'Today it will be sunny', 0.7, 1),
+    ('It is sunny', 'Today it will be sunny', 0.7, 1),
     ('Nothing related', 'Today it will be sunny', 0, 0.6),
 )
 

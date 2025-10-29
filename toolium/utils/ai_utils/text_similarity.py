@@ -19,11 +19,6 @@ limitations under the License.
 import json
 import logging
 
-# AI library imports must be optional to allow installing Toolium without `ai` extra dependency
-try:
-    import spacy
-except ImportError:
-    spacy = None
 try:
     from sentence_transformers import SentenceTransformer
 except ImportError:
@@ -31,6 +26,7 @@ except ImportError:
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.ai_utils.openai import openai_request
+from toolium.utils.ai_utils.spacy import get_spacy_model, preprocess_with_ud_negation
 
 
 # Configure logger
@@ -39,18 +35,25 @@ logger = logging.getLogger(__name__)
 
 def get_text_similarity_with_spacy(text, expected_text, model_name=None):
     """
-    Return similarity between two texts using spaCy
+    Return similarity between two texts using spaCy.
+    This method normalize both texts before comparing them.
 
     :param text: string to compare
     :param expected_text: string with the expected text
     :param model_name: name of the spaCy model to use
     :returns: similarity score between the two texts
     """
-    if spacy is None:
-        raise ImportError("spaCy is not installed. Please run 'pip install toolium[ai]' to use spaCy features")
+    # NOTE: spaCy similarity performance can be enhanced using some strategies like:
+    # - Normalizing texts (lowercase, extra points, etc.)
+    # - Use only models that include word vectors (e.g., 'en_core_news_md' or 'en_core_news_lg')
+    # - Preprocessing texts. Now we only preprocess negations.
     config = DriverWrappersPool.get_default_wrapper().config
-    model_name = model_name or config.get_optional('AI', 'spacy_model', 'en_core_web_sm')
-    model = spacy.load(model_name)
+    model_name = model_name or config.get_optional('AI', 'spacy_model', 'en_core_web_md')
+    model = get_spacy_model(model_name)
+    if model is None:
+        raise ImportError("spaCy is not installed. Please run 'pip install toolium[ai]' to use spaCy features")
+    text = model(preprocess_with_ud_negation(text, model))
+    expected_text = model(preprocess_with_ud_negation(expected_text, model))
     similarity = model(text).similarity(model(expected_text))
     logger.info(f"spaCy similarity: {similarity} between '{text}' and '{expected_text}'")
     return similarity
