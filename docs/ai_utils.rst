@@ -90,8 +90,11 @@ you have (direct OpenAI access or Azure OpenAI):
     OPENAI_API_VERSION=<your_api_version>
 
 
-Accuracy tag for Behave scenarios
----------------------------------
+Accuracy tags for Behave scenarios
+----------------------------------
+
+@accuracy
+~~~~~~~~~
 
 You can use accuracy tags in your Behave scenarios to specify the desired accuracy level and number of retries for
 scenarios that involve AI-generated content. The accuracy tag follows the format `@accuracy_<percent>_<retries>`,
@@ -116,3 +119,41 @@ Other examples of accuracy tags:
 - `@accuracy_90_5`: 90% accuracy, 5 retries
 - `@accuracy_80`: 80% accuracy, default 10 retries
 - `@accuracy`: default 90% accuracy, 10 retries
+
+@accuracy_data
+~~~~~~~~~~~~~~
+
+You can also use accuracy data tags in your Behave scenarios to specify different sets of accuracy data for each retry.
+The accuracy data tag follows the format `@accuracy_data_<suffix>`, where `<suffix>` is a custom suffix to identify the
+accuracy data set. For example, `@accuracy_data_greetings` indicates that the scenario should use the accuracy data set
+with the suffix "greetings".
+
+.. code-block:: bash
+
+    @accuracy_80
+    @accuracy_data_greetings
+    Scenario: Validate AI-generated greeting responses
+      Given the AI model generates a greeting response
+      When the user sends "[CONTEXT:accuracy_retry_data.question]" message
+      Then the AI greeting response should be similar to "[CONTEXT:accuracy_retry_data.answer]"
+
+When a scenario is tagged with an accuracy data tag, Toolium will automatically use the specified accuracy data set for
+each retry. This allows you to test different scenarios with varying data inputs. Accuracy data should be stored
+previously in the context storage under the key `accuracy_data_<suffix>`, where `<suffix>` matches the one used in the
+tag. For example, for the tag `@accuracy_data_greetings`, the accuracy data should be stored under the key
+`accuracy_data_greetings`. The accuracy data should be a list of dictionaries, where each dictionary contains the data
+for a specific retry.
+
+For example, to store accuracy data for greetings, you can do the following in a step definition:
+
+.. code-block:: python
+
+    accuracy_data_greetings = [
+        {"question": "Hello", "answer": "Hi, how can I help you?"},
+        {"question": "Good morning", "answer": "Good morning! What can I do for you today?"},
+        {"question": "Hey there", "answer": "Hey! How can I assist you?"}
+    ]
+    context.storage["accuracy_data_greetings"] = accuracy_data_greetings
+
+This way, during each retry of the scenario, Toolium will use the corresponding data from the accuracy data set based on
+the retry index.

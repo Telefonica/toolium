@@ -15,6 +15,8 @@ v3.6.0
 
 - Add accuracy tag to behave scenarios using `@accuracy_<percent>_<retries>`, e.g. `@accuracy_80_10` for 80%
   accuracy with 10 retries
+- Add accuracy data tag to behave scenarios using `@accuracy_data_<suffix>`, e.g. `@accuracy_data_greetings` for
+  accuracy data with greetings suffix
 
 v3.5.0
 ------

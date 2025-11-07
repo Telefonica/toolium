@@ -22,10 +22,11 @@ from behave.model import ScenarioOutline
 from behave.model_core import Status
 
 
-def get_accuracy_and_retries_from_tags(tags):
+def get_accuracy_and_retries_from_tags(tags, accuracy_data_len=None):
     """
     Extract accuracy and retries values from accuracy tag using regex.
     Examples of valid tags:
+
     - accuracy
     - accuracy_90
     - accuracy_percent_90
@@ -33,21 +34,44 @@ def get_accuracy_and_retries_from_tags(tags):
     - accuracy_percent_90_retries_10
 
     :param tags: behave tags
+    :param accuracy_data_len: length of accuracy data if available
     :return: dict with 'accuracy' and 'retries' keys if tag matches, None otherwise
     """
-    accuracy_regex = re.compile(r'^accuracy(?:_(?:percent_)?(\d+)(?:_retries_(\d+)|_(\d+))?)?', re.IGNORECASE)
+    # Default values: 90% accuracy, 10 retries
+    default_accuracy = 0.9
+    default_retries = accuracy_data_len if accuracy_data_len is not None else 10
+    accuracy_regex = re.compile(r'^accuracy(?!_data)(?:_(?:percent_)?(\d+)(?:_retries_(\d+)|_(\d+))?)?$', re.IGNORECASE)
     for tag in tags:
         match = accuracy_regex.search(tag)
         if match:
-            # Default values: 90% accuracy, 10 retries
-            accuracy_percent = (int(match.group(1)) / 100.0) if match.group(1) else 0.9
+            accuracy_percent = (int(match.group(1)) / 100.0) if match.group(1) else default_accuracy
             # Check if retries is in group 2 (accuracy_percent_90_retries_10) or group 3 (accuracy_90_10)
-            retries = int(match.group(2)) if match.group(2) else (int(match.group(3)) if match.group(3) else 10)
+            retries = int(match.group(2)) if match.group(2) else (int(match.group(3)) if match.group(3)
+                                                                  else default_retries)
             return {'accuracy': accuracy_percent, 'retries': retries}
     return None
 
 
-def patch_scenario_with_accuracy(context, scenario, accuracy=0.9, retries=10):
+def get_accuracy_data_suffix_from_tags(tags):
+    """
+    Extract accuracy data suffix from behave tags
+
+    Examples of valid tags:
+    - accuracy_data
+    - accuracy_data_suffix
+
+    :param tags: behave tags
+    :return: data_key_suffix if tag matches, empty string otherwise
+    """
+    accuracy_data_regex = re.compile(r'^accuracy_data(?:_(\w+))?', re.IGNORECASE)
+    for tag in tags:
+        match = accuracy_data_regex.search(tag)
+        if match:
+            return f'_{match.group(1)}' if match.group(1) else ''
+    return ''
+
+
+def patch_scenario_with_accuracy(context, scenario, data_key_suffix, accuracy=0.9, retries=10):
     """Monkey-patches :func:`~behave.model.Scenario.run()` to execute multiple times and calculate the accuracy of the
     results.
 
@@ -56,6 +80,7 @@ def patch_scenario_with_accuracy(context, scenario, accuracy=0.9, retries=10):
 
     :param context: behave context
     :param scenario: Scenario or ScenarioOutline to patch
+    :param data_key_suffix: Suffix to identify accuracy data in context storage
     :param accuracy: Minimum accuracy required to consider the scenario as passed
     :param retries: Number of times the scenario will be executed
     """
@@ -63,13 +88,15 @@ def patch_scenario_with_accuracy(context, scenario, accuracy=0.9, retries=10):
         # Execute the scenario multiple times and count passed executions
         passed_executions = 0
         for retry in range(1, retries+1):
+            context.logger.info(f"Running accuracy scenario retry ({retry}/{retries})")
+            store_retry_data(context, retry, data_key_suffix)
             if not scenario_run(*args, **kwargs):
                 passed_executions += 1
                 status = "PASSED"
             else:
                 status = "FAILED"
             print(f"ACCURACY SCENARIO {status}: retry {retry}/{retries}")
-            context.logger.info(f"Accuracy scenario {status} (retry {retry}/{retries})")
+            context.logger.info(f"Accuracy scenario retry {status} ({retry}/{retries})")
 
         # Calculate scenario accuracy
         scenario_accuracy = passed_executions / retries
@@ -98,10 +125,13 @@ def patch_scenario_from_tags(context, scenario):
     :param context: behave context
     :param scenario: behave scenario
     """
-    accuracy_data = get_accuracy_and_retries_from_tags(scenario.effective_tags)
-    if accuracy_data:
-        patch_scenario_with_accuracy(context, scenario, accuracy=accuracy_data['accuracy'],
-                                     retries=accuracy_data['retries'])
+    data_key_suffix = get_accuracy_data_suffix_from_tags(scenario.effective_tags)
+    accuracy_data = get_accuracy_data(context, data_key_suffix)
+    accuracy_data_len = len(accuracy_data) if accuracy_data else None
+    accuracy_settings = get_accuracy_and_retries_from_tags(scenario.effective_tags, accuracy_data_len)
+    if accuracy_settings:
+        patch_scenario_with_accuracy(context, scenario, data_key_suffix,
+                                     accuracy=accuracy_settings['accuracy'], retries=accuracy_settings['retries'])
 
 
 def patch_feature_scenarios_with_accuracy(context, feature):
@@ -120,3 +150,33 @@ def patch_feature_scenarios_with_accuracy(context, feature):
     except Exception as e:
         # Log error but do not fail the execution to avoid errors in before feature method
         context.logger.error(f"Error applying accuracy policy: {e}")
+
+
+def get_accuracy_data(context, data_key_suffix):
+    """
+    Retrieve accuracy data stored in context.
+
+    :param context: behave context
+    :param data_key_suffix: Suffix to identify accuracy data in context storage
+    :return: accuracy data list
+    """
+    accuracy_data_key = f"accuracy_data{data_key_suffix}"
+    accuracy_data = context.storage.get(accuracy_data_key, [])
+    assert isinstance(accuracy_data, list), f"Expected {accuracy_data_key} must be a list: {accuracy_data}"
+    return accuracy_data
+
+
+def store_retry_data(context, retry, data_key_suffix):
+    """Extract data to be used in current retry execution and store it in accuracy_retry_data key in context.
+    context.storage['accuracy_data{data_key_suffix}'] is expected to be a list of dicts with data for each retry.
+    Retry data is selected using modulo to avoid index errors, so retries can be greater than available data.
+
+    :param context: behave context
+    :param retry: current retry index (starting from 1)
+    :param data_key_suffix: Suffix to identify accuracy data in context storage
+    """
+    accuracy_data = get_accuracy_data(context, data_key_suffix)
+    retry_data = accuracy_data[(retry - 1) % len(accuracy_data)] if accuracy_data else None
+    context.storage["accuracy_retry_data"] = retry_data
+    context.storage["accuracy_retry_index"] = retry
+    context.logger.info(f"Stored accuracy data for retry {retry} in accuracy_retry_data: {retry_data}")
