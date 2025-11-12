@@ -1,16 +1,15 @@
-pytest~=7.2
-coverage~=6.5
-coveralls~=3.3
+pytest~=9.0
+coverage~=7.11
+coveralls~=4.0
 mock~=5.0
 requests-mock~=1.10
 Pygments~=2.14
-flake8~=6.0
-build~=0.10
+flake8~=7.3
+build~=1.3
 wheel~=0.40
-twine~=4.0
-behave==1.2.6  # behave tests
-importlib_metadata==7.2.1
-spacy~=3.8.7
+twine~=6.2
+behave~=1.3  # behave tests
+importlib_metadata~=8.7
+spacy~=3.8
 sentence-transformers~=5.1
-transformers==4.56.2; python_version < '3.10'  # Issue https://github.com/huggingface/transformers/issues/41339
-openai~=1.108
+openai~=2.7
