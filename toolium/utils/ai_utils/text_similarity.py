@@ -40,7 +40,7 @@ def get_text_similarity_with_spacy(text, expected_text, **kwargs):
 
     :param text: string to compare
     :param expected_text: string with the expected text
-    :kwargs: additional parameters, including:
+    :param kwargs: additional parameters, including:
         - model_name: name of the spaCy model to use
     :returns: similarity score between the two texts
     """
@@ -67,7 +67,7 @@ def get_text_similarity_with_sentence_transformers(text, expected_text, **kwargs
 
     :param text: string to compare
     :param expected_text: string with the expected text
-    :kwargs: additional parameters, including:
+    :param kwargs: additional parameters, including:
         - model_name: name of the Sentence Transformers model to use
     :returns: similarity score between the two texts
     """
@@ -108,7 +108,7 @@ def get_text_similarity_with_openai(text, expected_text, **kwargs):
         f"The expected answer is: {expected_text}."
         f" The LLM answer is: {text}."
     )
-    response = openai_request(system_message, user_message, kwargs=kwargs)
+    response = openai_request(system_message, user_message, **kwargs)
     try:
         response = json.loads(response)
         similarity = float(response['similarity'])

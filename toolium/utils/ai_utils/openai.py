@@ -38,7 +38,7 @@ def openai_request(system_message, user_message, **kwargs):
 
     :param system_message: system message to set the behavior of the assistant
     :param user_message: user message with the request
-    :kwargs: additional parameters, including:
+    :param kwargs: additional parameters, including:
         - model_name: name of the model to use
         - azure: whether to use Azure OpenAI or standard OpenAI
     :returns: response from OpenAI
