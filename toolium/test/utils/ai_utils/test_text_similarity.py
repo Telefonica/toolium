@@ -174,3 +174,67 @@ def test_assert_text_similarity_with_configured_and_explicit_method(similarity_m
     expected_text = 'Today is sunny'
     assert_text_similarity(input_text, expected_text, threshold=0.8, similarity_method='spacy')
     similarity_mock.assert_called_once_with(input_text, expected_text)
+
+
+@mock.patch('toolium.utils.ai_utils.text_similarity.get_text_similarity_with_spacy')
+def test_assert_text_similarity_with_configured_and_explicit_model(similarity_mock):
+    config = DriverWrappersPool.get_default_wrapper().config
+    try:
+        config.add_section('AI')
+    except Exception:
+        pass
+    config.set('AI', 'spacy_model', 'en_core_web_md')
+    similarity_mock.return_value = 0.9
+
+    input_text = 'Today it will be sunny'
+    expected_text = 'Today is sunny'
+    assert_text_similarity(input_text, expected_text, threshold=0.8, model_name='en_core_web_lg')
+    similarity_mock.assert_called_once_with(input_text, expected_text, model_name='en_core_web_lg')
+
+
+@mock.patch('toolium.utils.ai_utils.text_similarity.get_text_similarity_with_spacy')
+def test_assert_text_similarity_with_configured_and_explicit_method_and_model(similarity_mock):
+    config = DriverWrappersPool.get_default_wrapper().config
+    try:
+        config.add_section('AI')
+    except Exception:
+        pass
+    config.set('AI', 'text_similarity_method', 'sentence_transformers')
+    similarity_mock.return_value = 0.9
+
+    input_text = 'Today it will be sunny'
+    expected_text = 'Today is sunny'
+    assert_text_similarity(input_text, expected_text, threshold=0.8, similarity_method='spacy', model_name='en_core_web_lg')
+    similarity_mock.assert_called_once_with(input_text, expected_text, model_name='en_core_web_lg')
+
+
+@mock.patch('toolium.utils.ai_utils.text_similarity.get_text_similarity_with_openai')
+def test_assert_text_similarity_with_explicit_openai(similarity_mock):
+    config = DriverWrappersPool.get_default_wrapper().config
+    try:
+        config.add_section('AI')
+    except Exception:
+        pass
+    config.set('AI', 'spacy_model', 'en_core_web_md')
+    similarity_mock.return_value = 0.9
+
+    input_text = 'Today it will be sunny'
+    expected_text = 'Today is sunny'
+    assert_text_similarity(input_text, expected_text, threshold=0.8, similarity_method='openai', azure=True, model_name='gpt-4o-mini')
+    similarity_mock.assert_called_once_with(input_text, expected_text, azure=True, model_name='gpt-4o-mini')
+
+
+@mock.patch('toolium.utils.ai_utils.text_similarity.get_text_similarity_with_openai')
+def test_azure_openai_request(similarity_mock):
+    config = DriverWrappersPool.get_default_wrapper().config
+    try:
+        config.add_section('AI')
+    except Exception:
+        pass
+    config.set('AI', 'text_similarity_method', 'azure_openai')
+    similarity_mock.return_value = 0.9
+
+    input_text = 'Today it will be sunny'
+    expected_text = 'Today is sunny'
+    assert_text_similarity(input_text, expected_text, threshold=0.8)
+    similarity_mock.assert_called_once_with(input_text, expected_text, azure=True)
