@@ -96,7 +96,7 @@ Accuracy tags for Behave scenarios
 @accuracy
 ~~~~~~~~~
 
-You can use accuracy tags in your Behave scenarios to specify the desired accuracy level and number of ex for
+You can use accuracy tags in your Behave scenarios to specify the desired accuracy level and number of executions for
 scenarios that involve AI-generated content. The accuracy tag follows the format `@accuracy_<percent>_<executions>`,
 where `<percent>` is the desired accuracy percentage (0-100) and `<executions>` is the number of executions to achieve
 that accuracy. For example, `@accuracy_80_10` indicates that the scenario must be executed 10 times and it should
