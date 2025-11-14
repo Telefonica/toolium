@@ -6,6 +6,7 @@ v3.6.0
 
 *Release date: In development*
 
+- Remove Python 3.9 support (Python 3.9 reached the end of its life on October 31st, 2025)
 - Remove xcuitest deprecated `get_window_size` method and replaced it with `get_window_rect` in all mobile actions
 - Add text comparison methods based on AI libraries. To use them, install the `ai` extra dependency:
 
