@@ -225,7 +225,7 @@ def test_assert_text_similarity_with_explicit_openai(similarity_mock):
 
 
 @mock.patch('toolium.utils.ai_utils.text_similarity.get_text_similarity_with_openai')
-def test_azure_openai_request(similarity_mock):
+def test_azure_openai_request_params(similarity_mock):
     config = DriverWrappersPool.get_default_wrapper().config
     try:
         config.add_section('AI')
