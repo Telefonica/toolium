@@ -140,7 +140,7 @@ def test_assert_text_similarity_with_default_method(similarity_mock):
     input_text = 'Today it will be sunny'
     expected_text = 'Today is sunny'
     assert_text_similarity(input_text, expected_text, threshold=0.8)
-    similarity_mock.assert_called_once_with(input_text, expected_text)
+    similarity_mock.assert_called_once_with(input_text, expected_text, None)
 
 
 @pytest.mark.skip(reason='Sentence Transformers model is not available in the CI environment')
@@ -157,7 +157,7 @@ def test_assert_text_similarity_with_configured_method(similarity_mock):
     input_text = 'Today it will be sunny'
     expected_text = 'Today is sunny'
     assert_text_similarity(input_text, expected_text, threshold=0.8)
-    similarity_mock.assert_called_once_with(input_text, expected_text)
+    similarity_mock.assert_called_once_with(input_text, expected_text, None)
 
 
 @mock.patch('toolium.utils.ai_utils.text_similarity.get_text_similarity_with_spacy')
@@ -173,7 +173,7 @@ def test_assert_text_similarity_with_configured_and_explicit_method(similarity_m
     input_text = 'Today it will be sunny'
     expected_text = 'Today is sunny'
     assert_text_similarity(input_text, expected_text, threshold=0.8, similarity_method='spacy')
-    similarity_mock.assert_called_once_with(input_text, expected_text)
+    similarity_mock.assert_called_once_with(input_text, expected_text, None)
 
 
 @mock.patch('toolium.utils.ai_utils.text_similarity.get_text_similarity_with_spacy')
@@ -189,7 +189,7 @@ def test_assert_text_similarity_with_configured_and_explicit_model(similarity_mo
     input_text = 'Today it will be sunny'
     expected_text = 'Today is sunny'
     assert_text_similarity(input_text, expected_text, threshold=0.8, model_name='en_core_web_lg')
-    similarity_mock.assert_called_once_with(input_text, expected_text, model_name='en_core_web_lg')
+    similarity_mock.assert_called_once_with(input_text, expected_text, 'en_core_web_lg')
 
 
 @mock.patch('toolium.utils.ai_utils.text_similarity.get_text_similarity_with_spacy')
@@ -206,7 +206,7 @@ def test_assert_text_similarity_with_configured_and_explicit_method_and_model(si
     expected_text = 'Today is sunny'
     assert_text_similarity(input_text, expected_text, threshold=0.8, similarity_method='spacy',
                            model_name='en_core_web_lg')
-    similarity_mock.assert_called_once_with(input_text, expected_text, model_name='en_core_web_lg')
+    similarity_mock.assert_called_once_with(input_text, expected_text, 'en_core_web_lg')
 
 
 @mock.patch('toolium.utils.ai_utils.text_similarity.get_text_similarity_with_openai')
@@ -223,7 +223,7 @@ def test_assert_text_similarity_with_explicit_openai(similarity_mock):
     expected_text = 'Today is sunny'
     assert_text_similarity(input_text, expected_text, threshold=0.8, similarity_method='openai',
                            azure=True, model_name='gpt-4o-mini')
-    similarity_mock.assert_called_once_with(input_text, expected_text, azure=True, model_name='gpt-4o-mini')
+    similarity_mock.assert_called_once_with(input_text, expected_text, 'gpt-4o-mini', azure=True)
 
 
 @mock.patch('toolium.utils.ai_utils.text_similarity.get_text_similarity_with_openai')
@@ -239,4 +239,4 @@ def test_azure_openai_request_params(similarity_mock):
     input_text = 'Today it will be sunny'
     expected_text = 'Today is sunny'
     assert_text_similarity(input_text, expected_text, threshold=0.8)
-    similarity_mock.assert_called_once_with(input_text, expected_text, azure=True)
+    similarity_mock.assert_called_once_with(input_text, expected_text, None, azure=True)
