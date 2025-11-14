@@ -187,7 +187,7 @@ def _replace_param_replacement(param, language):
     """
     Replace param with a new param value.
     Available replacements: [EMPTY], [B], [UUID], [RANDOM], [RANDOM_PHONE_NUMBER],
-                            [TIMESTAMP], [DATETIME], [NOW], [TODAY], [ROUND:xxxxx::d]
+                            [TIMESTAMP], [DATETIME], [NOW], [TODAY], [ROUND:xxxxx::d], [SHARP]
 
     :param param: parameter value
     :param language: language to configure date format for NOW and TODAY
@@ -208,7 +208,8 @@ def _replace_param_replacement(param, language):
         '[DATETIME]': str(datetime.datetime.now(datetime.timezone.utc).strftime(datetime_format)),
         '[NOW]': str(datetime.datetime.now(datetime.timezone.utc).strftime(date_format)),
         '[TODAY]': str(datetime.datetime.now(datetime.timezone.utc).strftime(date_day_format)),
-        r'\[ROUND:(.*?)::(\d*)\]': _get_rounded_float_number
+        r'\[ROUND:(.*?)::(\d*)\]': _get_rounded_float_number,
+        '[SHARP]': '#'
     }
 
     # append date expressions found in param to the replacement dict
