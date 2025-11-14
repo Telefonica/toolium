@@ -49,7 +49,7 @@ def get_accuracy_and_executions_from_tags(tags, accuracy_data_len=None):
             accuracy_percent = (int(match.group(1)) / 100.0) if match.group(1) else default_accuracy
             # Check if executions is in group 2 (accuracy_percent_90_executions_10) or group 3 (accuracy_90_10)
             executions = int(match.group(2)) if match.group(2) else (int(match.group(3)) if match.group(3)
-                                                                  else default_executions)
+                                                                     else default_executions)
             return {'accuracy': accuracy_percent, 'executions': executions}
     return None
 
