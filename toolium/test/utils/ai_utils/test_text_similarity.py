@@ -204,7 +204,8 @@ def test_assert_text_similarity_with_configured_and_explicit_method_and_model(si
 
     input_text = 'Today it will be sunny'
     expected_text = 'Today is sunny'
-    assert_text_similarity(input_text, expected_text, threshold=0.8, similarity_method='spacy', model_name='en_core_web_lg')
+    assert_text_similarity(input_text, expected_text, threshold=0.8, similarity_method='spacy',
+                           model_name='en_core_web_lg')
     similarity_mock.assert_called_once_with(input_text, expected_text, model_name='en_core_web_lg')
 
 
@@ -220,7 +221,8 @@ def test_assert_text_similarity_with_explicit_openai(similarity_mock):
 
     input_text = 'Today it will be sunny'
     expected_text = 'Today is sunny'
-    assert_text_similarity(input_text, expected_text, threshold=0.8, similarity_method='openai', azure=True, model_name='gpt-4o-mini')
+    assert_text_similarity(input_text, expected_text, threshold=0.8, similarity_method='openai',
+                           azure=True, model_name='gpt-4o-mini')
     similarity_mock.assert_called_once_with(input_text, expected_text, azure=True, model_name='gpt-4o-mini')
 
 
