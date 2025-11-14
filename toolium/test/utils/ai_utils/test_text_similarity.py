@@ -183,7 +183,7 @@ def test_assert_text_similarity_with_configured_and_explicit_model(similarity_mo
         config.add_section('AI')
     except Exception:
         pass
-    config.set('AI', 'spacy_model', 'en_core_web_md')
+    config.set('AI', 'text_similarity_method', 'spacy')
     similarity_mock.return_value = 0.9
 
     input_text = 'Today it will be sunny'
