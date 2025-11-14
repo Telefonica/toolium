@@ -78,9 +78,10 @@ It also supports other scenario tags to configure Appium tests:
 * :code:`@android_only`: identifies a scenario that should only be executed in Android
 * :code:`@ios_only`: identifies a scenario that should only be executed in iOS
 
-And it supports accuracy tag for AI related scenarios:
+And it supports accuracy tags for AI related scenarios (view :ref:`accuracy tags <accuracy-tags-for-behave-scenarios-utils>` for more details):
 
-* :code:`@accuracy_<percent>_<retries>`: identifies a scenario that should achieve at least `<percent>` accuracy retrying up to `<retries>` times (view :ref:`Accuracy tag for Behave scenarios <ai_utils>` for more details)
+* :code:`@accuracy_<percent>_<executions>`: identifies a scenario that must be executed `<executions>` times and should achieve at least `<percent>` accuracy
+* :code:`@accuracy_data_<suffix>`: identifies a scenario that should use the accuracy data set with the suffix `<suffix>` in each execution
 
 Behave - Dynamic Environment
 ----------------------------
