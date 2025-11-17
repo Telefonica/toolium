@@ -14,8 +14,10 @@ v3.6.0
 
     $ pip install toolium[ai]
 
-- Add accuracy tag to behave scenarios using `@accuracy_<percent>_<retries>`, e.g. `@accuracy_80_10` for 80%
-  accuracy with 10 retries
+- Add accuracy tags to behave scenarios using `@accuracy_<percent>_<executions>`, e.g. with `@accuracy_80_10` tag, the
+  scenario is executed 10 times expecting 80% accuracy
+- Add accuracy data tags to behave scenarios using `@accuracy_data_<suffix>`, e.g. `@accuracy_data_greetings` for
+  accuracy data with greetings suffix, that allows to execute accuracy scenarios with different data sets
 
 v3.5.0
 ------

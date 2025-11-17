@@ -87,12 +87,12 @@ def before_feature(context, feature):
     context.feature_storage = dict()
     context.storage = collections.ChainMap(context.feature_storage, context.run_storage)
 
-    # Patch scenarios when accuracy tags are present
-    patch_feature_scenarios_with_accuracy(context, feature)
-
     # Behave dynamic environment
     context.dyn_env.get_steps_from_feature_description(feature.description)
     context.dyn_env.execute_before_feature_steps(context)
+
+    # Patch scenarios when accuracy tags are present
+    patch_feature_scenarios_with_accuracy(context, feature)
 
 
 def before_scenario(context, scenario):
