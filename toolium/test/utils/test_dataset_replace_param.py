@@ -507,3 +507,10 @@ def test_replace_param_title():
     assert param == "Holahola"
     param = replace_param('[TITLE:hOlA]')
     assert param == "HOlA"
+
+
+def test_replace_param_sharp():
+    param = replace_param('[SHARP]')
+    assert param == '#'
+    param = replace_param('hello [SHARP] world')
+    assert param == 'hello # world'
