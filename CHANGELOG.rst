@@ -8,6 +8,7 @@ v3.6.0
 
 - Remove Python 3.9 support (Python 3.9 reached the end of its life on October 31st, 2025)
 - Remove xcuitest deprecated `get_window_size` method and replaced it with `get_window_rect` in all mobile actions
+- Add `SHARP` replacement, to convert [SHARP] to # character in behave steps parameters
 - Add text comparison methods based on AI libraries. To use them, install the `ai` extra dependency:
 
 .. code:: console
