@@ -41,7 +41,7 @@ def get_text_similarity_with_spacy(text, expected_text, model_name=None, **kwarg
     :param text: string to compare
     :param expected_text: string with the expected text
     :param model_name: name of the spaCy model to use
-    :param kwargs: additional parameters
+    :param kwargs: additional parameters to be used by spaCy (disable, exclude, etc.)
     :returns: similarity score between the two texts
     """
     # NOTE: spaCy similarity performance can be enhanced using some strategies like:
@@ -50,7 +50,7 @@ def get_text_similarity_with_spacy(text, expected_text, model_name=None, **kwarg
     # - Preprocessing texts. Now we only preprocess negations.
     config = DriverWrappersPool.get_default_wrapper().config
     model_name = model_name or config.get_optional('AI', 'spacy_model', 'en_core_web_md')
-    model = get_spacy_model(model_name)
+    model = get_spacy_model(model_name, **kwargs)
     if model is None:
         raise ImportError("spaCy is not installed. Please run 'pip install toolium[ai]' to use spaCy features")
     text = model(preprocess_with_ud_negation(text, model))
@@ -67,7 +67,7 @@ def get_text_similarity_with_sentence_transformers(text, expected_text, model_na
     :param text: string to compare
     :param expected_text: string with the expected text
     :param model_name: name of the Sentence Transformers model to use
-    :param kwargs: additional parameters
+    :param kwargs: additional parameters to be used by SentenceTransformer (modules, device, prompts, etc.)
     :returns: similarity score between the two texts
     """
     if SentenceTransformer is None:
@@ -75,7 +75,7 @@ def get_text_similarity_with_sentence_transformers(text, expected_text, model_na
                           " to use Sentence Transformers features")
     config = DriverWrappersPool.get_default_wrapper().config
     model_name = model_name or config.get_optional('AI', 'sentence_transformers_model', 'all-mpnet-base-v2')
-    model = SentenceTransformer(model_name)
+    model = SentenceTransformer(model_name, **kwargs)
     similarity = float(model.similarity(model.encode(expected_text), model.encode(text)))
     # similarity can be slightly > 1 due to float precision
     similarity = 1 if similarity > 1 else similarity
@@ -83,15 +83,15 @@ def get_text_similarity_with_sentence_transformers(text, expected_text, model_na
     return similarity
 
 
-def get_text_similarity_with_openai(text, expected_text, model_name=None, **kwargs):
+def get_text_similarity_with_openai(text, expected_text, model_name=None, azure=False, **kwargs):
     """
     Return semantic similarity between two texts using OpenAI LLM
 
     :param text: string to compare
     :param expected_text: string with the expected text
     :param model_name: name of the OpenAI model to use
-    :param kwargs: additional parameters including:
-        - azure: whether to use Azure OpenAI or standard OpenAI
+    :param azure: whether to use Azure OpenAI or standard OpenAI
+    :param kwargs: additional parameters to be used by OpenAI client
     :returns: tuple with similarity score between the two texts and explanation
     """
     system_message = (
@@ -106,7 +106,7 @@ def get_text_similarity_with_openai(text, expected_text, model_name=None, **kwar
         f"The expected answer is: {expected_text}."
         f" The LLM answer is: {text}."
     )
-    response = openai_request(system_message, user_message, model_name, **kwargs)
+    response = openai_request(system_message, user_message, model_name, azure, **kwargs)
     try:
         response = json.loads(response)
         similarity = float(response['similarity'])
@@ -124,12 +124,11 @@ def get_text_similarity_with_azure_openai(text, expected_text, model_name=None, 
 
     :param text: string to compare
     :param expected_text: string with the expected text
-    :param model_name: name of the OpenAI model to use
-    :param kwargs: additional parameters
+    :param model_name: name of the Azure OpenAI model to use
+    :param kwargs: additional parameters to be used by Azure OpenAI client
     :returns: tuple with similarity score between the two texts and explanation
     """
-    kwargs["azure"] = True
-    return get_text_similarity_with_openai(text, expected_text, model_name, **kwargs)
+    return get_text_similarity_with_openai(text, expected_text, model_name, azure=True, **kwargs)
 
 
 def assert_text_similarity(text, expected_texts, threshold, similarity_method=None, model_name=None, **kwargs):
@@ -142,7 +141,7 @@ def assert_text_similarity(text, expected_texts, threshold, similarity_method=No
     :param similarity_method: method to use for text comparison ('spacy', 'sentence_transformers', 'openai'
                               or 'azure_openai')
     :param model_name: model name to use for the similarity method
-    :param kwargs: additional parameters including azure flag for openai methods
+    :param kwargs: additional parameters to be used by OpenAI methods
     """
     config = DriverWrappersPool.get_default_wrapper().config
     similarity_method = similarity_method or config.get_optional('AI', 'text_similarity_method', 'spacy')

@@ -32,15 +32,15 @@ from toolium.driver_wrappers_pool import DriverWrappersPool
 logger = logging.getLogger(__name__)
 
 
-def openai_request(system_message, user_message, model_name=None, **kwargs):
+def openai_request(system_message, user_message, model_name=None, azure=False, **kwargs):
     """
     Make a request to OpenAI API (Azure or standard)
 
     :param system_message: system message to set the behavior of the assistant
     :param user_message: user message with the request
     :param model_name: name of the model to use
-    :param kwargs: additional parameters, including:
-        - azure: whether to use Azure OpenAI or standard OpenAI
+    :param azure: whether to use Azure OpenAI or standard OpenAI
+    :param kwargs: additional parameters to be passed to the OpenAI client (azure_endpoint, timeout, etc.)
     :returns: response from OpenAI
     """
     if OpenAI is None:
@@ -48,7 +48,7 @@ def openai_request(system_message, user_message, model_name=None, **kwargs):
     config = DriverWrappersPool.get_default_wrapper().config
     model_name = model_name or config.get_optional('AI', 'openai_model', 'gpt-4o-mini')
     logger.info(f"Calling to OpenAI API with model {model_name}")
-    client = AzureOpenAI() if kwargs.get('azure', False) else OpenAI()
+    client = AzureOpenAI(**kwargs) if azure else OpenAI(**kwargs)
     completion = client.chat.completions.create(
         model=model_name,
         messages=[

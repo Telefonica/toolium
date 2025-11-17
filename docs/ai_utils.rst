@@ -35,7 +35,7 @@ completely different).
     threshold = 0.8  # Similarity threshold between 0 and 1
     similarity_method = 'spacy'  # Options: 'spacy', 'sentence_transformers', 'openai', 'azure_openai'
     model_name = 'en_core_web_md'  # Model name to use for the selected method
-    azure = True  # Set to True if using Azure OpenAI (only for 'openai' method). False by default, to use OpenAI directly. For azure_openai method, True by default.
+    **kwargs = {}  # Additional parameters for the selected method.
 
     # Validate similarity
     assert_text_similarity(input_text, expected_text, threshold=threshold, similarity_method=similarity_method)
