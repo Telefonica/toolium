@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import mock
+import os
 import pytest
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -68,6 +69,8 @@ get_openai_similarity_examples = (
 )
 
 
+@pytest.mark.skipif(os.getenv("AZURE_OPENAI_API_KEY") is None,
+                    reason="AZURE_OPENAI_API_KEY environment variable not set")
 @pytest.mark.parametrize('input_text, expected_text, expected_low, expected_high', get_openai_similarity_examples)
 def test_get_text_similarity_with_azure_openai(input_text, expected_text, expected_low, expected_high):
     configure_default_openai_model()
@@ -93,6 +96,8 @@ def test_assert_text_similarity_with_sentence_transformers_passed(input_text, ex
     assert_text_similarity(input_text, expected_text, threshold=threshold, similarity_method='sentence_transformers')
 
 
+@pytest.mark.skipif(os.getenv("AZURE_OPENAI_API_KEY") is None,
+                    reason="AZURE_OPENAI_API_KEY environment variable not set")
 @pytest.mark.parametrize('input_text, expected_text, threshold', assert_similarity_passed_examples)
 def test_assert_text_similarity_with_openai_passed(input_text, expected_text, threshold):
     configure_default_openai_model()
@@ -126,6 +131,8 @@ assert_openai_similarity_failed_examples = (
 )
 
 
+@pytest.mark.skipif(os.getenv("AZURE_OPENAI_API_KEY") is None,
+                    reason="AZURE_OPENAI_API_KEY environment variable not set")
 @pytest.mark.parametrize('input_text, expected_text, threshold', assert_openai_similarity_failed_examples)
 def test_assert_text_similarity_with_openai_failed(input_text, expected_text, threshold):
     configure_default_openai_model()
