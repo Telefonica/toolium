@@ -185,6 +185,7 @@ See below their values, along with their associated replacement logic (click `he
 * :code:`[REPLACE:xxxx::SUBSTRING_TO_BE_REPLACED::SUBSTRING_TO_USE_AS_REPLACEMENT]`: Replaces a substring with another in xxxx string
 * :code:`[TITLE:xxxx]`: Applies python's string title() method to xxxx string
 * :code:`[ROUND:xxxx::N]`: Rounds given number xxxx to N digits in its fractional part
+* :code:`[SHARP]`: Generates a sharp string '#'
 
 
 There are also some special tags that allow to use parameter values configured at different sources defined by the `map_param <https://toolium.readthedocs.io/en/latest/toolium.utils.html#toolium.utils.dataset.map_param>`_ method:
@@ -199,7 +200,7 @@ There are also some special tags that allow to use parameter values configured a
 * :code:`[FILE:xxxx]`: String with the content of the file in the path xxxx
 * :code:`[BASE64:xxxx]`: String with the base64 representation of the file content in the path xxxx
 
-In order to apply the string replacements in your code, import and call the corresponding function. E.g.::
+In order to apply the string replacements in your code, import and call the corresponding function. E.g.:
 
 .. code:: console
 
