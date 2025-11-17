@@ -31,17 +31,18 @@ logger = logging.getLogger(__name__)
 
 
 @lru_cache(maxsize=8)
-def get_spacy_model(model_name):
+def get_spacy_model(model_name, **kwargs):
     """
     get spaCy model.
     This method uses lru cache to get spaCy model to improve performance.
 
     :param model_name: spaCy model name
+    :param kwargs: additional parameters to be used by spaCy (disable, exclude, etc.)
     :return: spaCy model
     """
     if spacy is None:
         return None
-    return spacy.load(model_name)
+    return spacy.load(model_name, **kwargs)
 
 
 def is_negator(tok):
