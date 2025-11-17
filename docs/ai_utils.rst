@@ -34,8 +34,6 @@ completely different).
     expected_text = "A fast brown fox leaps over a sleepy dog"  # Admits both a single expected text or a list of expected texts
     threshold = 0.8  # Similarity threshold between 0 and 1
     similarity_method = 'spacy'  # Options: 'spacy', 'sentence_transformers', 'openai', 'azure_openai'
-    model_name = 'en_core_web_md'  # Model name to use for the selected method
-    **kwargs = {}  # Additional parameters for the selected method.
 
     # Validate similarity
     assert_text_similarity(input_text, expected_text, threshold=threshold, similarity_method=similarity_method)

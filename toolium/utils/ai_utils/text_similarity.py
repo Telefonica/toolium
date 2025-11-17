@@ -50,12 +50,12 @@ def get_text_similarity_with_spacy(text, expected_text, model_name=None, **kwarg
     # - Preprocessing texts. Now we only preprocess negations.
     config = DriverWrappersPool.get_default_wrapper().config
     model_name = model_name or config.get_optional('AI', 'spacy_model', 'en_core_web_md')
-    model = get_spacy_model(model_name, **kwargs)
+    model = get_spacy_model(model_name)
     if model is None:
         raise ImportError("spaCy is not installed. Please run 'pip install toolium[ai]' to use spaCy features")
     text = model(preprocess_with_ud_negation(text, model))
     expected_text = model(preprocess_with_ud_negation(expected_text, model))
-    similarity = model(text).similarity(model(expected_text))
+    similarity = model(text, **kwargs).similarity(model(expected_text))
     logger.info(f"spaCy similarity: {similarity} between '{text}' and '{expected_text}'")
     return similarity
 
@@ -141,7 +141,7 @@ def assert_text_similarity(text, expected_texts, threshold, similarity_method=No
     :param similarity_method: method to use for text comparison ('spacy', 'sentence_transformers', 'openai'
                               or 'azure_openai')
     :param model_name: model name to use for the similarity method
-    :param kwargs: additional parameters to be used by OpenAI methods
+    :param kwargs: additional parameters to be used by comparison methods
     """
     config = DriverWrappersPool.get_default_wrapper().config
     similarity_method = similarity_method or config.get_optional('AI', 'text_similarity_method', 'spacy')
