@@ -20,6 +20,7 @@ import functools
 import re
 from behave.model import ScenarioOutline
 from behave.model_core import Status
+from copy import deepcopy
 
 
 def get_accuracy_and_executions_from_tags(tags, accuracy_data_len=None):
@@ -89,9 +90,14 @@ def patch_scenario_with_accuracy(context, scenario, data_key_suffix, accuracy=0.
     def scenario_run_with_accuracy(context, scenario_run, scenario, *args, **kwargs):
         # Execute the scenario multiple times and count passed executions
         passed_executions = 0
+        # Copy scenario steps to avoid modifications in each execution, especially when using behave variables
+        # transformation, like map_param and replace_param methods
+        orig_steps = deepcopy(scenario.steps)
         for execution in range(executions):
             context.logger.info(f"Running accuracy scenario execution ({execution+1}/{executions})")
             store_execution_data(context, execution, data_key_suffix)
+            # Restore original steps before each execution
+            scenario.steps = deepcopy(orig_steps)
             if not scenario_run(*args, **kwargs):
                 passed_executions += 1
                 status = "PASSED"
