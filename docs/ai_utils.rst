@@ -157,3 +157,19 @@ For example, to store accuracy data for greetings, you can do the following in a
 
 This way, during each execution of the scenario, Toolium will use the corresponding data from the accuracy data set
 based on the execution index.
+
+after_accuracy_scenario method
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can monkey-patch the `after_accuracy_scenario` method in `toolium.utils.ai_utils.accuracy` module to implement
+custom behavior after accuracy scenario execution, like calling Allure `after_scenario` method.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils import accuracy
+
+    def custom_after_accuracy_scenario(context, scenario):
+        context.allure.after_scenario(context, scenario)
+
+    # Monkey-patch the hook
+    accuracy.after_accuracy_scenario = custom_after_accuracy_scenario
