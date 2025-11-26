@@ -16,11 +16,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import csv
+import datetime
 import functools
+import os
 import re
 from behave.model import ScenarioOutline
 from behave.model_core import Status
 from copy import deepcopy
+from toolium.driver_wrappers_pool import DriverWrappersPool
 
 
 def get_accuracy_and_executions_from_tags(tags, accuracy_data_len=None):
@@ -90,25 +94,37 @@ def patch_scenario_with_accuracy(context, scenario, data_key_suffix, accuracy=0.
     def scenario_run_with_accuracy(context, scenario_run, scenario, *args, **kwargs):
         # Execute the scenario multiple times and count passed executions
         passed_executions = skipped_executions = 0
+        results = []
+
         # Copy scenario steps to avoid modifications in each execution, especially when using behave variables
         # transformation, like map_param and replace_param methods
         orig_steps = deepcopy(scenario.steps)
         for execution in range(executions):
             context.logger.info(f"Running accuracy scenario execution ({execution+1}/{executions})")
+            # Store execution data in context
             store_execution_data(context, execution, data_key_suffix)
             # Restore original steps before each execution
             scenario.steps = deepcopy(orig_steps)
-            if not scenario_run(*args, **kwargs):
-                if scenario.status == Status.skipped:
-                    skipped_executions += 1
-                    status = "SKIPPED"
-                else:
-                    passed_executions += 1
-                    status = "PASSED"
-            else:
+
+            # Run scenario
+            scenario_result = scenario_run(*args, **kwargs)
+
+            # Store and log execution result
+            if scenario_result:
                 status = "FAILED"
+            elif scenario.status == Status.skipped:
+                skipped_executions += 1
+                status = "SKIPPED"
+            else:
+                passed_executions += 1
+                status = "PASSED"
+            results.append({'data': context.storage["accuracy_execution_data"], 'status': status,
+                            'message': get_error_message_from_scenario(scenario)})
             print(f"ACCURACY SCENARIO {status}: execution {execution+1}/{executions}")
             context.logger.info(f"Accuracy scenario execution {status} ({execution+1}/{executions})")
+
+        # Save results to CSV file
+        save_accuracy_results_to_csv(context, scenario, results)
 
         if executions == skipped_executions:
             run_response = False  # Run method returns true only when failed
@@ -220,3 +236,48 @@ def after_accuracy_scenario(context, scenario):
     :param scenario: behave scenario
     """
     pass
+
+
+def get_error_message_from_scenario(scenario):
+    """
+    Extract error message from failed scenario.
+
+    :param scenario: behave scenario
+    :return: error message string
+    """
+    if scenario.exception:
+        return str(scenario.exception)
+    for step in scenario.steps:
+        if step.status == Status.failed:
+            return str(step.exception)
+    return ""
+
+
+def save_accuracy_results_to_csv(context, scenario, results):
+    """
+    Save accuracy test results to a CSV file.
+
+    :param context: behave context
+    :param scenario: behave scenario
+    :param results: list of execution results
+    """
+    # Create output directory if it doesn't exist
+    output_dir = os.path.join(DriverWrappersPool.output_directory, "accuracy")
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Generate filename with timestamp and scenario info
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    scenario_name = scenario.name.replace(" ", "_").replace(",", "")
+    csv_filename = f"{output_dir}/results_{scenario_name}_{timestamp}.csv"
+
+    # Write execution results to file
+    try:
+        with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerow(['Execution data', 'Status', 'Message'])
+            for result in results:
+                csv_writer.writerow([result['data'], result['status'], result['message']])
+        context.logger.info(f"Accuracy results saved to: {csv_filename}")
+    except Exception as e:
+        context.logger.error(f"Error saving accuracy results to CSV: {e}")
