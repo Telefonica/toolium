@@ -110,7 +110,6 @@ def patch_scenario_with_accuracy(context, scenario, data_key_suffix, accuracy=0.
             print(f"ACCURACY SCENARIO {status}: execution {execution+1}/{executions}")
             context.logger.info(f"Accuracy scenario execution {status} ({execution+1}/{executions})")
 
-
         if executions == skipped_executions:
             run_response = False  # Run method returns true only when failed
             context.logger.info("All accuracy scenario executions are skipped")
