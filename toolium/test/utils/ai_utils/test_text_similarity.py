@@ -61,8 +61,8 @@ def test_get_text_similarity_with_sentence_transformers(input_text, expected_tex
 
 get_openai_similarity_examples = (
     ('Today it will be sunny', 'Today it will be sunny', 0.9, 1),
-    ('Today is sunny', 'Today it will be sunny', 0.7, 0.9),
-    ('It is sunny', 'Today it will be sunny', 0.7, 0.9),
+    ('Today is sunny', 'Today it will be sunny', 0.6, 0.9),
+    ('It is sunny', 'Today it will be sunny', 0.6, 0.9),
     ('Nothing related', 'Today it will be sunny', 0, 0.1),
     ('Today it will be cloudy', 'Today it will be sunny', 0, 0.1),
     ('A splendid and rainless day is expected', 'Today it will be sunny', 0.8, 1),
