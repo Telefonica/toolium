@@ -89,7 +89,7 @@ def patch_scenario_with_accuracy(context, scenario, data_key_suffix, accuracy=0.
     """
     def scenario_run_with_accuracy(context, scenario_run, scenario, *args, **kwargs):
         # Execute the scenario multiple times and count passed executions
-        passed_executions = 0
+        passed_executions = skipped_executions = 0
         # Copy scenario steps to avoid modifications in each execution, especially when using behave variables
         # transformation, like map_param and replace_param methods
         orig_steps = deepcopy(scenario.steps)
@@ -99,30 +99,49 @@ def patch_scenario_with_accuracy(context, scenario, data_key_suffix, accuracy=0.
             # Restore original steps before each execution
             scenario.steps = deepcopy(orig_steps)
             if not scenario_run(*args, **kwargs):
-                passed_executions += 1
-                status = "PASSED"
+                if scenario.status == Status.skipped:
+                    skipped_executions += 1
+                    status = "SKIPPED"
+                else:
+                    passed_executions += 1
+                    status = "PASSED"
             else:
                 status = "FAILED"
             print(f"ACCURACY SCENARIO {status}: execution {execution+1}/{executions}")
             context.logger.info(f"Accuracy scenario execution {status} ({execution+1}/{executions})")
 
-        # Calculate scenario accuracy
-        scenario_accuracy = passed_executions / executions
-        has_passed = scenario_accuracy >= accuracy
-        final_status = 'PASSED' if has_passed else 'FAILED'
-        print(f"\nACCURACY SCENARIO {final_status}: {executions} executions,"
-              f" accuracy {scenario_accuracy} >= {accuracy}")
-        final_message = (f"Accuracy scenario {final_status} after {executions} executions with"
-                         f" accuracy {scenario_accuracy} >= {accuracy}")
-
-        # Set final scenario status
-        if has_passed:
-            context.logger.info(final_message)
-            scenario.set_status(Status.passed)
+        if executions == skipped_executions:
+            run_response = False  # Run method returns true only when failed
+            context.logger.info("All accuracy scenario executions are skipped")
         else:
-            context.logger.error(final_message)
-            scenario.set_status(Status.failed)
-        return not has_passed  # Run method returns true when failed
+            # Calculate scenario accuracy
+            scenario_accuracy = passed_executions / (executions - skipped_executions)
+            has_passed = scenario_accuracy >= accuracy
+            run_response = not has_passed  # Run method returns true only when failed
+            final_status = 'PASSED' if has_passed else 'FAILED'
+            print(f"\nACCURACY SCENARIO {final_status}: {executions} executions,"
+                  f" accuracy {scenario_accuracy} >= {accuracy}")
+            final_message = (f"Accuracy scenario {final_status} after {executions} executions with"
+                             f" accuracy {scenario_accuracy} >= {accuracy}"
+                             f" ({passed_executions} passed, {skipped_executions} skipped,"
+                             f" {executions - passed_executions - skipped_executions} failed)")
+
+            # Set final scenario status
+            if has_passed:
+                context.logger.info(final_message)
+                scenario.set_status(Status.passed)
+            else:
+                context.logger.error(final_message)
+                scenario.set_status(Status.failed)
+                scenario.exception = AssertionError(final_message)
+
+        # Clean accuracy execution data from context
+        context.storage.pop("accuracy_execution_data", None)
+        context.storage.pop("accuracy_execution_index", None)
+
+        after_accuracy_scenario(context, scenario)
+
+        return run_response
 
     scenario_run = scenario.run
     scenario.run = functools.partial(scenario_run_with_accuracy, context, scenario_run, scenario)
@@ -190,3 +209,14 @@ def store_execution_data(context, execution, data_key_suffix):
     context.storage["accuracy_execution_index"] = execution
     context.logger.info(f"Stored accuracy data for execution {execution+1} in"
                         f" accuracy_execution_data: {execution_data}")
+
+
+def after_accuracy_scenario(context, scenario):
+    """Hook called after accuracy scenario execution.
+    Monkey-patch this method to implement custom behavior after accuracy scenario execution, like calling Allure
+    after_scenario method.
+
+    :param context: behave context
+    :param scenario: behave scenario
+    """
+    pass
