@@ -120,6 +120,8 @@ Other examples of accuracy tags:
 - `@accuracy_80`: 80% accuracy, default 10 executions
 - `@accuracy`: default 90% accuracy, 10 executions
 
+A csv report with the results of each execution will be generated in the `accuracy` folder inside the output folder.
+
 @accuracy_data
 ~~~~~~~~~~~~~~
 

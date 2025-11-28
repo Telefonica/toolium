@@ -8,6 +8,7 @@ v3.6.1
 
 - Fix accuracy tag to exclude skipped executions from total executions count
 - Add `after_accuracy_scenario` hook to allow custom behavior after accuracy scenario execution
+- Add csv report for accuracy scenario results
 
 v3.6.0
 ------
