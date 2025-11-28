@@ -3,8 +3,6 @@
 ai_utils
 ========
 
-.. _ai_utils:
-
 accuracy
 --------
 

@@ -1,5 +1,7 @@
-AI Utils
-========
+.. _ai_utilities:
+
+AI Utilities
+============
 
 Text Similarity
 ---------------

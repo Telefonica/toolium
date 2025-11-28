@@ -8,6 +8,7 @@ v3.6.1
 
 - Fix accuracy tag to exclude skipped executions from total executions count
 - Add `after_accuracy_scenario` hook to allow custom behavior after accuracy scenario execution
+- Add text readability assessment function based on the AI libraries that come with the `ai` extra dependency
 
 v3.6.0
 ------
