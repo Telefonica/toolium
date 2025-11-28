@@ -73,6 +73,7 @@ def test_assert_text_readability_with_custom_technical_chars():
     input_text = 'Too many symbols: [ separators | hyphens - and such ] = {}'
     with pytest.raises(Exception) as excinfo:
         assert_text_readability(input_text, threshold=0.9)
+    assert str(excinfo.value).startswith('Text readability is below threshold')
     assert_text_readability(input_text, threshold=0.9, technical_chars=['_'])  # ignoring other technical chars
 
 
