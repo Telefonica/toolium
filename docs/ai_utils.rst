@@ -110,11 +110,11 @@ if you need to overide the ones set by default.
     from toolium.utils.ai_utils.text_readability import assert_text_readability
     # Basic usage
     input_text = "This is a readable text with proper structure and vocabulary."
-    threshold = 0.8  # Similarity threshold between 0 and 1
+    threshold = 0.8  # Readability threshold between 0 and 1
     technical_characters = ['$', '%', '&']  # Optional: list of characters considered non-linguistic content
     readability_method = 'spacy'  # Only 'spacy' is currently supported
 
-    # Validate similarity
+    # Validate readability
     assert_text_readability(input_text, threshold=threshold, technical_characters=technical_characters, readability_method=readability_method)
 
 Configuration
