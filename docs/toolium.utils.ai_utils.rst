@@ -3,8 +3,6 @@
 ai_utils
 ========
 
-.. _ai_utils:
-
 accuracy
 --------
 
@@ -33,6 +31,14 @@ text_similarity
 ---------------
 
 .. automodule:: toolium.utils.ai_utils.text_similarity
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+text_readability
+----------------
+
+.. automodule:: toolium.utils.ai_utils.text_readability
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,3 +1,5 @@
+.. _ai_utilities:
+
 AI Utils
 ========
 
@@ -89,6 +91,55 @@ you have (direct OpenAI access or Azure OpenAI):
     AZURE_OPENAI_ENDPOINT=<your_endpoint>
     OPENAI_API_VERSION=<your_api_version>
 
+
+Text Readability
+----------------
+
+Text readability is a measure of how user-friendly and comprehensible a piece of text is.
+Toolium currently provides a single method to assess text readability, using the `SpaCy <https://spacy.io/>`_ library.
+
+Usage
+~~~~~
+
+You can use the function `assert_text_readability` from `toolium.utils.ai_utils.text_readability` module to assess
+the readability of a text. You can set the `readability_method` (currently only `spacy`), the `threshold`
+(a value between 0 and 1, where 1 means the text is very readable and 0 means it is not readable at all) and
+optionally the `technical_characters`, a list of characters to be considered as non-linguistic content,
+if you need to overide the ones set by default.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.text_readability import assert_text_readability
+    # Basic usage
+    input_text = "This is a readable text with proper structure and vocabulary."
+    threshold = 0.8  # Readability threshold between 0 and 1
+    technical_characters = ['$', '%', '&']  # Optional: list of characters considered non-linguistic content
+    readability_method = 'spacy'  # Only 'spacy' is currently supported
+
+    # Validate readability
+    assert_text_readability(input_text, threshold=threshold, technical_characters=technical_characters, readability_method=readability_method)
+
+Configuration
+~~~~~~~~~~~~~
+
+Default readability method and spacy model can be set in the *[AI]* section of the properties.cfg file::
+
+    [AI]
+    text_readability_method: spacy  # Only 'spacy' is currently supported
+    spacy_model: en_core_web_md  # SpaCy model to use, en_core_web_md by default
+
+For more information on SpaCy models, you can refer to the following link:
+
+* `SpaCy models <https://spacy.io/models>`_
+
+Installation
+~~~~~~~~~~~~
+
+The requirements are the same explained for `SpaCy` in the
+`installation section of Text Similarity <https://toolium.readthedocs.io/en/latest/ai_utils.html#installation>`_
+
+
+.. _accuracy_tags_for_behave_scenarios:
 
 Accuracy tags for Behave scenarios
 ----------------------------------
