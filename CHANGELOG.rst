@@ -1,7 +1,7 @@
 Toolium Changelog
 =================
 
-v3.6.1
+v3.7.0
 ------
 
 *Release date: 2025-12-02*
