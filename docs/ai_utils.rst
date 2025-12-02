@@ -1,7 +1,7 @@
 .. _ai_utilities:
 
-AI Utilities
-============
+AI Utils
+========
 
 Text Similarity
 ---------------
@@ -138,6 +138,8 @@ Installation
 The requirements are the same explained for `SpaCy` in the
 `installation section of Text Similarity <https://toolium.readthedocs.io/en/latest/ai_utils.html#installation>`_
 
+
+.. _accuracy_tags_for_behave_scenarios:
 
 Accuracy tags for Behave scenarios
 ----------------------------------
