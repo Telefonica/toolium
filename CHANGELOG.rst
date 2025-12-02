@@ -4,7 +4,7 @@ Toolium Changelog
 v3.6.1
 ------
 
-*Release date: In development*
+*Release date: 2025-12-02*
 
 - Fix accuracy tag to exclude skipped executions from total executions count
 - Add `after_accuracy_scenario` hook to allow custom behavior after accuracy scenario execution
@@ -14,7 +14,7 @@ v3.6.1
 v3.6.0
 ------
 
-*Release date: 2015-11-20*
+*Release date: 2025-11-20*
 
 - Remove Python 3.9 support (Python 3.9 reached the end of its life on October 31st, 2025)
 - Remove xcuitest deprecated `get_window_size` method and replaced it with `get_window_rect` in all mobile actions
