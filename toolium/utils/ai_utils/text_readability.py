@@ -77,7 +77,6 @@ def assert_text_readability(text, threshold, technical_chars=None, readability_m
     Get the readability of a text and assert if it is above a given threshold.
 
     :param text: string to compare
-    :param expected_texts: string or list of strings with the expected texts
     :param threshold: minimum readability score to consider the text readable
     :param technical_chars: list of technical characters to consider as non-linguistic content
     :param readability_method: method to use for text readability ('spacy')
