@@ -28,6 +28,7 @@ from toolium.driver_wrappers_pool import DriverWrappersPool
 # Configure logger
 logger = logging.getLogger(__name__)
 
+# flake8: noqa E501
 def build_system_message(characteristics):
     """
     Build system message for text criteria analysis prompt.
@@ -83,7 +84,8 @@ def build_system_message(characteristics):
     return base_prompt.strip()
 
 
-def get_text_criteria_analysis_openai(text_input, target_features, extra_tasks=None, model_name=None, azure=False, **kwargs):
+def get_text_criteria_analysis_openai(text_input, target_features, extra_tasks=None, model_name=None,
+                                      azure=False, **kwargs):
     """
     Get text criteria analysis using Azure OpenAI. To analyze how well a given text
     matches a set of target characteristics.
