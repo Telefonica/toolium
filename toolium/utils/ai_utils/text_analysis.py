@@ -46,7 +46,7 @@ def build_system_message(characteristics):
 
         Tasks:
         1) For EACH characteristic, decide how well the text satisfies it on a scale from 0.0 (does not satisfy it at all) to 1.0 (perfectly satisfies it). Consider style, tone and content when relevant.
-        2) Only for each low scored characteristic (<=0.2), output:
+        2) ONLY for each low scored characteristic (<=0.2), output:
            - "name": the exact characteristic name as listed above.
            - "score": a float between 0.0 and 0.2.
         3) Compute an overall score "overall_match" between 0.0 and 1.0 that summarizes how well the text matches the whole set. It does not have to be a simple arithmetic mean, but must still be in [0.0, 1.0].
@@ -75,6 +75,7 @@ def build_system_message(characteristics):
         }}
 
         Constraints:
+        - Do NOT include scores for high valued (<=0.2) features at features list.
         - The "data" field must ALWAYS be present. If there are no extra sections, it MUST be: "data": {{}}.
         - Use a dot as decimal separator (e.g. 0.75, not 0,75).
         - Use at most 2 decimal places for all scores.
@@ -109,14 +110,17 @@ def get_text_criteria_analysis_openai(text_input, target_features, extra_tasks=N
                 msg.append(task)
         else:
             msg.append(extra_tasks)
-    return openai_request(system_message, text_input, model_name, azure, **kwargs)
+    return openai_request(msg, text_input, model_name, azure, **kwargs)
 
 
 def get_text_criteria_analysis_sentence_transformers(text_input, target_features, extra_tasks=None,
                                                      model_name=None, azure=True, **kwargs):
     """
-    Get text criteria analysis using Sentence Transformers. To analyze how well a given text
-    matches a set of target characteristics.
+    Get text criteria analysis using Sentence Transformers. Sentence Transformers works better using examples
+    that are semantically similar, so this method is more suitable for evaluating characteristics like
+    "is a greeting phrase", "talks about the weather", etc.
+    The response is a structured JSON object with overall match score, individual feature scores,
+    and additional data sections.
 
     :param text_input: text to analyze
     :param target_features: list of target characteristics to evaluate
@@ -128,6 +132,12 @@ def get_text_criteria_analysis_sentence_transformers(text_input, target_features
     if SentenceTransformer is None:
         raise ImportError("Sentence Transformers is not installed. Please run 'pip install toolium[ai]'"
                           " to use Sentence Transformers features")
+
+    def similarity_to_score(cos_sim):
+        if cos_sim <= 0.1:
+            return 0.0
+        return cos_sim / 0.7
+
     config = DriverWrappersPool.get_default_wrapper().config
     model_name = model_name or config.get_optional('AI', 'sentence_transformers_model', 'all-mpnet-base-v2')
     model = SentenceTransformer(model_name, **kwargs)
@@ -141,10 +151,10 @@ def get_text_criteria_analysis_sentence_transformers(text_input, target_features
     # Generate contracted results
     for f, sim in zip(target_features, sims):
         # Normalize similarity from [-1, 1] to [0, 1]
-        score = (sim + 1.0) / 2.0
+        score = similarity_to_score(sim)
         results.append({
             "name": f,
-            "score": round(score, 2),
+            "score": round(score, 2)
         })
 
     # overall score as average of feature scores
