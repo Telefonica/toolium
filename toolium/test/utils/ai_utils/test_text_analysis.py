@@ -52,22 +52,21 @@ get_analysis_examples = (
 @pytest.mark.parametrize('input_text, features_list, expected_low, expected_high', get_analysis_examples)
 def test_get_text_analysis(input_text, features_list, expected_low, expected_high):
     similarity = json.loads(get_text_criteria_analysis_openai(input_text, features_list, azure=True))
-    assert expected_low <= similarity['overall_match'] <= expected_high,\
-        f"Overall match {similarity['overall_match']} not in range"
+    assert expected_low <= similarity['overall_match'] <= expected_high
 
 
 extra_task = """
     Additional task:
 
     Extract all verbs from the input text and add them to the JSON under data.verbs.
-    
+
     Rules:
     - Use the same language as the input text.
     - Return verbs in their base/infinitive form when possible.
     - Do not repeat verbs (no duplicates).
     - Preserve the order in which they first appear in the text.
     - Verbs should be in this base/infinitive form.
-    
+
     The data field must include:
     "data": {
       "verbs": [ "<verb1>", "<verb2>", ... ]
@@ -82,6 +81,7 @@ get_extra_examples = (
     ('I went to Madrid', ["is an affirmation", "talks about the weather"], ['go']),
     ('Oops I did it again', ["is a greeting phrase", "is a question"], ['do'])
 )
+
 
 @pytest.mark.skipif(os.getenv("AZURE_OPENAI_API_KEY") is None,
                     reason="AZURE_OPENAI_API_KEY environment variable not set")
@@ -102,7 +102,7 @@ examples_sentence_transformers = (
 )
 
 
-# @pytest.mark.skip(reason='Sentence Transformers model is not available in the CI environment')
+@pytest.mark.skip(reason='Sentence Transformers model is not available in the CI environment')
 @pytest.mark.parametrize('input_text, features_list, expected_low, expected_high', examples_sentence_transformers)
 def test_get_text_analysis_sentence_transformers(input_text, features_list, expected_low, expected_high):
     similarity = get_text_criteria_analysis_sentence_transformers(input_text, features_list)
