@@ -86,8 +86,7 @@ def get_text_criteria_analysis(text_input, text_criteria, model_name=None, azure
     """
     # Build prompt using base prompt and target features
     system_message = build_system_message(text_criteria)
-    msg = [system_message]
-    return openai_request(msg, text_input, model_name, azure, **kwargs)
+    return openai_request(system_message, text_input, model_name, azure, **kwargs)
 
 
 def assert_text_criteria(text_input, text_criteria, threshold, model_name=None, azure=False, **kwargs):
