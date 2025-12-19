@@ -78,11 +78,10 @@ def get_text_criteria_analysis(text_input, text_criteria, model_name=None, azure
 
     :param text_input: text to analyze
     :param text_criteria: list of target characteristics to evaluate
-    :param extra_tasks: additional system messages for extra analysis sections (optional)
-    :param model_name: name of the Azure OpenAI model to use
+    :param model_name: name of the OpenAI model to use
     :param azure: whether to use Azure OpenAI or standard OpenAI
-    :param kwargs: additional parameters to be used by Azure OpenAI client
-    :returns: response from Azure OpenAI
+    :param kwargs: additional parameters to be used by OpenAI client
+    :returns: response from OpenAI
     """
     # Build prompt using base prompt and target features
     system_message = build_system_message(text_criteria)
@@ -96,15 +95,20 @@ def assert_text_criteria(text_input, text_criteria, threshold, model_name=None, 
     :param text_input: text to analyze
     :param text_criteria: list of target characteristics to evaluate
     :param threshold: minimum overall match score to consider the text acceptable
-    :param model_name: name of the Azure OpenAI model to use
+    :param model_name: name of the OpenAI model to use
     :param azure: whether to use Azure OpenAI or standard OpenAI
-    :param kwargs: additional parameters to be used by Azure OpenAI client
+    :param kwargs: additional parameters to be used by OpenAI client
     :raises AssertionError: if overall match score is below threshold
     """
     analysis = json.loads(get_text_criteria_analysis(text_input, text_criteria, model_name, azure, **kwargs))
     overall_match = analysis.get("overall_match", 0.0)
     if overall_match < threshold:
+        logger.error(f"Text criteria analysis failed: overall match {overall_match} "
+                     f"is below threshold {threshold}\n"
+                     f"Failed features: {analysis.get('features', [])}")
         raise AssertionError(f"Text criteria analysis failed: overall match {overall_match} "
-                             f"is below threshold {threshold}")
+                             f"is below threshold {threshold}\n"
+                             f"Failed features: {analysis.get('features', [])}")
     logger.info(f"Text criteria analysis passed: overall match {overall_match} "
-                f"is above threshold {threshold}")
+                f"is above threshold {threshold}."
+                f"Low scored features: {analysis.get('features', [])}")
