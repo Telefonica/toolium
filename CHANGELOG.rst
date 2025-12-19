@@ -6,6 +6,8 @@ v3.7.1
 
 *Release date: In development*
 
+- Add pyproject.toml file for packaging and publishing Toolium
+
 v3.7.0
 ------
 
