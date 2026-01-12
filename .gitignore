@@ -85,6 +85,7 @@ publish
 .coverage
 tmp
 output
+docs/_build
 .eggs
 .tox
 .env

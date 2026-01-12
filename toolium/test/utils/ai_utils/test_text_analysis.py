@@ -46,8 +46,7 @@ get_analysis_examples = (
 )
 
 
-@pytest.mark.skipif(os.getenv("AZURE_OPENAI_API_KEY") is None,
-                    reason="AZURE_OPENAI_API_KEY environment variable not set")
+@pytest.mark.skipif(not os.getenv("AZURE_OPENAI_API_KEY"), reason="AZURE_OPENAI_API_KEY environment variable not set")
 @pytest.mark.parametrize('input_text, features_list, expected_low, expected_high', get_analysis_examples)
 def test_get_text_analysis(input_text, features_list, expected_low, expected_high):
     similarity = json.loads(get_text_criteria_analysis(input_text, features_list, azure=True))
