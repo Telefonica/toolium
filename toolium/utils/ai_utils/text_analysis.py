@@ -103,12 +103,11 @@ def assert_text_criteria(text_input, text_criteria, threshold, model_name=None, 
     analysis = json.loads(get_text_criteria_analysis(text_input, text_criteria, model_name, azure, **kwargs))
     overall_match = analysis.get("overall_match", 0.0)
     if overall_match < threshold:
-        logger.error(f"Text criteria analysis failed: overall match {overall_match} "
-                     f"is below threshold {threshold}\n"
-                     f"Failed features: {analysis.get('features', [])}")
-        raise AssertionError(f"Text criteria analysis failed: overall match {overall_match} "
-                             f"is below threshold {threshold}\n"
-                             f"Failed features: {analysis.get('features', [])}")
+        error = (f"Text criteria analysis failed: overall match {overall_match} "
+                 f"is below threshold {threshold}\n"
+                 f"Failed features: {analysis.get('features', [])}")
+        logger.error(error)
+        raise AssertionError(error)
     logger.info(f"Text criteria analysis passed: overall match {overall_match} "
                 f"is above threshold {threshold}."
                 f"Low scored features: {analysis.get('features', [])}")
