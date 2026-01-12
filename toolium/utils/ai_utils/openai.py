@@ -49,12 +49,16 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
     model_name = model_name or config.get_optional('AI', 'openai_model', 'gpt-4o-mini')
     logger.info(f"Calling to OpenAI API with model {model_name}")
     client = AzureOpenAI(**kwargs) if azure else OpenAI(**kwargs)
+    msg = []
+    if isinstance(system_message, list):
+        for prompt in system_message:
+            msg.append({"role": "system", "content": prompt})
+    else:
+        msg.append({"role": "system", "content": system_message})
+    msg.append({"role": "user", "content": user_message})
     completion = client.chat.completions.create(
         model=model_name,
-        messages=[
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": user_message},
-        ],
+        messages=msg,
     )
     response = completion.choices[0].message.content
     logger.debug(f"OpenAI response: {response}")
