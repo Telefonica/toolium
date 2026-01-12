@@ -71,10 +71,9 @@ def build_system_message(characteristics):
 
 def get_text_criteria_analysis(text_input, text_criteria, model_name=None, azure=False, **kwargs):
     """
-    Get text criteria analysis using Azure OpenAI. To analyze how well a given text
-    matches a set of target characteristics.
-    The response is a structured JSON object with overall match score, individual feature scores,
-    and additional data sections.
+    Get text criteria analysis using OpenAI. To analyze how well a given text matches a set of target characteristics.
+    The response is a structured JSON object with overall match score, individual feature scores for
+    low scored features.
 
     :param text_input: text to analyze
     :param text_criteria: list of target characteristics to evaluate
