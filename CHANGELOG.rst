@@ -7,6 +7,8 @@ v3.7.1
 *Release date: In development*
 
 - Add pyproject.toml file for packaging and publishing Toolium
+- Add text analysis tool to get an overall match of a text against a list of expected characteristics
+  using AI libraries that come with the `ai` extra dependency
 
 v3.7.0
 ------
