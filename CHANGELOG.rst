@@ -1,7 +1,7 @@
 Toolium Changelog
 =================
 
-v3.7.1
+v3.8.0
 ------
 
 *Release date: In development*
@@ -10,6 +10,7 @@ v3.7.1
 - Configure ruff for linting and formatting files, replacing flake8 and black
 - Add text analysis tool to get an overall match of a text against a list of expected characteristics
   using AI libraries that come with the `ai` extra dependency
+- Add langgraph methods to create a ReAct AI agent to test the behavior of other AI agents or LLMs
 
 v3.7.0
 ------

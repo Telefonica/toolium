@@ -8,7 +8,7 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "justMyCode": false,
-      "envFile": "${workspaceFolder}/.vscode/.env"
+      "envFile": "${workspaceFolder}/.env"
     }
   ]
 }

@@ -129,7 +129,9 @@ select = [
     "RUF", # Ruff-specific rules
 ]
 # Rules to ignore
-ignore = []
+ignore = [
+    "COM812",  # flake8-missing-trailing-comas (conflict with ruff format)
+]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true

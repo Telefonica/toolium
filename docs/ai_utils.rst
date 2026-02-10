@@ -226,3 +226,37 @@ custom behavior after accuracy scenario execution, like calling Allure `after_sc
 
     # Monkey-patch the hook
     accuracy.after_accuracy_scenario = custom_after_accuracy_scenario
+
+
+AI agents for testing
+---------------------
+
+Toolium provides utilities to create and execute AI agents in your tests using langgraph library, allowing you to
+simulate complex user interactions or validate AI-generated responses.
+
+You can create an AI agent using the `create_react_agent` function from the `toolium.utils.ai_utils.ai_agent` module.
+This function allows you to create a ReAct agent, which is a type of AI agent that can reason and act based on the
+conversation history and tool interactions. You must specify the system message with AI testing agent instructions
+and the tool method, that the agent can use to send requests to the system under test and receive responses.
+
+.. image:: react_agent.png
+   :alt: ReAct Agent Flow Diagram
+
+Once you have created an AI agent, you can execute it using the `execute_agent` function from the same module. This
+function will run the agent and log all conversation messages and tool calls, providing insights into the agent's
+behavior and the interactions it had during execution.
+You can also provide previous messages to the agent to give it context for its reasoning and actions.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.ai_agent import create_react_agent, execute_agent
+
+    # Create a ReAct agent with a system message and a tool method
+    system_message = "You are an assistant that helps users find TV content based on their preferences."
+    tool_method = tv_recommendations  # This should be a function that the agent can call as a tool
+    model_name = 'gpt-4o-mini'  # Specify the model to use for the agent
+
+    agent = create_react_agent(system_message, tool_method=tool_method, model_name=model_name)
+
+    # Execute the agent and log all interactions
+    final_state = execute_agent(agent)
