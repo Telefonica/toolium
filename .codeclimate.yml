@@ -43,9 +43,7 @@ checks:
       threshold: #language-specific defaults. overrides affect all languages.
 
 plugins:
-  eslint:
-    enabled: true
-    channel: "eslint-6"
+  # ESLint disabled - Python project only
 
 exclude_patterns:
 - "dist/"

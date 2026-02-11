@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -18,8 +17,8 @@ limitations under the License.
 
 import os
 import unittest
+from unittest import mock
 
-import mock
 import pytest
 
 
@@ -36,7 +35,7 @@ def run_mock(test_name):
         def setUp(self):
             root_path = os.path.dirname(os.path.realpath(__file__))
             self.config_files.set_config_directory(os.path.join(root_path, 'conf'))
-            super(MockTestClass, self).setUp()
+            super().setUp()
 
         def mock_pass(self):
             pass
@@ -68,8 +67,12 @@ def test_tear_down_pass(logger):
     assert test._test_passed is True
 
     # Check logging messages
-    logger.info.assert_has_calls([mock.call('Running new test: %s', 'MockTestClass.mock_pass'),
-                                  mock.call("The test '%s' has passed", 'MockTestClass.mock_pass')])
+    logger.info.assert_has_calls(
+        [
+            mock.call('Running new test: %s', 'MockTestClass.mock_pass'),
+            mock.call("The test '%s' has passed", 'MockTestClass.mock_pass'),
+        ],
+    )
 
 
 def test_tear_down_fail(logger):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -15,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from setuptools import setup
 
 setup()

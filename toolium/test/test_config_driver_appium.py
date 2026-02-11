@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2023 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,14 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
+from unittest import mock
+
 import pytest
 from appium.options.common.base import AppiumOptions
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
-
 
 DEFAULT_CAPABILITIES = {}
 
@@ -45,7 +44,7 @@ def utils():
 appium_driver_types = (
     'android',
     'ios',
-    'iphone'
+    'iphone',
 )
 
 
@@ -79,7 +78,7 @@ def test_create_remote_driver_appium(appiumdriver_mock, driver_type, config, uti
     config_driver._create_remote_driver()
 
     # Check that appium options contain expected capabilities
-    args, kwargs = appiumdriver_mock.Remote.call_args
+    _args, kwargs = appiumdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, AppiumOptions)
     assert options.capabilities == expected_capabilities
@@ -101,7 +100,7 @@ def test_create_remote_driver_appium_basepath(appiumdriver_mock, driver_type, co
     config_driver._create_remote_driver()
 
     # Check that appium options contain expected capabilities
-    args, kwargs = appiumdriver_mock.Remote.call_args
+    _args, kwargs = appiumdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, AppiumOptions)
     assert options.capabilities == expected_capabilities
@@ -128,7 +127,7 @@ def test_create_remote_driver_android_capabilities(appiumdriver_mock, config, ut
     config_driver._create_remote_driver()
 
     # Check that appium options contain expected capabilities
-    args, kwargs = appiumdriver_mock.Remote.call_args
+    _args, kwargs = appiumdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, AppiumOptions)
     assert options.capabilities == expected_capabilities
@@ -155,7 +154,7 @@ def test_create_remote_driver_ios_capabilities(appiumdriver_mock, config, utils)
     config_driver._create_remote_driver()
 
     # Check that appium options contain expected capabilities
-    args, kwargs = appiumdriver_mock.Remote.call_args
+    _args, kwargs = appiumdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, AppiumOptions)
     assert options.capabilities == expected_capabilities

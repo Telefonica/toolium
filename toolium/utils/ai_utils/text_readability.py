@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2025 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.
@@ -20,7 +19,6 @@ import logging
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.ai_utils.spacy import get_spacy_model
-
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -52,7 +50,7 @@ def get_text_readability_with_spacy(text, technical_chars=None, model_name=None,
     doc = model(text)
     total_tokens = len(doc)
     non_linguistic_tokens_count = 0
-    technical_chars = technical_chars or ["/", "|", "-", "_", "=", ":", "[", "]", "{", "}"]
+    technical_chars = technical_chars or ['/', '|', '-', '_', '=', ':', '[', ']', '{', '}']
 
     for token in doc:
         # Check:
@@ -61,14 +59,14 @@ def get_text_readability_with_spacy(text, technical_chars=None, model_name=None,
         #       SYM: Symbol (common in code traces or error structures)
         #       X: Other (typical of unrecognized characters or codes)
         #  - Punctuation or symbols that are overly frequent in error codes but not normal sentences
-        is_suspicious_symbol = token.is_oov or token.pos_ in ["SYM", "X"] or token.text in technical_chars
+        is_suspicious_symbol = token.is_oov or token.pos_ in ['SYM', 'X'] or token.text in technical_chars
 
         if is_suspicious_symbol:
             non_linguistic_tokens_count += 1
 
     readability = (total_tokens - non_linguistic_tokens_count) / total_tokens
 
-    logger.info(f"spaCy readability: {readability}")
+    logger.info(f'spaCy readability: {readability}')
     return readability
 
 
@@ -86,16 +84,20 @@ def assert_text_readability(text, threshold, technical_chars=None, readability_m
     config = DriverWrappersPool.get_default_wrapper().config
     readability_method = readability_method or config.get_optional('AI', 'text_readability_method', 'spacy')
     try:
-        readability = globals()[f'get_text_readability_with_{readability_method}'](text, technical_chars,
-                                                                                   model_name, **kwargs)
-    except KeyError:
-        raise ValueError(f"Unknown readability_method: '{readability_method}', please use 'spacy'")
+        readability = globals()[f'get_text_readability_with_{readability_method}'](
+            text,
+            technical_chars,
+            model_name,
+            **kwargs,
+        )
+    except KeyError as e:
+        raise ValueError(f"Unknown readability_method: '{readability_method}', please use 'spacy'") from e
 
-    texts_message = f"Received text: {text}"
+    texts_message = f'Received text: {text}'
     if readability < threshold:
-        error_message = (f"Text readability is below threshold: {readability} < {threshold}\n{texts_message}")
+        error_message = f'Text readability is below threshold: {readability} < {threshold}\n{texts_message}'
         logger.error(error_message)
-        assert False, error_message
+        raise AssertionError(error_message)
 
-    logger.info(f"Text readability is above threshold: {readability} >= {threshold}\n{texts_message}")
+    logger.info(f'Text readability is above threshold: {readability} >= {threshold}\n{texts_message}')
     return

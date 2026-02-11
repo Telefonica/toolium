@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2017 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -49,22 +48,20 @@ class Logger:
         log a warning message:
         :param exc: exception message
         """
-        msg = 'trying to execute a step in the environment: \n' \
-              '           - Exception: %s' % exc
+        msg = f'trying to execute a step in the environment: \n           - Exception: {exc}'
         if self.logger is not None:
             self.logger.warning(msg)
-        self.by_console('      WARN - %s' % msg)
+        self.by_console(f'      WARN - {msg}')
 
     def error(self, exc):
         """
         log an error message:
         :param exc: exception message
         """
-        msg = 'trying to execute a step in the environment: \n' \
-              '           - Exception: %s' % exc
+        msg = f'trying to execute a step in the environment: \n           - Exception: {exc}'
         if self.logger is not None:
             self.logger.error(msg)
-        self.by_console('      ERROR - %s' % msg)
+        self.by_console(f'      ERROR - {msg}')
 
     def debug(self, value):
         """
@@ -80,7 +77,7 @@ class Logger:
         :param text_to_print: Text to print by console
         """
         if self.show:
-            sys.stdout.write("%s\n" % text_to_print)
+            sys.stdout.write(f'{text_to_print}\n')
             sys.stdout.flush()
 
 
@@ -139,8 +136,8 @@ class DynamicEnvironment:
         :param logger: logger instance
         :param show: determine if messages are displayed by console
         """
-        logger_class = kwargs.get("logger", None)
-        self.show = kwargs.get("show", True)
+        logger_class = kwargs.get('logger', None)
+        self.show = kwargs.get('show', True)
         self.logger = Logger(logger_class, self.show)
         self.init_actions()
         self.scenario_counter = 0
@@ -150,10 +147,12 @@ class DynamicEnvironment:
 
     def init_actions(self):
         """clear actions lists"""
-        self.actions = {ACTIONS_BEFORE_FEATURE: [],
-                        ACTIONS_BEFORE_SCENARIO: [],
-                        ACTIONS_AFTER_SCENARIO: [],
-                        ACTIONS_AFTER_FEATURE: []}
+        self.actions = {
+            ACTIONS_BEFORE_FEATURE: [],
+            ACTIONS_BEFORE_SCENARIO: [],
+            ACTIONS_AFTER_SCENARIO: [],
+            ACTIONS_AFTER_FEATURE: [],
+        }
 
     def get_steps_from_feature_description(self, description):
         """
@@ -166,18 +165,18 @@ class DynamicEnvironment:
         for row in description:
             if label_exists != EMPTY:
                 # The row is removed if it's a comment
-                if row.strip().startswith("#"):
-                    row = ""
+                if row.strip().startswith('#'):
+                    row = ''
 
                 if any(row.startswith(x) for x in KEYWORDS):
                     self.actions[label_exists].append(row)
                 elif row.strip()[-3:] in STEP_TEXT_SEPARATORS and step_text_start:
-                    self.actions[label_exists][-1] = "%s\n      %s" % (self.actions[label_exists][-1], row)
+                    self.actions[label_exists][-1] = f'{self.actions[label_exists][-1]}\n      {row}'
                     step_text_start = False
                 elif row.find(TABLE_SEPARATOR) >= 0 or step_text_start:
-                    self.actions[label_exists][-1] = "%s\n      %s" % (self.actions[label_exists][-1], row)
+                    self.actions[label_exists][-1] = f'{self.actions[label_exists][-1]}\n      {row}'
                 elif row.strip()[:3] in STEP_TEXT_SEPARATORS and not step_text_start:
-                    self.actions[label_exists][-1] = "%s\n      %s" % (self.actions[label_exists][-1], row)
+                    self.actions[label_exists][-1] = f'{self.actions[label_exists][-1]}\n      {row}'
                     step_text_start = True
                 else:
                     label_exists = EMPTY
@@ -205,12 +204,13 @@ class DynamicEnvironment:
         """
         step_list = step.split('\n')
         for s in step_list:
-            self.logger.by_console('    %s' % repr(s).replace("u'", "").replace("'", ""))
+            formatted_step = repr(s).replace("u'", '').replace("'", '')
+            self.logger.by_console(f'    {formatted_step}')
 
     def __execute_steps_by_action(self, context, action):
         """
         execute a steps set by action
-        :param context: It’s a clever place where you and behave can store information to share around,
+        :param context: It's a clever place where you and behave can store information to share around,
                         automatically managed by behave.
         :param action: action executed: see labels allowed above.
         """
@@ -218,17 +218,16 @@ class DynamicEnvironment:
             if action == ACTIONS_BEFORE_SCENARIO:
                 self.logger.by_console('\n')
                 self.scenario_counter += 1
-                self.logger.by_console(
-                    "  ------------------ Scenario Nº: %d ------------------" % self.scenario_counter)
-                self.logger.by_console('  %s:' % action)
+                self.logger.by_console(f'  ------------------ Scenario Nº: {self.scenario_counter} ------------------')
+                self.logger.by_console(f'  {action}:')
             elif action in [ACTIONS_BEFORE_FEATURE, ACTIONS_AFTER_FEATURE]:
                 self.logger.by_console('\n')
 
             for item in self.actions[action]:
                 try:
                     self.__print_step_by_console(item)
-                    self.logger.debug('Executing step defined in %s: %s' % (action, repr(item)))
-                    context.execute_steps('''%s%s''' % (GIVEN_PREFIX, self.__remove_prefix(item)))
+                    self.logger.debug(f'Executing step defined in {action}: {item!r}')
+                    context.execute_steps(f"""{GIVEN_PREFIX}{self.__remove_prefix(item)}""")
                 except Exception as exc:
                     if action == ACTIONS_BEFORE_FEATURE:
                         self.feature_error = True
@@ -242,7 +241,7 @@ class DynamicEnvironment:
     def execute_before_feature_steps(self, context):
         """
         actions before the feature
-        :param context: It’s a clever place where you and behave can store information to share around,
+        :param context: It's a clever place where you and behave can store information to share around,
                         automatically managed by behave.
         """
         self.__execute_steps_by_action(context, ACTIONS_BEFORE_FEATURE)
@@ -255,7 +254,7 @@ class DynamicEnvironment:
     def execute_before_scenario_steps(self, context):
         """
         actions before each scenario
-        :param context: It’s a clever place where you and behave can store information to share around,
+        :param context: It's a clever place where you and behave can store information to share around,
                         automatically managed by behave.
         """
         self.__execute_steps_by_action(context, ACTIONS_BEFORE_SCENARIO)
@@ -268,7 +267,7 @@ class DynamicEnvironment:
     def execute_after_scenario_steps(self, context):
         """
         actions after each scenario
-        :param context: It’s a clever place where you and behave can store information to share around,
+        :param context: It's a clever place where you and behave can store information to share around,
                         automatically managed by behave.
         """
         self.__execute_steps_by_action(context, ACTIONS_AFTER_SCENARIO)
@@ -285,7 +284,7 @@ class DynamicEnvironment:
     def execute_after_feature_steps(self, context):
         """
         actions after the feature
-        :param context: It’s a clever place where you and behave can store information to share around,
+        :param context: It's a clever place where you and behave can store information to share around,
                         automatically managed by behave.
         """
         self.__execute_steps_by_action(context, ACTIONS_AFTER_FEATURE)
@@ -312,6 +311,7 @@ class DynamicEnvironment:
         """
         # Behave is an optional dependency in toolium, so it is imported here
         from behave.model_core import Status
+
         if len(scenario.steps) > 0:
             scenario.steps[0].status = Status.failed
             scenario.steps[0].exception = Exception('Preconditions failed')

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2016 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -25,8 +24,11 @@ from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.test.pageobjects.examples.android.login import AndroidLoginPageObject
 from toolium.test.pageobjects.examples.base.login import BaseLoginPageObject
 from toolium.test.pageobjects.examples.ios.login import IosLoginPageObject
-from toolium.test.pageobjects.examples.login_one_file import AndroidLoginOneFilePageObject, IosLoginOneFilePageObject
-from toolium.test.pageobjects.examples.login_one_file import BaseLoginOneFilePageObject
+from toolium.test.pageobjects.examples.login_one_file import (
+    AndroidLoginOneFilePageObject,
+    BaseLoginOneFilePageObject,
+    IosLoginOneFilePageObject,
+)
 
 
 @pytest.fixture

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2016 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,14 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
+from unittest import mock
+
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.pageelements import PageElements, Group, InputText, Link
+from toolium.pageelements import Group, InputText, Link, PageElements
 from toolium.pageobjects.page_object import PageObject
 
 
@@ -84,9 +84,9 @@ def test_reset_object_page_elements_groups(driver_wrapper):
     # Get elements for each row and column
     for row in table_page.rows.page_elements:
         for column in row.columns.page_elements:
-            column.input.web_element
-            column.link.web_element
-            column.input_with_parent.web_element
+            column.input.web_element  # noqa: B018
+            column.link.web_element  # noqa: B018
+            column.input_with_parent.web_element  # noqa: B018
 
     # Check that web and page elements are filled in rows
     assert len(table_page.rows._web_elements) == 2

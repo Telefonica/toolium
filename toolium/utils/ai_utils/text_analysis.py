@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2025 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.
@@ -15,22 +14,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import logging
+
 import json
+import logging
 
 from toolium.utils.ai_utils.openai import openai_request
 
 # Configure logger
 logger = logging.getLogger(__name__)
 
-# flake8: noqa E501
+
 def build_system_message(characteristics):
     """
     Build system message for text criteria analysis prompt.
 
     :param characteristics: list of target characteristics to evaluate
     """
-    feature_list = "\n".join(f"- {c}" for c in characteristics)
+    feature_list = '\n'.join(f'- {c}' for c in characteristics)
     base_prompt = f"""
         You are an assistant that scores how well a given text matches a set of target characteristics and returns a JSON object.
 
@@ -65,7 +65,7 @@ def build_system_message(characteristics):
         - Use at most 2 decimal places for all scores.
         - Do NOT include any text outside the JSON (no Markdown, no comments, no explanations).
         - If a characteristic is not applicable to the text, give it a low score (<= 0.2).
-        """
+        """  # noqa: E501
     return base_prompt.strip()
 
 
@@ -100,13 +100,17 @@ def assert_text_criteria(text_input, text_criteria, threshold, model_name=None, 
     :raises AssertionError: if overall match score is below threshold
     """
     analysis = json.loads(get_text_criteria_analysis(text_input, text_criteria, model_name, azure, **kwargs))
-    overall_match = analysis.get("overall_match", 0.0)
+    overall_match = analysis.get('overall_match', 0.0)
     if overall_match < threshold:
-        error = (f"Text criteria analysis failed: overall match {overall_match} "
-                 f"is below threshold {threshold}\n"
-                 f"Failed features: {analysis.get('features', [])}")
+        error = (
+            f'Text criteria analysis failed: overall match {overall_match} '
+            f'is below threshold {threshold}\n'
+            f'Failed features: {analysis.get("features", [])}'
+        )
         logger.error(error)
         raise AssertionError(error)
-    logger.info(f"Text criteria analysis passed: overall match {overall_match} "
-                f"is above threshold {threshold}."
-                f"Low scored features: {analysis.get('features', [])}")
+    logger.info(
+        f'Text criteria analysis passed: overall match {overall_match} '
+        f'is above threshold {threshold}.'
+        f'Low scored features: {analysis.get("features", [])}',
+    )

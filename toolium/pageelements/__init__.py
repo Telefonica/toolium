@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -23,10 +22,37 @@ from toolium.pageelements.input_radio_page_element import InputRadio
 from toolium.pageelements.input_text_page_element import InputText
 from toolium.pageelements.link_page_element import Link
 from toolium.pageelements.page_element import PageElement
-from toolium.pageelements.page_elements import PageElements, Groups
-from toolium.pageelements.page_elements import Texts, InputTexts, Selects, Buttons, Links, Checkboxes, InputRadios
+from toolium.pageelements.page_elements import (
+    Buttons,
+    Checkboxes,
+    Groups,
+    InputRadios,
+    InputTexts,
+    Links,
+    PageElements,
+    Selects,
+    Texts,
+)
 from toolium.pageelements.select_page_element import Select
 from toolium.pageelements.text_page_element import Text
 
-__all__ = ['PageElement', 'Text', 'InputText', 'Select', 'Button', 'Link', 'Checkbox', 'InputRadio', 'Group',
-           'PageElements', 'Texts', 'InputTexts', 'Selects', 'Buttons', 'Links', 'Checkboxes', 'InputRadios', 'Groups']
+__all__ = [
+    'Button',
+    'Buttons',
+    'Checkbox',
+    'Checkboxes',
+    'Group',
+    'Groups',
+    'InputRadio',
+    'InputRadios',
+    'InputText',
+    'InputTexts',
+    'Link',
+    'Links',
+    'PageElement',
+    'PageElements',
+    'Select',
+    'Selects',
+    'Text',
+    'Texts',
+]

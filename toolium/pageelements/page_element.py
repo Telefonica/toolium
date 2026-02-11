@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -33,8 +32,18 @@ class PageElement(CommonObject):
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     """
 
-    def __init__(self, by, value, parent=None, order=None, wait=False, shadowroot=None, webview=False,
-                 webview_context_selection_callback=None, webview_csc_args=None):
+    def __init__(
+        self,
+        by,
+        value,
+        parent=None,
+        order=None,
+        wait=False,
+        shadowroot=None,
+        webview=False,
+        webview_context_selection_callback=None,
+        webview_csc_args=None,
+    ):
         """Initialize the PageElement object with the given locator components.
 
         If parent is not None, find_element will be performed over it, instead of
@@ -52,7 +61,7 @@ class PageElement(CommonObject):
         for ios
         :param webview_csc_args: arguments list for webview_context_selection_callback
         """
-        super(PageElement, self).__init__()
+        super().__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.order = order  #: index value if the locator returns more than one element
@@ -84,10 +93,10 @@ class PageElement(CommonObject):
         try:
             self._find_web_element()
         except NoSuchElementException as exception:
-            parent_msg = f" and parent locator {self.parent_locator_str()}" if self.parent else ''
+            parent_msg = f' and parent locator {self.parent_locator_str()}' if self.parent else ''
             msg = "Page element of type '%s' with locator %s%s not found"
             self.logger.error(msg, type(self).__name__, self.locator, parent_msg)
-            exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg))
+            exception.msg += f'\n  {msg % (type(self).__name__, self.locator, parent_msg)}'
             raise exception
         return self._web_element
 
@@ -104,18 +113,20 @@ class PageElement(CommonObject):
             # If the element is encapsulated we use the shadowroot tag in yaml (eg. Shadowroot: root_element_name)
             if self.shadowroot:
                 if self.locator[0] != By.CSS_SELECTOR:
-                    raise Exception('Locator type should be CSS_SELECTOR using shadowroot but found: '
-                                    '%s' % self.locator[0])
+                    raise Exception(
+                        f'Locator type should be CSS_SELECTOR using shadowroot but found: {self.locator[0]}',
+                    )
                 # querySelector only support CSS SELECTOR locator
-                self._web_element = self.driver.execute_script('return document.querySelector("%s").shadowRoot.'
-                                                               'querySelector("%s")' % (self.shadowroot,
-                                                                                        self.locator[1]))
+                self._web_element = self.driver.execute_script(
+                    f'return document.querySelector("{self.shadowroot}").shadowRoot.querySelector("{self.locator[1]}")',
+                )
             else:
                 # Element will be searched from parent element or from driver
                 base = self.utils.get_web_element(self.parent) if self.parent else self.driver
                 # Find elements and get the correct index or find a single element
-                self._web_element = base.find_elements(*self.locator)[self.order] if self.order \
-                    else base.find_element(*self.locator)
+                self._web_element = (
+                    base.find_elements(*self.locator)[self.order] if self.order else base.find_element(*self.locator)
+                )
 
     def parent_locator_str(self):
         """Return string with locator tuple for parent element
@@ -137,7 +148,7 @@ class PageElement(CommonObject):
         """
         x = self.web_element.location['x']
         y = self.web_element.location['y']
-        self.driver.execute_script('window.scrollTo({0}, {1})'.format(x, y))
+        self.driver.execute_script(f'window.scrollTo({x}, {y})')
         return self
 
     def is_present(self):
@@ -179,12 +190,12 @@ class PageElement(CommonObject):
                 condition_msg = 'not found or is not clickable'
                 self.utils.wait_until_element_clickable(self, timeout)
         except TimeoutException as exception:
-            parent_msg = f" and parent locator {self.parent_locator_str()}" if self.parent else ''
+            parent_msg = f' and parent locator {self.parent_locator_str()}' if self.parent else ''
             timeout = timeout if timeout else self.utils.get_explicitly_wait()
             msg = "Page element of type '%s' with locator %s%s %s after %s seconds"
             msg = msg % (type(self).__name__, self.locator, parent_msg, condition_msg, timeout)
             self.logger.error(msg)
-            exception.msg += "\n  {}".format(msg)
+            exception.msg += f'\n  {msg}'
             raise exception
         return self
 
@@ -212,7 +223,7 @@ class PageElement(CommonObject):
         """
         return self._wait_until_condition('clickable', timeout)
 
-    def assert_screenshot(self, filename, threshold=0, exclude_elements=[], force=False):
+    def assert_screenshot(self, filename, threshold=0, exclude_elements=None, force=False):
         """Assert that a screenshot of the element is the same as a screenshot on disk, within a given threshold.
 
         :param filename: the filename for the screenshot, which will be appended with ``.png``
@@ -221,8 +232,15 @@ class PageElement(CommonObject):
                                  locator_value) that must be excluded from the assertion
         :param force: if True, the screenshot is compared even if visual testing is disabled by configuration
         """
-        VisualTest(self.driver_wrapper, force).assert_screenshot(self.web_element, filename, self.__class__.__name__,
-                                                                 threshold, exclude_elements)
+        if exclude_elements is None:
+            exclude_elements = []
+        VisualTest(self.driver_wrapper, force).assert_screenshot(
+            self.web_element,
+            filename,
+            self.__class__.__name__,
+            threshold,
+            exclude_elements,
+        )
 
     def get_attribute(self, name):
         """Get the given attribute or property of the element

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -18,11 +17,11 @@ limitations under the License.
 
 import os
 import time
+from unittest import mock
 
-import mock
 import pytest
 import requests_mock
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError  # noqa: A004
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -95,7 +94,7 @@ def utils():
     return Utils()
 
 
-@pytest.mark.parametrize("driver_type, driver_name", driver_name_tests)
+@pytest.mark.parametrize(('driver_type', 'driver_name'), driver_name_tests)
 def test_get_driver_name(driver_type, driver_name, driver_wrapper, utils):
     driver_wrapper.config.set('Driver', 'type', driver_type)
     assert utils.get_driver_name() == driver_name
@@ -177,8 +176,9 @@ def test_save_webdriver_logs_all_log_type(utils):
     Utils.get_available_log_types = mock.MagicMock(return_value=['client', 'server'])
 
     utils.save_webdriver_logs('test_name')
-    Utils.save_webdriver_logs_by_type.assert_has_calls([mock.call('client', 'test_name'),
-                                                        mock.call('server', 'test_name')])
+    Utils.save_webdriver_logs_by_type.assert_has_calls(
+        [mock.call('client', 'test_name'), mock.call('server', 'test_name')],
+    )
 
 
 def test_save_webdriver_logs_without_log_types(utils):
@@ -194,8 +194,14 @@ def test_get_remote_node(driver_wrapper, utils):
     # Configure mock
     driver_wrapper.driver.session_id = '5af'
     url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
-    grid_response_json = {'session': 'e2', 'proxyId': 'http://10.20.30.40:5555', 'msg': 'slot found !',
-                          'inactivityTime': 78, 'success': True, 'internalKey': '7a'}
+    grid_response_json = {
+        'session': 'e2',
+        'proxyId': 'http://10.20.30.40:5555',
+        'msg': 'slot found !',
+        'inactivityTime': 78,
+        'success': True,
+        'internalKey': '7a',
+    }
 
     with requests_mock.mock() as req_mock:
         req_mock.get(url, json=grid_response_json)
@@ -209,8 +215,14 @@ def test_get_remote_node_selenium3(driver_wrapper, utils):
     # Configure mock
     driver_wrapper.driver.session_id = '5af'
     url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
-    grid_response_json = {'session': 'e2', 'proxyId': '10.20.30.40', 'msg': 'slot found !',
-                          'inactivityTime': 78, 'success': True, 'internalKey': '7a'}
+    grid_response_json = {
+        'session': 'e2',
+        'proxyId': '10.20.30.40',
+        'msg': 'slot found !',
+        'inactivityTime': 78,
+        'success': True,
+        'internalKey': '7a',
+    }
 
     with requests_mock.mock() as req_mock:
         req_mock.get(url, json=grid_response_json)
@@ -225,8 +237,15 @@ def test_get_remote_node_ggr(driver_wrapper, utils):
     driver_wrapper.driver.session_id = '5af'
     grid_url = 'http://{}:{}/grid/api/testsession?session={}'.format('localhost', 4444, '5af')
     ggr_url = 'http://{}:{}/host/{}'.format('localhost', 4444, '5af')
-    ggr_response_json = {'Count': 3, 'Username': '', 'Scheme': '', 'VNC': '', 'Name': 'host_name', 'Password': '',
-                         'Port': 4500}
+    ggr_response_json = {
+        'Count': 3,
+        'Username': '',
+        'Scheme': '',
+        'VNC': '',
+        'Name': 'host_name',
+        'Password': '',
+        'Port': 4500,
+    }
 
     with requests_mock.mock() as req_mock:
         req_mock.get(grid_url, text='non_json_response')
@@ -286,14 +305,21 @@ def test_get_remote_video_url(utils):
     # Configure mock
     url = 'http://{}:{}/video'.format('10.20.30.40', 3000)
     video_url = 'http://{}:{}/download_video/f4.mp4'.format('10.20.30.40', 3000)
-    video_response_json = {'exit_code': 1, 'out': [],
-                           'error': ['Cannot call this endpoint without required parameters: session and action'],
-                           'available_videos': {'5af': {'size': 489701,
-                                                        'session': '5af',
-                                                        'last_modified': 1460041262558,
-                                                        'download_url': video_url,
-                                                        'absolute_path': 'C:\\f4.mp4'}},
-                           'current_videos': []}
+    video_response_json = {
+        'exit_code': 1,
+        'out': [],
+        'error': ['Cannot call this endpoint without required parameters: session and action'],
+        'available_videos': {
+            '5af': {
+                'size': 489701,
+                'session': '5af',
+                'last_modified': 1460041262558,
+                'download_url': video_url,
+                'absolute_path': 'C:\\f4.mp4',
+            },
+        },
+        'current_videos': [],
+    }
 
     with requests_mock.mock() as req_mock:
         req_mock.get(url, json=video_response_json)
@@ -306,10 +332,13 @@ def test_get_remote_video_url(utils):
 def test_get_remote_video_url_no_videos(utils):
     # Configure mock
     url = 'http://{}:{}/video'.format('10.20.30.40', 3000)
-    video_response_json = {'exit_code': 1, 'out': [],
-                           'error': ['Cannot call this endpoint without required parameters: session and action'],
-                           'available_videos': {},
-                           'current_videos': []}
+    video_response_json = {
+        'exit_code': 1,
+        'out': [],
+        'error': ['Cannot call this endpoint without required parameters: session and action'],
+        'available_videos': {},
+        'current_videos': [],
+    }
 
     with requests_mock.mock() as req_mock:
         req_mock.get(url, json=video_response_json)
@@ -322,12 +351,22 @@ def test_get_remote_video_url_no_videos(utils):
 def test_is_remote_video_enabled_grid(utils):
     # Configure mock
     url = 'http://{}:{}/config'.format('10.20.30.40', 3000)
-    config_response_json = {'out': [], 'error': [], 'exit_code': 0,
-                            'filename': ['selenium_grid_extras_config.json'],
-                            'config_runtime': {'theConfigMap': {
-                                'video_recording_options': {'width': '1024', 'videos_to_keep': '5',
-                                                            'frames': '30',
-                                                            'record_test_videos': 'true'}}}}
+    config_response_json = {
+        'out': [],
+        'error': [],
+        'exit_code': 0,
+        'filename': ['selenium_grid_extras_config.json'],
+        'config_runtime': {
+            'theConfigMap': {
+                'video_recording_options': {
+                    'width': '1024',
+                    'videos_to_keep': '5',
+                    'frames': '30',
+                    'record_test_videos': 'true',
+                },
+            },
+        },
+    }
 
     with requests_mock.mock() as req_mock:
         req_mock.get(url, json=config_response_json)
@@ -340,12 +379,22 @@ def test_is_remote_video_enabled_grid(utils):
 def test_is_remote_video_enabled_grid_disabled(utils):
     # Configure mock
     url = 'http://{}:{}/config'.format('10.20.30.40', 3000)
-    config_response_json = {'out': [], 'error': [], 'exit_code': 0,
-                            'filename': ['selenium_grid_extras_config.json'],
-                            'config_runtime': {'theConfigMap': {
-                                'video_recording_options': {'width': '1024', 'videos_to_keep': '5',
-                                                            'frames': '30',
-                                                            'record_test_videos': 'false'}}}}
+    config_response_json = {
+        'out': [],
+        'error': [],
+        'exit_code': 0,
+        'filename': ['selenium_grid_extras_config.json'],
+        'config_runtime': {
+            'theConfigMap': {
+                'video_recording_options': {
+                    'width': '1024',
+                    'videos_to_keep': '5',
+                    'frames': '30',
+                    'record_test_videos': 'false',
+                },
+            },
+        },
+    }
 
     with requests_mock.mock() as req_mock:
         req_mock.get(url, json=config_response_json)
@@ -384,7 +433,7 @@ def test_is_remote_video_enabled_unknown_server(utils):
     assert utils.is_remote_video_enabled('unknown', '') is False
 
 
-@pytest.mark.parametrize("driver_type, appium_app, browser_name, bar_height", navigation_bar_tests)
+@pytest.mark.parametrize(('driver_type', 'appium_app', 'browser_name', 'bar_height'), navigation_bar_tests)
 def test_get_safari_navigation_bar_height(driver_type, appium_app, browser_name, bar_height, driver_wrapper, utils):
     driver_wrapper.config.set('Driver', 'type', driver_type)
     if appium_app:
@@ -430,7 +479,8 @@ def test_get_window_size_android_web(driver_wrapper, utils):
 
     assert utils.get_window_size() == window_size
     driver_wrapper.driver.execute_script.assert_has_calls(
-        [mock.call('return window.screen.width'), mock.call('return window.screen.height')])
+        [mock.call('return window.screen.width'), mock.call('return window.screen.height')],
+    )
 
 
 def test_get_window_size_android_web_two_times(driver_wrapper, utils):
@@ -445,7 +495,8 @@ def test_get_window_size_android_web_two_times(driver_wrapper, utils):
     assert utils.get_window_size() == window_size
     # Check that window size is calculated only one time
     driver_wrapper.driver.execute_script.assert_has_calls(
-        [mock.call('return window.screen.width'), mock.call('return window.screen.height')])
+        [mock.call('return window.screen.width'), mock.call('return window.screen.height')],
+    )
 
 
 def test_get_native_coords_android_web(driver_wrapper, utils):
@@ -503,7 +554,7 @@ def test_swipe_android_web(driver_wrapper, utils):
     driver_wrapper.driver.execute_script.side_effect = [
         web_window_size['width'],
         web_window_size['height'],
-        None
+        None,
     ]
     driver_wrapper.driver.get_window_rect.return_value = native_window_rect
     driver_wrapper.config.set('Driver', 'type', 'android')
@@ -571,7 +622,7 @@ def test_swipe_web(driver_wrapper, utils):
     # Create element mock
     element = get_mock_element(x=250, y=40, height=40, width=300)
 
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:  # noqa: PT011
         utils.swipe(element, 50, 100)
     assert 'Swipe method is not implemented in Selenium' == str(excinfo.value)
 
@@ -610,7 +661,7 @@ def test_get_web_element_from_none(utils):
 
 
 def test_get_web_element_from_unknown(utils):
-    web_element = utils.get_web_element(dict())
+    web_element = utils.get_web_element({})
     assert web_element is None
 
 

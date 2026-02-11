@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2022 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -19,9 +18,10 @@ limitations under the License.
 import json
 import logging
 import os
-import requests
 import time
 from configparser import NoOptionError
+
+import requests
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils import dataset
@@ -64,11 +64,11 @@ NOTE: The api_token can be generated from POEditor in this url: https://poeditor
 
 # POEDITOR ENDPOINTS
 
-ENDPOINT_POEDITOR_LIST_PROJECTS = "v2/projects/list"
-ENDPOINT_POEDITOR_LIST_LANGUAGES = "v2/languages/list"
-ENDPOINT_POEDITOR_LIST_TERMS = "v2/terms/list"
-ENDPOINT_POEDITOR_EXPORT_PROJECT = "v2/projects/export"
-ENDPOINT_POEDITOR_DOWNLOAD_FILE = "v2/download/file"
+ENDPOINT_POEDITOR_LIST_PROJECTS = 'v2/projects/list'
+ENDPOINT_POEDITOR_LIST_LANGUAGES = 'v2/languages/list'
+ENDPOINT_POEDITOR_LIST_TERMS = 'v2/terms/list'
+ENDPOINT_POEDITOR_EXPORT_PROJECT = 'v2/projects/export'
+ENDPOINT_POEDITOR_DOWNLOAD_FILE = 'v2/download/file'
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -104,9 +104,9 @@ def get_poeditor_project_info_by_name(project_name=None):
     if len(projects_by_name) != 1:
         project_names = [project['name'] for project in projects]
         if len(projects_by_name) > 1:
-            message = f"There are more than one POEditor project with name \"{project_name}\": {project_names}"
+            message = f'There are more than one POEditor project with name "{project_name}": {project_names}'
         else:
-            message = f"There are no POEditor projects with name \"{project_name}\": {project_names}"
+            message = f'There are no POEditor projects with name "{project_name}": {project_names}'
         raise Exception(message)
     return projects_by_name[0]
 
@@ -118,17 +118,15 @@ def get_poeditor_language_codes(project_info):
     :param project_info: project info
     :return: project language codes
     """
-    params = {"api_token": get_poeditor_api_token(),
-              "id": project_info['id']}
+    params = {'api_token': get_poeditor_api_token(), 'id': project_info['id']}
 
-    r = send_poeditor_request(ENDPOINT_POEDITOR_LIST_LANGUAGES, "POST", params, 200)
+    r = send_poeditor_request(ENDPOINT_POEDITOR_LIST_LANGUAGES, 'POST', params, 200)
     response_data = r.json()
-    assert_poeditor_response_code(response_data, "200")
+    assert_poeditor_response_code(response_data, '200')
 
     language_codes = [lang['code'] for lang in response_data['result']['languages']]
-    assert not len(language_codes) == 0, "ERROR: Not languages found in POEditor"
-    logger.info('POEditor languages in "%s" project: %s %s' % (project_info['name'], len(language_codes),
-                                                               language_codes))
+    assert not len(language_codes) == 0, 'ERROR: Not languages found in POEditor'
+    logger.info(f'POEditor languages in "{project_info["name"]}" project: {len(language_codes)} {language_codes}')
     return language_codes
 
 
@@ -154,23 +152,19 @@ def export_poeditor_project(project_info, lang, file_type):
     :param file_type: There are more available formats to download but only one is supported now: json
     :return: poeditor terms
     """
-    assert file_type in ['json'], "Only json file type is supported at this moment"
+    assert file_type in ['json'], 'Only json file type is supported at this moment'
 
-    params = {"api_token": get_poeditor_api_token(),
-              "id": project_info['id'],
-              "language": lang,
-              "type": file_type}
+    params = {'api_token': get_poeditor_api_token(), 'id': project_info['id'], 'language': lang, 'type': file_type}
 
-    r = send_poeditor_request(ENDPOINT_POEDITOR_EXPORT_PROJECT, "POST", params, 200)
+    r = send_poeditor_request(ENDPOINT_POEDITOR_EXPORT_PROJECT, 'POST', params, 200)
     response_data = r.json()
-    assert_poeditor_response_code(response_data, "200")
+    assert_poeditor_response_code(response_data, '200')
 
     filename = response_data['result']['url'].split('/')[-1]
 
-    r = send_poeditor_request(ENDPOINT_POEDITOR_DOWNLOAD_FILE + '/' + filename, "GET", {}, 200)
+    r = send_poeditor_request(ENDPOINT_POEDITOR_DOWNLOAD_FILE + '/' + filename, 'GET', {}, 200)
     poeditor_terms = r.json() if r.content else []
-    logger.info('POEditor terms in "%s" project with "%s" language: %s' % (project_info['name'], lang,
-                                                                           len(poeditor_terms)))
+    logger.info(f'POEditor terms in "{project_info["name"]}" project with "{lang}" language: {len(poeditor_terms)}')
     return poeditor_terms
 
 
@@ -183,7 +177,7 @@ def save_downloaded_file(poeditor_terms):
     file_path = get_poeditor_file_path()
     with open(file_path, 'w') as f:
         json.dump(poeditor_terms, f, indent=4)
-    logger.info('POEditor terms have been saved in "%s" file' % file_path)
+    logger.info(f'POEditor terms have been saved in "{file_path}" file')
 
 
 def assert_poeditor_response_code(response_data, status_code):
@@ -193,8 +187,10 @@ def assert_poeditor_response_code(response_data, status_code):
     :param response_data: data received in poeditor API response as a dictionary
     :param status_code: expected status code
     """
-    assert response_data['response']['code'] == status_code, f"{response_data['response']['code']} status code \
-        has been received instead of {status_code} in POEditor response body. Response body: {response_data}"
+    assert response_data['response']['code'] == status_code, (
+        f'{response_data["response"]["code"]} status code \
+        has been received instead of {status_code} in POEditor response body. Response body: {response_data}'
+    )
 
 
 def get_country_from_config_file():
@@ -205,8 +201,10 @@ def get_country_from_config_file():
     """
     try:
         country = dataset.toolium_config.get('TestExecution', 'language').lower()
-    except NoOptionError:
-        assert False, "There is no language configured in test, add it to config or use step with parameter lang_id"
+    except NoOptionError as e:
+        raise AssertionError(
+            'There is no language configured in test, add it to config or use step with parameter lang_id',
+        ) from e
     return country
 
 
@@ -224,7 +222,7 @@ def get_valid_lang(language_codes, lang=None):
     elif lang.split('-')[0] in language_codes:
         matching_lang = lang.split('-')[0]
     else:
-        assert False, f"Language {lang} is not included in valid codes: {', '.join(language_codes)}"
+        raise AssertionError(f'Language {lang} is not included in valid codes: {", ".join(language_codes)}')
     return matching_lang
 
 
@@ -234,13 +232,13 @@ def get_poeditor_projects():
 
     :return: POEditor projects list
     """
-    params = {"api_token": get_poeditor_api_token()}
-    r = send_poeditor_request(ENDPOINT_POEDITOR_LIST_PROJECTS, "POST", params, 200)
+    params = {'api_token': get_poeditor_api_token()}
+    r = send_poeditor_request(ENDPOINT_POEDITOR_LIST_PROJECTS, 'POST', params, 200)
     response_data = r.json()
-    assert_poeditor_response_code(response_data, "200")
+    assert_poeditor_response_code(response_data, '200')
     projects = response_data['result']['projects']
     projects_names = [project['name'] for project in projects]
-    logger.info('POEditor projects: %s %s' % (len(projects_names), projects_names))
+    logger.info(f'POEditor projects: {len(projects_names)} {projects_names}')
     return projects
 
 
@@ -260,8 +258,10 @@ def send_poeditor_request(endpoint, method, params, status_code):
         base_url = 'https://api.poeditor.com'
     url = f'{base_url}/{endpoint}'
     r = requests.request(method, url, data=params)
-    assert r.status_code == status_code, f"{r.status_code} status code has been received instead of {status_code} \
-        in POEditor response calling to {url}. Response body: {r.json()}"
+    assert r.status_code == status_code, (
+        f'{r.status_code} status code has been received instead of {status_code} \
+        in POEditor response calling to {url}. Response body: {r.json()}'
+    )
     return r
 
 
@@ -273,15 +273,13 @@ def get_all_terms(project_info, lang):
     :param lang: a valid language configured in POEditor project
     :return: the list of terms
     """
-    params = {"api_token": get_poeditor_api_token(),
-              "id": project_info['id'],
-              "language": lang}
+    params = {'api_token': get_poeditor_api_token(), 'id': project_info['id'], 'language': lang}
 
-    r = send_poeditor_request(ENDPOINT_POEDITOR_LIST_TERMS, "POST", params, 200)
+    r = send_poeditor_request(ENDPOINT_POEDITOR_LIST_TERMS, 'POST', params, 200)
     response_data = r.json()
-    assert_poeditor_response_code(response_data, "200")
+    assert_poeditor_response_code(response_data, '200')
     terms = response_data['result']['terms']
-    logger.info('POEditor terms in "%s" project with "%s" language: %s' % (project_info['name'], lang, len(terms)))
+    logger.info(f'POEditor terms in "{project_info["name"]}" project with "{lang}" language: {len(terms)}')
     return terms
 
 
@@ -299,19 +297,20 @@ def load_poeditor_texts():
 
             # With offline POEditor mode, file must exist
             if not os.path.exists(file_path):
-                error_message = 'You are using offline POEditor mode but poeditor file has not been found in %s' % \
-                                file_path
+                error_message = (
+                    f'You are using offline POEditor mode but poeditor file has not been found in {file_path}'
+                )
                 logger.error(error_message)
-                assert False, error_message
+                raise AssertionError(error_message)
 
-            with open(file_path, 'r') as f:
+            with open(file_path) as f:
                 dataset.poeditor_terms = json.load(f)
                 last_mod_time = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(file_path)))
-                logger.info('Using local POEditor file "%s" with date: %s' % (file_path, last_mod_time))
+                logger.info(f'Using local POEditor file "{file_path}" with date: {last_mod_time}')
         else:  # without mode configured or mode = 'online'
             download_poeditor_texts()
     else:
-        logger.info("POEditor is not configured")
+        logger.info('POEditor is not configured')
 
 
 def get_poeditor_file_path():

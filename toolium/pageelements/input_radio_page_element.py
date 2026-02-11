@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -26,7 +25,7 @@ class InputRadio(Button):
 
         :returns: element text value
         """
-        return self.web_element.get_attribute("value")
+        return self.web_element.get_attribute('value')
 
     def is_selected(self):
         """Returns whether the element is selected

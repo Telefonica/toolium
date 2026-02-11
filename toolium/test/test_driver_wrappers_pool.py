@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -17,8 +16,8 @@ limitations under the License.
 """
 
 import os
+from unittest import mock
 
-import mock
 import pytest
 
 from toolium.config_files import ConfigFiles
@@ -100,7 +99,7 @@ close_drivers_scopes = (
 )
 
 
-@pytest.mark.parametrize("scope", close_drivers_scopes)
+@pytest.mark.parametrize('scope', close_drivers_scopes)
 def test_close_drivers_function(scope, driver_wrapper):
     DriverWrappersPool.save_all_webdriver_logs = mock.MagicMock()
     VisualTest.update_latest_report = mock.MagicMock()

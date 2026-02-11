@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -17,6 +16,7 @@ limitations under the License.
 """
 
 from selenium.common.exceptions import StaleElementReferenceException
+
 from toolium.pageelements.page_element import PageElement
 
 

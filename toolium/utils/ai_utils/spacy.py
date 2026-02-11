@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2025 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.
@@ -53,13 +52,13 @@ def is_negator(tok):
     :param tok: spaCy token
     """
     # Universal Dependencies negation detection (e.g., Spanish "no", "nunca", etc.)
-    if tok.dep_ == "neg":
+    if tok.dep_ == 'neg':
         return True
     # Some languages use Polarity=Neg for negation words (e.g., Spanish "no", "sin", etc.)
-    if "Neg" in tok.morph.get("Polarity"):
+    if 'Neg' in tok.morph.get('Polarity'):
         return True
     # Some languages use PronType=Neg for negation words (e.g., Spanish "nunca", "nadie", etc.)
-    if "Neg" in tok.morph.get("PronType"):
+    if 'Neg' in tok.morph.get('PronType'):
         return True
     return False
 
@@ -89,14 +88,14 @@ def preprocess_with_ud_negation(text, nlp):
             continue
         # Keep negators as is
         if is_negator(t):
-            toks.append("NEGATOR")
+            toks.append('NEGATOR')
             continue
         if t.is_stop:
             continue
 
         lemma = t.lemma_.lower()
         if t.i in negated_heads:
-            toks.append("NEG_" + lemma)
+            toks.append('NEG_' + lemma)
         else:
             toks.append(lemma)
-    return " ".join(toks)
+    return ' '.join(toks)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2018 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -17,10 +16,11 @@ limitations under the License.
 """
 
 import os
-import pytest
 import queue as queue
 import threading
 import uuid
+
+import pytest
 
 from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 
@@ -28,13 +28,15 @@ filename_tests = (
     ('hola_pepito', 'hola_pepito'),
     (' hola:pep /ito* ', 'hola_pep__ito'),
     ('successful login -- @1.1 john.doe', 'successful_login_1_1_john_doe'),
-    ('successful login -- @1.2 Mark options: {Length=10 Mark=mark File=file_name.jpg}',
-     'successful_login_1_2_Mark_options___Length_10_Mark_mark_File_file_name_jpg'),
+    (
+        'successful login -- @1.2 Mark options: {Length=10 Mark=mark File=file_name.jpg}',
+        'successful_login_1_2_Mark_options___Length_10_Mark_mark_File_file_name_jpg',
+    ),
     ('successful login -- @1.3 acción', 'successful_login_1_3_accion'),
 )
 
 
-@pytest.mark.parametrize('input_filename, expected_filename', filename_tests)
+@pytest.mark.parametrize(('input_filename', 'expected_filename'), filename_tests)
 def test_get_valid_filename(input_filename, expected_filename):
     valid_filename = get_valid_filename(input_filename)
 

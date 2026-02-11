@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2023 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,7 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
+from unittest import mock
+
 import pytest
 from selenium.webdriver.firefox.options import Options
 
@@ -24,9 +24,12 @@ from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
-
-DEFAULT_CAPABILITIES = {'acceptInsecureCerts': True, 'browserName': 'firefox', 'moz:debuggerAddress': True,
-                        'pageLoadStrategy': 'normal'}
+DEFAULT_CAPABILITIES = {
+    'acceptInsecureCerts': True,
+    'browserName': 'firefox',
+    'moz:debuggerAddress': True,
+    'pageLoadStrategy': 'normal',
+}
 DEFAULT_PREFERENCES = {'remote.active-protocols': 1}
 
 
@@ -86,7 +89,7 @@ def test_create_local_driver_firefox_headless(webdriver_mock, service, config, u
 
     # Check that firefox options contain the headless option
     service.assert_called_once_with(log_path='geckodriver.log')
-    args, kwargs = webdriver_mock.Firefox.call_args
+    _args, kwargs = webdriver_mock.Firefox.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.arguments == ['-headless']
@@ -106,10 +109,10 @@ def test_create_local_driver_firefox_binary(webdriver_mock, service, config, uti
 
     # Check that firefox options contain the firefox binary
     service.assert_called_once_with(log_path='geckodriver.log')
-    args, kwargs = webdriver_mock.Firefox.call_args
+    _args, kwargs = webdriver_mock.Firefox.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
-    assert options.binary._start_cmd == '/tmp/firefox'
+    assert options.binary_location == '/tmp/firefox'
     webdriver_mock.Firefox.assert_called_once_with(service=service(), options=options)
 
 
@@ -124,8 +127,11 @@ def test_create_local_driver_firefox_extension(webdriver_mock, config, utils):
     config_driver._create_local_driver()
 
     # Check that extension has been added to driver
-    webdriver_mock.Firefox.install_addon.assert_called_once_with(webdriver_mock.Firefox(),
-                                                                 'resources/firebug-3.0.0-beta.3.xpi', temporary=True)
+    webdriver_mock.Firefox.install_addon.assert_called_once_with(
+        webdriver_mock.Firefox(),
+        'resources/firebug-3.0.0-beta.3.xpi',
+        temporary=True,
+    )
 
 
 def test_get_firefox_options(config, utils):
@@ -267,7 +273,7 @@ def test_create_remote_driver_firefox(webdriver_mock, config, utils):
     config_driver._create_remote_driver()
 
     # Check that firefox options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
@@ -287,7 +293,7 @@ def test_create_remote_driver_firefox_basepath(webdriver_mock, config, utils):
     config_driver._create_remote_driver()
 
     # Check that firefox options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
@@ -308,7 +314,7 @@ def test_create_remote_driver_firefox_with_version_and_platform(webdriver_mock, 
     config_driver._create_remote_driver()
 
     # Check that firefox options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
@@ -329,7 +335,7 @@ def test_create_remote_driver_firefox_with_version_and_platform_uppercase(webdri
     config_driver._create_remote_driver()
 
     # Check that firefox options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
@@ -350,12 +356,15 @@ def test_create_remote_driver_firefox_extension(webdriver_mock, config, utils):
     config_driver._create_remote_driver()
 
     # Check that firefox options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
     webdriver_mock.Remote.assert_called_once_with(command_executor=server_url, options=options)
 
     # Check that extension has been added to driver
-    webdriver_mock.Firefox.install_addon.assert_called_once_with(webdriver_mock.Remote(),
-                                                                 'resources/firebug-3.0.0-beta.3.xpi', temporary=True)
+    webdriver_mock.Firefox.install_addon.assert_called_once_with(
+        webdriver_mock.Remote(),
+        'resources/firebug-3.0.0-beta.3.xpi',
+        temporary=True,
+    )

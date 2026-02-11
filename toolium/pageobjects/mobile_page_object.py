@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2016 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -44,7 +43,7 @@ class MobilePageObject(PageObject):
             try:
                 return getattr(importlib.import_module(cls.__module__), __class_name)(__driver_wrapper)
             except AttributeError:
-                __module_name = cls.__module__.replace('.base.', '.{}.'.format(__os_name))
+                __module_name = cls.__module__.replace('.base.', f'.{__os_name}.')
                 return getattr(importlib.import_module(__module_name), __class_name)(__driver_wrapper)
         else:
-            return super(MobilePageObject, cls).__new__(cls)
+            return super().__new__(cls)

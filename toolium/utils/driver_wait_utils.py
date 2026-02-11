@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2022 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -18,17 +17,19 @@ limitations under the License.
 
 import logging
 import time
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
+
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 
 
-class WaitUtils(object):
+class WaitUtils:
     def __init__(self, driver_wrapper=None):
         """Initialize WaitUtils instance
 
         :param driver_wrapper: driver wrapper instance
         """
         from toolium.driver_wrappers_pool import DriverWrappersPool
+
         self.driver_wrapper = driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
         # Configure logger
         self.logger = logging.getLogger(__name__)
@@ -58,6 +59,7 @@ class WaitUtils(object):
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         """
         from toolium.pageelements.page_element import PageElement
+
         web_element = False
         try:
             if isinstance(element, PageElement):
@@ -107,6 +109,7 @@ class WaitUtils(object):
         :rtype: toolium.pageelements.PageElement or tuple
         """
         from toolium.pageelements.page_element import PageElement
+
         element_found = None
         for element in elements:
             try:
@@ -211,7 +214,7 @@ class WaitUtils(object):
 
         :returns: the ajax request is completed
         """
-        return self.driver_wrapper.driver.execute_script("return jQuery.active == 0")
+        return self.driver_wrapper.driver.execute_script('return jQuery.active == 0')
 
     def _wait_until(self, condition_method, condition_input, timeout=None):
         """
@@ -231,7 +234,8 @@ class WaitUtils(object):
             timeout = timeout if timeout else self.get_explicitly_wait()
             # Wait for condition
             condition_response = WebDriverWait(self.driver_wrapper.driver, timeout).until(
-                lambda s: condition_method(condition_input))
+                lambda s: condition_method(condition_input),
+            )
         finally:
             # Restore implicitly wait timeout from properties
             if implicitly_wait != 0:
@@ -287,7 +291,7 @@ class WaitUtils(object):
             msg = 'None of the page elements has been found after %s seconds'
             timeout = timeout if timeout else self.get_explicitly_wait()
             self.logger.error(msg, timeout)
-            exception.msg += "\n  {}".format(msg % timeout)
+            exception.msg += f'\n  {msg % timeout}'
             raise exception
 
     def wait_until_element_clickable(self, element, timeout=None):
@@ -348,8 +352,11 @@ class WaitUtils(object):
         :rtype: selenium.webdriver.remote.webelement.WebElement or appium.webdriver.webelement.WebElement
         :raises TimeoutException: If the element's attribute does not contain the expected value after the timeout
         """
-        return self._wait_until(self._expected_condition_value_in_element_attribute, (element, attribute, value),
-                                timeout)
+        return self._wait_until(
+            self._expected_condition_value_in_element_attribute,
+            (element, attribute, value),
+            timeout,
+        )
 
     def wait_until_ajax_request_completed(self, timeout=None):
         """

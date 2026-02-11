@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2024 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.

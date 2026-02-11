@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2023 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,13 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
+from unittest import mock
+
 import pytest
 from selenium.webdriver.chrome.options import Options
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
-
 
 DEFAULT_CAPABILITIES = {'browserName': 'chrome', 'pageLoadStrategy': 'normal'}
 
@@ -100,7 +99,7 @@ def test_get_chrome_options_multiple_options(config, utils):
     expected_capabilities = DEFAULT_CAPABILITIES
     expected_experimental_options = {
         'prefs': {'download.default_directory': '/tmp'},
-        'mobileEmulation': {'deviceName': 'Google Nexus 5'}
+        'mobileEmulation': {'deviceName': 'Google Nexus 5'},
     }
     expected_extensions_len = 1
     expected_binary_location = ''
@@ -135,14 +134,17 @@ def test_get_chrome_options_binary(config, utils):
 
 def test_get_chrome_options_additional(config, utils):
     config.add_section('Chrome')
-    config.set('Chrome', 'options',
-               "{'excludeSwitches': ['enable-automation'], 'perfLoggingPrefs': {'enableNetwork': True}}")
+    config.set(
+        'Chrome',
+        'options',
+        "{'excludeSwitches': ['enable-automation'], 'perfLoggingPrefs': {'enableNetwork': True}}",
+    )
     config_driver = ConfigDriver(config, utils)
     expected_arguments = []
     expected_capabilities = DEFAULT_CAPABILITIES
     expected_experimental_options = {
         'excludeSwitches': ['enable-automation'],
-        'perfLoggingPrefs': {'enableNetwork': True}
+        'perfLoggingPrefs': {'enableNetwork': True},
     }
     expected_extensions_len = 0
     expected_binary_location = ''
@@ -249,7 +251,7 @@ def test_create_remote_driver_chrome(webdriver_mock, config, utils):
     config_driver._create_remote_driver()
 
     # Check that chrome options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
@@ -268,7 +270,7 @@ def test_create_remote_driver_chrome_basepath(webdriver_mock, config, utils):
     config_driver._create_remote_driver()
 
     # Check that chrome options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
@@ -288,7 +290,7 @@ def test_create_remote_driver_chrome_with_version_and_platform(webdriver_mock, c
     config_driver._create_remote_driver()
 
     # Check that chrome options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
@@ -308,7 +310,7 @@ def test_create_remote_driver_chrome_with_version_and_platform_uppercase(webdriv
     config_driver._create_remote_driver()
 
     # Check that chrome options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities

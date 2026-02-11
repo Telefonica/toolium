@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2020 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -15,14 +14,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 import difflib
 import filecmp
 import os
-import requests
 import time
 from urllib.parse import urljoin
-from urllib.request import urlretrieve, urlopen
+from urllib.request import urlopen, urlretrieve
 
+import requests
 from lxml import html
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -47,10 +47,10 @@ def get_download_directory_base(context):
             platform = 'linux'
         if platform.lower().startswith('win'):
             # Windows node
-            base = 'C:\\tmp\\%s\\' % DOWNLOADS_FOLDER
+            base = f'C:\\tmp\\{DOWNLOADS_FOLDER}\\'
         else:
             # Linux or Mac node
-            base = '/tmp/%s/' % DOWNLOADS_FOLDER
+            base = f'/tmp/{DOWNLOADS_FOLDER}/'
     else:
         # Local folder
         destination_folder = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER, '')
@@ -86,12 +86,17 @@ def retrieve_remote_downloaded_file(context, filename, destination_filename=None
     :returns: destination file path
     """
     destination_filepath = None
-    if context.download_directory is not None and context.driver_wrapper.config.getboolean_optional('Server',
-                                                                                                    'enabled'):
+    if context.download_directory is not None and context.driver_wrapper.config.getboolean_optional(
+        'Server',
+        'enabled',
+    ):
         url = _get_download_directory_url(context)
-        file_url = '%s/%s' % (url, filename)
-        destination_folder = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER,
-                                          context.download_directory)
+        file_url = f'{url}/{filename}'
+        destination_folder = os.path.join(
+            DriverWrappersPool.output_directory,
+            DOWNLOADS_FOLDER,
+            context.download_directory,
+        )
         makedirs_safe(destination_folder)
         destination_filename = destination_filename if destination_filename else filename
         destination_filepath = os.path.join(destination_folder, destination_filename)
@@ -103,8 +108,10 @@ def retrieve_remote_downloaded_file(context, filename, destination_filename=None
 
 
 def get_downloaded_files_list(context):
-    if context.download_directory is not None and context.driver_wrapper.config.getboolean_optional('Server',
-                                                                                                    'enabled'):
+    if context.download_directory is not None and context.driver_wrapper.config.getboolean_optional(
+        'Server',
+        'enabled',
+    ):
         url = _get_download_directory_url(context)
 
         context.logger.info("Getting downloads list from '%s'", url)
@@ -116,8 +123,11 @@ def get_downloaded_files_list(context):
     if context.download_directory is None:
         destination_folder = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER)
     else:
-        destination_folder = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER,
-                                          context.download_directory)
+        destination_folder = os.path.join(
+            DriverWrappersPool.output_directory,
+            DOWNLOADS_FOLDER,
+            context.download_directory,
+        )
 
     return os.listdir(destination_folder)
 
@@ -130,10 +140,10 @@ def _get_remote_node_for_download(context):
 def _get_download_directory_url(context):
     remote_node = _get_remote_node_for_download(context)
     if context.download_directory:
-        host = 'http://{}:{}'.format(remote_node, DOWNLOADS_SERVICE_PORT)
+        host = f'http://{remote_node}:{DOWNLOADS_SERVICE_PORT}'
         url = urljoin(host, context.download_directory)
     else:
-        url = 'http://{}:{}'.format(remote_node, DOWNLOADS_SERVICE_PORT)
+        url = f'http://{remote_node}:{DOWNLOADS_SERVICE_PORT}'
     return url
 
 
@@ -167,10 +177,12 @@ def compare_downloaded_file(context, file_name, expected_folder, max_wait, expec
         with open(downloaded_file) as downloaded, open(template_file) as template:
             diff = difflib.ndiff(downloaded.readlines(), template.readlines())
             delta = ''.join(x[2:] for x in diff if x.startswith('- '))
-            delta = ':\n%s' % delta
+            delta = f':\n{delta}'
 
-    assert equals, ('The downloaded file "%s" is not equal to the expected file "%s" %s' % (
-        file_name, os.path.join(expected_folder, file_name), delta))
+    assert equals, (
+        f'The downloaded file "{file_name}" is not equal to the expected file'
+        f' "{os.path.join(expected_folder, file_name)}" {delta}'
+    )
     context.logger.debug('File downloaded in %f seconds', end_time - start_time)
 
 
@@ -182,18 +194,17 @@ def wait_until_remote_file_downloaded(context, filename, wait_sec=15):
     :param wait_sec: time to wait in seconds
     """
     url = _get_download_directory_url(context)
-    file_url = '{url}/{filename}'.format(url=url, filename=filename)
+    file_url = f'{url}/{filename}'
 
     response = 'ERROR'
     end_time = time.time() + wait_sec
     while 'ERROR' in response:
-        assert time.time() <= end_time, 'File "{}" has not been downloaded in {} seconds: {}' \
-            .format(file_url, wait_sec, response)
+        assert time.time() <= end_time, f'File "{file_url}" has not been downloaded in {wait_sec} seconds: {response}'
         time.sleep(1)
         try:
             response = requests.get(file_url).text
         except Exception as e:
-            response = 'ERROR Exception in get method: \n %s' % e
+            response = f'ERROR Exception in get method: \n {e}'
 
 
 def delete_remote_downloaded_file(context, file_dwn):
@@ -204,10 +215,10 @@ def delete_remote_downloaded_file(context, file_dwn):
     """
     if context.driver_wrapper.config.getboolean_optional('Server', 'enabled'):
         url = _get_download_directory_url(context)
-        file_dwn_url = '{url}/{filename}'.format(url=url, filename=file_dwn)
+        file_dwn_url = f'{url}/{file_dwn}'
         r_dwn = requests.delete(file_dwn_url)
         print(r_dwn.status_code)
-        assert r_dwn.status_code == 200, 'ERROR deleting file "{}": "{}"'.format(file_dwn_url, r_dwn.text)
+        assert r_dwn.status_code == 200, f'ERROR deleting file "{file_dwn_url}": "{r_dwn.text}"'
 
 
 def delete_retrieved_downloaded_file(context, file_dwn, file_retr):
@@ -219,8 +230,11 @@ def delete_retrieved_downloaded_file(context, file_dwn, file_retr):
     """
 
     destination_filename = file_retr if file_retr else file_dwn
-    destination_filepath = os.path.join(DriverWrappersPool.output_directory, DOWNLOADS_FOLDER,
-                                        context.download_directory)
+    destination_filepath = os.path.join(
+        DriverWrappersPool.output_directory,
+        DOWNLOADS_FOLDER,
+        context.download_directory,
+    )
     try:
         os.remove(os.path.join(destination_filepath, destination_filename))
         if len(destination_filepath.split(DOWNLOADS_FOLDER)[1]) > 2:  # only used in case of session folder

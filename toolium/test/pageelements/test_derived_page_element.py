@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,15 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
+from unittest import mock
+
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.pageelements import PageElement, Text, InputText, Button, Select, Group
-from toolium.pageelements import select_page_element
+from toolium.pageelements import Button, Group, InputText, PageElement, Select, Text, select_page_element
 from toolium.pageobjects.page_object import PageObject
 
 child_element = 'child_element'
@@ -128,8 +127,10 @@ def test_set_input_text_shadowroot(driver_wrapper):
     driver_wrapper.driver.find_element.return_value = mock_element
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
     text_value = 'new input value'
-    expected_script = 'return document.querySelector("shadowroot_css").shadowRoot.querySelector("//input[1]").value ' \
-                      '= "new input value"'
+    expected_script = (
+        'return document.querySelector("shadowroot_css").shadowRoot.querySelector("//input[1]").value '
+        '= "new input value"'
+    )
 
     LoginPageObject().username_shadowroot.text = text_value
 
@@ -142,8 +143,10 @@ def test_set_input_text_shadowroot_quotation_marks(driver_wrapper):
     driver_wrapper.driver.find_element.return_value = mock_element
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=False)
     text_value = 'new "input" value'
-    expected_script = 'return document.querySelector("shadowroot_css").shadowRoot.querySelector("//input[1]").value ' \
-                      '= "new \\"input\\" value"'
+    expected_script = (
+        'return document.querySelector("shadowroot_css").shadowRoot.querySelector("//input[1]").value '
+        '= "new \\"input\\" value"'
+    )
 
     LoginPageObject().username_shadowroot.text = text_value
 
@@ -184,7 +187,7 @@ def test_group_reset_object(driver_wrapper):
     assert login_page.menu.logo._web_element is None
     assert login_page.menu.logo.parent == login_page.menu
 
-    login_page.menu.logo.web_element
+    login_page.menu.logo.web_element  # noqa: B018
 
     # Check that web elements are filled
     assert login_page.menu._web_element is not None

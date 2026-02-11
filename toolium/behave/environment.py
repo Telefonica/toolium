@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,10 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import collections
 import logging
 import os
 import re
-import collections
 
 from behave.api.async_step import use_or_create_async_context
 
@@ -55,7 +54,7 @@ def before_all(context):
     create_and_configure_wrapper(context)
 
     # Dictionary to store information during the whole test execution
-    context.run_storage = dict()
+    context.run_storage = {}
     context.storage = context.run_storage
 
     # Method in context to store values in context.storage, context.feature_storage or context.run_storage from steps
@@ -84,7 +83,7 @@ def before_feature(context, feature):
         start_driver(context, no_driver)
 
     # Dictionary to store information between features
-    context.feature_storage = dict()
+    context.feature_storage = {}
     context.storage = collections.ChainMap(context.feature_storage, context.run_storage)
 
     # Behave dynamic environment
@@ -140,10 +139,10 @@ def before_scenario(context, scenario):
     # Configure Jira properties
     save_jira_conf()
 
-    context.logger.info("Running new scenario: %s", scenario.name)
+    context.logger.info('Running new scenario: %s', scenario.name)
 
     # Make sure context storage dict is empty in each scenario and merge with the rest of storages
-    context.storage = collections.ChainMap(dict(), context.feature_storage, context.run_storage)
+    context.storage = collections.ChainMap({}, context.feature_storage, context.run_storage)
 
     # Behave dynamic environment
     context.dyn_env.execute_before_scenario_steps(context)
@@ -168,8 +167,10 @@ def create_and_configure_wrapper(context):
     context.driver_wrapper.configure(context.config_files, behave_properties=behave_properties)
 
     # Activate behave async context to execute playwright
-    if (context.driver_wrapper.config.get_optional('Driver', 'web_library') == 'playwright'
-            and context.driver_wrapper.async_loop is None):
+    if (
+        context.driver_wrapper.config.get_optional('Driver', 'web_library') == 'playwright'
+        and context.driver_wrapper.async_loop is None
+    ):
         use_or_create_async_context(context)
         context.driver_wrapper.async_loop = context.async_context.loop
 
@@ -203,18 +204,40 @@ def add_assert_screenshot_methods(context, scenario):
     """
     file_suffix = scenario.name
 
-    def assert_screenshot(element_or_selector, filename, threshold=0, exclude_elements=[], driver_wrapper=None,
-                          force=False):
-        VisualTest(driver_wrapper, force).assert_screenshot(element_or_selector, filename, file_suffix, threshold,
-                                                            exclude_elements)
+    def assert_screenshot(
+        element_or_selector,
+        filename,
+        threshold=0,
+        exclude_elements=None,
+        driver_wrapper=None,
+        force=False,
+    ):
+        if exclude_elements is None:
+            exclude_elements = []
+        VisualTest(driver_wrapper, force).assert_screenshot(
+            element_or_selector,
+            filename,
+            file_suffix,
+            threshold,
+            exclude_elements,
+        )
 
-    def assert_full_screenshot(filename, threshold=0, exclude_elements=[], driver_wrapper=None, force=False):
+    def assert_full_screenshot(filename, threshold=0, exclude_elements=None, driver_wrapper=None, force=False):
+        if exclude_elements is None:
+            exclude_elements = []
         VisualTest(driver_wrapper, force).assert_screenshot(None, filename, file_suffix, threshold, exclude_elements)
 
     # Monkey patching assert_screenshot method in PageElement to use the correct test name
-    def assert_screenshot_page_element(self, filename, threshold=0, exclude_elements=[], force=False):
-        VisualTest(self.driver_wrapper, force).assert_screenshot(self.web_element, filename, file_suffix, threshold,
-                                                                 exclude_elements)
+    def assert_screenshot_page_element(self, filename, threshold=0, exclude_elements=None, force=False):
+        if exclude_elements is None:
+            exclude_elements = []
+        VisualTest(self.driver_wrapper, force).assert_screenshot(
+            self.web_element,
+            filename,
+            file_suffix,
+            threshold,
+            exclude_elements,
+        )
 
     context.assert_screenshot = assert_screenshot
     context.assert_full_screenshot = assert_full_screenshot
@@ -236,13 +259,17 @@ def after_scenario(context, scenario):
         context.logger.info("The scenario '%s' has passed", scenario.name)
     else:
         jira_test_status = 'Fail'
-        jira_test_comment = "The scenario '%s' has failed" % scenario.name
+        jira_test_comment = f"The scenario '{scenario.name}' has failed"
         context.logger.error("The scenario '%s' has failed", scenario.name)
         context.global_status['test_passed'] = False
 
     # Close drivers
-    DriverWrappersPool.close_drivers(scope='function', test_name=scenario.name,
-                                     test_passed=scenario.status in ['passed', 'skipped'], context=context)
+    DriverWrappersPool.close_drivers(
+        scope='function',
+        test_name=scenario.name,
+        test_passed=scenario.status in ['passed', 'skipped'],
+        context=context,
+    )
 
     # Save test status to be updated later
     if jira_test_status:
@@ -277,8 +304,11 @@ def after_feature(context, feature):
         context.dyn_env.execute_after_feature_steps(context)
     finally:
         # Close drivers regardless of an Exception being raised due to failed preconditions
-        DriverWrappersPool.close_drivers(scope='module', test_name=feature.name,
-                                         test_passed=context.global_status['test_passed'])
+        DriverWrappersPool.close_drivers(
+            scope='module',
+            test_name=feature.name,
+            test_passed=context.global_status['test_passed'],
+        )
 
 
 def after_all(context):
@@ -287,8 +317,11 @@ def after_all(context):
     :param context: behave context
     """
     # Close drivers
-    DriverWrappersPool.close_drivers(scope='session', test_name='multiple_tests',
-                                     test_passed=context.global_status['test_passed'])
+    DriverWrappersPool.close_drivers(
+        scope='session',
+        test_name='multiple_tests',
+        test_passed=context.global_status['test_passed'],
+    )
 
     # Update tests status in Jira
     change_all_jira_status()

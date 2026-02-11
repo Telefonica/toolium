@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2016 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -24,8 +23,18 @@ from toolium.pageobjects.page_object import PageObject
 
 
 class Group(PageObject, PageElement):
-    def __init__(self, by, value, parent=None, driver_wrapper=None, order=None, wait=False, webview=False,
-                 webview_context_selection_callback=None, webview_csc_args=None):
+    def __init__(
+        self,
+        by,
+        value,
+        parent=None,
+        driver_wrapper=None,
+        order=None,
+        wait=False,
+        webview=False,
+        webview_context_selection_callback=None,
+        webview_csc_args=None,
+    ):
         """Initialize the Group object with the given locator components.
 
         If parent is not None, find_elements will be performed over it, instead of
@@ -54,8 +63,9 @@ class Group(PageObject, PageElement):
         # webview context with automatic_context_selection
         self.webview_csc_args = webview_csc_args  #: arguments list for the context selection callback method
         self.shadowroot = None  #: Not implemented for Group yet
-        self.driver_wrapper = driver_wrapper if driver_wrapper else \
-            DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
+        self.driver_wrapper = (
+            driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
+        )  #: driver wrapper instance
         self.init_page_elements()
         self.reset_object(self.driver_wrapper)
 
@@ -65,6 +75,7 @@ class Group(PageObject, PageElement):
         :param driver_wrapper: driver wrapper instance
         """
         from toolium.pageelements.page_elements import PageElements
+
         if driver_wrapper:
             self.driver_wrapper = driver_wrapper
         self._web_element = None

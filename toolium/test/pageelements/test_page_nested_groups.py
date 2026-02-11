@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2017 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,7 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
+from unittest import mock
+
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -75,8 +75,8 @@ def test_reset_object_nested_groups(driver_wrapper):
     assert nested_page.outer.inner.input.parent == nested_page.outer.inner
     assert nested_page.outer.inner.input_with_parent.parent == nested_page.outer.inner.input
 
-    nested_page.outer.inner.input.web_element
-    nested_page.outer.inner.input_with_parent.web_element
+    nested_page.outer.inner.input.web_element  # noqa: B018
+    nested_page.outer.inner.input_with_parent.web_element  # noqa: B018
 
     # Check that web elements are filled
     assert nested_page.outer._web_element is not None

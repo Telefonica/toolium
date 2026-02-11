@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2023 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,14 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
+from unittest import mock
+
 import pytest
 from selenium.webdriver.safari.options import Options
 
 from toolium.config_driver import ConfigDriver
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
-
 
 DEFAULT_CAPABILITIES = {'platformName': 'mac', 'browserName': 'safari', 'pageLoadStrategy': 'normal'}
 
@@ -130,7 +129,7 @@ def test_create_remote_driver_safari(webdriver_mock, config, utils):
     config_driver._create_remote_driver()
 
     # Check that chrome options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
@@ -150,7 +149,7 @@ def test_create_remote_driver_safari_basepath(webdriver_mock, config, utils):
     config_driver._create_remote_driver()
 
     # Check that chrome options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
@@ -171,7 +170,7 @@ def test_create_remote_driver_safari_with_version_and_platform(webdriver_mock, c
     config_driver._create_remote_driver()
 
     # Check that firefox options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities
@@ -192,7 +191,7 @@ def test_create_remote_driver_firefox_with_version_and_platform_uppercase(webdri
     config_driver._create_remote_driver()
 
     # Check that firefox options contain expected capabilities
-    args, kwargs = webdriver_mock.Remote.call_args
+    _args, kwargs = webdriver_mock.Remote.call_args
     options = kwargs['options']
     assert isinstance(options, Options)
     assert options.capabilities == expected_capabilities

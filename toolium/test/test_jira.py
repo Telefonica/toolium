@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -17,11 +16,11 @@ limitations under the License.
 """
 
 import os
+from unittest import mock
 
-import mock
 import pytest
 import requests_mock
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError  # noqa: A004
 
 from toolium import jira
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -74,13 +73,20 @@ def test_change_jira_status(logger):
 
         # Check requested url
         assert jira.execution_url == req_mock.request_history[0].url
-        for partial_url in ['jiraStatus=Pass', 'jiraTestCaseId=TOOLIUM-1', 'summaryPrefix=prefix',
-                            'labels=label1+label2', 'comments=comment', 'version=Release+1.0', 'build=453',
-                            'onlyIfStatusChanges=true']:
+        for partial_url in [
+            'jiraStatus=Pass',
+            'jiraTestCaseId=TOOLIUM-1',
+            'summaryPrefix=prefix',
+            'labels=label1+label2',
+            'comments=comment',
+            'version=Release+1.0',
+            'build=453',
+            'onlyIfStatusChanges=true',
+        ]:
             assert partial_url in req_mock.request_history[0].text
 
     # Check logging call
-    logger.debug.assert_called_once_with("%s", "The Test Case Execution 'TOOLIUM-11' has been created")
+    logger.debug.assert_called_once_with('%s', "The Test Case Execution 'TOOLIUM-11' has been created")
 
 
 def test_change_jira_status_attachments(logger):
@@ -110,16 +116,23 @@ def test_change_jira_status_attachments(logger):
         body_bytes = req_mock.last_request.body
 
     # Check requested url
-    body = "".join(map(chr, body_bytes))
-    for partial_url in ['"jiraStatus"\r\n\r\nPass', '"jiraTestCaseId"\r\n\r\nTOOLIUM-1',
-                        '"summaryPrefix"\r\n\r\nprefix', '"labels"\r\n\r\nlabel1 label2',
-                        '"comments"\r\n\r\ncomment', '"version"\r\n\r\nRelease 1.0', '"build"\r\n\r\n453',
-                        '"onlyIfStatusChanges"\r\n\r\ntrue', '"attachments0"; filename="ios.png"',
-                        '"attachments1"; filename="ios_web.png"']:
+    body = ''.join(map(chr, body_bytes))
+    for partial_url in [
+        '"jiraStatus"\r\n\r\nPass',
+        '"jiraTestCaseId"\r\n\r\nTOOLIUM-1',
+        '"summaryPrefix"\r\n\r\nprefix',
+        '"labels"\r\n\r\nlabel1 label2',
+        '"comments"\r\n\r\ncomment',
+        '"version"\r\n\r\nRelease 1.0',
+        '"build"\r\n\r\n453',
+        '"onlyIfStatusChanges"\r\n\r\ntrue',
+        '"attachments0"; filename="ios.png"',
+        '"attachments1"; filename="ios_web.png"',
+    ]:
         assert partial_url in body
 
     # Check logging call
-    logger.debug.assert_called_once_with("%s", "The Test Case Execution 'TOOLIUM-11' has been created")
+    logger.debug.assert_called_once_with('%s', "The Test Case Execution 'TOOLIUM-11' has been created")
 
 
 @mock.patch('toolium.jira.requests.get')
@@ -134,8 +147,10 @@ def test_change_jira_status_empty_url(jira_get, logger):
     jira.change_jira_status('TOOLIUM-1', 'Pass', None, [])
 
     # Check logging error message
-    logger.warning.assert_called_once_with("Test Case '%s' can not be updated: execution_url is not configured",
-                                           'TOOLIUM-1')
+    logger.warning.assert_called_once_with(
+        "Test Case '%s' can not be updated: execution_url is not configured",
+        'TOOLIUM-1',
+    )
 
 
 @mock.patch('toolium.jira.requests.post')
@@ -205,9 +220,11 @@ def test_jira_annotation_multiple(logger):
     MockTestClass().mock_test_pass_2()
 
     # Check jira status
-    expected_status = {'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None, []),
-                       'TOOLIUM-3': ('TOOLIUM-3', 'Fail', "The test 'test name' has failed: test error", []),
-                       'TOOLIUM-2': ('TOOLIUM-2', 'Pass', None, [])}
+    expected_status = {
+        'TOOLIUM-1': ('TOOLIUM-1', 'Pass', None, []),
+        'TOOLIUM-3': ('TOOLIUM-3', 'Fail', "The test 'test name' has failed: test error", []),
+        'TOOLIUM-2': ('TOOLIUM-2', 'Pass', None, []),
+    }
     assert expected_status == jira.jira_tests_status
 
 
@@ -228,7 +245,7 @@ def test_jira_disabled(logger):
     assert expected_status == jira.jira_tests_status
 
 
-class MockTestClass():
+class MockTestClass:
     def get_method_name(self):
         return 'test name'
 

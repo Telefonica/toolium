@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Copyright 2025 Telefónica Investigación y Desarrollo, S.A.U.
+Copyright 2025 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +16,12 @@ limitations under the License.
 """
 
 import logging
-
 from configparser import NoSectionError
+
 from toolium.config_driver import ConfigDriver, get_error_message_from_exception
 
 
-class ConfigDriverPlayWright(ConfigDriver):
+class ConfigDriverPlaywright(ConfigDriver):
     def __init__(self, config, utils=None, playwright=None):
         self.logger = logging.getLogger(__name__)
         self.config = config
@@ -37,11 +36,11 @@ class ConfigDriverPlayWright(ConfigDriver):
         """
         driver_type = self.config.get('Driver', 'type')
         try:
-            self.logger.info("Creating playwright driver (type = %s)", driver_type)
+            self.logger.info('Creating playwright driver (type = %s)', driver_type)
             return self._create_playwright_browser()
         except Exception as exc:
             error_message = get_error_message_from_exception(exc)
-            self.logger.error("%s driver can not be launched: %s", driver_type.capitalize(), error_message)
+            self.logger.error('%s driver can not be launched: %s', driver_type.capitalize(), error_message)
             raise
 
     def create_playwright_persistent_browser_context(self):
@@ -52,11 +51,11 @@ class ConfigDriverPlayWright(ConfigDriver):
         """
         driver_type = self.config.get('Driver', 'type')
         try:
-            self.logger.info("Creating playwright persistent context (type = %s)", driver_type)
+            self.logger.info('Creating playwright persistent context (type = %s)', driver_type)
             return self._create_playwright_persistent_browser_context()
         except Exception as exc:
             error_message = get_error_message_from_exception(exc)
-            self.logger.error("%s driver can not be launched: %s", driver_type.capitalize(), error_message)
+            self.logger.error('%s driver can not be launched: %s', driver_type.capitalize(), error_message)
             raise
 
     def _create_playwright_browser(self):
@@ -105,7 +104,7 @@ class ConfigDriverPlayWright(ConfigDriver):
         context_options = {}
         try:
             for key, value in dict(self.config.items('PlaywrightContextOptions')).items():
-                self.logger.debug("Added Playwright context option: %s = %s", key, value)
+                self.logger.debug('Added Playwright context option: %s = %s', key, value)
                 context_options[key] = self._convert_property_type(value)
         except NoSectionError:
             pass
@@ -123,7 +122,7 @@ class ConfigDriverPlayWright(ConfigDriver):
         page_options = {}
         try:
             for key, value in dict(self.config.items('PlaywrightPageOptions')).items():
-                self.logger.debug("Added Playwright page option: %s = %s", key, value)
+                self.logger.debug('Added Playwright page option: %s = %s', key, value)
                 page_options[key] = self._convert_property_type(value)
         except NoSectionError:
             pass
@@ -145,7 +144,7 @@ class ConfigDriverPlayWright(ConfigDriver):
         browser_options = self._update_dict(browser_options, {'firefox_user_prefs': preferences})
         return self.playwright.firefox.launch(
             headless=headless_mode,
-            **browser_options
+            **browser_options,
         )
 
     def _setup_playwright_persistent_firefox(self):
@@ -164,7 +163,7 @@ class ConfigDriverPlayWright(ConfigDriver):
         context_options = self._update_dict(context_options, {'firefox_user_prefs': preferences})
         return self.playwright.firefox.launch_persistent_context(
             headless=headless_mode,
-            **context_options
+            **context_options,
         )
 
     def _add_playwright_firefox_arguments(self, arguments):
@@ -174,9 +173,9 @@ class ConfigDriverPlayWright(ConfigDriver):
         """
         try:
             for pref, pref_value in dict(self.config.items('FirefoxArguments')).items():
-                pref_value = '={}'.format(pref_value) if pref_value else ''
-                self.logger.debug("Added Firefox argument: %s%s", pref, pref_value)
-                arguments.append('--{}{}'.format(pref, self._convert_property_type(pref_value)))
+                pref_value = f'={pref_value}' if pref_value else ''
+                self.logger.debug('Added Firefox argument: %s%s', pref, pref_value)
+                arguments.append(f'--{pref}{self._convert_property_type(pref_value)}')
         except NoSectionError:
             pass
 
@@ -187,7 +186,7 @@ class ConfigDriverPlayWright(ConfigDriver):
         """
         try:
             for pref, pref_value in dict(self.config.items('FirefoxPreferences')).items():
-                self.logger.debug("Added Firefox preference: %s = %s", pref, pref_value)
+                self.logger.debug('Added Firefox preference: %s = %s', pref, pref_value)
                 preferences[pref] = self._convert_property_type(pref_value)
         except NoSectionError:
             pass
@@ -201,7 +200,7 @@ class ConfigDriverPlayWright(ConfigDriver):
         browser_options = {}
         try:
             for key, value in dict(self.config.items('PlaywrightBrowserOptions')).items():
-                self.logger.debug("Added Playwright Browser option: %s = %s", key, value)
+                self.logger.debug('Added Playwright Browser option: %s = %s', key, value)
                 browser_options[key] = self._convert_property_type(value)
         except NoSectionError:
             pass
@@ -221,7 +220,7 @@ class ConfigDriverPlayWright(ConfigDriver):
         browser_options = self._update_dict(browser_options, {'args': arguments})
         return self.playwright.chromium.launch(
             headless=headless_mode,
-            **browser_options
+            **browser_options,
         )
 
     def _setup_playwright_persistent_chrome(self):
@@ -238,7 +237,7 @@ class ConfigDriverPlayWright(ConfigDriver):
         context_options = self._update_dict(context_options, {'args': arguments})
         return self.playwright.chromium.launch_persistent_context(
             headless=headless_mode,
-            **context_options
+            **context_options,
         )
 
     def _add_playwright_chrome_arguments(self, arguments):
@@ -248,9 +247,9 @@ class ConfigDriverPlayWright(ConfigDriver):
         """
         try:
             for pref, pref_value in dict(self.config.items('ChromeArguments')).items():
-                pref_value = '={}'.format(pref_value) if pref_value else ''
-                self.logger.debug("Added Chrome argument: %s%s", pref, pref_value)
-                arguments.append('--{}{}'.format(pref, self._convert_property_type(pref_value)))
+                pref_value = f'={pref_value}' if pref_value else ''
+                self.logger.debug('Added Chrome argument: %s%s', pref, pref_value)
+                arguments.append(f'--{pref}{self._convert_property_type(pref_value)}')
         except NoSectionError:
             pass
 
@@ -261,8 +260,8 @@ class ConfigDriverPlayWright(ConfigDriver):
         """
         try:
             for pref, pref_value in dict(self.config.items('ChromeExtensions')).items():
-                self.logger.debug("Added Chrome extension: %s = %s", pref, pref_value)
-                arguments.append('--load-extension={}'.format(pref_value))
+                self.logger.debug('Added Chrome extension: %s = %s', pref, pref_value)
+                arguments.append(f'--load-extension={pref_value}')
         except NoSectionError:
             pass
 
@@ -275,7 +274,7 @@ class ConfigDriverPlayWright(ConfigDriver):
         browser_options = self._get_playwright_browser_options()
         return self.playwright.webkit.launch(
             headless=headless_mode,
-            **browser_options
+            **browser_options,
         )
 
     def _setup_playwright_persistent_webkit(self):
@@ -287,5 +286,5 @@ class ConfigDriverPlayWright(ConfigDriver):
         context_options = self.get_playwright_context_options()
         return self.playwright.webkit.launch_persistent_context(
             headless=headless_mode,
-            **context_options
+            **context_options,
         )

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -20,20 +19,21 @@ import logging.config
 import os
 
 import screeninfo
+
 try:
     from playwright.async_api import async_playwright
 except ImportError:
     async_playwright = None
 
 from toolium.config_driver import ConfigDriver
-from toolium.config_driver_playwright import ConfigDriverPlayWright
+from toolium.config_driver_playwright import ConfigDriverPlaywright
 from toolium.config_parser import ExtendedConfigParser
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.driver_utils import Utils
 from toolium.utils.path_utils import get_valid_filename
 
 
-class DriverWrapper(object):
+class DriverWrapper:
     """Wrapper with the webdriver and the configuration needed to execute tests
 
     :type driver: selenium.webdriver.remote.webdriver.WebDriver or appium.webdriver.webdriver.WebDriver
@@ -50,6 +50,7 @@ class DriverWrapper(object):
     :type visual_baseline_directory: str
     :type baseline_name: str
     """
+
     driver = None  #: webdriver instance
     config = ExtendedConfigParser()  #: driver configuration
     utils = None  #: test utils instance
@@ -98,22 +99,28 @@ class DriverWrapper(object):
         :param tc_output_log_filename: test case specific output logger file
         """
         # Get config logger filename
-        config_log_filename = DriverWrappersPool.get_configured_value('TOOLIUM_CONFIG_LOG_FILENAME',
-                                                                      tc_config_log_filename, 'logging.conf')
+        config_log_filename = DriverWrappersPool.get_configured_value(
+            'TOOLIUM_CONFIG_LOG_FILENAME',
+            tc_config_log_filename,
+            'logging.conf',
+        )
         config_log_filename = os.path.join(DriverWrappersPool.config_directory, config_log_filename)
 
         # Configure logger only if logging filename has changed
         if self.config_log_filename != config_log_filename:
             # Get output logger filename
-            output_log_filename = DriverWrappersPool.get_configured_value('TOOLIUM_OUTPUT_LOG_FILENAME',
-                                                                          tc_output_log_filename, 'toolium.log')
+            output_log_filename = DriverWrappersPool.get_configured_value(
+                'TOOLIUM_OUTPUT_LOG_FILENAME',
+                tc_output_log_filename,
+                'toolium.log',
+            )
             output_log_filename = os.path.join(DriverWrappersPool.output_directory, output_log_filename)
             output_log_filename = output_log_filename.replace('\\', '\\\\')
 
             try:
                 logging.config.fileConfig(config_log_filename, {'logfilename': output_log_filename}, False)
             except Exception as exc:
-                print("[WARN] Error reading logging config file '{}': {}".format(config_log_filename, exc))
+                print(f"[WARN] Error reading logging config file '{config_log_filename}': {exc}")
             self.config_log_filename = config_log_filename
             self.output_log_filename = output_log_filename
             self.logger = logging.getLogger(__name__)
@@ -124,11 +131,14 @@ class DriverWrapper(object):
         :param tc_config_prop_filenames: test case specific properties filenames
         :param behave_properties: dict with behave user data properties
         """
-        prop_filenames = DriverWrappersPool.get_configured_value('TOOLIUM_CONFIG_PROPERTIES_FILENAMES',
-                                                                 tc_config_prop_filenames,
-                                                                 'properties.cfg;local-properties.cfg')
-        prop_filenames = [os.path.join(DriverWrappersPool.config_directory, filename) for filename in
-                          prop_filenames.split(';')]
+        prop_filenames = DriverWrappersPool.get_configured_value(
+            'TOOLIUM_CONFIG_PROPERTIES_FILENAMES',
+            tc_config_prop_filenames,
+            'properties.cfg;local-properties.cfg',
+        )
+        prop_filenames = [
+            os.path.join(DriverWrappersPool.config_directory, filename) for filename in prop_filenames.split(';')
+        ]
         prop_filenames = ';'.join(prop_filenames)
 
         # Configure config only if properties filename has changed
@@ -160,8 +170,10 @@ class DriverWrapper(object):
         # Configure baseline directory if baseline name has changed
         if self.baseline_name != baseline_name:
             self.baseline_name = baseline_name
-            self.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,
-                                                          get_valid_filename(baseline_name))
+            self.visual_baseline_directory = os.path.join(
+                DriverWrappersPool.visual_baseline_directory,
+                get_valid_filename(baseline_name),
+            )
 
     def update_visual_baseline(self):
         """Configure baseline directory after driver is created"""
@@ -172,8 +184,10 @@ class DriverWrapper(object):
             except KeyError:
                 platform_version = None
             self.baseline_name = self.baseline_name.replace('{PlatformVersion}', str(platform_version))
-            self.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,
-                                                          self.baseline_name)
+            self.visual_baseline_directory = os.path.join(
+                DriverWrappersPool.visual_baseline_directory,
+                self.baseline_name,
+            )
 
         # Update baseline with real version value
         if '{Version}' in self.baseline_name:
@@ -183,14 +197,18 @@ class DriverWrapper(object):
             except KeyError:
                 version = None
             self.baseline_name = self.baseline_name.replace('{Version}', str(version))
-            self.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,
-                                                          self.baseline_name)
+            self.visual_baseline_directory = os.path.join(
+                DriverWrappersPool.visual_baseline_directory,
+                self.baseline_name,
+            )
 
         # Update baseline with remote node value
         if '{RemoteNode}' in self.baseline_name:
             self.baseline_name = self.baseline_name.replace('{RemoteNode}', str(self.remote_node))
-            self.visual_baseline_directory = os.path.join(DriverWrappersPool.visual_baseline_directory,
-                                                          self.baseline_name)
+            self.visual_baseline_directory = os.path.join(
+                DriverWrappersPool.visual_baseline_directory,
+                self.baseline_name,
+            )
 
     def configure(self, tc_config_files, is_selenium_test=True, behave_properties=None):
         """Configure initial selenium instance using logging and properties files for Selenium or Appium tests
@@ -242,14 +260,17 @@ class DriverWrapper(object):
         self.remote_node_video_enabled = self.utils.is_remote_video_enabled(self.server_type, self.remote_node)
 
         # Save app_strings in mobile tests
-        if (self.is_mobile_test() and not self.is_web_test()
-                and self.config.getboolean_optional('Driver', 'appium_app_strings')):
+        if (
+            self.is_mobile_test()
+            and not self.is_web_test()
+            and self.config.getboolean_optional('Driver', 'appium_app_strings')
+        ):
             try:
                 self.app_strings = self.driver.app_strings()
                 self.logger.debug('App strings retrieved successfully: %d strings found', len(self.app_strings))
             except Exception as exc:
                 # app_strings() may not be available in some Appium/UIAutomator2 versions or configurations
-                self.logger.warning("Could not retrieve app_strings: %s. Continuing without app strings.", str(exc))
+                self.logger.warning('Could not retrieve app_strings: %s. Continuing without app strings.', str(exc))
                 self.app_strings = {}
 
         # Resize and move browser
@@ -275,8 +296,9 @@ class DriverWrapper(object):
         :returns: playwright page
         """
         if async_playwright is None:
-            raise ImportError("Playwright is not installed. Please run 'pip install toolium[playwright]' to use"
-                              " Playwright features")
+            raise ImportError(
+                "Playwright is not installed. Please run 'pip install toolium[playwright]' to use Playwright features",
+            )
 
         async_loop = self.async_loop
         self.playwright = async_loop.run_until_complete(async_playwright().start())
@@ -284,20 +306,20 @@ class DriverWrapper(object):
         # In case of using a persistent context this property must be set and
         # a BrowserContext is returned instead of a Browser
         user_data_dir = self.config.get_optional('PlaywrightContextOptions', 'user_data_dir', None)
-        config_driver = ConfigDriverPlayWright(self.config, self.utils, self.playwright)
+        config_driver = ConfigDriverPlaywright(self.config, self.utils, self.playwright)
         if user_data_dir:
             self.playwright_context = async_loop.run_until_complete(
-                config_driver.create_playwright_persistent_browser_context()
+                config_driver.create_playwright_persistent_browser_context(),
             )
         else:
             self.playwright_browser = async_loop.run_until_complete(
-                config_driver.create_playwright_browser()
+                config_driver.create_playwright_browser(),
             )
             self.playwright_context = async_loop.run_until_complete(
-                self.playwright_browser.new_context(**config_driver.get_playwright_context_options())
+                self.playwright_browser.new_context(**config_driver.get_playwright_context_options()),
             )
         self.driver = async_loop.run_until_complete(
-            self.playwright_context.new_page(**config_driver.get_playwright_page_options())
+            self.playwright_context.new_page(**config_driver.get_playwright_page_options()),
         )
 
     async def connect_playwright_new_page(self):
@@ -308,7 +330,7 @@ class DriverWrapper(object):
         """
 
         self.driver = await self.playwright_context.new_page(
-            **ConfigDriverPlayWright(self.config, self.utils).get_playwright_page_options()
+            **ConfigDriverPlaywright(self.config, self.utils).get_playwright_page_options(),
         )
         return self.driver
 
@@ -331,10 +353,14 @@ class DriverWrapper(object):
             window_width = self.config.get_optional('Driver', 'window_width')
             window_height = self.config.get_optional('Driver', 'window_height')
             if window_width and window_height:
-                self.driver.set_window_rect(x=bounds_x, y=bounds_y, width=int(window_width),
-                                            height=int(window_height))
-                self.logger.debug('Window rect: x=%s, y=%s, width=%s, height=%s',
-                                  bounds_x, bounds_y, window_width, window_height)
+                self.driver.set_window_rect(x=bounds_x, y=bounds_y, width=int(window_width), height=int(window_height))
+                self.logger.debug(
+                    'Window rect: x=%s, y=%s, width=%s, height=%s',
+                    bounds_x,
+                    bounds_y,
+                    window_width,
+                    window_height,
+                )
             else:
                 # For maximize, still need to set position first if bounds are specified
                 if bounds_x != 0 or bounds_y != 0:
@@ -357,7 +383,7 @@ class DriverWrapper(object):
                 bounds_x += monitor.x
                 bounds_y += monitor.y
             except NotImplementedError:
-                self.logger.warning('Current environment doesn\'t support get_monitors')
+                self.logger.warning("Current environment doesn't support get_monitors")
 
         return bounds_x, bounds_y
 
@@ -430,10 +456,12 @@ class DriverWrapper(object):
         reuse_driver_session = self.config.getboolean_optional('Driver', 'reuse_driver_session')
         restart_driver_after_failure = self.config.getboolean_optional('Driver', 'restart_driver_after_failure')
         if context and scope == 'function':
-            reuse_driver = reuse_driver or (hasattr(context, 'reuse_driver_from_tags')
-                                            and context.reuse_driver_from_tags)
-        return (((reuse_driver and scope == 'function') or (reuse_driver_session and scope != 'session'))
-                and (test_passed or not restart_driver_after_failure))
+            reuse_driver = reuse_driver or (
+                hasattr(context, 'reuse_driver_from_tags') and context.reuse_driver_from_tags
+            )
+        return ((reuse_driver and scope == 'function') or (reuse_driver_session and scope != 'session')) and (
+            test_passed or not restart_driver_after_failure
+        )
 
     def get_driver_platform(self):
         """

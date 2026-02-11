@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2022 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -17,17 +16,17 @@ limitations under the License.
 """
 
 import logging
-import phonenumbers
 import random
 import re
 import uuid
 
+import phonenumbers
 from faker import Faker
 
 __logger__ = logging.getLogger(__name__)
 
 
-class DataGenerator(object):
+class DataGenerator:
     """
     Class to generate fake data for testing.
     Supported data: street_address, email, phone_number, postal_code.
@@ -104,7 +103,7 @@ class DataGenerator(object):
 
     @staticmethod
     def random_int(length):
-        return ''.join(["{}".format(random.randint(0, 9)) for _ in range(0, int(length))])
+        return ''.join([f'{random.randint(0, 9)}' for _ in range(0, int(length))])
 
     @staticmethod
     def get_locale():
@@ -112,12 +111,13 @@ class DataGenerator(object):
         Return the locale.
         If language and country properties are not defined, 'es_ES' is set.
         """
-        from toolium.utils.dataset import language, country
+        from toolium.utils.dataset import country, language
+
         locale = 'es_ES'
         if language and ('-' in language or '_' in language):
             # When language contain the complete locale value
             locale = language.replace('-', '_')
-            locale = f"{locale.split('_')[0]}_{locale.split('_')[1].upper()}"
+            locale = f'{locale.split("_")[0]}_{locale.split("_")[1].upper()}'
         elif language and country:
             locale = f'{language}_{country.upper()}'
         return locale
@@ -129,5 +129,5 @@ class DataGenerator(object):
         Can be added custom validations for the country.
         """
         if provider == 'es_ES':
-            return re.match(r"(?:0[1-9]|[1-4]\d|5[0-2])\d{3}$", postal_code)
+            return re.match(r'(?:0[1-9]|[1-4]\d|5[0-2])\d{3}$', postal_code)
         return True
