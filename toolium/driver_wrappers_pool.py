@@ -172,7 +172,8 @@ class DriverWrappersPool:
                 driver_wrapper.stop()
             except Exception as e:
                 driver_wrapper.logger.warning(
-                    f'Capture exceptions to avoid errors in teardown method due to session timeouts: \n {e}',
+                    'Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s',
+                    e,
                 )
 
     @classmethod
@@ -203,7 +204,7 @@ class DriverWrappersPool:
                     )
             except Exception as exc:
                 # Capture exceptions to avoid errors in teardown method due to session timeouts
-                driver_wrapper.logger.warning(f'Error downloading videos: {exc}')
+                driver_wrapper.logger.warning('Error downloading videos: %s', exc)
             driver_index += 1
 
     @classmethod
@@ -254,7 +255,7 @@ class DriverWrappersPool:
                         driver_wrapper.utils.save_webdriver_logs(log_file_name)
                 except Exception as exc:
                     # Capture exceptions to avoid errors in teardown method due to session timeouts
-                    driver_wrapper.logger.warning(f'Error downloading webdriver logs: {exc}')
+                    driver_wrapper.logger.warning('Error downloading webdriver logs: %s', exc)
             driver_index += 1
 
     @staticmethod

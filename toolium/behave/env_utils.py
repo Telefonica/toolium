@@ -43,7 +43,7 @@ class Logger:
         self.logger = logger
         self.show = show
 
-    def warn(self, exc):
+    def warning(self, exc):
         """
         log a warning message:
         :param exc: exception message
@@ -226,7 +226,7 @@ class DynamicEnvironment:
             for item in self.actions[action]:
                 try:
                     self.__print_step_by_console(item)
-                    self.logger.debug(f'Executing step defined in {action}: {item!r}')
+                    self.logger.debug(f'Executing step defined in {action}: {item!r}')  # noqa: G004
                     context.execute_steps(f"""{GIVEN_PREFIX}{self.__remove_prefix(item)}""")
                 except Exception as exc:
                     if action == ACTIONS_BEFORE_FEATURE:
@@ -299,7 +299,7 @@ class DynamicEnvironment:
                 if scenario.should_run(context.config):
                     self.fail_first_step_precondition_exception(scenario, error_message)
                     if len(scenario.background_steps) > 0:
-                        context.logger.warn('Background from scenario status udpated to fail')
+                        context.logger.warning('Background from scenario status udpated to fail')
             raise Exception(f'Before feature steps have failed: {error_message}')
 
     def fail_first_step_precondition_exception(self, scenario, error_message):

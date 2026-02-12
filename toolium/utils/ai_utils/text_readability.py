@@ -66,7 +66,7 @@ def get_text_readability_with_spacy(text, technical_chars=None, model_name=None,
 
     readability = (total_tokens - non_linguistic_tokens_count) / total_tokens
 
-    logger.info(f'spaCy readability: {readability}')
+    logger.info('spaCy readability: %s', readability)
     return readability
 
 
@@ -99,5 +99,5 @@ def assert_text_readability(text, threshold, technical_chars=None, readability_m
         logger.error(error_message)
         raise AssertionError(error_message)
 
-    logger.info(f'Text readability is above threshold: {readability} >= {threshold}\n{texts_message}')
+    logger.info('Text readability is above threshold: %s >= %s\n%s', readability, threshold, texts_message)
     return

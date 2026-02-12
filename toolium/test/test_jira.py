@@ -169,7 +169,7 @@ def test_change_jira_status_exception(jira_post, logger):
     logger.warning.assert_called_once_with("Error updating Test Case '%s': %s", 'TOOLIUM-1', jira_post.side_effect)
 
 
-def test_jira_annotation_pass(logger):
+def test_jira_annotation_pass(logger):  # noqa: ARG001
     # Configure jira module
     config = DriverWrappersPool.get_default_wrapper().config
     try:
@@ -186,7 +186,7 @@ def test_jira_annotation_pass(logger):
     assert expected_status == jira.jira_tests_status
 
 
-def test_jira_annotation_fail(logger):
+def test_jira_annotation_fail(logger):  # noqa: ARG001
     # Configure jira module
     config = DriverWrappersPool.get_default_wrapper().config
     try:
@@ -204,7 +204,7 @@ def test_jira_annotation_fail(logger):
     assert expected_status == jira.jira_tests_status
 
 
-def test_jira_annotation_multiple(logger):
+def test_jira_annotation_multiple(logger):  # noqa: ARG001
     # Configure jira module
     config = DriverWrappersPool.get_default_wrapper().config
     try:
@@ -228,7 +228,7 @@ def test_jira_annotation_multiple(logger):
     assert expected_status == jira.jira_tests_status
 
 
-def test_jira_disabled(logger):
+def test_jira_disabled(logger):  # noqa: ARG001
     # Configure jira module
     config = DriverWrappersPool.get_default_wrapper().config
     try:

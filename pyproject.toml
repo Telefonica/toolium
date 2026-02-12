@@ -114,15 +114,18 @@ target-version = "py310"
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
-    "F",   # Pyflakes
+    "F",   # pyflakes
     "I",   # isort
     "UP",  # pyupgrade
     "N",   # pep8-naming
-    "B",   # flake8-bugbear
     "A",   # flake8-builtins
+    "B",   # flake8-bugbear
+    "G",   # flake8-logging-format
+    "ARG", # flake8-unused-arguments
     "COM", # flake8-commas
     "C4",  # flake8-comprehensions
     "PT",  # flake8-pytest-style
+    "T20", # flake8-print
     "RUF", # Ruff-specific rules
 ]
 # Rules to ignore

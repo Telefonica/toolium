@@ -124,9 +124,9 @@ def replace_param(param, language='es', infer_param_type=True):
 
     if param != new_param:
         if isinstance(new_param, str):
-            logger.debug(f'Replaced param from "{param}" to "{new_param}"')
+            logger.debug('Replaced param from "%s" to "%s"', param, new_param)
         else:
-            logger.debug(f'Replaced param from "{param}" to {new_param}')
+            logger.debug('Replaced param from "%s" to %s', param, new_param)
     return new_param
 
 
@@ -578,7 +578,7 @@ def map_json_param(param, config, copy=True):
                 aux_config_json = aux_config_json[sub_param]
 
         hidden_value = hide_passwords(param, aux_config_json)
-        logger.debug(f"Mapping param '{param}' to its configured value '{hidden_value}'")
+        logger.debug("Mapping param '%s' to its configured value '%s'", param, hidden_value)
     except TypeError as e:
         msg = f"Mapping chain not found in the given configuration dictionary. '{param}'"
         logger.error(msg)
@@ -637,7 +637,7 @@ def map_toolium_param(param, config):
 
     try:
         mapped_value = config.get(section, property_name)
-        logger.debug(f"Mapping Toolium config param 'param' to its configured value '{mapped_value}'")
+        logger.debug("Mapping Toolium config param '%s' to its configured value '%s'", param, mapped_value)
     except Exception as e:
         msg = f"'{param}' param not found in Toolium config file"
         logger.error(msg)
@@ -800,7 +800,11 @@ def get_message_property(param, language_terms, language_key):
     try:
         for key in key_list:
             lang_terms_aux = lang_terms_aux[key]
-        logger.debug(f"Mapping language param '{lang_param}' to its configured value '{lang_terms_aux[language_key]}'")
+        logger.debug(
+            "Mapping language param '%s' to its configured value '%s'",
+            lang_param,
+            lang_terms_aux[language_key],
+        )
     except KeyError as e:
         msg = f"Mapping chain '{lang_param}' not found in the language properties file"
         logger.error(msg)

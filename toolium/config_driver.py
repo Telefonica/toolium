@@ -399,7 +399,7 @@ class ConfigDriver:
                     self.logger.debug('Added Chrome additional option: %s = %s', key, value)
                     options.add_experimental_option(key, value)
             except Exception as exc:
-                self.logger.warning(f'Chrome options "{chrome_options}" can not be added: {exc}')
+                self.logger.warning('Chrome options "%s" can not be added: %s', chrome_options, exc)
 
     def _add_chrome_arguments(self, options):
         """Add Chrome arguments from properties file

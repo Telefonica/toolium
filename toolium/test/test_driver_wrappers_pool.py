@@ -100,7 +100,7 @@ close_drivers_scopes = (
 
 
 @pytest.mark.parametrize('scope', close_drivers_scopes)
-def test_close_drivers_function(scope, driver_wrapper):
+def test_close_drivers_function(scope):
     DriverWrappersPool.save_all_webdriver_logs = mock.MagicMock()
     VisualTest.update_latest_report = mock.MagicMock()
 

@@ -83,7 +83,7 @@ class Selenoid:
         """
         status_code = 0
         init_time = time.time()
-        self.driver_wrapper.logger.info(f'Downloading file from Selenoid node: {url}')
+        self.driver_wrapper.logger.info('Downloading file from Selenoid node: %s', url)
         # retries policy
         while status_code != STATUS_OK and time.time() - init_time < float(timeout):
             body = requests.get(url)
@@ -100,13 +100,15 @@ class Selenoid:
                 fp.write(body.content)
                 fp.close()
                 self.driver_wrapper.logger.info(
-                    f'File has been downloaded successfully to "{path_file}" and took {took} seconds',
+                    'File has been downloaded successfully to "%s" and took %f seconds',
+                    path_file,
+                    took,
                 )
                 return True
             except OSError as e:
-                self.driver_wrapper.logger.warning(f'Error writing downloaded file in "{path_file}":\n {e}')
+                self.driver_wrapper.logger.warning('Error writing downloaded file in "%s":\n %s', path_file, e)
         else:
-            self.driver_wrapper.logger.warning(f'File "{url}" does not exist in the server after {timeout} seconds')
+            self.driver_wrapper.logger.warning('File "%s" does not exist in the server after %s seconds', url, timeout)
         return False
 
     def __remove_file(self, url):
@@ -126,7 +128,7 @@ class Selenoid:
             selenoid_info = requests.get(host_url).json()
         except Exception:
             return None
-        self.driver_wrapper.logger.info(f'Selenoid host info: {selenoid_info}')
+        self.driver_wrapper.logger.info('Selenoid host info: %s', selenoid_info)
         return selenoid_info
 
     def is_the_session_still_active(self):
@@ -202,7 +204,9 @@ class Selenoid:
             response = requests.get(host_url).json()['browsers'][self.browser]
         except Exception as e:
             self.driver_wrapper.logger.warning(
-                f'the GGR status request has failed: \nResponse:  {response.content} \nError message: {e}\n',
+                'the GGR status request has failed: \nResponse:  %s \nError message: %s\n',
+                response.content,
+                e,
             )
             return None
         for browser in response:

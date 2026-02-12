@@ -107,7 +107,7 @@ def patch_scenario_with_accuracy(context, scenario, data_key_suffix, accuracy=0.
         # transformation, like map_param and replace_param methods
         orig_steps = deepcopy(scenario.steps)
         for execution in range(executions):
-            context.logger.info(f'Running accuracy scenario execution ({execution + 1}/{executions})')
+            context.logger.info('Running accuracy scenario execution (%d/%d)', execution + 1, executions)
             # Store execution data in context
             store_execution_data(context, execution, data_key_suffix)
             # Restore original steps before each execution
@@ -132,8 +132,8 @@ def patch_scenario_with_accuracy(context, scenario, data_key_suffix, accuracy=0.
                     'message': get_error_message_from_scenario(scenario),
                 },
             )
-            print(f'ACCURACY SCENARIO {status}: execution {execution + 1}/{executions}')
-            context.logger.info(f'Accuracy scenario execution {status} ({execution + 1}/{executions})')
+            print(f'ACCURACY SCENARIO {status}: execution {execution + 1}/{executions}')  # noqa: T201
+            context.logger.info('Accuracy scenario execution %s (%d/%d)', status, execution + 1, executions)
 
         # Save results to CSV file
         save_accuracy_results_to_csv(context, scenario, results)
@@ -147,7 +147,7 @@ def patch_scenario_with_accuracy(context, scenario, data_key_suffix, accuracy=0.
             has_passed = scenario_accuracy >= accuracy
             run_response = not has_passed  # Run method returns true only when failed
             final_status = 'PASSED' if has_passed else 'FAILED'
-            print(
+            print(  # noqa: T201
                 f'\nACCURACY SCENARIO {final_status}: {executions} executions,'
                 f' accuracy {scenario_accuracy} >= {accuracy}',
             )
@@ -214,7 +214,7 @@ def patch_feature_scenarios_with_accuracy(context, feature):
                 patch_scenario_from_tags(context, scenario)
     except Exception as e:
         # Log error but do not fail the execution to avoid errors in before feature method
-        context.logger.error(f'Error applying accuracy policy: {e}')
+        context.logger.error('Error applying accuracy policy: %s', e)
 
 
 def get_accuracy_data(context, data_key_suffix):
@@ -245,7 +245,9 @@ def store_execution_data(context, execution, data_key_suffix):
     context.storage['accuracy_execution_data'] = execution_data
     context.storage['accuracy_execution_index'] = execution
     context.logger.info(
-        f'Stored accuracy data for execution {execution + 1} in accuracy_execution_data: {execution_data}',
+        'Stored accuracy data for execution %d in accuracy_execution_data: %s',
+        execution + 1,
+        execution_data,
     )
 
 
@@ -300,6 +302,6 @@ def save_accuracy_results_to_csv(context, scenario, results):
             csv_writer.writerow(['Execution data', 'Status', 'Message'])
             for result in results:
                 csv_writer.writerow([result['data'], result['status'], result['message']])
-        context.logger.info(f'Accuracy results saved to: {csv_filename}')
+        context.logger.info('Accuracy results saved to: %s', csv_filename)
     except Exception as e:
-        context.logger.error(f'Error saving accuracy results to CSV: {e}')
+        context.logger.error('Error saving accuracy results to CSV: %s', e)

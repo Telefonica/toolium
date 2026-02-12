@@ -217,7 +217,7 @@ def delete_remote_downloaded_file(context, file_dwn):
         url = _get_download_directory_url(context)
         file_dwn_url = f'{url}/{file_dwn}'
         r_dwn = requests.delete(file_dwn_url)
-        print(r_dwn.status_code)
+        context.logger.debug('Delete request status code: %s', r_dwn.status_code)
         assert r_dwn.status_code == 200, f'ERROR deleting file "{file_dwn_url}": "{r_dwn.text}"'
 
 

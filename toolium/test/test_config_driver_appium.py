@@ -50,7 +50,7 @@ appium_driver_types = (
 
 @mock.patch('toolium.config_driver.appiumdriver')
 @pytest.mark.parametrize('driver_type', appium_driver_types)
-def test_create_local_driver_appium(appiumdriver_mock, driver_type, config, utils):
+def test_create_local_driver_appium(appiumdriver_mock, driver_type, config, utils):  # noqa: ARG001
     utils.get_driver_name.return_value = driver_type
     config.set('Driver', 'type', driver_type)
     config_driver = ConfigDriver(config, utils)

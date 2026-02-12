@@ -71,7 +71,7 @@ class Utils(WaitUtils):
                 self.save_webdriver_logs_by_type(log_type, test_name)
             except Exception as exc:
                 # Capture exceptions to avoid errors in teardown method
-                self.logger.debug(f"Logs of type '{log_type}' can not be read from driver due to '{exc!s}'")
+                self.logger.debug("Logs of type '%s' can not be read from driver due to '%s'", log_type, exc)
 
     def get_available_log_types(self):
         """Get log types that are configured in log_types variable or available in current driver
@@ -86,7 +86,7 @@ class Utils(WaitUtils):
                 try:
                     log_types = self.driver_wrapper.driver.log_types
                 except Exception as exc:
-                    self.logger.debug(f"Available log types can not be read from driver due to '{exc!s}'")
+                    self.logger.debug("Available log types can not be read from driver due to '%s'", exc)
                     log_types = ['client', 'server']
         else:
             log_types = [log_type.strip() for log_type in configured_log_types.split(',') if log_type.strip() != '']

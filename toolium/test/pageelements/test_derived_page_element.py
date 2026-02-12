@@ -154,7 +154,7 @@ def test_set_input_text_shadowroot_quotation_marks(driver_wrapper):
     driver_wrapper.driver.execute_script.assert_called_once_with(expected_script)
 
 
-def test_get_selected_option(driver_wrapper):
+def test_get_selected_option():
     select_page_element.SeleniumSelect = get_mock_select()
 
     option = LoginPageObject().language.option
@@ -179,7 +179,7 @@ def test_click_button(driver_wrapper):
     mock_element.click.assert_called_once_with()
 
 
-def test_group_reset_object(driver_wrapper):
+def test_group_reset_object():
     login_page = LoginPageObject()
 
     # Check that web elements are empty

@@ -169,7 +169,7 @@ class VisualTest:
                 else:
                     self.logger.warning('Element to be excluded not found')
             except NoSuchElementException as e:
-                self.logger.warning(f'Element to be excluded not found: {e!s}')
+                self.logger.warning('Element to be excluded not found: %s', e)
         return exclude_web_elements
 
     def get_scrolls_size(self):
@@ -360,7 +360,9 @@ class VisualTest:
 
         if result.startswith('diff'):
             self.logger.warning(
-                f"Visual error in '{os.path.splitext(os.path.basename(baseline_path))[0]}': {diff_message}",
+                "Visual error in '%s': %s",
+                os.path.splitext(os.path.basename(baseline_path))[0],
+                diff_message,
             )
             if self.driver_wrapper.config.getboolean_optional('VisualTests', 'fail') or self.force:
                 raise AssertionError(exception_message)

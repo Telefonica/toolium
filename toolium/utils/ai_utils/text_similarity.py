@@ -54,7 +54,7 @@ def get_text_similarity_with_spacy(text, expected_text, model_name=None, **kwarg
     text = model(preprocess_with_ud_negation(text, model))
     expected_text = model(preprocess_with_ud_negation(expected_text, model))
     similarity = model(text).similarity(model(expected_text))
-    logger.info(f"spaCy similarity: {similarity} between '{text}' and '{expected_text}'")
+    logger.info("spaCy similarity: %s between '%s' and '%s'", similarity, text, expected_text)
     return similarity
 
 
@@ -79,7 +79,7 @@ def get_text_similarity_with_sentence_transformers(text, expected_text, model_na
     similarity = float(model.similarity(model.encode(expected_text), model.encode(text)))
     # similarity can be slightly > 1 due to float precision
     similarity = 1 if similarity > 1 else similarity
-    logger.info(f"Sentence Transformers similarity: {similarity} between '{text}' and '{expected_text}'")
+    logger.info("Sentence Transformers similarity: %s between '%s' and '%s'", similarity, text, expected_text)
     return similarity
 
 
@@ -110,8 +110,8 @@ def get_text_similarity_with_openai(text, expected_text, model_name=None, azure=
         explanation = response['explanation']
     except (KeyError, ValueError, TypeError) as e:
         raise ValueError(f'Unexpected response format from OpenAI: {response}') from e
-    logger.info(f"OpenAI LLM similarity: {similarity} between '{text}' and '{expected_text}'")
-    logger.info(f'OpenAI LLM explanation: {explanation}')
+    logger.info("OpenAI LLM similarity: %s between '%s' and '%s'", similarity, text, expected_text)
+    logger.info('OpenAI LLM explanation: %s', explanation)
     return similarity
 
 
@@ -167,8 +167,10 @@ def assert_text_similarity(text, expected_texts, threshold, similarity_method=No
             )
         else:
             logger.info(
-                f'Similarity between received and expected texts'
-                f' is above threshold: {similarity} >= {threshold}\n{texts_message}',
+                'Similarity between received and expected texts is above threshold: %s >= %s\n%s',
+                similarity,
+                threshold,
+                texts_message,
             )
             return
 

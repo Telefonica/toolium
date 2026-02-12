@@ -126,7 +126,7 @@ def get_poeditor_language_codes(project_info):
 
     language_codes = [lang['code'] for lang in response_data['result']['languages']]
     assert not len(language_codes) == 0, 'ERROR: Not languages found in POEditor'
-    logger.info(f'POEditor languages in "{project_info["name"]}" project: {len(language_codes)} {language_codes}')
+    logger.info('POEditor languages in "%s" project: %d %s', project_info['name'], len(language_codes), language_codes)
     return language_codes
 
 
@@ -164,7 +164,12 @@ def export_poeditor_project(project_info, lang, file_type):
 
     r = send_poeditor_request(ENDPOINT_POEDITOR_DOWNLOAD_FILE + '/' + filename, 'GET', {}, 200)
     poeditor_terms = r.json() if r.content else []
-    logger.info(f'POEditor terms in "{project_info["name"]}" project with "{lang}" language: {len(poeditor_terms)}')
+    logger.info(
+        'POEditor terms in "%s" project with "%s" language: %d',
+        project_info['name'],
+        lang,
+        len(poeditor_terms),
+    )
     return poeditor_terms
 
 
@@ -177,7 +182,7 @@ def save_downloaded_file(poeditor_terms):
     file_path = get_poeditor_file_path()
     with open(file_path, 'w') as f:
         json.dump(poeditor_terms, f, indent=4)
-    logger.info(f'POEditor terms have been saved in "{file_path}" file')
+    logger.info('POEditor terms have been saved in "%s" file', file_path)
 
 
 def assert_poeditor_response_code(response_data, status_code):
@@ -238,7 +243,7 @@ def get_poeditor_projects():
     assert_poeditor_response_code(response_data, '200')
     projects = response_data['result']['projects']
     projects_names = [project['name'] for project in projects]
-    logger.info(f'POEditor projects: {len(projects_names)} {projects_names}')
+    logger.info('POEditor projects: %d %s', len(projects_names), projects_names)
     return projects
 
 
@@ -279,7 +284,7 @@ def get_all_terms(project_info, lang):
     response_data = r.json()
     assert_poeditor_response_code(response_data, '200')
     terms = response_data['result']['terms']
-    logger.info(f'POEditor terms in "{project_info["name"]}" project with "{lang}" language: {len(terms)}')
+    logger.info('POEditor terms in "%s" project with "%s" language: %d', project_info['name'], lang, len(terms))
     return terms
 
 
@@ -306,7 +311,7 @@ def load_poeditor_texts():
             with open(file_path) as f:
                 dataset.poeditor_terms = json.load(f)
                 last_mod_time = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(file_path)))
-                logger.info(f'Using local POEditor file "{file_path}" with date: {last_mod_time}')
+                logger.info('Using local POEditor file "%s" with date: %s', file_path, last_mod_time)
         else:  # without mode configured or mode = 'online'
             download_poeditor_texts()
     else:

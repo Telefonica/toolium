@@ -209,7 +209,7 @@ class WaitUtils:
         except StaleElementReferenceException:
             return False
 
-    def _expected_condition_ajax_request_completed(self, element):
+    def _expected_condition_ajax_request_completed(self, element):  # noqa: ARG002
         """Load all ajax request
 
         :returns: the ajax request is completed
@@ -234,7 +234,7 @@ class WaitUtils:
             timeout = timeout if timeout else self.get_explicitly_wait()
             # Wait for condition
             condition_response = WebDriverWait(self.driver_wrapper.driver, timeout).until(
-                lambda s: condition_method(condition_input),
+                lambda s: condition_method(condition_input),  # noqa: ARG005
             )
         finally:
             # Restore implicitly wait timeout from properties

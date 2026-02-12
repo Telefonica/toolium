@@ -45,7 +45,7 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
         raise ImportError("OpenAI is not installed. Please run 'pip install toolium[ai]' to use OpenAI features")
     config = DriverWrappersPool.get_default_wrapper().config
     model_name = model_name or config.get_optional('AI', 'openai_model', 'gpt-4o-mini')
-    logger.info(f'Calling to OpenAI API with model {model_name}')
+    logger.info('Calling to OpenAI API with model %s', model_name)
     client = AzureOpenAI(**kwargs) if azure else OpenAI(**kwargs)
     msg = []
     if isinstance(system_message, list):
@@ -59,5 +59,5 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
         messages=msg,
     )
     response = completion.choices[0].message.content
-    logger.debug(f'OpenAI response: {response}')
+    logger.debug('OpenAI response: %s', response)
     return response

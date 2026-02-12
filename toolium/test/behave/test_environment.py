@@ -56,7 +56,7 @@ def test_get_jira_key_from_scenario(tag_list, jira_key):
 
 
 @mock.patch('toolium.behave.environment.create_and_configure_wrapper')
-def test_before_all(create_and_configure_wrapper):
+def test_before_all(create_and_configure_wrapper):  # noqa: ARG001
     # Create context mock
     context = mock.MagicMock()
     context.config.userdata.get.return_value = None
@@ -72,7 +72,7 @@ def test_before_all(create_and_configure_wrapper):
 
 
 @mock.patch('toolium.behave.environment.create_and_configure_wrapper')
-def test_before_all_config_environment(create_and_configure_wrapper):
+def test_before_all_config_environment(create_and_configure_wrapper):  # noqa: ARG001
     # Create context mock
     context = mock.MagicMock()
     context.config.userdata.get.side_effect = lambda x: 'os' if x == 'TOOLIUM_CONFIG_ENVIRONMENT' else None
@@ -139,7 +139,7 @@ def test_before_feature_reuse_driver_no_driver(start_driver):
 @mock.patch('toolium.behave.environment.add_assert_screenshot_methods')
 @mock.patch('toolium.behave.environment.DriverWrappersPool')
 @mock.patch('toolium.behave.environment.start_driver')
-def test_before_scenario(start_driver, DriverWrappersPool, add_assert_screenshot_methods):  # noqa: N803
+def test_before_scenario(start_driver, DriverWrappersPool, add_assert_screenshot_methods):  # noqa: ARG001, N803
     # Create context mock
     context = mock.MagicMock()
     context.toolium_config = ExtendedConfigParser()
@@ -156,7 +156,7 @@ def test_before_scenario(start_driver, DriverWrappersPool, add_assert_screenshot
 @mock.patch('toolium.behave.environment.add_assert_screenshot_methods')
 @mock.patch('toolium.behave.environment.DriverWrappersPool')
 @mock.patch('toolium.behave.environment.start_driver')
-def test_before_scenario_reset_driver(start_driver, DriverWrappersPool, add_assert_screenshot_methods):  # noqa: N803
+def test_before_scenario_reset_driver(start_driver, DriverWrappersPool, add_assert_screenshot_methods):  # noqa: ARG001, N803
     # Create context mock
     context = mock.MagicMock()
     context.toolium_config = ExtendedConfigParser()
@@ -172,7 +172,7 @@ def test_before_scenario_reset_driver(start_driver, DriverWrappersPool, add_asse
 
 @mock.patch('toolium.behave.environment.add_assert_screenshot_methods')
 @mock.patch('toolium.behave.environment.start_driver')
-def test_before_scenario_no_driver(start_driver, add_assert_screenshot_methods):
+def test_before_scenario_no_driver(start_driver, add_assert_screenshot_methods):  # noqa: ARG001
     # Create context mock
     context = mock.MagicMock()
     context.toolium_config = ExtendedConfigParser()
@@ -187,7 +187,7 @@ def test_before_scenario_no_driver(start_driver, add_assert_screenshot_methods):
 
 @mock.patch('toolium.behave.environment.add_assert_screenshot_methods')
 @mock.patch('toolium.behave.environment.start_driver')
-def test_before_scenario_no_driver_feature(start_driver, add_assert_screenshot_methods):
+def test_before_scenario_no_driver_feature(start_driver, add_assert_screenshot_methods):  # noqa: ARG001
     # Create context mock
     context = mock.MagicMock()
     context.toolium_config = ExtendedConfigParser()

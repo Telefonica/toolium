@@ -120,7 +120,7 @@ class DriverWrapper:
             try:
                 logging.config.fileConfig(config_log_filename, {'logfilename': output_log_filename}, False)
             except Exception as exc:
-                print(f"[WARN] Error reading logging config file '{config_log_filename}': {exc}")
+                print(f"[WARN] Error reading logging config file '{config_log_filename}': {exc}")  # noqa: T201
             self.config_log_filename = config_log_filename
             self.output_log_filename = output_log_filename
             self.logger = logging.getLogger(__name__)
