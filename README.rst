@@ -82,8 +82,7 @@ Before submitting your changes, make sure the code follows the project's style b
 
 .. code:: console
 
-    $ ruff check .          # Check for linting issues
-    $ ruff check --fix .    # Fix auto-fixable issues
+    $ ruff check --fix .    # Fix linting issues
     $ ruff format .         # Format code
 
 Then run the unit tests:
