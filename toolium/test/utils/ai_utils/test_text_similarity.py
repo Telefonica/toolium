@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2025 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.
@@ -16,14 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
 import os
+from unittest import mock
+
 import pytest
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.utils.ai_utils.text_similarity import (get_text_similarity_with_spacy,
-                                                    get_text_similarity_with_sentence_transformers,
-                                                    get_text_similarity_with_azure_openai, assert_text_similarity)
+from toolium.utils.ai_utils.text_similarity import (
+    assert_text_similarity,
+    get_text_similarity_with_azure_openai,
+    get_text_similarity_with_sentence_transformers,
+    get_text_similarity_with_spacy,
+)
 
 
 def configure_default_openai_model():
@@ -46,14 +49,14 @@ get_similarity_examples = (
 )
 
 
-@pytest.mark.parametrize('input_text, expected_text, expected_low, expected_high', get_similarity_examples)
+@pytest.mark.parametrize(('input_text', 'expected_text', 'expected_low', 'expected_high'), get_similarity_examples)
 def test_get_text_similarity_with_spacy(input_text, expected_text, expected_low, expected_high):
     similarity = get_text_similarity_with_spacy(input_text, expected_text)
     assert expected_low <= similarity <= expected_high
 
 
 @pytest.mark.skip(reason='Sentence Transformers model is not available in the CI environment')
-@pytest.mark.parametrize('input_text, expected_text, expected_low, expected_high', get_similarity_examples)
+@pytest.mark.parametrize(('input_text', 'expected_text', 'expected_low', 'expected_high'), get_similarity_examples)
 def test_get_text_similarity_with_sentence_transformers(input_text, expected_text, expected_low, expected_high):
     similarity = get_text_similarity_with_sentence_transformers(input_text, expected_text)
     assert expected_low <= similarity <= expected_high
@@ -69,8 +72,11 @@ get_openai_similarity_examples = (
 )
 
 
-@pytest.mark.skipif(not os.getenv("AZURE_OPENAI_API_KEY"), reason="AZURE_OPENAI_API_KEY environment variable not set")
-@pytest.mark.parametrize('input_text, expected_text, expected_low, expected_high', get_openai_similarity_examples)
+@pytest.mark.skipif(not os.getenv('AZURE_OPENAI_API_KEY'), reason='AZURE_OPENAI_API_KEY environment variable not set')
+@pytest.mark.parametrize(
+    ('input_text', 'expected_text', 'expected_low', 'expected_high'),
+    get_openai_similarity_examples,
+)
 def test_get_text_similarity_with_azure_openai(input_text, expected_text, expected_low, expected_high):
     configure_default_openai_model()
     similarity = get_text_similarity_with_azure_openai(input_text, expected_text)
@@ -84,19 +90,19 @@ assert_similarity_passed_examples = (
 )
 
 
-@pytest.mark.parametrize('input_text, expected_text, threshold', assert_similarity_passed_examples)
+@pytest.mark.parametrize(('input_text', 'expected_text', 'threshold'), assert_similarity_passed_examples)
 def test_assert_text_similarity_with_spacy_passed(input_text, expected_text, threshold):
     assert_text_similarity(input_text, expected_text, threshold=threshold, similarity_method='spacy')
 
 
 @pytest.mark.skip(reason='Sentence Transformers model is not available in the CI environment')
-@pytest.mark.parametrize('input_text, expected_text, threshold', assert_similarity_passed_examples)
+@pytest.mark.parametrize(('input_text', 'expected_text', 'threshold'), assert_similarity_passed_examples)
 def test_assert_text_similarity_with_sentence_transformers_passed(input_text, expected_text, threshold):
     assert_text_similarity(input_text, expected_text, threshold=threshold, similarity_method='sentence_transformers')
 
 
-@pytest.mark.skipif(not os.getenv("AZURE_OPENAI_API_KEY"), reason="AZURE_OPENAI_API_KEY environment variable not set")
-@pytest.mark.parametrize('input_text, expected_text, threshold', assert_similarity_passed_examples)
+@pytest.mark.skipif(not os.getenv('AZURE_OPENAI_API_KEY'), reason='AZURE_OPENAI_API_KEY environment variable not set')
+@pytest.mark.parametrize(('input_text', 'expected_text', 'threshold'), assert_similarity_passed_examples)
 def test_assert_text_similarity_with_openai_passed(input_text, expected_text, threshold):
     configure_default_openai_model()
     assert_text_similarity(input_text, expected_text, threshold=threshold, similarity_method='azure_openai')
@@ -108,18 +114,23 @@ assert_similarity_failed_examples = (
 )
 
 
-@pytest.mark.parametrize('input_text, expected_text, threshold', assert_similarity_failed_examples)
+@pytest.mark.parametrize(('input_text', 'expected_text', 'threshold'), assert_similarity_failed_examples)
 def test_assert_text_similarity_with_spacy_failed(input_text, expected_text, threshold):
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(AssertionError) as excinfo:
         assert_text_similarity(input_text, expected_text, threshold=threshold, similarity_method='spacy')
     assert str(excinfo.value).startswith('Similarity between received and expected texts is below threshold')
 
 
 @pytest.mark.skip(reason='Sentence Transformers model is not available in the CI environment')
-@pytest.mark.parametrize('input_text, expected_text, threshold', assert_similarity_failed_examples)
+@pytest.mark.parametrize(('input_text', 'expected_text', 'threshold'), assert_similarity_failed_examples)
 def test_assert_text_similarity_with_sentence_transformers_failed(input_text, expected_text, threshold):
-    with pytest.raises(Exception) as excinfo:
-        assert_text_similarity(input_text, expected_text, threshold=threshold, similarity_method='sentence_transformers')
+    with pytest.raises(AssertionError) as excinfo:
+        assert_text_similarity(
+            input_text,
+            expected_text,
+            threshold=threshold,
+            similarity_method='sentence_transformers',
+        )
     assert str(excinfo.value).startswith('Similarity between received and expected texts is below threshold')
 
 
@@ -129,11 +140,11 @@ assert_openai_similarity_failed_examples = (
 )
 
 
-@pytest.mark.skipif(not os.getenv("AZURE_OPENAI_API_KEY"), reason="AZURE_OPENAI_API_KEY environment variable not set")
-@pytest.mark.parametrize('input_text, expected_text, threshold', assert_openai_similarity_failed_examples)
+@pytest.mark.skipif(not os.getenv('AZURE_OPENAI_API_KEY'), reason='AZURE_OPENAI_API_KEY environment variable not set')
+@pytest.mark.parametrize(('input_text', 'expected_text', 'threshold'), assert_openai_similarity_failed_examples)
 def test_assert_text_similarity_with_openai_failed(input_text, expected_text, threshold):
     configure_default_openai_model()
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(AssertionError) as excinfo:
         assert_text_similarity(input_text, expected_text, threshold=threshold, similarity_method='azure_openai')
     assert str(excinfo.value).startswith('Similarity between received and expected texts is below threshold')
 
@@ -208,8 +219,13 @@ def test_assert_text_similarity_with_configured_and_explicit_method_and_model(si
 
     input_text = 'Today it will be sunny'
     expected_text = 'Today is sunny'
-    assert_text_similarity(input_text, expected_text, threshold=0.8, similarity_method='spacy',
-                           model_name='en_core_web_lg')
+    assert_text_similarity(
+        input_text,
+        expected_text,
+        threshold=0.8,
+        similarity_method='spacy',
+        model_name='en_core_web_lg',
+    )
     similarity_mock.assert_called_once_with(input_text, expected_text, 'en_core_web_lg')
 
 
@@ -225,8 +241,14 @@ def test_assert_text_similarity_with_explicit_openai(similarity_mock):
 
     input_text = 'Today it will be sunny'
     expected_text = 'Today is sunny'
-    assert_text_similarity(input_text, expected_text, threshold=0.8, similarity_method='openai',
-                           azure=True, model_name='gpt-4o-mini')
+    assert_text_similarity(
+        input_text,
+        expected_text,
+        threshold=0.8,
+        similarity_method='openai',
+        azure=True,
+        model_name='gpt-4o-mini',
+    )
     similarity_mock.assert_called_once_with(input_text, expected_text, 'gpt-4o-mini', azure=True)
 
 

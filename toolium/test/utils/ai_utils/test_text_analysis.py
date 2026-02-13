@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2025 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.
@@ -16,8 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os
 import json
+import os
+
 import pytest
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -37,17 +37,17 @@ def configure_default_openai_model():
 
 
 get_analysis_examples = (
-    ('How are you today?', ["is a greeting phrase", "is a question"], 0.7, 1),
-    ('Today is sunny', ["is an affirmation", "talks about the weather"], 0.7, 1),
-    ('I love programming', ["expresses a positive sentiment"], 0.7, 1),
-    ('How are you today?', ["is an affirmation", "talks about the weather"], 0.0, 0.2),
-    ('Today is sunny', ["is a greeting phrase", "is a question"], 0.0, 0.2),
-    ('I love programming', ["is a greeting phrase", "is a question"], 0.0, 0.2),
+    ('How are you today?', ['is a greeting phrase', 'is a question'], 0.7, 1),
+    ('Today is sunny', ['is an affirmation', 'talks about the weather'], 0.7, 1),
+    ('I love programming', ['expresses a positive sentiment'], 0.7, 1),
+    ('How are you today?', ['is an affirmation', 'talks about the weather'], 0.0, 0.2),
+    ('Today is sunny', ['is a greeting phrase', 'is a question'], 0.0, 0.2),
+    ('I love programming', ['is a greeting phrase', 'is a question'], 0.0, 0.2),
 )
 
 
-@pytest.mark.skipif(not os.getenv("AZURE_OPENAI_API_KEY"), reason="AZURE_OPENAI_API_KEY environment variable not set")
-@pytest.mark.parametrize('input_text, features_list, expected_low, expected_high', get_analysis_examples)
+@pytest.mark.skipif(not os.getenv('AZURE_OPENAI_API_KEY'), reason='AZURE_OPENAI_API_KEY environment variable not set')
+@pytest.mark.parametrize(('input_text', 'features_list', 'expected_low', 'expected_high'), get_analysis_examples)
 def test_get_text_analysis(input_text, features_list, expected_low, expected_high):
     similarity = json.loads(get_text_criteria_analysis(input_text, features_list, azure=True))
     assert expected_low <= similarity['overall_match'] <= expected_high

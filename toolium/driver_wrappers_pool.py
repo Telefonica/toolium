@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,17 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import datetime
 import inspect
 import os
 
-import datetime
-
 from toolium.config_files import ConfigFiles
-from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 from toolium.selenoid import Selenoid
+from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 
 
-class DriverWrappersPool(object):
+class DriverWrappersPool:
     """Driver wrappers pool
 
     :type driver_wrappers: list of toolium.driver_wrapper.DriverWrapper
@@ -42,7 +40,8 @@ class DriverWrappersPool(object):
     :type visual_output_directory: str
     :type visual_number: int
     """
-    driver_wrappers = []  #: driver wrappers list
+
+    driver_wrappers = []  #: driver wrappers list  # noqa: RUF012
 
     # Configuration and output folders
     config_directory = None  #: folder with configuration files
@@ -80,6 +79,7 @@ class DriverWrappersPool(object):
         if cls.is_empty():
             # Create a new driver wrapper if the pool is empty
             from toolium.driver_wrapper import DriverWrapper
+
             DriverWrapper()
         return cls.driver_wrappers[0]
 
@@ -103,6 +103,7 @@ class DriverWrappersPool(object):
             if not driver_wrapper.driver:
                 continue
             from toolium.jira import add_attachment
+
             try:
                 add_attachment(driver_wrapper.utils.capture_screenshot(screenshot_name.format(name, driver_index)))
             except Exception:
@@ -145,6 +146,7 @@ class DriverWrappersPool(object):
             cls.save_all_webdriver_logs(test_name, test_passed)
         elif scope == 'session':
             from toolium.visual_test import VisualTest
+
             VisualTest.update_latest_report()
 
         # Close browser and stop driver if it must not be reused
@@ -170,7 +172,9 @@ class DriverWrappersPool(object):
                 driver_wrapper.stop()
             except Exception as e:
                 driver_wrapper.logger.warning(
-                    "Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s" % e)
+                    'Capture exceptions to avoid errors in teardown method due to session timeouts: \n %s',
+                    e,
+                )
 
     @classmethod
     def download_videos(cls, name, test_passed=True, maintain_default=False):
@@ -183,7 +187,7 @@ class DriverWrappersPool(object):
         # Exclude first wrapper if the driver must be reused
         driver_wrappers = cls.driver_wrappers[1:] if maintain_default else cls.driver_wrappers
         video_name = '{}_driver{}' if len(driver_wrappers) > 1 else '{}'
-        video_name = video_name if test_passed else 'error_{}'.format(video_name)
+        video_name = video_name if test_passed else f'error_{video_name}'
         driver_index = 1
 
         for driver_wrapper in driver_wrappers:
@@ -191,13 +195,16 @@ class DriverWrappersPool(object):
                 continue
             try:
                 # Download video if necessary (error case or enabled video)
-                if (not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False)) \
-                        and driver_wrapper.remote_node_video_enabled:
-                    driver_wrapper.utils.download_remote_video(driver_wrapper.server_type,
-                                                               video_name.format(name, driver_index))
+                if (
+                    not test_passed or driver_wrapper.config.getboolean_optional('Server', 'video_enabled', False)
+                ) and driver_wrapper.remote_node_video_enabled:
+                    driver_wrapper.utils.download_remote_video(
+                        driver_wrapper.server_type,
+                        video_name.format(name, driver_index),
+                    )
             except Exception as exc:
                 # Capture exceptions to avoid errors in teardown method due to session timeouts
-                driver_wrapper.logger.warning('Error downloading videos: %s' % exc)
+                driver_wrapper.logger.warning('Error downloading videos: %s', exc)
             driver_index += 1
 
     @classmethod
@@ -237,8 +244,9 @@ class DriverWrappersPool(object):
         log_name = '{} [driver {}]' if len(cls.driver_wrappers) > 1 else '{}'
         driver_index = 1
         for driver_wrapper in cls.driver_wrappers:
-            if driver_wrapper.driver and (driver_wrapper.config.getboolean_optional('Server', 'logs_enabled')
-                                          or not test_passed):
+            if driver_wrapper.driver and (
+                driver_wrapper.config.getboolean_optional('Server', 'logs_enabled') or not test_passed
+            ):
                 try:
                     log_file_name = get_valid_filename(log_name.format(test_name, driver_index))
                     if ggr and driver_wrapper.server_type in ['ggr', 'selenoid']:
@@ -247,7 +255,7 @@ class DriverWrappersPool(object):
                         driver_wrapper.utils.save_webdriver_logs(log_file_name)
                 except Exception as exc:
                     # Capture exceptions to avoid errors in teardown method due to session timeouts
-                    driver_wrapper.logger.warning('Error downloading webdriver logs: %s' % exc)
+                    driver_wrapper.logger.warning('Error downloading webdriver logs: %s', exc)
             driver_index += 1
 
     @staticmethod
@@ -272,15 +280,24 @@ class DriverWrappersPool(object):
         """
         if cls.config_directory is None:
             # Get config directory from properties
-            config_directory = cls.get_configured_value('TOOLIUM_CONFIG_DIRECTORY',
-                                                        tc_config_files.config_directory, 'conf')
-            prop_filenames = cls.get_configured_value('TOOLIUM_CONFIG_PROPERTIES_FILENAMES',
-                                                      tc_config_files.config_properties_filenames, 'properties.cfg')
+            config_directory = cls.get_configured_value(
+                'TOOLIUM_CONFIG_DIRECTORY',
+                tc_config_files.config_directory,
+                'conf',
+            )
+            prop_filenames = cls.get_configured_value(
+                'TOOLIUM_CONFIG_PROPERTIES_FILENAMES',
+                tc_config_files.config_properties_filenames,
+                'properties.cfg',
+            )
             cls.config_directory = cls._find_parent_directory(config_directory, prop_filenames.split(';')[0])
 
             # Get output directory from properties and create it
-            cls.output_directory = cls.get_configured_value('TOOLIUM_OUTPUT_DIRECTORY',
-                                                            tc_config_files.output_directory, 'output')
+            cls.output_directory = cls.get_configured_value(
+                'TOOLIUM_OUTPUT_DIRECTORY',
+                tc_config_files.output_directory,
+                'output',
+            )
             if not os.path.isabs(cls.output_directory):
                 # If output directory is relative, we use the same path as config directory
                 cls.output_directory = os.path.join(os.path.dirname(cls.config_directory), cls.output_directory)
@@ -288,13 +305,17 @@ class DriverWrappersPool(object):
 
             # Get visual baseline directory from properties
             default_baseline = os.path.join(cls.output_directory, 'visualtests', 'baseline')
-            cls.visual_baseline_directory = cls.get_configured_value('TOOLIUM_VISUAL_BASELINE_DIRECTORY',
-                                                                     tc_config_files.visual_baseline_directory,
-                                                                     default_baseline)
+            cls.visual_baseline_directory = cls.get_configured_value(
+                'TOOLIUM_VISUAL_BASELINE_DIRECTORY',
+                tc_config_files.visual_baseline_directory,
+                default_baseline,
+            )
             if not os.path.isabs(cls.visual_baseline_directory):
                 # If baseline directory is relative, we use the same path as config directory
-                cls.visual_baseline_directory = os.path.join(os.path.dirname(cls.config_directory),
-                                                             cls.visual_baseline_directory)
+                cls.visual_baseline_directory = os.path.join(
+                    os.path.dirname(cls.config_directory),
+                    cls.visual_baseline_directory,
+                )
 
     @staticmethod
     def get_default_config_directory():
@@ -320,8 +341,11 @@ class DriverWrappersPool(object):
             if os.path.isfile(os.path.join(absolute_directory, filename)):
                 return absolute_directory
             if os.path.isabs(parent_directory):
-                parent_directory = os.path.join(os.path.dirname(parent_directory), '..',
-                                                os.path.basename(parent_directory))
+                parent_directory = os.path.join(
+                    os.path.dirname(parent_directory),
+                    '..',
+                    os.path.basename(parent_directory),
+                )
             else:
                 parent_directory = os.path.join('..', parent_directory)
         return os.path.abspath(directory)
@@ -335,7 +359,7 @@ class DriverWrappersPool(object):
         if cls.screenshots_directory is None:
             # Unique screenshots and videos directories
             date = datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')
-            folder_name = '%s_%s' % (date, driver_info) if driver_info else date
+            folder_name = f'{date}_{driver_info}' if driver_info else date
             folder_name = get_valid_filename(folder_name)
             cls.screenshots_directory = os.path.join(cls.output_directory, 'screenshots', folder_name)
             cls.screenshots_number = 1
@@ -365,14 +389,14 @@ class DriverWrappersPool(object):
             prop_filenames = tc_config_files.config_properties_filenames
             new_prop_filenames_list = prop_filenames.split(';') if prop_filenames else ['properties.cfg']
             base, ext = os.path.splitext(new_prop_filenames_list[0])
-            new_prop_filenames_list.append('{}-{}{}'.format(env, base, ext))
-            new_prop_filenames_list.append('local-{}-{}{}'.format(env, base, ext))
+            new_prop_filenames_list.append(f'{env}-{base}{ext}')
+            new_prop_filenames_list.append(f'local-{env}-{base}{ext}')
             tc_config_files.set_config_properties_filenames(*new_prop_filenames_list)
 
             # Update output log filename
             output_log_filename = tc_config_files.output_log_filename
             base, ext = os.path.splitext(output_log_filename) if output_log_filename else ('toolium', '.log')
-            tc_config_files.set_output_log_filename('{}_{}{}'.format(base, env, ext))
+            tc_config_files.set_output_log_filename(f'{base}_{env}{ext}')
 
         return tc_config_files
 

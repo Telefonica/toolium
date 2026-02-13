@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -18,8 +17,8 @@ limitations under the License.
 
 import logging
 import os
+from unittest import mock
 
-import mock
 import pytest
 
 from toolium.config_files import ConfigFiles
@@ -180,7 +179,7 @@ api_tests = (
 )
 
 
-@pytest.mark.parametrize("driver_type", api_tests)
+@pytest.mark.parametrize('driver_type', api_tests)
 def test_connect_api(driver_type, driver_wrapper):
     # Mock data
     expected_driver = None
@@ -231,7 +230,7 @@ def test_get_config_window_bounds_with_monitor(screeninfo, driver_wrapper):
     driver_wrapper.config.set('Driver', 'bounds_x', '1000')
     driver_wrapper.config.set('Driver', 'bounds_y', '200')
 
-    class Monitor(object):
+    class Monitor:
         x = 50
         y = 20
 
@@ -240,7 +239,7 @@ def test_get_config_window_bounds_with_monitor(screeninfo, driver_wrapper):
     assert driver_wrapper.get_config_window_bounds() == (1050, 220)
 
 
-@pytest.mark.parametrize("driver_type, is_mobile, is_android, is_ios", mobile_tests)
+@pytest.mark.parametrize(('driver_type', 'is_mobile', 'is_android', 'is_ios'), mobile_tests)
 def test_is_mobile_test(driver_type, is_mobile, is_android, is_ios, driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', driver_type)
     assert driver_wrapper.is_mobile_test() == is_mobile
@@ -248,7 +247,10 @@ def test_is_mobile_test(driver_type, is_mobile, is_android, is_ios, driver_wrapp
     assert driver_wrapper.is_ios_test() == is_ios
 
 
-@pytest.mark.parametrize("driver_type, appium_app, appium_browser_name, is_web, is_android_web, is_ios_web", web_tests)
+@pytest.mark.parametrize(
+    ('driver_type', 'appium_app', 'appium_browser_name', 'is_web', 'is_android_web', 'is_ios_web'),
+    web_tests,
+)
 def test_is_web_test(driver_type, appium_app, appium_browser_name, is_web, is_android_web, is_ios_web, driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', driver_type)
     if appium_app is not None:
@@ -260,7 +262,7 @@ def test_is_web_test(driver_type, appium_app, appium_browser_name, is_web, is_an
     assert driver_wrapper.is_ios_web_test() == is_ios_web
 
 
-@pytest.mark.parametrize("driver_type, is_maximizable", maximizable_drivers)
+@pytest.mark.parametrize(('driver_type', 'is_maximizable'), maximizable_drivers)
 def test_is_maximizable(driver_type, is_maximizable, driver_wrapper):
     driver_wrapper.config.set('Driver', 'type', driver_type)
     assert driver_wrapper.is_maximizable() == is_maximizable
@@ -291,10 +293,28 @@ should_be_reused = (
 )
 
 
-@pytest.mark.parametrize("reuse_driver, reuse_driver_session, restart_driver_after_failure, "
-                         "reuse_driver_from_tags, scope, test_passed, expected_should_reuse_driver", should_be_reused)
-def test_should_reuse_driver(reuse_driver, reuse_driver_session, restart_driver_after_failure,
-                             reuse_driver_from_tags, scope, test_passed, expected_should_reuse_driver, driver_wrapper):
+@pytest.mark.parametrize(
+    (
+        'reuse_driver',
+        'reuse_driver_session',
+        'restart_driver_after_failure',
+        'reuse_driver_from_tags',
+        'scope',
+        'test_passed',
+        'expected_should_reuse_driver',
+    ),
+    should_be_reused,
+)
+def test_should_reuse_driver(
+    reuse_driver,
+    reuse_driver_session,
+    restart_driver_after_failure,
+    reuse_driver_from_tags,
+    scope,
+    test_passed,
+    expected_should_reuse_driver,
+    driver_wrapper,
+):
     # Set config properties
     driver_wrapper.config.set('Driver', 'reuse_driver', reuse_driver)
     driver_wrapper.config.set('Driver', 'reuse_driver_session', reuse_driver_session)

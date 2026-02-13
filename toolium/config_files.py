@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -17,7 +16,7 @@ limitations under the License.
 """
 
 
-class ConfigFiles():
+class ConfigFiles:
     def __init__(self):
         self.config_directory = None
         self.output_directory = None

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -15,7 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from selenium.common.exceptions import StaleElementReferenceException
+
 from toolium.pageelements.page_element import PageElement
 
 
@@ -27,9 +28,9 @@ class InputText(PageElement):
         :returns: element text value
         """
         if self.driver_wrapper.is_android_test() and not self.webview:
-            return self.web_element.get_attribute("text")
+            return self.web_element.get_attribute('text')
         else:
-            return self.web_element.get_attribute("value")
+            return self.web_element.get_attribute('value')
 
     @text.setter
     def text(self, value):
@@ -38,10 +39,11 @@ class InputText(PageElement):
         :param value: value to be set
         """
         if self.shadowroot:
-            value = value.replace("\"", "\\\"")
-            self.driver.execute_script('return document.querySelector("%s")'
-                                       '.shadowRoot.querySelector("%s")'
-                                       '.value = "%s"' % (self.shadowroot, self.locator[1], value))
+            value = value.replace('"', '\\"')
+            self.driver.execute_script(
+                f'return document.querySelector("{self.shadowroot}").shadowRoot'
+                f'.querySelector("{self.locator[1]}").value = "{value}"',
+            )
         else:
             self.web_element.send_keys(value)
 

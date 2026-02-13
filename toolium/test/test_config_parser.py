@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -17,8 +16,8 @@ limitations under the License.
 """
 
 import os
+from unittest import mock
 
-import mock
 import pytest
 
 from toolium.config_parser import ExtendedConfigParser
@@ -76,7 +75,7 @@ optional_boolean_values = (
 )
 
 
-@pytest.mark.parametrize("section, option, default, response", optional_values)
+@pytest.mark.parametrize(('section', 'option', 'default', 'response'), optional_values)
 def test_get_optional(section, option, default, response, config):
     if default:
         assert response == config.get_optional(section, option, default)
@@ -84,7 +83,7 @@ def test_get_optional(section, option, default, response, config):
         assert response == config.get_optional(section, option)
 
 
-@pytest.mark.parametrize("section, option, default, response", optional_boolean_values)
+@pytest.mark.parametrize(('section', 'option', 'default', 'response'), optional_boolean_values)
 def test_getboolean_optional(section, option, default, response, config):
     if default:
         assert response == config.getboolean_optional(section, option, default)
@@ -145,8 +144,11 @@ def test_remove_option_with_colon_in_option(config):
 
 def test_items_with_colon_in_option(config):
     section = 'Capabilities'
-    items = [('selenoid:options', "{'enableVNC': True, 'enableVideo': True}"), ('cloud:options', "{'name': 'test'}"),
-             ('platformName', 'Android')]
+    items = [
+        ('selenoid:options', "{'enableVNC': True, 'enableVideo': True}"),
+        ('cloud:options', "{'name': 'test'}"),
+        ('platformName', 'Android'),
+    ]
     assert items == config.items(section)
 
 
@@ -221,7 +223,7 @@ toolium_system_properties = (
 )
 
 
-@pytest.mark.parametrize("property_name, section, option, value, new_value", toolium_system_properties)
+@pytest.mark.parametrize(('property_name', 'section', 'option', 'value', 'new_value'), toolium_system_properties)
 def test_update_toolium_system_properties(config, property_name, section, option, value, new_value):
     # Check previous value
     if value is None:
@@ -231,7 +233,7 @@ def test_update_toolium_system_properties(config, property_name, section, option
 
     # Change system property and update config
     environment_properties.append(property_name)
-    os.environ[property_name] = '{}_{}={}'.format(section, option, new_value)
+    os.environ[property_name] = f'{section}_{option}={new_value}'
     config.update_toolium_system_properties(os.environ)
 
     # Check the new config value
@@ -246,13 +248,23 @@ toolium_system_properties_wrong_format = (
     # Option in name different from option in value
     ('TOOLIUM_CAPABILITIES_PLATFORM', 'Capabilities', 'platformName', 'Android', 'Capabilities_platformName=iOS'),
     # Additional param in name
-    ('TOOLIUM_CAPABILITIES_PLATFORMNAME_WRONG', 'Capabilities', 'platformName', 'Android',
-     'Capabilities_platformName=iOS'),
+    (
+        'TOOLIUM_CAPABILITIES_PLATFORMNAME_WRONG',
+        'Capabilities',
+        'platformName',
+        'Android',
+        'Capabilities_platformName=iOS',
+    ),
     # No option in value
     ('TOOLIUM_CAPABILITIES_PLATFORMNAME', 'Capabilities', 'platformName', 'Android', 'Capabilities=iOS'),
     # Additional param in value
-    ('TOOLIUM_CAPABILITIES_PLATFORMNAME', 'Capabilities', 'platformName', 'Android',
-     'Capabilities_platformName_wrong=iOS'),
+    (
+        'TOOLIUM_CAPABILITIES_PLATFORMNAME',
+        'Capabilities',
+        'platformName',
+        'Android',
+        'Capabilities_platformName_wrong=iOS',
+    ),
     # No equal in value
     ('TOOLIUM_CAPABILITIES_PLATFORMNAME', 'Capabilities', 'platformName', 'Android', 'Capabilities_platformName iOS'),
     # Empty section
@@ -264,10 +276,19 @@ toolium_system_properties_wrong_format = (
 )
 
 
-@pytest.mark.parametrize("property_name, section, option, value, property_value",
-                         toolium_system_properties_wrong_format)
-def test_update_toolium_system_properties_wrong_format(config, logger, property_name, section, option, value,
-                                                       property_value):
+@pytest.mark.parametrize(
+    ('property_name', 'section', 'option', 'value', 'property_value'),
+    toolium_system_properties_wrong_format,
+)
+def test_update_toolium_system_properties_wrong_format(
+    config,
+    logger,
+    property_name,
+    section,
+    option,
+    value,
+    property_value,
+):
     # Check previous value
     if value is None:
         assert not config.has_option(section, option)
@@ -284,9 +305,13 @@ def test_update_toolium_system_properties_wrong_format(config, logger, property_
 
     # Check logging error message
     if property_name.startswith('TOOLIUM'):
-        logger.warning.assert_called_once_with('A toolium system property is configured but its name does not math with'
-                                               ' section and option in value (use TOOLIUM_[SECTION]_[OPTION]=[Section]_'
-                                               '[option]=value): %s=%s', property_name, property_value)
+        logger.warning.assert_called_once_with(
+            'A toolium system property is configured but its name does not math with'
+            ' section and option in value (use TOOLIUM_[SECTION]_[OPTION]=[Section]_'
+            '[option]=value): %s=%s',
+            property_name,
+            property_value,
+        )
     else:
         logger.warning.assert_not_called()
 
@@ -302,7 +327,7 @@ toolium_system_properties_special = (
 )
 
 
-@pytest.mark.parametrize("property_name, property_value", toolium_system_properties_special)
+@pytest.mark.parametrize(('property_name', 'property_value'), toolium_system_properties_special)
 def test_update_toolium_system_properties_special(config, logger, property_name, property_value):
     # Change system property and update config
     environment_properties.append(property_name)
@@ -325,7 +350,7 @@ def test_update_properties_behave(config):
     assert orig_value == config.get(section, option)
 
     # Change system property and update config
-    behave_properties = {'{}_{}'.format(section, option): new_value}
+    behave_properties = {f'{section}_{option}': new_value}
     config.update_properties(behave_properties)
 
     # Check the new config value
@@ -341,6 +366,6 @@ strings_to_translate = (
 )
 
 
-@pytest.mark.parametrize("string_with_variables, translated_string", strings_to_translate)
+@pytest.mark.parametrize(('string_with_variables', 'translated_string'), strings_to_translate)
 def test_translate_config_variables(config, string_with_variables, translated_string):
     assert translated_string == config.translate_config_variables(string_with_variables)

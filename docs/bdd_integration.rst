@@ -114,27 +114,27 @@ Example::
 
           Actions Before the Feature:
             Given wait 3 seconds
-            And waitrty 3 seconds
-            And wait 3 seconds
-            And step with a table
-              | parameter     | value       |
-              | sub_fields_1  | sub_value 1 |
-              | sub_fields_2  | sub_value 2 |
+              And waitrty 3 seconds
+              And wait 3 seconds
+              And step with a table
+                  | parameter     | value       |
+                  | sub_fields_1  | sub_value 1 |
+                  | sub_fields_2  | sub_value 2 |
 
           Actions Before each Scenario:
             Given the user navigates to the "www.google.es" url
-            When the user logs in with username and password
-            And wait 1 seconds
-            And wait 1 seconds
+             When the user logs in with username and password
+              And wait 1 seconds
+              And wait 1 seconds
 
           Actions After each Scenario:
-            And wait 2 seconds
-            And wait 2 seconds
+             Then wait 2 seconds
+              And wait 2 seconds
 
           Actions After the Feature:
-            And wait 4 seconds
-            And step with another step executed dynamically
-            And wait 4 seconds
+             Then wait 4 seconds
+              And step with another step executed dynamically
+              And wait 4 seconds
 
 
 All kind of steps are allowed:

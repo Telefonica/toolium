@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -26,4 +25,4 @@ class Link(Button):
 
         :returns: href value
         """
-        return self.web_element.get_attribute("href")
+        return self.web_element.get_attribute('href')

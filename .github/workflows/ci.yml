@@ -22,9 +22,10 @@ jobs:
         pip install -r requirements.txt
         pip install -r requirements_dev.txt
         python -m spacy download en_core_web_md
-    - name: Lint with flake8
+    - name: Lint and format check with ruff
       run: |
-        flake8 . --count --max-complexity=10 --max-line-length=121 --show-source --statistics
+        ruff check .
+        ruff format --check .
     - name: Test with pytest and coverage
       env:
         AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}

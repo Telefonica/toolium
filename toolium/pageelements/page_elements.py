@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -15,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 import inspect
-from typing import Any, List
+from typing import Any
 
 from toolium.driver_wrapper import DriverWrappersPool
 from toolium.pageelements.button_page_element import Button
@@ -40,10 +40,20 @@ class PageElements(CommonObject):
                   or (selenium.webdriver.common.by.By or appium.webdriver.common.mobileby.MobileBy, str)
     :type page_element_class: class
     """
+
     page_element_class = PageElement  #: class of page elements (PageElement, Button...)
 
-    def __init__(self, by, value, parent=None, page_element_class=None, order=None, webview=False,
-                 webview_context_selection_callback=None, webview_csc_args=None):
+    def __init__(
+        self,
+        by,
+        value,
+        parent=None,
+        page_element_class=None,
+        order=None,
+        webview=False,
+        webview_context_selection_callback=None,
+        webview_csc_args=None,
+    ):
         """Initialize the PageElements object with the given locator components.
 
         If parent is not None, find_elements will be performed over it, instead of
@@ -61,7 +71,7 @@ class PageElements(CommonObject):
         for ios
         :param webview_csc_args: arguments list for webview_context_selection_callback
         """
-        super(PageElements, self).__init__()
+        super().__init__()
         self.locator = (by, value)  #: tuple with locator type and locator value
         self.parent = parent  #: element from which to find actual elements
         self.order = order  #: index value if the locator returns more than one element
@@ -111,7 +121,7 @@ class PageElements(CommonObject):
         return self._web_elements
 
     @property
-    def page_elements(self) -> List[Any]:
+    def page_elements(self) -> list[Any]:
         """Find multiple PageElement using element locator
 
         :returns: list of page element objects

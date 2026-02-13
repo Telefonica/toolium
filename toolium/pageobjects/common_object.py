@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2016 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -19,14 +18,15 @@ limitations under the License.
 import logging
 
 
-class CommonObject(object):
+class CommonObject:
     """Base class for page objects and page elements
 
     :type logger: logging.Logger
     :type driver_wrapper: toolium.driver_wrapper.DriverWrapper
     """
-    native_context = "NATIVE_APP"
-    webview_context_prefix = "WEBVIEW"
+
+    native_context = 'NATIVE_APP'
+    webview_context_prefix = 'WEBVIEW'
 
     def __init__(self):
         """Initialize common object"""
@@ -34,8 +34,7 @@ class CommonObject(object):
         self.driver_wrapper = None  #: driver wrapper instance
 
     def reset_object(self):
-        """Method to reset this object. This method can be overridden to define specific functionality.
-        """
+        """Method to reset this object. This method can be overridden to define specific functionality."""
         pass
 
     @property
@@ -66,7 +65,7 @@ class CommonObject(object):
         return self.driver_wrapper.utils
 
     def _switch_to_new_context(self, context):
-        """ Change to a new context if its different than the current one"""
+        """Change to a new context if its different than the current one"""
         if self.driver.context != context:
             self.driver.switch_to.context(context)
 
@@ -81,21 +80,23 @@ class CommonObject(object):
             elif self.parent and self.parent.webview_context_selection_callback:
                 context, window_handle = self.parent.webview_context_selection_callback(*self.parent.webview_csc_args)
             else:
-                app_web_context = "{}_{}".format(CommonObject.webview_context_prefix,
-                                                 self.driver.capabilities['appPackage'])
+                app_web_context = '{}_{}'.format(
+                    CommonObject.webview_context_prefix,
+                    self.driver.capabilities['appPackage'],
+                )
                 if app_web_context in self.driver.contexts:
                     context = app_web_context
                     self._switch_to_new_context(context)
                     window_handle = self.driver.window_handles[0]
                 else:
-                    raise KeyError("WEBVIEW context not found")
+                    raise KeyError('WEBVIEW context not found')
 
             if context:
                 self._switch_to_new_context(context)
                 if self.driver.current_window_handle != window_handle:
                     self.driver.switch_to.window(window_handle)
             else:
-                raise KeyError("WEBVIEW context not found")
+                raise KeyError('WEBVIEW context not found')
         else:
             self._switch_to_new_context(CommonObject.native_context)
 
@@ -108,12 +109,16 @@ class CommonObject(object):
             else:
                 contexts = self.driver.execute_script('mobile: getContexts')
                 context_id = next(
-                    (item['id'] for item in reversed(contexts) if
-                     'bundleId' in item and item['bundleId'] == self.driver.capabilities['bundleId']),
-                    None)
+                    (
+                        item['id']
+                        for item in reversed(contexts)
+                        if 'bundleId' in item and item['bundleId'] == self.driver.capabilities['bundleId']
+                    ),
+                    None,
+                )
             if context_id:
                 self._switch_to_new_context(context_id)
             else:
-                raise KeyError("WEBVIEW context not found")
+                raise KeyError('WEBVIEW context not found')
         else:
             self._switch_to_new_context(CommonObject.native_context)

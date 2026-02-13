@@ -158,8 +158,8 @@ achieve at least 80% accuracy.
     @accuracy_80_10
     Scenario: Validate AI-generated response accuracy
       Given the AI model generates a response
-      When the user sends a message
-      Then the AI response should be accurate
+       When the user sends a message
+       Then the AI response should be accurate
 
 When a scenario is tagged with an accuracy tag, Toolium will automatically execute the scenario multiple times. If the
 scenario does not meet the specified accuracy after the given number of executions, it will be marked as failed.
@@ -187,8 +187,8 @@ accuracy data set with the suffix "greetings".
     @accuracy_data_greetings
     Scenario: Validate AI-generated greeting responses
       Given the AI model generates a greeting response
-      When the user sends "[CONTEXT:accuracy_execution_data.question]" message
-      Then the AI greeting response should be similar to "[CONTEXT:accuracy_execution_data.answer]"
+       When the user sends "[CONTEXT:accuracy_execution_data.question]" message
+       Then the AI greeting response should be similar to "[CONTEXT:accuracy_execution_data.answer]"
 
 When a scenario is tagged with an accuracy data tag, Toolium will automatically use the specified accuracy data set for
 each execution. This allows you to test different scenarios with varying data inputs. Accuracy data should be stored

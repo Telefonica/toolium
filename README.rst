@@ -20,7 +20,7 @@ Getting Started
 ---------------
 
 Run ``pip install toolium`` to install the latest version from `PyPi <https://pypi.org/project/toolium>`_. It's
-highly recommendable to use a virtualenv.
+highly recommended to use a virtualenv.
 
 The main dependencies are:
 
@@ -33,11 +33,11 @@ The main dependencies are:
 - `requests <http://docs.python-requests.org>`_: to test APIs
 
 You might need to adjust the Selenium and Appium-Python-Client versions in your project.
-In that case follow the `compatibility matrix <https://github.com/appium/python-client?tab=readme-ov-file#compatibility-matrix>`_
+In that case, follow the `compatibility matrix <https://github.com/appium/python-client?tab=readme-ov-file#compatibility-matrix>`_
 
 **Using toolium-template**
 
-The easiest way of getting started is to clone `toolium-template <https://github.com/Telefonica/toolium-template>`_
+The easiest way to get started is to clone `toolium-template <https://github.com/Telefonica/toolium-template>`_
 project, run the example test and add your own tests and configuration.
 
 .. code:: console
@@ -46,8 +46,8 @@ project, run the example test and add your own tests and configuration.
     $ cd toolium-template
     $ pip install -r requirements.txt
 
-Now, just follow `toolium-template instructions <https://github.com/Telefonica/toolium-template#running-tests>`_ to know
-how to start your testing project.
+Now, just follow the `toolium-template instructions <https://github.com/Telefonica/toolium-template#running-tests>`_ to
+know how to start your testing project.
 
 **Running toolium-examples**
 
@@ -60,16 +60,16 @@ to use the library to test web, Android or iOS applications, in different scenar
     $ cd toolium-examples
     $ pip install -r requirements.txt
 
-Now, just follow `toolium-examples instructions <https://github.com/Telefonica/toolium-examples#running-tests>`_ to run
-the examples of the tests.
+Now, just follow the `toolium-examples instructions <https://github.com/Telefonica/toolium-examples#running-tests>`_ to
+run the test examples.
 
 Contributing
 ------------
 
-If you want to collaborate in Toolium development, feel free of `forking it <https://github.com/Telefonica/toolium>`_
-and asking for a pull request.
+If you want to collaborate in Toolium development, feel free to `fork it <https://github.com/Telefonica/toolium>`_
+and create a pull request.
 
-Don't forget to run unit tests:
+Then clone the repository and install the dependencies in your virtualenv:
 
 .. code:: console
 
@@ -77,6 +77,18 @@ Don't forget to run unit tests:
     $ cd toolium
     $ pip install -r requirements.txt
     $ pip install -r requirements_dev.txt
+
+Before submitting your changes, make sure the code follows the project's style by running Ruff:
+
+.. code:: console
+
+    $ ruff check --fix .    # Fix linting issues
+    $ ruff format .         # Format code
+
+Then run the unit tests:
+
+.. code:: console
+
     $ python -m pytest
 
 Finally, before accepting your contribution, we need you to sign our
@@ -86,7 +98,7 @@ and send it to ruben.gonzalezalonso@telefonica.com.
 Main Features
 -------------
 
-- `Choosing driver through a configuration file </docs/driver_configuration.rst>`_
+- `Choosing a driver through a configuration file </docs/driver_configuration.rst>`_
 - `Page Object pattern </docs/page_objects.rst>`_
 - `BDD integration </docs/bdd_integration.rst>`_
 - `Visual testing solution </docs/visual_testing.rst>`_
@@ -97,4 +109,4 @@ Documentation
 
 Further information about features and fixes included in each release: `CHANGELOG </CHANGELOG.rst>`_.
 
-Complete library reference and documentation available at `ReadTheDocs <http://toolium.readthedocs.org>`_.
+Complete library reference and documentation are available at `ReadTheDocs <http://toolium.readthedocs.org>`_.

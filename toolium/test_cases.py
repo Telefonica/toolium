@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -29,6 +28,7 @@ from toolium.visual_test import VisualTest
 
 class BasicTestCase(unittest.TestCase):
     """A class whose instances are api test cases."""
+
     config_files = ConfigFiles()
     driver_wrapper = None
 
@@ -41,7 +41,7 @@ class BasicTestCase(unittest.TestCase):
         return self._testMethodName.split('___')[0]
 
     def get_subclassmethod_name(self):
-        return self.__class__.__name__ + "." + self.get_method_name()
+        return self.__class__.__name__ + '.' + self.get_method_name()
 
     @classmethod
     def tearDownClass(cls):
@@ -60,7 +60,7 @@ class BasicTestCase(unittest.TestCase):
         # Get config and logger instances
         self.config = self.driver_wrapper.config
         self.logger = logging.getLogger(__name__)
-        self.logger.info("Running new test: %s", self.get_subclassmethod_name())
+        self.logger.info('Running new test: %s', self.get_subclassmethod_name())
 
     def tearDown(self):
         # Get error message from unittest errors
@@ -71,8 +71,11 @@ class BasicTestCase(unittest.TestCase):
             if exception_info:
                 exception = exception_info[1]
                 error_message = get_error_message_from_exception(exception)
-        elif not hasattr(self._outcome, 'errors') and hasattr(self._outcome.result, 'failures') \
-                and len(self._outcome.result.failures) > 0:
+        elif (
+            not hasattr(self._outcome, 'errors')
+            and hasattr(self._outcome.result, 'failures')
+            and len(self._outcome.result.failures) > 0
+        ):
             # Python >=3.11
             traceback = self._outcome.result.failures[0][1]
             error_message = get_error_message_from_traceback(traceback)
@@ -96,13 +99,14 @@ class SeleniumTestCase(BasicTestCase):
     :type driver: selenium.webdriver.remote.webdriver.WebDriver
     :type utils: toolium.utils.driver_utils.Utils
     """
+
     driver = None
     utils = None
 
     @classmethod
     def tearDownClass(cls):
         # Call BasicTestCase tearDownClass
-        super(SeleniumTestCase, cls).tearDownClass()
+        super().tearDownClass()
         # Close drivers
         DriverWrappersPool.close_drivers(scope='class', test_name=cls.get_subclass_name())
 
@@ -119,24 +123,41 @@ class SeleniumTestCase(BasicTestCase):
         # Monkey patching assert_screenshot method in PageElement to use the correct test name
         file_suffix = self.get_method_name()
 
-        def assert_screenshot_page_element(self, filename, threshold=0, exclude_elements=[], force=False):
-            VisualTest(self.driver_wrapper, force).assert_screenshot(self.web_element, filename, file_suffix,
-                                                                     threshold, exclude_elements)
+        def assert_screenshot_page_element(self, filename, threshold=0, exclude_elements=None, force=False):
+            if exclude_elements is None:
+                exclude_elements = []
+            VisualTest(self.driver_wrapper, force).assert_screenshot(
+                self.web_element,
+                filename,
+                file_suffix,
+                threshold,
+                exclude_elements,
+            )
 
         PageElement.assert_screenshot = assert_screenshot_page_element
 
         # Call BasicTestCase setUp
-        super(SeleniumTestCase, self).setUp()
+        super().setUp()
 
     def tearDown(self):
         # Call BasicTestCase tearDown
-        super(SeleniumTestCase, self).tearDown()
+        super().tearDown()
         # Close drivers
-        DriverWrappersPool.close_drivers(scope='function',
-                                         test_name=self.get_subclassmethod_name(),
-                                         test_passed=self._test_passed)
+        DriverWrappersPool.close_drivers(
+            scope='function',
+            test_name=self.get_subclassmethod_name(),
+            test_passed=self._test_passed,
+        )
 
-    def assert_screenshot(self, element, filename, threshold=0, exclude_elements=[], driver_wrapper=None, force=False):
+    def assert_screenshot(
+        self,
+        element,
+        filename,
+        threshold=0,
+        exclude_elements=None,
+        driver_wrapper=None,
+        force=False,
+    ):
         """Assert that a screenshot of an element is the same as a screenshot on disk, within a given threshold.
 
         :param element: either a WebElement, PageElement or element locator as a tuple (locator_type, locator_value).
@@ -148,10 +169,12 @@ class SeleniumTestCase(BasicTestCase):
         :param driver_wrapper: driver wrapper instance
         :param force: if True, the screenshot is compared even if visual testing is disabled by configuration
         """
+        if exclude_elements is None:
+            exclude_elements = []
         file_suffix = self.get_method_name()
         VisualTest(driver_wrapper, force).assert_screenshot(element, filename, file_suffix, threshold, exclude_elements)
 
-    def assert_full_screenshot(self, filename, threshold=0, exclude_elements=[], driver_wrapper=None, force=False):
+    def assert_full_screenshot(self, filename, threshold=0, exclude_elements=None, driver_wrapper=None, force=False):
         """Assert that a driver screenshot is the same as a screenshot on disk, within a given threshold.
 
         :param filename: the filename for the screenshot, which will be appended with ``.png``
@@ -161,6 +184,8 @@ class SeleniumTestCase(BasicTestCase):
         :param driver_wrapper: driver wrapper instance
         :param force: if True, the screenshot is compared even if visual testing is disabled by configuration
         """
+        if exclude_elements is None:
+            exclude_elements = []
         file_suffix = self.get_method_name()
         VisualTest(driver_wrapper, force).assert_screenshot(None, filename, file_suffix, threshold, exclude_elements)
 
@@ -171,6 +196,7 @@ class AppiumTestCase(SeleniumTestCase):
     Attributes:
         app_strings: dict with application strings
     """
+
     app_strings = None
 
     @property
@@ -189,5 +215,5 @@ class AppiumTestCase(SeleniumTestCase):
             # By default config directory is located in test path
             self.config_files.set_config_directory(DriverWrappersPool.get_default_config_directory())
 
-        super(AppiumTestCase, self).setUp()
+        super().setUp()
         AppiumTestCase.app_strings = self.driver_wrapper.app_strings

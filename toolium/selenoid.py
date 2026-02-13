@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2019 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -17,10 +16,11 @@ limitations under the License.
 """
 
 import os
-import requests
 import time
-
 from ast import literal_eval
+
+import requests
+
 from toolium.utils.path_utils import makedirs_safe
 
 # constants
@@ -31,7 +31,7 @@ MP4_EXTENSION = 'mp4'
 LOG_EXTENSION = 'log'
 
 
-class Selenoid(object):
+class Selenoid:
     """
     properties.cfg or local-properties.cfg files:
     ---------------------------------------------
@@ -62,6 +62,7 @@ class Selenoid(object):
         """
         self.driver_wrapper = driver_wrapper
         from toolium.driver_wrappers_pool import DriverWrappersPool
+
         self.videos_directory = kwargs.get('videos_dir', DriverWrappersPool.videos_directory)
         self.logs_directory = kwargs.get('logs_dir', DriverWrappersPool.logs_directory)
         self.output_directory = kwargs.get('output_dir', DriverWrappersPool.output_directory)
@@ -82,7 +83,7 @@ class Selenoid(object):
         """
         status_code = 0
         init_time = time.time()
-        self.driver_wrapper.logger.info('Downloading file from Selenoid node: %s' % url)
+        self.driver_wrapper.logger.info('Downloading file from Selenoid node: %s', url)
         # retries policy
         while status_code != STATUS_OK and time.time() - init_time < float(timeout):
             body = requests.get(url)
@@ -92,20 +93,22 @@ class Selenoid(object):
         took = time.time() - init_time  # time used to download the file
         # create the folders and store the file downloaded
         if status_code == STATUS_OK:
-            path, name = os.path.split(path_file)
+            path, _name = os.path.split(path_file)
             makedirs_safe(path)
             try:
                 fp = open(path_file, 'wb')
                 fp.write(body.content)
                 fp.close()
-                self.driver_wrapper.logger.info('File has been downloaded successfully to "%s" and took %d '
-                                                'seconds' % (path_file, took))
+                self.driver_wrapper.logger.info(
+                    'File has been downloaded successfully to "%s" and took %f seconds',
+                    path_file,
+                    took,
+                )
                 return True
-            except IOError as e:
-                self.driver_wrapper.logger.warning('Error writing downloaded file in "%s":\n %s' % (path_file, e))
+            except OSError as e:
+                self.driver_wrapper.logger.warning('Error writing downloaded file in "%s":\n %s', path_file, e)
         else:
-            self.driver_wrapper.logger.warning('File "%s" does not exist in the server after %s seconds' % (url,
-                                                                                                            timeout))
+            self.driver_wrapper.logger.warning('File "%s" does not exist in the server after %s seconds', url, timeout)
         return False
 
     def __remove_file(self, url):
@@ -120,12 +123,12 @@ class Selenoid(object):
         request: http://<username>:<password>@<ggr_host>:<ggr_port>/host/<ggr_session_id>
         :return: dict
         """
-        host_url = '{}/host/{}'.format(self.server_url, self.session_id)
+        host_url = f'{self.server_url}/host/{self.session_id}'
         try:
             selenoid_info = requests.get(host_url).json()
         except Exception:
             return None
-        self.driver_wrapper.logger.info(f'Selenoid host info: {selenoid_info}')
+        self.driver_wrapper.logger.info('Selenoid host info: %s', selenoid_info)
         return selenoid_info
 
     def is_the_session_still_active(self):
@@ -195,14 +198,16 @@ class Selenoid(object):
         :return boolean (although in case of error in the request will be returned None)
         """
         server_url_splitted = self.server_url.split(':')
-        host_url = '{}:{}:{}:{}/status'.format(server_url_splitted[0], server_url_splitted[1], server_url_splitted[2],
-                                               STATUS_PORT)
+        host_url = f'{server_url_splitted[0]}:{server_url_splitted[1]}:{server_url_splitted[2]}:{STATUS_PORT}/status'
 
         try:
             response = requests.get(host_url).json()['browsers'][self.browser]
         except Exception as e:
-            self.driver_wrapper.logger.warning('the GGR status request has failed: \nResponse:  %s \n'
-                                               'Error message: %s\n' % (response.content, e))
+            self.driver_wrapper.logger.warning(
+                'the GGR status request has failed: \nResponse:  %s \nError message: %s\n',
+                response.content,
+                e,
+            )
             return None
         for browser in response:
             if response[browser] != {}:
@@ -237,12 +242,12 @@ class Selenoid(object):
         if self.driver_wrapper.get_driver_platform() != 'linux' or not self.get_selenoid_option('enableVideo'):
             return
 
-        path_file = os.path.join(self.videos_directory, '%s.%s' % (scenario_name, MP4_EXTENSION))
+        path_file = os.path.join(self.videos_directory, f'{scenario_name}.{MP4_EXTENSION}')
         if self.driver_wrapper.server_type == 'selenoid':
-            filename = '%s.%s' % (self.session_id, MP4_EXTENSION)
+            filename = f'{self.session_id}.{MP4_EXTENSION}'
         else:
             filename = self.session_id
-        video_url = '{}/video/{}'.format(self.server_url, filename)
+        video_url = f'{self.server_url}/video/{filename}'
         # download the execution video file
         if self.browser_remote:
             self.__download_file(video_url, path_file, timeout)
@@ -262,12 +267,12 @@ class Selenoid(object):
         if self.driver_wrapper.get_driver_platform() != 'linux' or not self.get_selenoid_option('enableLog'):
             return
 
-        path_file = os.path.join(self.logs_directory, '%s_ggr.%s' % (scenario_name, LOG_EXTENSION))
+        path_file = os.path.join(self.logs_directory, f'{scenario_name}_ggr.{LOG_EXTENSION}')
         if self.driver_wrapper.server_type == 'selenoid':
-            filename = '%s.%s' % (self.session_id, LOG_EXTENSION)
+            filename = f'{self.session_id}.{LOG_EXTENSION}'
         else:
             filename = self.session_id
-        logs_url = '{}/logs/{}'.format(self.server_url, filename)
+        logs_url = f'{self.server_url}/logs/{filename}'
         # download the session log file
         if self.browser_remote:
             self.__download_file(logs_url, path_file, timeout)
@@ -283,7 +288,7 @@ class Selenoid(object):
         :return: downloaded file path or None
         """
         path_file = os.path.join(self.output_directory, DOWNLOADS_PATH, self.session_id[-8:], filename)
-        file_url = '{}/download/{}/{}'.format(self.server_url, self.session_id, filename)
+        file_url = f'{self.server_url}/download/{self.session_id}/{filename}'
         # download the file
         if self.browser_remote:
             self.__download_file(file_url, path_file, timeout)

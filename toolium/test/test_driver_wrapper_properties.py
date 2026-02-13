@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2016 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -72,8 +71,9 @@ def test_configure_properties_android(driver_wrapper):
     driver_wrapper.configure_properties()
     assert driver_wrapper.config.get('Driver', 'type') == 'android'  # get last value
     assert driver_wrapper.config.get_optional('Driver', 'implicitly_wait') is None  # only in properties
-    assert driver_wrapper.config.get_optional('AppiumCapabilities',
-                                              'app') == 'http://invented_url/Demo.apk'  # only in android
+    assert (
+        driver_wrapper.config.get_optional('AppiumCapabilities', 'app') == 'http://invented_url/Demo.apk'
+    )  # only in android
 
 
 def test_configure_properties_two_files(driver_wrapper):
@@ -82,8 +82,9 @@ def test_configure_properties_two_files(driver_wrapper):
     driver_wrapper.configure_properties()
     assert driver_wrapper.config.get('Driver', 'type') == 'android'  # get last value
     assert driver_wrapper.config.get_optional('Driver', 'implicitly_wait') == '5'  # only in properties
-    assert driver_wrapper.config.get_optional('AppiumCapabilities',
-                                              'app') == 'http://invented_url/Demo.apk'  # only in android
+    assert (
+        driver_wrapper.config.get_optional('AppiumCapabilities', 'app') == 'http://invented_url/Demo.apk'
+    )  # only in android
 
 
 def test_configure_properties_two_files_android_first(driver_wrapper):
@@ -92,8 +93,9 @@ def test_configure_properties_two_files_android_first(driver_wrapper):
     driver_wrapper.configure_properties()
     assert driver_wrapper.config.get('Driver', 'type') == 'firefox'  # get last value
     assert driver_wrapper.config.get_optional('Driver', 'implicitly_wait') == '5'  # only in properties
-    assert driver_wrapper.config.get_optional('AppiumCapabilities',
-                                              'app') == 'http://invented_url/Demo.apk'  # only in android
+    assert (
+        driver_wrapper.config.get_optional('AppiumCapabilities', 'app') == 'http://invented_url/Demo.apk'
+    )  # only in android
 
 
 def test_configure_properties_system_property(driver_wrapper):
@@ -113,7 +115,7 @@ def test_configure_properties_file_default_file(driver_wrapper):
 def test_configure_properties_file_not_found(driver_wrapper):
     environment_properties.append('TOOLIUM_CONFIG_PROPERTIES_FILENAMES')
     os.environ['TOOLIUM_CONFIG_PROPERTIES_FILENAMES'] = 'notfound-properties.cfg'
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:  # noqa: PT011
         driver_wrapper.configure_properties()
     assert 'Properties config file not found' in str(excinfo.value)
 

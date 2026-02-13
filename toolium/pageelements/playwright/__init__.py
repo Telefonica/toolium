@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2024 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.
@@ -20,4 +19,4 @@ from toolium.pageelements.playwright.button_page_element import Button
 from toolium.pageelements.playwright.input_text_page_element import InputText
 from toolium.pageelements.playwright.text_page_element import Text
 
-__all__ = ['Text', 'InputText', 'Button']
+__all__ = ['Button', 'InputText', 'Text']

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -18,15 +17,21 @@ limitations under the License.
 
 import logging
 import re
-from configparser import ConfigParser, NoSectionError, NoOptionError
+from configparser import ConfigParser, NoOptionError, NoSectionError
 from io import StringIO
 
 logger = logging.getLogger(__name__)
 
 
-SPECIAL_SYSTEM_PROPERTIES = ['TOOLIUM_CONFIG_ENVIRONMENT', 'TOOLIUM_OUTPUT_DIRECTORY', 'TOOLIUM_OUTPUT_LOG_FILENAME',
-                             'TOOLIUM_CONFIG_DIRECTORY', 'TOOLIUM_CONFIG_LOG_FILENAME',
-                             'TOOLIUM_CONFIG_PROPERTIES_FILENAMES', 'TOOLIUM_VISUAL_BASELINE_DIRECTORY']
+SPECIAL_SYSTEM_PROPERTIES = [
+    'TOOLIUM_CONFIG_ENVIRONMENT',
+    'TOOLIUM_OUTPUT_DIRECTORY',
+    'TOOLIUM_OUTPUT_LOG_FILENAME',
+    'TOOLIUM_CONFIG_DIRECTORY',
+    'TOOLIUM_CONFIG_LOG_FILENAME',
+    'TOOLIUM_CONFIG_PROPERTIES_FILENAMES',
+    'TOOLIUM_VISUAL_BASELINE_DIRECTORY',
+]
 
 
 class ExtendedConfigParser(ConfigParser):
@@ -35,7 +40,7 @@ class ExtendedConfigParser(ConfigParser):
         return optionstr
 
     def get_optional(self, section, option, default=None):
-        """ Get an option value for a given section
+        """Get an option value for a given section
         If the section or the option are not found, the default value is returned
 
         :param section: config section
@@ -49,7 +54,7 @@ class ExtendedConfigParser(ConfigParser):
             return default
 
     def getboolean_optional(self, section, option, default=False):
-        """ Get an option boolean value for a given section
+        """Get an option boolean value for a given section
         If the section or the option are not found, the default value is returned
 
         :param section: config section
@@ -81,16 +86,19 @@ class ExtendedConfigParser(ConfigParser):
         return config_copy
 
     def update_properties(self, new_properties):
-        """ Update config properties values
+        """Update config properties values
         Property name must be equal to 'Section_option' of config property
 
         :param new_properties: dict with new properties values
         """
-        [self._update_property_from_dict(section, option, new_properties)
-         for section in self.sections() for option in self.options(section)]
+        [
+            self._update_property_from_dict(section, option, new_properties)
+            for section in self.sections()
+            for option in self.options(section)
+        ]
 
     def _update_property_from_dict(self, section, option, new_properties):
-        """ Update a config property value with a new property value
+        """Update a config property value with a new property value
         Property name must be equal to 'Section_option' of config property
 
         :param section: config section
@@ -98,13 +106,13 @@ class ExtendedConfigParser(ConfigParser):
         :param new_properties: dict with new properties values
         """
         try:
-            property_name = "{0}_{1}".format(section, option)
+            property_name = f'{section}_{option}'
             self.set(section, option, new_properties[property_name])
         except KeyError:
             pass
 
     def update_toolium_system_properties(self, new_properties):
-        """ Update config properties values or add new values if property does not exist
+        """Update config properties values or add new values if property does not exist
         Property name must be 'TOOLIUM_[SECTION]_[OPTION]' and property value must be '[Section]_[option]=value'
         i.e. TOOLIUM_SERVER_ENABLED='Server_enabled=true'
 
@@ -116,9 +124,12 @@ class ExtendedConfigParser(ConfigParser):
         for property_name, property_value in new_properties.items():
             name_groups = re.match('^TOOLIUM_([^_]+)_(.+)$', property_name)
             value_groups = re.match('^([^_=]+)_([^=]+)=(.*)$', property_value)
-            if (name_groups and value_groups
-                    and name_groups.group(1).upper() == value_groups.group(1).upper()
-                    and name_groups.group(2).upper() == value_groups.group(2).upper()):
+            if (
+                name_groups
+                and value_groups
+                and name_groups.group(1).upper() == value_groups.group(1).upper()
+                and name_groups.group(2).upper() == value_groups.group(2).upper()
+            ):
                 section = value_groups.group(1)
                 option = value_groups.group(2)
                 value = value_groups.group(3)
@@ -126,9 +137,13 @@ class ExtendedConfigParser(ConfigParser):
                     self.add_section(section)
                 self.set(section, option, value)
             elif property_name.startswith('TOOLIUM') and property_name not in SPECIAL_SYSTEM_PROPERTIES:
-                logger.warning('A toolium system property is configured but its name does not math with section'
-                               ' and option in value (use TOOLIUM_[SECTION]_[OPTION]=[Section]_[option]=value):'
-                               ' %s=%s', property_name, property_value)
+                logger.warning(
+                    'A toolium system property is configured but its name does not math with section'
+                    ' and option in value (use TOOLIUM_[SECTION]_[OPTION]=[Section]_[option]=value):'
+                    ' %s=%s',
+                    property_name,
+                    property_value,
+                )
 
     def translate_config_variables(self, str_with_variables):
         """
@@ -140,7 +155,7 @@ class ExtendedConfigParser(ConfigParser):
         for section in self.sections():
             for option in self.options(section):
                 option_value = self.get(section, option)
-                str_with_variables = str_with_variables.replace('{{{0}_{1}}}'.format(section, option), option_value)
+                str_with_variables = str_with_variables.replace(f'{{{section}_{option}}}', option_value)
         return str_with_variables
 
     @staticmethod

@@ -1,0 +1,91 @@
+{
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true
+  },
+  "files.autoSave": "onFocusChange",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "editor.formatOnPaste": false,
+  "editor.formatOnSave": true,
+  "editor.rulers": [
+    120
+  ],
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+  },
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": [
+    "."
+  ],
+  "python.envFile": "${workspaceFolder}/.vscode/.env",
+  "python-envs.pythonProjects": [
+    {
+      "path": "",
+      "envManager": "ms-python.python:venv",
+      "packageManager": "ms-python.python:pip"
+    }
+  ],
+  "ruff.organizeImports": true,
+  "cucumberautocomplete.steps": [
+    "steps/**/*.py",
+  ],
+  "cucumberautocomplete.customParameters": [
+    {
+      "parameter": "(u'",
+      "value": "('"
+    }
+  ],
+  "cucumberautocomplete.syncfeatures": "features/**/*.feature",
+  "cucumberautocomplete.gherkinDefinitionPart": "@(given|when|then|step)\\(",
+  "cucumberautocomplete.strictGherkinCompletion": false,
+  "cucumberautocomplete.strictGherkinValidation": false,
+  "cucumberautocomplete.onTypeFormat": true,
+  "gherkiner.consecutiveBlankLinesToOne": true,
+  "gherkiner.padding.symbol": "space",
+  "gherkiner.padding.table": 10,
+  "gherkiner.formatOnSave": true,
+  "gherkiner.paddings": [
+    {
+      "keyword": "Feature",
+      "padding": 0
+    },
+    {
+      "keyword": "Scenario Outline",
+      "padding": 2
+    },
+    {
+      "keyword": "Scenario",
+      "padding": 2
+    },
+    {
+      "keyword": "Given",
+      "padding": 4
+    },
+    {
+      "keyword": "When",
+      "padding": 5
+    },
+    {
+      "keyword": "Then",
+      "padding": 5
+    },
+    {
+      "keyword": "And",
+      "padding": 6
+    },
+    {
+      "keyword": "Actions",
+      "padding": 2
+    },
+    {
+      "keyword": "Examples",
+      "padding": 4
+    }
+  ]
+}

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2025 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.
@@ -28,7 +27,6 @@ from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.ai_utils.openai import openai_request
 from toolium.utils.ai_utils.spacy import get_spacy_model, preprocess_with_ud_negation
 
-
 # Configure logger
 logger = logging.getLogger(__name__)
 
@@ -56,7 +54,7 @@ def get_text_similarity_with_spacy(text, expected_text, model_name=None, **kwarg
     text = model(preprocess_with_ud_negation(text, model))
     expected_text = model(preprocess_with_ud_negation(expected_text, model))
     similarity = model(text).similarity(model(expected_text))
-    logger.info(f"spaCy similarity: {similarity} between '{text}' and '{expected_text}'")
+    logger.info("spaCy similarity: %s between '%s' and '%s'", similarity, text, expected_text)
     return similarity
 
 
@@ -71,15 +69,17 @@ def get_text_similarity_with_sentence_transformers(text, expected_text, model_na
     :returns: similarity score between the two texts
     """
     if SentenceTransformer is None:
-        raise ImportError("Sentence Transformers is not installed. Please run 'pip install toolium[ai]'"
-                          " to use Sentence Transformers features")
+        raise ImportError(
+            "Sentence Transformers is not installed. Please run 'pip install toolium[ai]'"
+            ' to use Sentence Transformers features',
+        )
     config = DriverWrappersPool.get_default_wrapper().config
     model_name = model_name or config.get_optional('AI', 'sentence_transformers_model', 'all-mpnet-base-v2')
     model = SentenceTransformer(model_name, **kwargs)
     similarity = float(model.similarity(model.encode(expected_text), model.encode(text)))
     # similarity can be slightly > 1 due to float precision
     similarity = 1 if similarity > 1 else similarity
-    logger.info(f"Sentence Transformers similarity: {similarity} between '{text}' and '{expected_text}'")
+    logger.info("Sentence Transformers similarity: %s between '%s' and '%s'", similarity, text, expected_text)
     return similarity
 
 
@@ -95,26 +95,23 @@ def get_text_similarity_with_openai(text, expected_text, model_name=None, azure=
     :returns: tuple with similarity score between the two texts and explanation
     """
     system_message = (
-        "You have to decide if the LLM answer is correct or not, comparing it with the expected answer."
-        " Respond with a percentage between 0 and 1 (in <PERCENTAGE>) depending on how correct you think the answer is"
-        " and with an explanation of why (in <EXPLANATION>), returning a json object:"
-        " {\"similarity\": <PERCENTAGE>, \"explanation\": <EXPLANATION>}"
-        " The answer is correct if it is semantically similar to the expected answer, it does not have to be identical,"
-        " but its meaning should be similar."
+        'You have to decide if the LLM answer is correct or not, comparing it with the expected answer.'
+        ' Respond with a percentage between 0 and 1 (in <PERCENTAGE>) depending on how correct you think the answer is'
+        ' and with an explanation of why (in <EXPLANATION>), returning a json object:'
+        ' {"similarity": <PERCENTAGE>, "explanation": <EXPLANATION>}'
+        ' The answer is correct if it is semantically similar to the expected answer, it does not have to be identical,'
+        ' but its meaning should be similar.'
     )
-    user_message = (
-        f"The expected answer is: {expected_text}."
-        f" The LLM answer is: {text}."
-    )
+    user_message = f'The expected answer is: {expected_text}. The LLM answer is: {text}.'
     response = openai_request(system_message, user_message, model_name, azure, **kwargs)
     try:
         response = json.loads(response)
         similarity = float(response['similarity'])
         explanation = response['explanation']
     except (KeyError, ValueError, TypeError) as e:
-        raise ValueError(f"Unexpected response format from OpenAI: {response}") from e
-    logger.info(f"OpenAI LLM similarity: {similarity} between '{text}' and '{expected_text}'")
-    logger.info(f"OpenAI LLM explanation: {explanation}")
+        raise ValueError(f'Unexpected response format from OpenAI: {response}') from e
+    logger.info("OpenAI LLM similarity: %s between '%s' and '%s'", similarity, text, expected_text)
+    logger.info('OpenAI LLM explanation: %s', explanation)
     return similarity
 
 
@@ -146,25 +143,37 @@ def assert_text_similarity(text, expected_texts, threshold, similarity_method=No
     config = DriverWrappersPool.get_default_wrapper().config
     similarity_method = similarity_method or config.get_optional('AI', 'text_similarity_method', 'spacy')
     expected_texts = [expected_texts] if isinstance(expected_texts, str) else expected_texts
-    error_message = ""
+    error_message = ''
     for expected_text in expected_texts:
         try:
-            similarity = globals()[f'get_text_similarity_with_{similarity_method}'](text, expected_text,
-                                                                                    model_name, **kwargs)
-        except KeyError:
-            raise ValueError(f"Unknown similarity_method: '{similarity_method}', please use 'spacy',"
-                             f" 'sentence_transformers', 'openai' or 'azure_openai'")
+            similarity = globals()[f'get_text_similarity_with_{similarity_method}'](
+                text,
+                expected_text,
+                model_name,
+                **kwargs,
+            )
+        except KeyError as e:
+            raise ValueError(
+                f"Unknown similarity_method: '{similarity_method}', please use 'spacy',"
+                f" 'sentence_transformers', 'openai' or 'azure_openai'",
+            ) from e
 
-        texts_message = f"Received text: {text}\nExpected text: {expected_text}"
+        texts_message = f'Received text: {text}\nExpected text: {expected_text}'
         if similarity < threshold:
-            error_message = f'{error_message}\n' if error_message else ""
-            error_message = (f"{error_message}Similarity between received and expected texts"
-                             f" is below threshold: {similarity} < {threshold}\n{texts_message}")
+            error_message = f'{error_message}\n' if error_message else ''
+            error_message = (
+                f'{error_message}Similarity between received and expected texts'
+                f' is below threshold: {similarity} < {threshold}\n{texts_message}'
+            )
         else:
-            logger.info(f"Similarity between received and expected texts"
-                        f" is above threshold: {similarity} >= {threshold}\n{texts_message}")
+            logger.info(
+                'Similarity between received and expected texts is above threshold: %s >= %s\n%s',
+                similarity,
+                threshold,
+                texts_message,
+            )
             return
 
     # Any expected text did not meet the threshold
     logger.error(error_message)
-    assert False, error_message
+    raise AssertionError(error_message)

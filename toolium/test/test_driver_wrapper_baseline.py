@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2016 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -17,8 +16,8 @@ limitations under the License.
 """
 
 import os
+from unittest import mock
 
-import mock
 import pytest
 
 from toolium.config_files import ConfigFiles
@@ -104,8 +103,13 @@ def test_update_visual_baseline_remote_node(driver_wrapper):
     driver_wrapper.configure_visual_baseline()
     driver_wrapper.update_visual_baseline()
 
-    expected_baseline_directory = os.path.join(root_path, 'output', 'visualtests', 'baseline',
-                                               'firefox_255.255.255.255')
+    expected_baseline_directory = os.path.join(
+        root_path,
+        'output',
+        'visualtests',
+        'baseline',
+        'firefox_255.255.255.255',
+    )
     assert driver_wrapper.baseline_name == 'firefox_255.255.255.255'
     assert driver_wrapper.visual_baseline_directory == expected_baseline_directory
 

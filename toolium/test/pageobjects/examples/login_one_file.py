@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2016 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -18,7 +17,7 @@ limitations under the License.
 
 from selenium.webdriver.common.by import By
 
-from toolium.pageelements import InputText, Button
+from toolium.pageelements import Button, InputText
 from toolium.pageobjects.mobile_page_object import MobilePageObject
 
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2023 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,11 +15,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
+from unittest import mock
+
 import pytest
 
-from toolium.behave.env_utils import (DynamicEnvironment, ACTIONS_BEFORE_FEATURE, ACTIONS_BEFORE_SCENARIO,
-                                      ACTIONS_AFTER_SCENARIO, ACTIONS_AFTER_FEATURE)
+from toolium.behave.env_utils import (
+    ACTIONS_AFTER_FEATURE,
+    ACTIONS_AFTER_SCENARIO,
+    ACTIONS_BEFORE_FEATURE,
+    ACTIONS_BEFORE_SCENARIO,
+    DynamicEnvironment,
+)
 
 
 @pytest.fixture
@@ -142,7 +147,7 @@ def test_execute_after_scenario_steps_failed_before_scenario(context, dyn_env):
     dyn_env.before_error_message = 'Exception in before scenario step'
     dyn_env.fail_first_step_precondition_exception = mock.MagicMock()
 
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:  # noqa: PT011
         dyn_env.execute_after_scenario_steps(context)
     assert 'Before scenario steps have failed: Exception in before scenario step' == str(excinfo.value)
     assert dyn_env.feature_error is False
@@ -160,7 +165,7 @@ def test_execute_after_scenario_steps_failed_actions_failed_before_scenario(cont
     context.execute_steps.side_effect = Exception('Exception in after scenario step')
     dyn_env.fail_first_step_precondition_exception = mock.MagicMock()
 
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:  # noqa: PT011
         dyn_env.execute_after_scenario_steps(context)
     assert 'Before scenario steps have failed: Exception in before scenario step' == str(excinfo.value)
     assert dyn_env.feature_error is False
@@ -214,7 +219,7 @@ def test_execute_after_feature_steps_failed_before_feature(context, dyn_env):
     dyn_env.fail_first_step_precondition_exception = mock.MagicMock()
     context.feature.walk_scenarios.return_value = [context.scenario]
 
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:  # noqa: PT011
         dyn_env.execute_after_feature_steps(context)
     assert 'Before feature steps have failed: Exception in before feature step' == str(excinfo.value)
     assert dyn_env.feature_error is False
@@ -223,7 +228,9 @@ def test_execute_after_feature_steps_failed_before_feature(context, dyn_env):
     context.execute_steps.assert_called_with('Given after feature step')
     context.feature.reset.assert_called_once_with()
     dyn_env.fail_first_step_precondition_exception.assert_called_once_with(
-        context.scenario, 'Exception in before feature step')
+        context.scenario,
+        'Exception in before feature step',
+    )
 
 
 def test_execute_after_feature_steps_failed_actions_failed_before_feature(context, dyn_env):
@@ -234,7 +241,7 @@ def test_execute_after_feature_steps_failed_actions_failed_before_feature(contex
     context.execute_steps.side_effect = Exception('Exception in after feature step')
     context.feature.walk_scenarios.return_value = [context.scenario]
 
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:  # noqa: PT011
         dyn_env.execute_after_feature_steps(context)
     assert 'Before feature steps have failed: Exception in before feature step' == str(excinfo.value)
     assert dyn_env.feature_error is False
@@ -243,7 +250,9 @@ def test_execute_after_feature_steps_failed_actions_failed_before_feature(contex
     context.execute_steps.assert_called_with('Given after feature step')
     context.feature.reset.assert_called_once_with()
     dyn_env.fail_first_step_precondition_exception.assert_called_once_with(
-        context.scenario, 'Exception in before feature step')
+        context.scenario,
+        'Exception in before feature step',
+    )
 
 
 def test_fail_first_step_precondition_exception(dyn_env):

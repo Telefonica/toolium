@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2024 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.
@@ -28,11 +27,11 @@ class InputText(PageElement):
         :returns: element text value
         """
         if self.driver_wrapper.is_web_test() or self.webview:
-            return self.web_element.get_attribute("value")
+            return self.web_element.get_attribute('value')
         elif self.driver_wrapper.is_ios_test():
-            return self.web_element.get_attribute("label")
+            return self.web_element.get_attribute('label')
         elif self.driver_wrapper.is_android_test():
-            return self.web_element.get_attribute("text")
+            return self.web_element.get_attribute('text')
 
     async def fill(self, value):
         """Set value on the element

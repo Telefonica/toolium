@@ -7,6 +7,7 @@ v3.7.1
 *Release date: In development*
 
 - Add pyproject.toml file for packaging and publishing Toolium
+- Configure ruff for linting and formatting files, replacing flake8 and black
 - Add text analysis tool to get an overall match of a text against a list of expected characteristics
   using AI libraries that come with the `ai` extra dependency
 

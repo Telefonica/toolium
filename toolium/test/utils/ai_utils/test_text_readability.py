@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2025 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.
@@ -16,12 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
+from unittest import mock
+
 import pytest
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.utils.ai_utils.text_readability import get_text_readability_with_spacy, assert_text_readability
-
+from toolium.utils.ai_utils.text_readability import assert_text_readability, get_text_readability_with_spacy
 
 get_readability_examples = (
     ('This is a human readable text', 0.9, 1),
@@ -37,7 +36,7 @@ get_readability_examples = (
 )
 
 
-@pytest.mark.parametrize('input_text, expected_low, expected_high', get_readability_examples)
+@pytest.mark.parametrize(('input_text', 'expected_low', 'expected_high'), get_readability_examples)
 def test_get_text_readability_with_spacy(input_text, expected_low, expected_high):
     readability = get_text_readability_with_spacy(input_text)
     assert expected_low <= readability <= expected_high
@@ -50,7 +49,7 @@ assert_readability_passed_examples = (
 )
 
 
-@pytest.mark.parametrize('input_text, threshold', assert_readability_passed_examples)
+@pytest.mark.parametrize(('input_text', 'threshold'), assert_readability_passed_examples)
 def test_assert_text_readability_with_spacy_passed(input_text, threshold):
     assert_text_readability(input_text, threshold=threshold, readability_method='spacy')
 
@@ -62,16 +61,16 @@ assert_readability_failed_examples = (
 )
 
 
-@pytest.mark.parametrize('input_text, threshold', assert_readability_failed_examples)
+@pytest.mark.parametrize(('input_text', 'threshold'), assert_readability_failed_examples)
 def test_assert_text_readability_with_spacy_failed(input_text, threshold):
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(AssertionError) as excinfo:
         assert_text_readability(input_text, threshold=threshold, readability_method='spacy')
     assert str(excinfo.value).startswith('Text readability is below threshold')
 
 
 def test_assert_text_readability_with_custom_technical_chars():
     input_text = 'Too many symbols: [ separators | hyphens - and such ] = {}'
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(AssertionError) as excinfo:
         assert_text_readability(input_text, threshold=0.9)
     assert str(excinfo.value).startswith('Text readability is below threshold')
     assert_text_readability(input_text, threshold=0.9, technical_chars=['_'])  # ignoring other technical chars
@@ -126,6 +125,5 @@ def test_assert_text_readability_with_configured_and_explicit_method_and_model(r
     readability_mock.return_value = 0.9
 
     input_text = 'This is a human readable text'
-    assert_text_readability(input_text, threshold=0.8, readability_method='spacy',
-                            model_name='en_core_web_lg')
+    assert_text_readability(input_text, threshold=0.8, readability_method='spacy', model_name='en_core_web_lg')
     readability_mock.assert_called_once_with(input_text, None, 'en_core_web_lg')

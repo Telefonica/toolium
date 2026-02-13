@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,15 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import builtins
 import logging
 import os
-import requests
 import time
 from datetime import datetime
-from io import open
+from urllib.parse import urlparse
+
+import requests
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.remote.webelement import WebElement
-from urllib.parse import urlparse
 
 from toolium.selenoid import Selenoid
 from toolium.utils.driver_wait_utils import WaitUtils
@@ -48,8 +48,9 @@ class Utils(WaitUtils):
         :returns: screenshot path
         """
         from toolium.driver_wrappers_pool import DriverWrappersPool
-        filename = '{0:0=2d}_{1}'.format(DriverWrappersPool.screenshots_number, name)
-        filename = '{}.png'.format(get_valid_filename(filename))
+
+        filename = f'{DriverWrappersPool.screenshots_number:0=2d}_{name}'
+        filename = f'{get_valid_filename(filename)}.png'
         filepath = os.path.join(DriverWrappersPool.screenshots_directory, filename)
         makedirs_safe(DriverWrappersPool.screenshots_directory)
         if self.driver_wrapper.driver.get_screenshot_as_file(filepath):
@@ -70,7 +71,7 @@ class Utils(WaitUtils):
                 self.save_webdriver_logs_by_type(log_type, test_name)
             except Exception as exc:
                 # Capture exceptions to avoid errors in teardown method
-                self.logger.debug("Logs of type '%s' can not be read from driver due to '%s'" % (log_type, str(exc)))
+                self.logger.debug("Logs of type '%s' can not be read from driver due to '%s'", log_type, exc)
 
     def get_available_log_types(self):
         """Get log types that are configured in log_types variable or available in current driver
@@ -85,7 +86,7 @@ class Utils(WaitUtils):
                 try:
                     log_types = self.driver_wrapper.driver.log_types
                 except Exception as exc:
-                    self.logger.debug("Available log types can not be read from driver due to '%s'" % str(exc))
+                    self.logger.debug("Available log types can not be read from driver due to '%s'", exc)
                     log_types = ['client', 'server']
         else:
             log_types = [log_type.strip() for log_type in configured_log_types.split(',') if log_type.strip() != '']
@@ -101,16 +102,17 @@ class Utils(WaitUtils):
 
         if len(logs) > 0:
             from toolium.driver_wrappers_pool import DriverWrappersPool
+
             makedirs_safe(DriverWrappersPool.logs_directory)
-            log_file_name = '{}_{}.txt'.format(get_valid_filename(test_name), log_type)
+            log_file_name = f'{get_valid_filename(test_name)}_{log_type}.txt'
             log_file_name = os.path.join(DriverWrappersPool.logs_directory, log_file_name)
-            with open(log_file_name, 'a+', encoding='utf-8') as log_file:
+            with builtins.open(log_file_name, 'a+', encoding='utf-8') as log_file:
                 driver_type = self.driver_wrapper.config.get('Driver', 'type')
-                log_file.write(
-                    "\n{} '{}' test logs with driver = {}\n\n".format(datetime.now(), test_name, driver_type))
+                log_file.write(f"\n{datetime.now()} '{test_name}' test logs with driver = {driver_type}\n\n")
                 for entry in logs:
-                    timestamp = datetime.fromtimestamp(float(entry['timestamp']) / 1000.).strftime(
-                        '%Y-%m-%d %H:%M:%S.%f')
+                    timestamp = datetime.fromtimestamp(float(entry['timestamp']) / 1000.0).strftime(
+                        '%Y-%m-%d %H:%M:%S.%f',
+                    )
                     log_file.write('{}\t{}\t{}\n'.format(timestamp, entry['level'], entry['message'].rstrip()))
 
     def discard_logcat_logs(self):
@@ -126,40 +128,41 @@ class Utils(WaitUtils):
 
         :returns: tuple with server type (local, grid, ggr, selenium) and remote node name
         """
-        logging.getLogger("requests").setLevel(logging.WARNING)
+        logging.getLogger('requests').setLevel(logging.WARNING)
         remote_node = None
         server_type = 'local'
         if self.driver_wrapper.config.getboolean_optional('Server', 'enabled'):
             # Request session info from grid hub
             session_id = self.driver_wrapper.driver.session_id
-            self.logger.debug("Trying to identify remote node")
+            self.logger.debug('Trying to identify remote node')
             try:
                 # Request session info from grid hub and extract remote node
-                url = '{}/grid/api/testsession?session={}'.format(self.get_server_url(), session_id)
+                url = f'{self.get_server_url()}/grid/api/testsession?session={session_id}'
                 proxy_id = requests.get(url).json()['proxyId']
                 remote_node = urlparse(proxy_id).hostname if urlparse(proxy_id).hostname else proxy_id
                 server_type = 'grid'
-                self.logger.debug("Test running in remote node %s", remote_node)
+                self.logger.debug('Test running in remote node %s', remote_node)
             except (ValueError, KeyError):
                 try:
                     # Request session info from GGR and extract remote node
                     from toolium.selenoid import Selenoid
+
                     remote_node = Selenoid(self.driver_wrapper).get_selenoid_info()['Name']
                     server_type = 'ggr'
-                    self.logger.debug("Test running in a GGR remote node %s", remote_node)
+                    self.logger.debug('Test running in a GGR remote node %s', remote_node)
                 except Exception:
                     try:
                         # The remote node is a Selenoid node
-                        url = '{}/status'.format(self.get_server_url())
+                        url = f'{self.get_server_url()}/status'
                         requests.get(url).json()['total']
                         remote_node = self.driver_wrapper.config.get('Server', 'host')
                         server_type = 'selenoid'
-                        self.logger.debug("Test running in a Selenoid node %s", remote_node)
+                        self.logger.debug('Test running in a Selenoid node %s', remote_node)
                     except Exception:
                         # The remote node is not a grid node or the session has been closed
                         remote_node = self.driver_wrapper.config.get('Server', 'host')
                         server_type = 'selenium'
-                        self.logger.debug("Test running in a Selenium node %s", remote_node)
+                        self.logger.debug('Test running in a Selenium node %s', remote_node)
 
         return server_type, remote_node
 
@@ -173,8 +176,8 @@ class Utils(WaitUtils):
         server_ssl = 'https' if self.driver_wrapper.config.getboolean_optional('Server', 'ssl') else 'http'
         server_username = self.driver_wrapper.config.get_optional('Server', 'username')
         server_password = self.driver_wrapper.config.get_optional('Server', 'password')
-        server_auth = '{}:{}@'.format(server_username, server_password) if server_username and server_password else ''
-        server_url = '{}://{}{}:{}'.format(server_ssl, server_auth, server_host, server_port)
+        server_auth = f'{server_username}:{server_password}@' if server_username and server_password else ''
+        server_url = f'{server_ssl}://{server_auth}{server_host}:{server_port}'
         return server_url
 
     def download_remote_video(self, server_type, video_name):
@@ -189,7 +192,7 @@ class Utils(WaitUtils):
             try:
                 video_url = self._get_remote_video_url(self.driver_wrapper.remote_node, self.driver_wrapper.session_id)
             except requests.exceptions.ConnectionError:
-                self.logger.warning("Remote server seems not to have video capabilities")
+                self.logger.warning('Remote server seems not to have video capabilities')
                 return
 
             if not video_url:
@@ -206,9 +209,9 @@ class Utils(WaitUtils):
         :param remote_node: remote node name
         :returns: grid-extras url
         """
-        logging.getLogger("requests").setLevel(logging.WARNING)
+        logging.getLogger('requests').setLevel(logging.WARNING)
         gridextras_port = 3000
-        return 'http://{}:{}'.format(remote_node, gridextras_port)
+        return f'http://{remote_node}:{gridextras_port}'
 
     def _get_remote_video_url(self, remote_node, session_id):
         """Get grid-extras url to download videos
@@ -217,7 +220,7 @@ class Utils(WaitUtils):
         :param session_id: test session id
         :returns: grid-extras url to download videos
         """
-        url = '{}/video'.format(self._get_remote_node_url(remote_node))
+        url = f'{self._get_remote_node_url(remote_node)}/video'
         timeout = time.time() + 5  # 5 seconds from now
 
         # Requests videos list until timeout or the video url is found
@@ -238,12 +241,13 @@ class Utils(WaitUtils):
         :param video_name: video name
         """
         from toolium.driver_wrappers_pool import DriverWrappersPool
-        filename = '{0:0=2d}_{1}'.format(DriverWrappersPool.videos_number, video_name)
-        filename = '{}.mp4'.format(get_valid_filename(filename))
+
+        filename = f'{DriverWrappersPool.videos_number:0=2d}_{video_name}'
+        filename = f'{get_valid_filename(filename)}.mp4'
         filepath = os.path.join(DriverWrappersPool.videos_directory, filename)
         makedirs_safe(DriverWrappersPool.videos_directory)
         response = requests.get(video_url)
-        open(filepath, 'wb').write(response.content)
+        builtins.open(filepath, 'wb').write(response.content)
         self.logger.info("Video saved in '%s'", filepath)
         DriverWrappersPool.videos_number += 1
 
@@ -256,11 +260,12 @@ class Utils(WaitUtils):
         """
         enabled = False
         if server_type == 'grid' and remote_node:
-            url = '{}/config'.format(self._get_remote_node_url(remote_node))
+            url = f'{self._get_remote_node_url(remote_node)}/config'
             try:
                 response = requests.get(url, timeout=5).json()
                 record_videos = response['config_runtime']['theConfigMap']['video_recording_options'][
-                    'record_test_videos']
+                    'record_test_videos'
+                ]
             except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout, KeyError):
                 record_videos = 'false'
             if record_videos == 'true':
@@ -301,8 +306,8 @@ class Utils(WaitUtils):
         if not self._window_size:
             is_mobile_web = self.driver_wrapper.is_android_web_test() or self.driver_wrapper.is_ios_web_test()
             if is_mobile_web and self.driver_wrapper.driver.current_context != 'NATIVE_APP':
-                window_width = self.driver_wrapper.driver.execute_script("return window.screen.width")
-                window_height = self.driver_wrapper.driver.execute_script("return window.screen.height")
+                window_width = self.driver_wrapper.driver.execute_script('return window.screen.width')
+                window_height = self.driver_wrapper.driver.execute_script('return window.screen.height')
                 self._window_size = {'width': window_width, 'height': window_height}
             else:
                 window_rect = self.driver_wrapper.driver.get_window_rect()
@@ -355,15 +360,18 @@ class Utils(WaitUtils):
             else:
                 direction = 'down' if y > 0 else 'up'
 
-            self.driver_wrapper.driver.execute_script('mobile: swipeGesture', {
-                'left': int(center['x'] - width/2) if width > 0 else int(center['x']),
-                'top': int(center['y'] - height/2) if height > 0 else int(center['y']),
-                'width': int(width) if width > 0 else 100,
-                'height': int(height) if height > 0 else 100,
-                'direction': direction,
-                'percent': 1.0,
-                'speed': max(500, 5000 - duration) if duration > 0 else 5000
-            })
+            self.driver_wrapper.driver.execute_script(
+                'mobile: swipeGesture',
+                {
+                    'left': int(center['x'] - width / 2) if width > 0 else int(center['x']),
+                    'top': int(center['y'] - height / 2) if height > 0 else int(center['y']),
+                    'width': int(width) if width > 0 else 100,
+                    'height': int(height) if height > 0 else 100,
+                    'direction': direction,
+                    'percent': 1.0,
+                    'speed': max(500, 5000 - duration) if duration > 0 else 5000,
+                },
+            )
         else:
             if abs(x) > abs(y):
                 direction = 'right' if x > 0 else 'left'
@@ -372,10 +380,13 @@ class Utils(WaitUtils):
 
             web_element = self.get_web_element(element)
 
-            self.driver_wrapper.driver.execute_script('mobile: swipe', {
-                'direction': direction,
-                'element': web_element
-            })
+            self.driver_wrapper.driver.execute_script(
+                'mobile: swipe',
+                {
+                    'direction': direction,
+                    'element': web_element,
+                },
+            )
 
         if self.driver_wrapper.is_web_test() or initial_context != 'NATIVE_APP':
             self.driver_wrapper.driver.switch_to.context(initial_context)
@@ -387,6 +398,7 @@ class Utils(WaitUtils):
         :returns: WebElement object
         """
         from toolium.pageelements.page_element import PageElement
+
         if isinstance(element, WebElement):
             web_element = element
         elif isinstance(element, PageElement):

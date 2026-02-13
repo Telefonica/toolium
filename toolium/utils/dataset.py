@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2022 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -26,10 +25,10 @@ import random as r
 import re
 import string
 import uuid
-
 from ast import literal_eval
 from copy import deepcopy
 from inspect import isfunction
+
 from toolium.utils.data_generator import DataGenerator
 
 logger = logging.getLogger(__name__)
@@ -125,9 +124,9 @@ def replace_param(param, language='es', infer_param_type=True):
 
     if param != new_param:
         if isinstance(new_param, str):
-            logger.debug(f'Replaced param from "{param}" to "{new_param}"')
+            logger.debug('Replaced param from "%s" to "%s"', param, new_param)
         else:
-            logger.debug(f'Replaced param from "{param}" to {new_param}')
+            logger.debug('Replaced param from "%s" to %s', param, new_param)
     return new_param
 
 
@@ -143,7 +142,7 @@ def _replace_param_type(param):
         '[MISSING_PARAM]': None,
         '[TRUE]': True,
         '[FALSE]': False,
-        '[NULL]': None
+        '[NULL]': None,
     }
     new_param = param
     param_replaced = False
@@ -180,7 +179,7 @@ def _find_param_date_expressions(param):
     :param language: language to configure date format for NOW and TODAY
     :return: An array with all the matching date expressions found in the param
     """
-    return re.findall(r"\[(?:NOW(?:\((?:[^\(\)]*)\))?|TODAY)(?:\s*[\+|-]\s*\d+\s*\w+\s*)?\]", param)
+    return re.findall(r'\[(?:NOW(?:\((?:[^\(\)]*)\))?|TODAY)(?:\s*[\+|-]\s*\d+\s*\w+\s*)?\]', param)
 
 
 def _replace_param_replacement(param, language):
@@ -209,7 +208,7 @@ def _replace_param_replacement(param, language):
         '[NOW]': str(datetime.datetime.now(datetime.timezone.utc).strftime(date_format)),
         '[TODAY]': str(datetime.datetime.now(datetime.timezone.utc).strftime(date_day_format)),
         r'\[ROUND:(.*?)::(\d*)\]': _get_rounded_float_number,
-        '[SHARP]': '#'
+        '[SHARP]': '#',
     }
 
     # append date expressions found in param to the replacement dict
@@ -238,7 +237,7 @@ def _get_rounded_float_number(match):
     :param match: match object of the regex for this transformation: [ROUND:(.*?)::(d*)]
     :return: float as string with the expected decimals
     """
-    return f"{round(float(match.group(1)), int(match.group(2))):.{int(match.group(2))}f}"
+    return f'{round(float(match.group(1)), int(match.group(2))):.{int(match.group(2))}f}'
 
 
 def _get_random_phone_number():
@@ -270,7 +269,7 @@ def _replace_param_transform_string(param):
             exec_env = {}
             type_str = type_mapping_match_group.group(1).lower()
             value_str = type_mapping_match_group.group(2)
-            exec_code = f"exec_param = {type_str}({value_str})"
+            exec_code = f'exec_param = {type_str}({value_str})'
             exec(exec_code, {}, exec_env)
             new_param = exec_env['exec_param']
         else:
@@ -300,8 +299,9 @@ def _get_substring_replacement(type_mapping_match_group):
         param_to_replace = params_to_replace[1] if params_to_replace[1] != '\\r' else '\r'
         replace_param = params_to_replace[0].replace(param_to_replace, replace_param)
     elif type_mapping_match_group.group(1) == 'TITLE':
-        replace_param = "".join(map(min, zip(type_mapping_match_group.group(2),
-                                             type_mapping_match_group.group(2).title())))
+        replace_param = ''.join(
+            map(min, zip(type_mapping_match_group.group(2), type_mapping_match_group.group(2).title(), strict=False)),
+        )
     return replace_param
 
 
@@ -309,6 +309,7 @@ def _get_format_with_number_of_decimals(base, language):
     """
     Get the format and the number of decimals from the base string.
     """
+
     def _is_only_date(base):
         return 'TODAY' in base
 
@@ -342,6 +343,7 @@ def _replace_param_date(param, language):
     :param language: language to configure date format for NOW and TODAY
     :return: tuple with replaced value and boolean to know if replacement has been done
     """
+
     def _date_matcher():
         return re.match(r'\[(NOW(?:\((?:.*)\)|)|TODAY)(?:\s*([\+|-]\s*\d+)\s*(\w+)\s*)?\]', param)
 
@@ -351,7 +353,7 @@ def _replace_param_date(param, language):
             return now
         the_amount = int(amount.replace(' ', ''))
         the_units = units.lower()
-        return now + datetime.timedelta(**dict([(the_units, the_amount)]))
+        return now + datetime.timedelta(**{the_units: the_amount})
 
     matcher = _date_matcher()
     if not matcher:
@@ -361,8 +363,8 @@ def _replace_param_date(param, language):
     format_str, number_of_decimals = _get_format_with_number_of_decimals(base, language)
     date = _offset_datetime(amount, units)
     if number_of_decimals:
-        decimals = f"{date.microsecond / 1_000_000:.{number_of_decimals}f}"[2:]
-        format_str = format_str.replace("%f", decimals)
+        decimals = f'{date.microsecond / 1_000_000:.{number_of_decimals}f}'[2:]
+        format_str = format_str.replace('%f', decimals)
     return date.strftime(format_str), True
 
 
@@ -386,14 +388,14 @@ def _replace_param_fixed_length(param):
         if any(x in param for x in ['STRING_ARRAY_WITH_LENGTH_', 'INTEGER_ARRAY_WITH_LENGTH_']):
             seeds = {'STRING': string_seed, 'INTEGER': int(integer_seed)}
             seed, length = param[1:-1].split('_ARRAY_WITH_LENGTH_')
-            new_param = list(seeds[seed] for x in range(int(length)))
+            new_param = [seeds[seed] for x in range(int(length))]
             param_replaced = True
         elif 'JSON_WITH_LENGTH_' in param:
             length = int(param[1:-1].split('JSON_WITH_LENGTH_')[1])
-            new_param = dict((str(x), str(x)) for x in range(length))
+            new_param = {str(x): str(x) for x in range(length)}
             param_replaced = True
         elif any(x in param for x in ['INTEGER_WITH_LENGTH_']):
-            length = param[len('[INTEGER_WITH_LENGTH_'):-1]
+            length = param[len('[INTEGER_WITH_LENGTH_') : -1]
             new_param = int(integer_seed * int(length))
             param_replaced = True
     return new_param, param_replaced
@@ -436,7 +438,7 @@ def map_param(param):
     if not isinstance(param, str):
         return param
 
-    map_regex = r"[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][^\[\]]*\]"
+    map_regex = r'[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][^\[\]]*\]'
     map_expressions = re.compile(map_regex)
 
     mapped_param = param
@@ -479,53 +481,53 @@ def map_one_param(param):
     if not isinstance(param, str):
         return param
 
-    type, key = _get_mapping_type_and_key(param)
+    map_type, key = _get_mapping_type_and_key(param)
 
     mapping_functions = {
-        "CONF": {
-            "prerequisites": project_config,
-            "function": map_json_param,
-            "args": [key, project_config]
+        'CONF': {
+            'prerequisites': project_config,
+            'function': map_json_param,
+            'args': [key, project_config],
         },
-        "TOOLIUM": {
-            "prerequisites": toolium_config,
-            "function": map_toolium_param,
-            "args": [key, toolium_config]
+        'TOOLIUM': {
+            'prerequisites': toolium_config,
+            'function': map_toolium_param,
+            'args': [key, toolium_config],
         },
-        "CONTEXT": {
-            "prerequisites": behave_context,
-            "function": get_value_from_context,
-            "args": [key, behave_context]
+        'CONTEXT': {
+            'prerequisites': behave_context,
+            'function': get_value_from_context,
+            'args': [key, behave_context],
         },
-        "LANG": {
-            "prerequisites": language_terms and language,
-            "function": get_message_property,
-            "args": [key, language_terms, language]
+        'LANG': {
+            'prerequisites': language_terms and language,
+            'function': get_message_property,
+            'args': [key, language_terms, language],
         },
-        "POE": {
-            "prerequisites": poeditor_terms,
-            "function": get_translation_by_poeditor_reference,
-            "args": [key, poeditor_terms]
+        'POE': {
+            'prerequisites': poeditor_terms,
+            'function': get_translation_by_poeditor_reference,
+            'args': [key, poeditor_terms],
         },
-        "ENV": {
-            "prerequisites": True,
-            "function": os.environ.get,
-            "args": [key]
+        'ENV': {
+            'prerequisites': True,
+            'function': os.environ.get,
+            'args': [key],
         },
-        "FILE": {
-            "prerequisites": True,
-            "function": get_file,
-            "args": [key]
+        'FILE': {
+            'prerequisites': True,
+            'function': get_file,
+            'args': [key],
         },
-        "BASE64": {
-            "prerequisites": True,
-            "function": convert_file_to_base64,
-            "args": [key]
-        }
+        'BASE64': {
+            'prerequisites': True,
+            'function': convert_file_to_base64,
+            'args': [key],
+        },
     }
 
-    if key and mapping_functions[type]["prerequisites"]:
-        param = mapping_functions[type]["function"](*mapping_functions[type]["args"])
+    if key and mapping_functions[map_type]['prerequisites']:
+        param = mapping_functions[map_type]['function'](*mapping_functions[map_type]['args'])
     return param
 
 
@@ -536,11 +538,11 @@ def _get_mapping_type_and_key(param):
     :param param: string parameter to be parsed
     :return: a tuple with the type and the key to be mapped
     """
-    types = ["CONF", "LANG", "POE", "ENV", "BASE64", "TOOLIUM", "CONTEXT", "FILE"]
-    for type in types:
-        match_group = re.match(r"\[%s:([^\[\]]*)\]" % type, param)
+    map_types = ['CONF', 'LANG', 'POE', 'ENV', 'BASE64', 'TOOLIUM', 'CONTEXT', 'FILE']
+    for map_type in map_types:
+        match_group = re.match(rf'\[{map_type}:([^\[\]]*)\]', param)
         if match_group:
-            return type, match_group.group(1)
+            return map_type, match_group.group(1)
     return None, None
 
 
@@ -566,35 +568,38 @@ def map_json_param(param, config, copy=True):
      in which case, the dictionary content might be changed by this function (True by default)
     :return: mapped value
     """
-    properties_list = param.split(".")
+    sub_param_list = param.split('.')
     aux_config_json = deepcopy(config) if copy else config
     try:
-        for property in properties_list:
+        for sub_param in sub_param_list:
             if type(aux_config_json) is list:
-                aux_config_json = aux_config_json[int(property)]
+                aux_config_json = aux_config_json[int(sub_param)]
             else:
-                aux_config_json = aux_config_json[property]
+                aux_config_json = aux_config_json[sub_param]
 
         hidden_value = hide_passwords(param, aux_config_json)
-        logger.debug(f"Mapping param '{param}' to its configured value '{hidden_value}'")
-    except TypeError:
+        logger.debug("Mapping param '%s' to its configured value '%s'", param, hidden_value)
+    except TypeError as e:
         msg = f"Mapping chain not found in the given configuration dictionary. '{param}'"
         logger.error(msg)
-        raise TypeError(msg)
-    except KeyError:
+        raise TypeError(msg) from e
+    except KeyError as e:
         msg = f"Mapping chain not found in the given configuration dictionary. '{param}'"
         logger.error(msg)
-        raise KeyError(msg)
-    except ValueError:
+        raise KeyError(msg) from e
+    except ValueError as e:
         msg = f"Specified value is not a valid index. '{param}'"
         logger.error(msg)
-        raise ValueError(msg)
-    except IndexError:
+        raise ValueError(msg) from e
+    except IndexError as e:
         msg = f"Mapping index not found in the given configuration dictionary. '{param}'"
         logger.error(msg)
-        raise IndexError(msg)
-    return os.path.expandvars(aux_config_json) \
-        if aux_config_json and type(aux_config_json) not in [int, bool, float, list, dict] else aux_config_json
+        raise IndexError(msg) from e
+    return (
+        os.path.expandvars(aux_config_json)
+        if aux_config_json and type(aux_config_json) not in [int, bool, float, list, dict]
+        else aux_config_json
+    )
 
 
 def hide_passwords(key, value):
@@ -623,20 +628,20 @@ def map_toolium_param(param, config):
     :return: mapped value
     """
     try:
-        section = param.split("_", 1)[0]
-        property_name = param.split("_", 1)[1]
-    except IndexError:
+        section = param.split('_', 1)[0]
+        property_name = param.split('_', 1)[1]
+    except IndexError as e:
         msg = f"Invalid format in Toolium config param '{param}'. Valid format: 'Section_option'."
         logger.error(msg)
-        raise IndexError(msg)
+        raise IndexError(msg) from e
 
     try:
         mapped_value = config.get(section, property_name)
-        logger.debug(f"Mapping Toolium config param 'param' to its configured value '{mapped_value}'")
-    except Exception:
+        logger.debug("Mapping Toolium config param '%s' to its configured value '%s'", param, mapped_value)
+    except Exception as e:
         msg = f"'{param}' param not found in Toolium config file"
         logger.error(msg)
-        raise Exception(msg)
+        raise Exception(msg) from e
     return mapped_value
 
 
@@ -683,8 +688,11 @@ def get_value_from_context(param, context):
         if isinstance(value, dict) and part in value:
             value = value[part]
         # evaluate if in an array, access is requested by index
-        elif isinstance(value, list) and part.lstrip('-+').isdigit() \
-                and abs(int(part)) < (len(value) + 1 if part.startswith("-") else len(value)):
+        elif (
+            isinstance(value, list)
+            and part.lstrip('-+').isdigit()
+            and abs(int(part)) < (len(value) + 1 if part.startswith('-') else len(value))
+        ):
             value = value[int(part)]
         # or by a key=value expression
         elif isinstance(value, list) and (element := _select_element_in_list(value, part)):
@@ -787,16 +795,20 @@ def get_message_property(param, language_terms, language_key):
     """
     lang_param, expected_lang = param.split('::', 1) if '::' in param else (param, language_key)
 
-    key_list = lang_param.split(".")
+    key_list = lang_param.split('.')
     lang_terms_aux = deepcopy(language_terms)
     try:
         for key in key_list:
             lang_terms_aux = lang_terms_aux[key]
-        logger.debug(f"Mapping language param '{lang_param}' to its configured value '{lang_terms_aux[language_key]}'")
-    except KeyError:
+        logger.debug(
+            "Mapping language param '%s' to its configured value '%s'",
+            lang_param,
+            lang_terms_aux[language_key],
+        )
+    except KeyError as e:
         msg = f"Mapping chain '{lang_param}' not found in the language properties file"
         logger.error(msg)
-        raise KeyError(msg)
+        raise KeyError(msg) from e
 
     return lang_terms_aux[expected_lang]
 
@@ -821,18 +833,24 @@ def get_translation_by_poeditor_reference(reference, poeditor_terms):
     for prefix in poeditor_prefixes:
         if len(reference.split(':')) > 1 and prefix != '':
             # If there are prefixes and the resource contains ':' apply prefix in the correct position
-            complete_reference = '%s:%s%s' % (reference.split(':')[0], prefix, reference.split(':')[1])
+            complete_reference = f'{reference.split(":")[0]}:{prefix}{reference.split(":")[1]}'
         else:
-            complete_reference = '%s%s' % (prefix, reference)
+            complete_reference = f'{prefix}{reference}'
         if search_type == 'exact':
-            translation = [term['definition'] for term in poeditor_terms
-                           if complete_reference == term[key] and term['definition'] not in ignored_definitions]
+            translation = [
+                term['definition']
+                for term in poeditor_terms
+                if complete_reference == term[key] and term['definition'] not in ignored_definitions
+            ]
         else:
-            translation = [term['definition'] for term in poeditor_terms
-                           if complete_reference in term[key] and term['definition'] not in ignored_definitions]
+            translation = [
+                term['definition']
+                for term in poeditor_terms
+                if complete_reference in term[key] and term['definition'] not in ignored_definitions
+            ]
         if len(translation) > 0:
             break
-    assert len(translation) > 0, 'No translations found in POEditor for reference %s' % reference
+    assert len(translation) > 0, f'No translations found in POEditor for reference {reference}'
     translation = translation[0] if len(translation) == 1 else translation
     return translation
 
@@ -865,12 +883,12 @@ def get_file(file_path):
     :param file_path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content
     """
-    file_path_parts = (base_file_path + file_path).split("/")
+    file_path_parts = (base_file_path + file_path).split('/')
     file_path = os.path.abspath(os.path.join(*file_path_parts))
     if not os.path.exists(file_path):
         raise Exception(f' ERROR - Cannot read file "{file_path}". Does not exist.')
 
-    with open(file_path, 'r') as f:
+    with open(file_path) as f:
         return f.read()
 
 
@@ -882,16 +900,16 @@ def convert_file_to_base64(file_path):
     :param file_path: file path using slash as separator (e.g. "resources/files/doc.txt")
     :return: string with the file content encoded in Base64
     """
-    file_path_parts = (base_base64_path + file_path).split("/")
+    file_path_parts = (base_base64_path + file_path).split('/')
     file_path = os.path.abspath(os.path.join(*file_path_parts))
     if not os.path.exists(file_path):
         raise Exception(f' ERROR - Cannot read file "{file_path}". Does not exist.')
 
     try:
-        with open(file_path, "rb") as f:
+        with open(file_path, 'rb') as f:
             file_content = base64.b64encode(f.read()).decode()
     except Exception as e:
-        raise Exception(f' ERROR - converting the "{file_path}" file to Base64...: {e}')
+        raise Exception(f' ERROR - converting the "{file_path}" file to Base64') from e
     return file_content
 
 
@@ -908,15 +926,16 @@ def store_key_in_storage(context, key, value):
     :return:
     """
     clean_key = re.sub(r'[\[\]]', '', key)
-    if ":" in clean_key:
-        context_type = clean_key.split(":")[0]
-        context_key = clean_key.split(":")[1]
-        acccepted_context_types = ["FEATURE", "RUN"]
-        assert context_type in acccepted_context_types, (f"Invalid key: {context_key}. "
-                                                         f"Accepted keys: {acccepted_context_types}")
-        if context_type == "RUN":
+    if ':' in clean_key:
+        context_type = clean_key.split(':')[0]
+        context_key = clean_key.split(':')[1]
+        acccepted_context_types = ['FEATURE', 'RUN']
+        assert context_type in acccepted_context_types, (
+            f'Invalid key: {context_key}. Accepted keys: {acccepted_context_types}'
+        )
+        if context_type == 'RUN':
             context.run_storage[context_key] = value
-        elif context_type == "FEATURE":
+        elif context_type == 'FEATURE':
             context.feature_storage[context_key] = value
         # If dynamic env is not initialized linked or key exists in context.storage, the value is updated in it
         if hasattr(context.storage, context_key) or not isinstance(context.storage, collections.ChainMap):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2024 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.
@@ -33,10 +32,10 @@ class PageElement(BasePageElement):
         try:
             await self._find_web_element()
         except NoSuchElementException as exception:
-            parent_msg = f" and parent locator {self.parent_locator_str()}" if self.parent else ''
+            parent_msg = f' and parent locator {self.parent_locator_str()}' if self.parent else ''
             msg = "Page element of type '%s' with locator %s%s not found"
             self.logger.error(msg, type(self).__name__, self.locator, parent_msg)
-            exception.msg += "\n  {}".format(msg % (type(self).__name__, self.locator, parent_msg))
+            exception.msg += f'\n  {msg % (type(self).__name__, self.locator, parent_msg)}'
             raise exception
         return self._web_element
 

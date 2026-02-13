@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,7 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
+from unittest import mock
+
 import pytest
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
@@ -24,7 +24,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
-from toolium.pageelements import PageElement, Group, PageElements
+from toolium.pageelements import Group, PageElement, PageElements
 from toolium.pageobjects.page_object import PageObject
 
 child_element = 'child_element'
@@ -145,17 +145,17 @@ def test_reset_object(driver_wrapper):
     page_object = RegisterPageObject(driver_wrapper)
 
     # Search page elements
-    page_object.username.web_element
-    page_object.password.web_element
-    page_object.language.web_element
-    page_object.email.web_element
-    page_object.address.web_element
-    page_object.inputs.web_elements
-    page_object.menu.register.web_element
-    page_object.menu.logo.web_element
-    page_object.menu_group.web_element
-    page_object.menu_group.logo.web_element
-    page_object.menu_group.logo_wait.web_element
+    page_object.username.web_element  # noqa: B018
+    page_object.password.web_element  # noqa: B018
+    page_object.language.web_element  # noqa: B018
+    page_object.email.web_element  # noqa: B018
+    page_object.address.web_element  # noqa: B018
+    page_object.inputs.web_elements  # noqa: B018
+    page_object.menu.register.web_element  # noqa: B018
+    page_object.menu.logo.web_element  # noqa: B018
+    page_object.menu_group.web_element  # noqa: B018
+    page_object.menu_group.logo.web_element  # noqa: B018
+    page_object.menu_group.logo_wait.web_element  # noqa: B018
 
     # Check that all page elements have a web element
     assert page_object.username._web_element is not None
@@ -215,8 +215,10 @@ def test_wait_until_loaded_exception(driver_wrapper):
     page_object = MenuPageObject(driver_wrapper)
     with pytest.raises(TimeoutException) as excinfo:
         page_object.wait_until_loaded()
-    assert "Page element of type 'PageElement' with locator ('id', 'image') not found or is not " \
-           "visible after 10 seconds" in str(excinfo.value)
+    assert (
+        "Page element of type 'PageElement' with locator ('id', 'image') not found or is not "
+        'visible after 10 seconds' in str(excinfo.value)
+    )
 
 
 def test_wait_until_loaded_exception_custom_timeout(driver_wrapper):
@@ -226,5 +228,7 @@ def test_wait_until_loaded_exception_custom_timeout(driver_wrapper):
     page_object = MenuPageObject(driver_wrapper)
     with pytest.raises(TimeoutException) as excinfo:
         page_object.wait_until_loaded(timeout=15)
-    assert "Page element of type 'PageElement' with locator ('id', 'image') not found or is not " \
-           "visible after 15 seconds" in str(excinfo.value)
+    assert (
+        "Page element of type 'PageElement' with locator ('id', 'image') not found or is not "
+        'visible after 15 seconds' in str(excinfo.value)
+    )

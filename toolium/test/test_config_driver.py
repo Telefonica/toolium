@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2016 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -16,7 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import mock
+from unittest import mock
+
 import pytest
 
 from toolium.config_driver import ConfigDriver
@@ -81,7 +81,7 @@ def test_create_local_driver_unknown_driver(config, utils):
     utils.get_driver_name.return_value = 'unknown'
     config_driver = ConfigDriver(config, utils)
 
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:  # noqa: PT011
         config_driver._create_local_driver()
     assert 'Unknown driver unknown' == str(excinfo.value)
 
@@ -118,5 +118,5 @@ def test_convert_property_type_str(config, utils):
 
 def test_convert_property_type_list(config, utils):
     config_driver = ConfigDriver(config, utils)
-    value = "[1, 2, 3]"
+    value = '[1, 2, 3]'
     assert config_driver._convert_property_type(value) == [1, 2, 3]

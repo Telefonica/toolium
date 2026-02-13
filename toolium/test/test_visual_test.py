@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -17,16 +16,16 @@ limitations under the License.
 """
 
 import inspect
-import mock
 import os
-import pytest
 import re
 import shutil
+from unittest import mock
+
+import pytest
 from PIL import Image
 
 from toolium.config_files import ConfigFiles
-from toolium.driver_wrapper import DriverWrapper
-from toolium.driver_wrapper import DriverWrappersPool
+from toolium.driver_wrapper import DriverWrapper, DriverWrappersPool
 from toolium.test.utils.test_driver_utils import get_mock_element
 from toolium.utils.path_utils import makedirs_safe
 from toolium.visual_test import VisualTest
@@ -193,8 +192,10 @@ def test_compare_files_diff_fail(driver_wrapper):
 
     with pytest.raises(AssertionError) as exc:
         visual.compare_files(current_method_name(), file_v2, file_v1, 0)
-    assert str(exc.value) == f"The new screenshot '{file_v2}' did not match the baseline '{file_v1}' " \
-                             f"(by a distance of 0.00520373, more than 0 threshold)"
+    assert (
+        str(exc.value) == f"The new screenshot '{file_v2}' did not match the baseline '{file_v1}' "
+        f'(by a distance of 0.00520373, more than 0 threshold)'
+    )
 
 
 def test_compare_files_diff_fail_with_threshold(driver_wrapper):
@@ -204,8 +205,10 @@ def test_compare_files_diff_fail_with_threshold(driver_wrapper):
 
     with pytest.raises(AssertionError) as exc:
         visual.compare_files(current_method_name(), file_v2, file_v1, 0.005)
-    assert str(exc.value) == f"The new screenshot '{file_v2}' did not match the baseline '{file_v1}' " \
-                             f"(by a distance of 0.00520373, more than 0.005 threshold)"
+    assert (
+        str(exc.value) == f"The new screenshot '{file_v2}' did not match the baseline '{file_v1}' "
+        f'(by a distance of 0.00520373, more than 0.005 threshold)'
+    )
 
 
 def test_compare_files_size(driver_wrapper):
@@ -221,8 +224,10 @@ def test_compare_files_size_fail(driver_wrapper):
 
     with pytest.raises(AssertionError) as exc:
         visual.compare_files(current_method_name(), file_small, file_v1, 0)
-    assert str(exc.value) == f"The new screenshot '{file_small}' size '(1446, 378)' did not match the baseline" \
-                             f" '{file_v1}' size '(1680, 388)'"
+    assert (
+        str(exc.value) == f"The new screenshot '{file_small}' size '(1446, 378)' did not match the baseline"
+        f" '{file_v1}' size '(1680, 388)'"
+    )
 
 
 def test_get_img_element(driver_wrapper):
@@ -233,8 +238,10 @@ def test_get_img_element(driver_wrapper):
 
 
 def test_get_html_row(driver_wrapper):
-    expected_row = r'<tr class=diff><td>report_name</td><td><img src=".*register_v2.png" title="Baseline image"/>' \
-                   r'</td><td><img src=".*register.png" title="Screenshot image"/></td><td></td></tr>'
+    expected_row = (
+        r'<tr class=diff><td>report_name</td><td><img src=".*register_v2.png" title="Baseline image"/>'
+        r'</td><td><img src=".*register.png" title="Screenshot image"/></td><td></td></tr>'
+    )
     visual = VisualTest(driver_wrapper)
     row = visual._get_html_row('diff', 'report_name', file_v1, file_v2, None, None)
     assert re.compile(expected_row).match(row) is not None
@@ -242,8 +249,10 @@ def test_get_html_row(driver_wrapper):
 
 def test_get_html_row_message(driver_wrapper):
     result_message = 'Distance is 0.00520373, more than 0 threshold'
-    expected_row = r'<tr class=diff><td>report_name</td><td><img src=".*register_v2.png" title="Baseline image"/>' \
-                   f'</td><td><img src=".*register.png" title="Screenshot image"/></td><td>{result_message}</td></tr>'
+    expected_row = (
+        r'<tr class=diff><td>report_name</td><td><img src=".*register_v2.png" title="Baseline image"/>'
+        f'</td><td><img src=".*register.png" title="Screenshot image"/></td><td>{result_message}</td></tr>'
+    )
     visual = VisualTest(driver_wrapper)
     row = visual._get_html_row('diff', 'report_name', file_v1, file_v2, None, result_message)
     assert re.compile(expected_row).match(row) is not None
@@ -251,9 +260,11 @@ def test_get_html_row_message(driver_wrapper):
 
 def test_get_html_row_with_diff_image(driver_wrapper):
     result_message = 'Distance is 0.00520373, more than 0 threshold'
-    expected_row = r'<tr class=diff><td>report_name</td><td><img src=".*register_v2.png" title="Baseline image"/>' \
-                   r'</td><td><img src=".*register.png" title="Screenshot image"/></td>' \
-                   f'<td><img src=".*register_v2.diff.png" title="{result_message}"/></td></tr>'
+    expected_row = (
+        r'<tr class=diff><td>report_name</td><td><img src=".*register_v2.png" title="Baseline image"/>'
+        r'</td><td><img src=".*register.png" title="Screenshot image"/></td>'
+        f'<td><img src=".*register_v2.diff.png" title="{result_message}"/></td></tr>'
+    )
     visual = VisualTest(driver_wrapper)
     row = visual._get_html_row('diff', 'report_name', file_v1, file_v2, file_v2_diff, result_message)
     assert re.compile(expected_row).match(row) is not None
@@ -378,8 +389,14 @@ def test_mobile_resize(driver_wrapper):
     img = visual.mobile_resize(img)
 
     # Assert output image
-    assert_image(visual, img, current_method_name(), 'ios_resized',
-                 expected_result='equal-Distance is 0.00060770, less than 0.001 threshold', threshold=0.001)
+    assert_image(
+        visual,
+        img,
+        current_method_name(),
+        'ios_resized',
+        expected_result='equal-Distance is 0.00060770, less than 0.001 threshold',
+        threshold=0.001,
+    )
 
 
 def test_mobile_no_resize(driver_wrapper):
@@ -428,8 +445,10 @@ def test_exclude_elements(driver_wrapper):
     # Create elements mock
     driver_wrapper.driver.execute_script.return_value = 0  # scrollX=0 and scrollY=0
     visual = VisualTest(driver_wrapper)
-    web_elements = [get_mock_element(x=250, y=40, height=40, width=300),
-                    get_mock_element(x=250, y=90, height=20, width=100)]
+    web_elements = [
+        get_mock_element(x=250, y=40, height=40, width=300),
+        get_mock_element(x=250, y=90, height=20, width=100),
+    ]
     img = Image.open(file_v1)  # Exclude elements
     img = visual.exclude_elements(img, web_elements)
 
@@ -463,7 +482,7 @@ def test_exclude_no_elements(driver_wrapper):
 
 def test_assert_screenshot_no_enabled_force(driver_wrapper):
     # Configure driver mock
-    with open(file_v1, "rb") as f:
+    with open(file_v1, 'rb') as f:
         image_data = f.read()
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
 
@@ -479,7 +498,7 @@ def test_assert_screenshot_no_enabled_force(driver_wrapper):
 
 def test_assert_screenshot_no_enabled_force_fail(driver_wrapper):
     # Configure driver mock
-    with open(file_v2, "rb") as f:
+    with open(file_v2, 'rb') as f:
         image_data = f.read()
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
 
@@ -493,13 +512,14 @@ def test_assert_screenshot_no_enabled_force_fail(driver_wrapper):
     with pytest.raises(AssertionError) as exc:
         visual.assert_screenshot(None, filename=filename, file_suffix=current_method_name())
     driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
-    assert str(exc.value).endswith(f"did not match the baseline '{file_v1}' (by a distance of 0.00520373,"
-                                   f" more than 0 threshold)")
+    assert str(exc.value).endswith(
+        f"did not match the baseline '{file_v1}' (by a distance of 0.00520373, more than 0 threshold)",
+    )
 
 
 def test_assert_screenshot_full_and_save_baseline(driver_wrapper):
     # Configure driver mock
-    with open(file_v1, "rb") as f:
+    with open(file_v1, 'rb') as f:
         image_data = f.read()
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
     driver_wrapper.config.set('VisualTests', 'save', 'true')
@@ -522,7 +542,7 @@ def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
     web_element = get_mock_element(x=250, y=40, height=40, width=300)
 
     # Configure driver mock
-    with open(file_v1, "rb") as f:
+    with open(file_v1, 'rb') as f:
         image_data = f.read()
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
     driver_wrapper.config.set('VisualTests', 'save', 'true')
@@ -545,7 +565,7 @@ def test_assert_screenshot_element_and_save_baseline(driver_wrapper):
 
 def test_assert_screenshot_full_and_compare(driver_wrapper):
     # Configure driver mock
-    with open(file_v1, "rb") as f:
+    with open(file_v1, 'rb') as f:
         image_data = f.read()
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
     visual = VisualTest(driver_wrapper)
@@ -565,7 +585,7 @@ def test_assert_screenshot_element_and_compare(driver_wrapper):
     web_element = get_mock_element(x=250, y=40, height=40, width=300)
 
     # Configure driver mock
-    with open(file_v1, "rb") as f:
+    with open(file_v1, 'rb') as f:
         image_data = f.read()
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
 
@@ -577,7 +597,7 @@ def test_assert_screenshot_element_and_compare(driver_wrapper):
 
 def test_assert_screenshot_full_without_baseline(driver_wrapper):
     # Configure driver mock
-    with open(file_v1, "rb") as f:
+    with open(file_v1, 'rb') as f:
         image_data = f.read()
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
     driver_wrapper.config.set('VisualTests', 'fail', 'true')
@@ -601,7 +621,7 @@ def test_assert_screenshot_element_without_baseline(driver_wrapper):
     web_element = get_mock_element(x=250, y=40, height=40, width=300)
 
     # Configure driver mock
-    with open(file_v1, "rb") as f:
+    with open(file_v1, 'rb') as f:
         image_data = f.read()
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
 
@@ -619,7 +639,7 @@ def test_assert_screenshot_mobile_resize_and_exclude(driver_wrapper):
     exclude_elements = [get_mock_element(x=0, y=0, height=24, width=375)]
 
     # Configure driver mock
-    with open(file_ios, "rb") as f:
+    with open(file_ios, 'rb') as f:
         image_data = f.read()
     driver_wrapper.utils.get_window_size.return_value = {'width': 375, 'height': 667}
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
@@ -630,15 +650,25 @@ def test_assert_screenshot_mobile_resize_and_exclude(driver_wrapper):
     visual = VisualTest(driver_wrapper)
 
     # Assert screenshot
-    visual.assert_screenshot(None, filename='screenshot_ios', file_suffix=current_method_name(),
-                             exclude_elements=exclude_elements)
+    visual.assert_screenshot(
+        None,
+        filename='screenshot_ios',
+        file_suffix=current_method_name(),
+        exclude_elements=exclude_elements,
+    )
     driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'ios_excluded.png')
     output_path = os.path.join(visual.output_directory, f'01_screenshot_ios__{current_method_name()}.png')
-    compare_image_files(visual, current_method_name(), output_path, expected_image,
-                        expected_result='equal-Distance is 0.00062769, less than 0.001 threshold', threshold=0.001)
+    compare_image_files(
+        visual,
+        current_method_name(),
+        output_path,
+        expected_image,
+        expected_result='equal-Distance is 0.00062769, less than 0.001 threshold',
+        threshold=0.001,
+    )
 
     # Output image and new baseline image must be equal
     baseline_path = os.path.join(baselines_path, 'screenshot_ios.png')
@@ -654,7 +684,7 @@ def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
     exclude_elements = [get_mock_element(x=15, y=296.515625, height=32, width=345)]
 
     # Configure driver mock
-    with open(file_ios_web, "rb") as f:
+    with open(file_ios_web, 'rb') as f:
         image_data = f.read()
     driver_wrapper.utils.get_window_size.return_value = {'width': 375, 'height': 667}
     driver_wrapper.driver.get_screenshot_as_png.return_value = image_data
@@ -666,15 +696,25 @@ def test_assert_screenshot_mobile_web_resize_and_exclude(driver_wrapper):
     visual = VisualTest(driver_wrapper)
 
     # Assert screenshot
-    visual.assert_screenshot(form_element, filename='screenshot_ios_web', file_suffix=current_method_name(),
-                             exclude_elements=exclude_elements)
+    visual.assert_screenshot(
+        form_element,
+        filename='screenshot_ios_web',
+        file_suffix=current_method_name(),
+        exclude_elements=exclude_elements,
+    )
     driver_wrapper.driver.get_screenshot_as_png.assert_called_once_with()
 
     # Check cropped image
     expected_image = os.path.join(root_path, 'resources', 'ios_web_exclude.png')
     output_path = os.path.join(visual.output_directory, f'01_screenshot_ios_web__{current_method_name()}.png')
-    compare_image_files(visual, current_method_name(), output_path, expected_image,
-                        expected_result='equal-Distance is 0.00018128, less than 0.001 threshold', threshold=0.001)
+    compare_image_files(
+        visual,
+        current_method_name(),
+        output_path,
+        expected_image,
+        expected_result='equal-Distance is 0.00018128, less than 0.001 threshold',
+        threshold=0.001,
+    )
 
     # Output image and new baseline image must be equal
     baseline_path = os.path.join(baselines_path, 'screenshot_ios_web.png')

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -32,10 +31,11 @@ class PageObject(CommonObject):
         :param driver_wrapper: driver wrapper instance
         :param wait: True if the page object must be loaded in wait_until_loaded method of the container page object
         """
-        super(PageObject, self).__init__()
+        super().__init__()
         self.wait = wait  #: True if it must be loaded in wait_until_loaded method of the container page object
-        self.driver_wrapper = driver_wrapper if driver_wrapper else \
-            DriverWrappersPool.get_default_wrapper()  #: driver wrapper instance
+        self.driver_wrapper = (
+            driver_wrapper if driver_wrapper else DriverWrappersPool.get_default_wrapper()
+        )  #: driver wrapper instance
         self.init_page_elements()
         self.reset_object(self.driver_wrapper)
 
@@ -78,6 +78,7 @@ class PageObject(CommonObject):
         for element in self._get_page_elements():
             if hasattr(element, 'wait') and element.wait:
                 from toolium.pageelements.page_element import PageElement
+
                 if isinstance(element, PageElement):
                     # Pageelement and Group
                     element.wait_until_visible(timeout)

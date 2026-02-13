@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2015 Telefónica Investigación y Desarrollo, S.A.U.
 This file is part of Toolium.
@@ -55,7 +54,7 @@ def jira(test_key):
                 test_item(*args, **kwargs)
             except Exception as e:
                 error_message = get_error_message_from_exception(e)
-                test_comment = "The test '{}' has failed: {}".format(args[0].get_method_name(), error_message)
+                test_comment = f"The test '{args[0].get_method_name()}' has failed: {error_message}"
                 add_jira_status(test_key, 'Fail', test_comment)
                 raise
             add_jira_status(test_key, 'Pass', None)
@@ -82,7 +81,7 @@ def save_jira_conf():
 
 
 def add_attachment(attachment):
-    """ Add a file path to attachments list
+    """Add a file path to attachments list
 
     :param attachment: attachment file path
     """
@@ -104,7 +103,7 @@ def add_jira_status(test_key, test_status, test_comment):
             previous_status = jira_tests_status[test_key]
             test_status = 'Pass' if previous_status[1] == 'Pass' and test_status == 'Pass' else 'Fail'
             if previous_status[2] and test_comment:
-                test_comment = '{}\n{}'.format(previous_status[2], test_comment)
+                test_comment = f'{previous_status[2]}\n{test_comment}'
             elif previous_status[2] and not test_comment:
                 test_comment = previous_status[2]
             attachments += previous_status[3]
@@ -136,16 +135,23 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments):
     logger.info("Updating Test Case '%s' in Jira with status %s", test_key, test_status)
     composed_comments = comments
     if test_comment:
-        composed_comments = '{}\n{}'.format(comments, test_comment) if comments else test_comment
-    payload = {'jiraTestCaseId': test_key, 'jiraStatus': test_status, 'summaryPrefix': summary_prefix,
-               'labels': labels, 'comments': composed_comments, 'version': fix_version, 'build': build}
+        composed_comments = f'{comments}\n{test_comment}' if comments else test_comment
+    payload = {
+        'jiraTestCaseId': test_key,
+        'jiraStatus': test_status,
+        'summaryPrefix': summary_prefix,
+        'labels': labels,
+        'comments': composed_comments,
+        'version': fix_version,
+        'build': build,
+    }
     if only_if_changes:
         payload['onlyIfStatusChanges'] = 'true'
     try:
         if test_attachments and len(test_attachments) > 0:
-            files = dict()
+            files = {}
             for index in range(len(test_attachments)):
-                files['attachments{}'.format(index)] = open(test_attachments[index], 'rb')
+                files[f'attachments{index}'] = open(test_attachments[index], 'rb')
         else:
             files = None
         response = requests.post(execution_url, data=payload, files=files)
@@ -154,10 +160,14 @@ def change_jira_status(test_key, test_status, test_comment, test_attachments):
         return
 
     if response.status_code >= 400:
-        logger.warning("Error updating Test Case '%s': [%s] %s", test_key, response.status_code,
-                       get_error_message(response.content))
+        logger.warning(
+            "Error updating Test Case '%s': [%s] %s",
+            test_key,
+            response.status_code,
+            get_error_message(response.content),
+        )
     else:
-        logger.debug("%s", response.content.decode().splitlines()[0])
+        logger.debug('%s', response.content.decode().splitlines()[0])
 
 
 def get_error_message(response_content):
