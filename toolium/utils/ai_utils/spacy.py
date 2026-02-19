@@ -25,7 +25,6 @@ except ImportError:
     spacy = None
 
 
-# Configure logger
 logger = logging.getLogger(__name__)
 
 

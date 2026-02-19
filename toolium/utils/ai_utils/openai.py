@@ -26,7 +26,6 @@ except ImportError:
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
-# Configure logger
 logger = logging.getLogger(__name__)
 
 

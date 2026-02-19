@@ -20,7 +20,6 @@ import logging
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.ai_utils.spacy import get_spacy_model
 
-# Configure logger
 logger = logging.getLogger(__name__)
 
 

@@ -70,7 +70,6 @@ ENDPOINT_POEDITOR_LIST_TERMS = 'v2/terms/list'
 ENDPOINT_POEDITOR_EXPORT_PROJECT = 'v2/projects/export'
 ENDPOINT_POEDITOR_DOWNLOAD_FILE = 'v2/download/file'
 
-# Configure logger
 logger = logging.getLogger(__name__)
 
 

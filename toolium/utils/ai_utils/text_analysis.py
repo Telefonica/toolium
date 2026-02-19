@@ -20,7 +20,6 @@ import logging
 
 from toolium.utils.ai_utils.openai import openai_request
 
-# Configure logger
 logger = logging.getLogger(__name__)
 
 
