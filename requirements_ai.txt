@@ -1,4 +1,5 @@
+langchain-openai~=1.1       # OpenAI LLMs in AI agents
+langgraph~=1.0              # AI agents
 spacy~=3.8.7
 sentence-transformers~=5.1
-transformers==4.56.2; python_version < '3.10'
-openai~=1.108
+openai~=1.108               # OpenAI LLMs

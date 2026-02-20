@@ -23,7 +23,6 @@
   "python.testing.pytestArgs": [
     "."
   ],
-  "python.envFile": "${workspaceFolder}/.vscode/.env",
   "python-envs.pythonProjects": [
     {
       "path": "",

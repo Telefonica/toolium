@@ -495,7 +495,6 @@ def test_android_automatic_context_selection_already_in_desired_webview_context_
     driver_wrapper.driver.switch_to.window.assert_called_once_with('1234567890')
 
 
-@pytest.mark.skip(reason='Test disabled temporarily, needs to be reviewed')
 def test_ios_automatic_context_selection_already_in_desired_webview_context(driver_wrapper):
     driver_wrapper.is_android_test = mock.MagicMock(return_value=False)
     driver_wrapper.is_ios_test = mock.MagicMock(return_value=True)
@@ -505,8 +504,7 @@ def test_ios_automatic_context_selection_already_in_desired_webview_context(driv
     driver_wrapper.driver.context = 'WEBVIEW_12345.1'
     driver_wrapper.driver.execute_script.return_value = [
         {'bundleId': 'test.package.fake', 'id': 'WEBVIEW_12345.1'},
-        {'bundleId': 'test.package.fake', 'id': 'WEBVIEW_12345.7'},
-        {'bundleId': 'test.package.fake', 'id': 'WEBVIEW_54321.1'},
+        {'bundleId': 'other.package.fake', 'id': 'WEBVIEW_12345.7'},
     ]
     RegisterPageObject(driver_wrapper).element_webview.web_element  # noqa: B018
     driver_wrapper.driver.switch_to.context.assert_not_called()
