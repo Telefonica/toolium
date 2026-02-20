@@ -254,9 +254,16 @@ You can also provide previous messages to the agent to give it context for its r
     # Create a ReAct agent with a system message and a tool method
     system_message = "You are an assistant that helps users find TV content based on their preferences."
     tool_method = tv_recommendations  # This should be a function that the agent can call as a tool
+    provider = 'azure'  # Specify the AI provider to use, e.g., 'azure' or 'openai'
     model_name = 'gpt-4o-mini'  # Specify the model to use for the agent
 
-    agent = create_react_agent(system_message, tool_method=tool_method, model_name=model_name)
+    agent = create_react_agent(system_message, tool_method=tool_method, provider=provider, model_name=model_name)
 
     # Execute the agent and log all interactions
     final_state = execute_agent(agent)
+
+Default provider and model can be set in the properties.cfg file in *[AI]* section::
+
+    [AI]
+    provider: azure  # AI provider to use, openai by default
+    openai_model: gpt-3.5-turbo  # OpenAI model to use, gpt-4o-mini by default

@@ -68,7 +68,9 @@ TV_CONTENT_SYSTEM_MESSAGE = (
 
 @pytest.mark.skipif(not os.getenv('AZURE_OPENAI_API_KEY'), reason='AZURE_OPENAI_API_KEY environment variable not set')
 def test_react_agent():
-    agent = create_react_agent(TV_CONTENT_SYSTEM_MESSAGE, tool_method=tv_recommendations, model_name='gpt-4o-mini')
+    agent = create_react_agent(
+        TV_CONTENT_SYSTEM_MESSAGE, tool_method=tv_recommendations, provider='azure', model_name='gpt-4o-mini'
+    )
     agent_results = execute_agent(agent)
 
     # Check if the agent's final response contains a valid JSON with the expected structure and analyze the result

@@ -21,49 +21,47 @@ import logging
 try:
     from langchain_core.messages import SystemMessage
     from langchain_core.tools import Tool
-    from langchain_openai import AzureChatOpenAI
+    from langchain_openai import AzureChatOpenAI, ChatOpenAI
     from langgraph.graph import END, START, MessagesState, StateGraph
     from langgraph.prebuilt import ToolNode, tools_condition
+
+    AI_IMPORTS = True
 except ImportError:
-    AzureChatOpenAI = None
+    AI_IMPORTS = False
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
 
 logger = logging.getLogger(__name__)
 
 
-def create_react_agent(system_message, tool_method, tool_description=None, model_name=None):
+def create_react_agent(system_message, tool_method, tool_description=None, provider=None, model_name=None, **kwargs):
     """
     Creates a ReAct agent using the provided system message, tool method and model name.
 
     :param system_message: The system message to set the behavior of the assistant
     :param tool_method: The method that the agent can use as a tool
     :param tool_description: Optional custom description for the tool. If not provided, uses the method's docstring
+    :param provider: The AI provider to use (optional, 'azure' or 'openai')
     :param model_name: The name of the model to use (optional)
+    :param kwargs: additional parameters to be passed to the LLM chat client
     :returns: A compiled ReAct agent graph
     """
-    if AzureChatOpenAI is None:
+    if not AI_IMPORTS:
         raise ImportError(
-            "AzureChatOpenAI is not installed. Please run 'pip install toolium[ai]' to use langgraph features",
+            "AI dependencies are not installed. Please run 'pip install toolium[ai]' to use langgraph features",
         )
 
     # Define LLM with bound tools
-    config = DriverWrappersPool.get_default_wrapper().config
-    model_name = model_name or config.get_optional('AI', 'openai_model', 'gpt-4o-mini')
-    llm = AzureChatOpenAI(model=model_name)
-
-    # Create tools with custom description if provided
+    llm = get_llm_chat(provider=provider, model_name=model_name, **kwargs)
     if tool_description:
         tools = [Tool(name=tool_method.__name__, description=tool_description, func=tool_method)]
     else:
         tools = [tool_method]
-
     llm_with_tools = llm.bind_tools(tools)
 
-    # System message
+    # Define assistant with system message
     sys_msg = SystemMessage(content=system_message)
 
-    # Node
     def assistant(state: MessagesState):
         return {'messages': [llm_with_tools.invoke([sys_msg] + state['messages'])]}
 
@@ -83,6 +81,22 @@ def create_react_agent(system_message, tool_method, tool_description=None, model
     logger.info('Creating ReAct agent with model %s and tools %s', model_name, tools)
     graph = builder.compile()
     return graph
+
+
+def get_llm_chat(provider=None, model_name=None, **kwargs):
+    """
+    Get LLM Chat instance based on the provider and model name specified in the parameters or in the configuration file.
+
+    :param provider: the AI provider to use (optional, 'azure' or 'openai')
+    :param model_name: name of the model to use
+    :param kwargs: additional parameters to be passed to the chat client
+    :returns: langchain LLM Chat instance
+    """
+    config = DriverWrappersPool.get_default_wrapper().config
+    provider = provider or config.get_optional('AI', 'provider', 'openai')
+    model_name = model_name or config.get_optional('AI', 'openai_model', 'gpt-4o-mini')
+    llm = AzureChatOpenAI(model=model_name, **kwargs) if provider == 'azure' else ChatOpenAI(model=model_name, **kwargs)
+    return llm
 
 
 def execute_agent(ai_agent, previous_messages=None):
