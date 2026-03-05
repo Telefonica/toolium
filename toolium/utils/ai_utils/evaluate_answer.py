@@ -23,7 +23,7 @@ try:
 except ImportError:
     BaseModel = None
 
-from toolium.utils.ai_utils.openai_wrapper import openai_request
+from toolium.utils.ai_utils.openai import openai_request
 
 logger = logging.getLogger(__name__)
 
