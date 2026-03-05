@@ -65,9 +65,7 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
         )
         response = completion.choices[0].message.parsed
     else:
-        completion = client.chat.completions.create(
-            model=model_name, messages=messages, response_format=None or response_format
-        )
+        completion = client.chat.completions.create(model=model_name, messages=messages)
         response = completion.choices[0].message.content
     logger.debug('OpenAI response: %s', response)
     return response

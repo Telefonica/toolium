@@ -77,6 +77,7 @@ def test_get_answer_evaluation_no_format_with_azure_openai(llm_answer, reference
 
 
 @pytest.mark.skipif(not os.getenv('AZURE_OPENAI_API_KEY'), reason='AZURE_OPENAI_API_KEY environment variable not set')
+@pytest.mark.skipif(BaseModel is None, reason='pydantic not installed, required for structured response format tests')
 @pytest.mark.parametrize(
     ('llm_answer', 'reference_answer', 'question'),
     test_data_get,
@@ -102,6 +103,7 @@ def test_get_answer_evaluation_with_format_with_azure_openai(llm_answer, referen
 
 
 @pytest.mark.skipif(not os.getenv('AZURE_OPENAI_API_KEY'), reason='AZURE_OPENAI_API_KEY environment variable not set')
+@pytest.mark.skipif(BaseModel is None, reason='pydantic not installed, required for structured response format tests')
 @pytest.mark.parametrize(
     ('llm_answer', 'reference_answer', 'question'),
     test_data_get,
@@ -147,6 +149,7 @@ def test_get_answer_evaluation_with_complex_format_with_azure_openai(llm_answer,
 
 
 @pytest.mark.skipif(not os.getenv('AZURE_OPENAI_API_KEY'), reason='AZURE_OPENAI_API_KEY environment variable not set')
+@pytest.mark.skipif(BaseModel is None, reason='pydantic not installed, required for structured response format tests')
 @pytest.mark.parametrize(
     ('llm_answer', 'reference_answer', 'question'),
     test_data_get,
