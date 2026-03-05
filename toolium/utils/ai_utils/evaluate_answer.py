@@ -218,7 +218,6 @@ def assert_answer_evaluation(
         texts_message = f'LLM answer: {llm_answer}\nReference answer: {reference_answer}'
         if question:
             texts_message += f'\nQuestion: {question}'
-        # texts_message += f'\nExplanation: {explanation}'
 
         if similarity < threshold:
             error_message = f'{error_message}\n' if error_message else ''
@@ -238,46 +237,3 @@ def assert_answer_evaluation(
     # Any expected text did not meet the threshold
     logger.error(error_message)
     raise AssertionError(error_message)
-
-
-if __name__ == '__main__':
-    try:
-        from pydantic import BaseModel, Field
-    except ImportError:
-        BaseModel = None
-        Field = None
-
-    class AnswerEval(BaseModel):
-        """LLM-as-a-judge evaluation of answer quality."""
-
-        similarity: float = Field(description='Similarity score between 0.0 and 1.0', ge=0.0, le=1.0)
-        explanation: str = Field(
-            description='Concise feedback on the answer quality, comparing it to the reference answer and evaluating'
-            ' based on the retrieved context'
-        )
-        accuracy: float = Field(
-            description='How factually correct is the answer compared to the reference answer? 1 (wrong. any wrong '
-            'answer must score 1) to 5 (ideal - perfectly accurate). An acceptable answer would score 3.'
-        )
-        completeness: float = Field(
-            description='How complete is the answer in addressing all aspects of the question? 1 (very poor - missing '
-            'key information) to 5 (ideal - all the information from the reference answer is provided completely).'
-            'Only answer 5 if ALL information from the reference answer is included.'
-        )
-        relevance: float = Field(
-            description='How relevant is the answer to the specific question asked? 1 (very poor - off-topic) to 5 '
-            '(ideal - directly addresses question and gives no additional information). '
-            'Only answer 5 if the answer is completely relevant to the question and gives no additional information.'
-        )
-
-    # Example usage
-    llm_answer = 'The capital of France is Paris.'
-    reference_answer = 'Paris is the capital city of France.'
-    question = 'What is the capital of France?'
-    similarity, response = get_answer_evaluation_with_azure_openai(
-        llm_answer=llm_answer,
-        reference_answer=reference_answer,
-        question=question,
-        model_name='gpt4o',
-    )
-    print(f'Similarity: {similarity}\nResponse: {response}')
