@@ -1,5 +1,5 @@
 """
-Copyright 206 Telefónica Innovación Digital, S.L.
+Copyright 2026 Telefónica Innovación Digital, S.L.
 This file is part of Toolium.
 
 Licensed under the Apache License, Version 2.0 (the "License");
