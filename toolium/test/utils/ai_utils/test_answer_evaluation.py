@@ -33,29 +33,29 @@ test_data_get = [
         'The capital and largest city of France is Paris.',
         'What is the capital of France and its largest city?',
     ),
-    # (
-    #     'You can update your credentials by navigating to the Security tab within your Account Settings '
-    #     'and click Change Password',
-    #     'Go to Settings, click Security, and select Change Password.',
-    #     'How do I reset my password?',
-    # ),
-    # (
-    #     'Apples are healthy because they contain fiber which is good for your gut.',
-    #     'Apples are high in fiber and Vitamin C, which support digestion and immune health.',
-    #     'What are the health benefits of eating apples?',
-    # ),
-    # (
-    #     'France won the World Cup in 2022 after a close final.',
-    #     'Argentina won the 2022 FIFA World Cup.',
-    #     'Who won the World Cup in 2022?',
-    # ),
+    (
+        'You can update your credentials by navigating to the Security tab within your Account Settings '
+        'and click Change Password',
+        'Go to Settings, click Security, and select Change Password.',
+        'How do I reset my password?',
+    ),
+    (
+        'Apples are healthy because they contain fiber which is good for your gut.',
+        'Apples are high in fiber and Vitamin C, which support digestion and immune health.',
+        'What are the health benefits of eating apples?',
+    ),
+    (
+        'France won the World Cup in 2022 after a close final.',
+        'Argentina won the 2022 FIFA World Cup.',
+        'Who won the World Cup in 2022?',
+    ),
 ]
 
 data_assert = [
     (0.95),
-    # (0.7),
-    # (0.5),
-    # (0),
+    (0.7),
+    (0.5),
+    (0),
 ]
 
 test_data_assert = [(*element, value) for element, value in zip(test_data_get, data_assert, strict=True)]
@@ -66,7 +66,7 @@ test_data_assert = [(*element, value) for element, value in zip(test_data_get, d
     ('llm_answer', 'reference_answer', 'question'),
     test_data_get,
 )
-def test_get_answer_evaluation_with_azure_openai(llm_answer, reference_answer, question):
+def test_get_answer_evaluation_no_format_with_azure_openai(llm_answer, reference_answer, question):
     model = 'gpt4o'
     similarity, response = get_answer_evaluation_with_azure_openai(
         llm_answer=llm_answer, reference_answer=reference_answer, question=question, model_name=model
