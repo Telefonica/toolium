@@ -45,18 +45,27 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
     config = DriverWrappersPool.get_default_wrapper().config
     model_name = model_name or config.get_optional('AI', 'openai_model', 'gpt-4o-mini')
     logger.info('Calling to OpenAI API with model %s', model_name)
+
+    response_format = None
+    if kwargs.get('response_format'):
+        response_format = kwargs.pop('response_format')
+        kwargs.pop('response_format', None)
     client = AzureOpenAI(**kwargs) if azure else OpenAI(**kwargs)
-    msg = []
+    messages = []
     if isinstance(system_message, list):
         for prompt in system_message:
-            msg.append({'role': 'system', 'content': prompt})
+            messages.append({'role': 'system', 'content': prompt})
     else:
-        msg.append({'role': 'system', 'content': system_message})
-    msg.append({'role': 'user', 'content': user_message})
-    completion = client.chat.completions.create(
-        model=model_name,
-        messages=msg,
-    )
-    response = completion.choices[0].message.content
+        messages.append({'role': 'system', 'content': system_message})
+    messages.append({'role': 'user', 'content': user_message})
+
+    if response_format:
+        completion = client.beta.chat.completions.parse(
+            model=model_name, messages=messages, response_format=response_format
+        )
+        response = completion.choices[0].message.parsed
+    else:
+        completion = client.chat.completions.create(model=model_name, messages=messages)
+        response = completion.choices[0].message.content
     logger.debug('OpenAI response: %s', response)
     return response
