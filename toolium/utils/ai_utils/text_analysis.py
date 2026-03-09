@@ -109,9 +109,9 @@ def assert_text_criteria(text_input, text_criteria, threshold, model_name=None, 
         logger.error(error)
         raise AssertionError(error)
     logger.info(
-        'Text criteria analysis passed: overall match {overall_match} is above threshold {threshold}.'
-        'Low scored features: {features}',
-        overall_match=overall_match,
-        threshold=threshold,
-        features=analysis.get('features', []),
+        'Text criteria analysis passed: overall match %s is above threshold %s.'
+        'Low scored features: %s',
+        float(overall_match),
+        threshold,
+        analysis.get('features', []),
     )
