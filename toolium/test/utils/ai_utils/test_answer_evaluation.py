@@ -25,6 +25,7 @@ except ImportError:
     BaseModel = None
     Field = None
 
+from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.ai_utils.evaluate_answer import assert_answer_evaluation, get_answer_evaluation_with_azure_openai
 
 test_data_get = [
@@ -197,12 +198,34 @@ def test_get_answer_evaluation_ignored_format_with_azure_openai(llm_answer, refe
 )
 def test_assert_answer_with_azure_openai(llm_answer, reference_answer, question, expected_low):
     model = 'gpt4o'
-    evaluation_method = 'azure_openai'
+    provider = 'azure_openai'
     assert_answer_evaluation(
         llm_answer=llm_answer,
         reference_answers=reference_answer,
         question=question,
         model_name=model,
         threshold=expected_low,
-        evaluation_method=evaluation_method,
+        provider=provider,
+    )
+
+
+@pytest.mark.skipif(not os.getenv('AZURE_OPENAI_API_KEY'), reason='AZURE_OPENAI_API_KEY environment variable not set')
+@pytest.mark.parametrize(
+    ('llm_answer', 'reference_answer', 'question', 'expected_low'),
+    test_data_assert,
+)
+def test_assert_answer_from_config(llm_answer, reference_answer, question, expected_low):
+    config = DriverWrappersPool.get_default_wrapper().config
+    try:
+        config.add_section('AI')
+    except Exception:
+        pass
+    config.set('AI', 'provider', 'azure')
+    model = 'gpt4o'
+    assert_answer_evaluation(
+        llm_answer=llm_answer,
+        reference_answers=reference_answer,
+        question=question,
+        model_name=model,
+        threshold=expected_low,
     )

@@ -24,6 +24,7 @@ try:
 except ImportError:
     BaseModel = None
 
+from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.utils.ai_utils.openai import openai_request
 
 logger = logging.getLogger(__name__)
@@ -173,7 +174,7 @@ def assert_answer_evaluation(
     llm_answer,
     reference_answers,
     threshold,
-    evaluation_method=None,
+    provider=None,
     model_name=None,
     question=None,
     response_format=None,
@@ -186,23 +187,27 @@ def assert_answer_evaluation(
     :param llm_answer: string to compare (LLM answer)
     :param reference_answers: string or list of strings with the expected texts
     :param threshold: minimum similarity score to consider texts similar
-    :param evaluation_method: method to use for evaluation ('openai' or 'azure_openai')
+    :param provider: method to use for evaluation ('openai' or 'azure_openai')
     :param model_name: model name to use for the evaluation method
     :param question: optional question that both texts are answering (provides context)
     :param response_format: optional Pydantic model for structured output (requires pydantic and compatible model)
     :param kwargs: additional parameters to be used by evaluation methods (e.g., temperature=0.1)
     """
-    if evaluation_method not in ('openai', 'azure_openai'):
+    config = DriverWrappersPool.get_default_wrapper().config
+    provider = provider or config.get_optional('AI', 'provider', 'openai')
+    if provider not in ('openai', 'azure'):
         raise ValueError(
-            f"Unknown evaluation_method: '{evaluation_method}', please use 'openai' or 'azure_openai'",
+            f"Unknown provider: '{provider}', please use 'openai' or 'azure'",
         )
+
+    provider = provider if provider == 'openai' else f'{provider}_openai'
 
     reference_answers = [reference_answers] if isinstance(reference_answers, str) else reference_answers
     error_message = ''
 
     for reference_answer in reference_answers:
         try:
-            similarity, _ = globals()[f'get_answer_evaluation_with_{evaluation_method}'](
+            similarity, _ = globals()[f'get_answer_evaluation_with_{provider}'](
                 llm_answer,
                 reference_answer,
                 model_name,
@@ -212,7 +217,7 @@ def assert_answer_evaluation(
             )
         except KeyError as e:
             raise ValueError(
-                f"Unknown evaluation_method: '{evaluation_method}', please use 'openai' or 'azure_openai'",
+                f"Unknown provider: '{provider}', please use 'openai' or 'azure_openai'",
             ) from e
 
         texts_message = f'LLM answer: {llm_answer}\nReference answer: {reference_answer}'
