@@ -139,6 +139,172 @@ The requirements are the same explained for `SpaCy` in the
 `installation section of Text Similarity <https://toolium.readthedocs.io/en/latest/ai_utils.html#installation>`_
 
 
+Answer Evaluation using LLM-as-a-Judge
+--------------------------------------
+
+Answer evaluation using LLM-as-a-Judge is a technique to assess the quality and correctness of an LLM-generated answer
+by comparing it against a reference answer using another LLM. This approach provides context-aware evaluation considering
+semantic similarity, factual accuracy, completeness, and relevance.
+
+Toolium provides methods to evaluate answers using OpenAI and Azure OpenAI models with optional structured output
+using Pydantic models.
+
+Usage
+~~~~~
+
+You can use the functions from the `toolium.utils.ai_utils.evaluate_answer` module to evaluate LLM answers:
+
+**Basic evaluation without structured response:**
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.evaluate_answer import get_answer_evaluation_with_azure_openai
+
+    llm_answer = "Paris is the capital of France and has a population of over 2 million people."
+    reference_answer = "The capital of France is Paris."
+    question = "What is the capital of France?"
+
+    similarity, response = get_answer_evaluation_with_azure_openai(
+        llm_answer=llm_answer,
+        reference_answer=reference_answer,
+        question=question,
+        model_name='gpt-4o'
+    )
+
+    print(f"Similarity score: {similarity}")
+    print(f"Explanation: {response['explanation']}")
+
+**Evaluation with structured Pydantic response:**
+
+.. code-block:: python
+
+    from pydantic import BaseModel, Field
+    from toolium.utils.ai_utils.evaluate_answer import get_answer_evaluation_with_azure_openai
+
+    class SimilarityEvaluation(BaseModel):
+        """Model for text similarity evaluation response"""
+        similarity: float = Field(description='Similarity score between 0.0 and 1.0', ge=0.0, le=1.0)
+        explanation: str = Field(description='Brief justification for the similarity score')
+
+    llm_answer = "Paris is the capital of France and has a population of over 2 million people."
+    reference_answer = "The capital of France is Paris."
+    question = "What is the capital of France?"
+
+    similarity, response = get_answer_evaluation_with_azure_openai(
+        llm_answer=llm_answer,
+        reference_answer=reference_answer,
+        question=question,
+        model_name='gpt-4o',
+        response_format=SimilarityEvaluation
+    )
+
+    print(f"Similarity score: {similarity}")
+    print(f"Explanation: {response.explanation}")
+
+**Advanced evaluation with custom evaluation criteria:**
+
+.. code-block:: python
+
+    from pydantic import BaseModel, Field
+    from toolium.utils.ai_utils.evaluate_answer import get_answer_evaluation_with_azure_openai
+
+    class AnswerEvaluation(BaseModel):
+        """Comprehensive evaluation model"""
+        similarity: float = Field(description='Similarity score between 0.0 and 1.0', ge=0.0, le=1.0)
+        explanation: str = Field(description='Detailed evaluation feedback')
+        accuracy: float = Field(description='Factual correctness score 1-5')
+        completeness: float = Field(description='Information completeness score 1-5')
+        relevance: float = Field(description='Relevance to question score 1-5')
+
+    similarity, response = get_answer_evaluation_with_azure_openai(
+        llm_answer=llm_answer,
+        reference_answer=reference_answer,
+        question=question,
+        model_name='gpt-4o',
+        response_format=AnswerEvaluation
+    )
+
+    print(f"Similarity: {similarity}")
+    print(f"Accuracy: {response.accuracy}/5")
+    print(f"Completeness: {response.completeness}/5")
+    print(f"Relevance: {response.relevance}/5")
+
+**Assertion with threshold validation:**
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.evaluate_answer import assert_answer_evaluation
+
+    # Validate that LLM answer meets minimum similarity threshold
+    assert_answer_evaluation(
+        llm_answer="Paris is both the capital and the most populous city in France.",
+        reference_answers="The capital and largest city of France is Paris.",
+        question="What is the capital of France and its largest city?",
+        threshold=0.7,  # Minimum similarity score (0.0 to 1.0)
+        provider='azure',
+        model_name='gpt-4o'
+    )
+
+Evaluation Methods
+~~~~~~~~~~~~~~~~~~
+
+The module provides the following evaluation methods:
+
+* **assert_answer_evaluation()**: Evaluates answer and asserts if similarity meets threshold
+* **get_answer_evaluation_with_openai()**: Uses OpenAI's API directly for evaluation
+* **get_answer_evaluation_with_azure_openai()**: Uses Azure OpenAI's API for evaluation
+
+Evaluation Criteria
+~~~~~~~~~~~~~~~~~~~
+
+When evaluating answers, the LLM considers the following criteria:
+
+- **Semantic similarity**: Does the LLM answer convey the same meaning as the reference answer, even if phrased differently?
+- **Factual accuracy**: How factually correct is it compared to the reference answer?
+- **Completeness**: How thoroughly does it address all aspects of the question, covering all information from the reference answer?
+- **Relevance**: How well does it directly answer the specific question asked?
+
+Scoring Guide
+~~~~~~~~~~~~~
+
+- **1.0**: Perfect semantic match - answer is equivalent to reference answer
+- **0.7-0.9**: Similar meaning - minor differences that don't affect overall correctness
+- **0.4-0.6**: Incomplete or partially similar - major differences or missing information
+- **0.0-0.3**: Different, irrelevant or contradictory - does not match the reference answer
+
+Configuration
+~~~~~~~~~~~~~
+
+Default OpenAI model can be set in the properties.cfg file in the *[AI]* section::
+
+    [AI]
+    provider: azure  # AI provider to use, openai by default
+    openai_model: gpt-4o  # OpenAI model to use, gpt-4o-mini by default
+
+Installation
+~~~~~~~~~~~~
+
+Make sure to install the required libraries:
+
+.. code-block:: bash
+
+    pip install toolium[ai]
+
+For Azure OpenAI, you need to set up your configuration in environment variables:
+
+.. code-block:: bash
+
+    AZURE_OPENAI_API_KEY=<your_api_key>
+    AZURE_OPENAI_ENDPOINT=<your_endpoint>
+    OPENAI_API_VERSION=<your_api_version>
+
+For standard OpenAI:
+
+.. code-block:: bash
+
+    OPENAI_API_KEY=<your_api_key>
+
+
 .. _accuracy_tags_for_behave_scenarios:
 
 Accuracy tags for Behave scenarios
@@ -267,3 +433,6 @@ Default provider and model can be set in the properties.cfg file in *[AI]* secti
     [AI]
     provider: azure  # AI provider to use, openai by default
     openai_model: gpt-3.5-turbo  # OpenAI model to use, gpt-4o-mini by default
+
+
+
