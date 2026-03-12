@@ -20,21 +20,10 @@ import os
 
 import pytest
 
-from toolium.driver_wrappers_pool import DriverWrappersPool
+from toolium.test.utils.ai_utils.common import (
+    configure_default_openai_model,  # noqa: F401, fixture needed to set the OpenAI model for all tests in this module
+)
 from toolium.utils.ai_utils.text_analysis import get_text_criteria_analysis
-
-
-def configure_default_openai_model():
-    """
-    Configure OpenAI model used in unit tests
-    """
-    config = DriverWrappersPool.get_default_wrapper().config
-    try:
-        config.add_section('AI')
-    except Exception:
-        pass
-    config.set('AI', 'openai_model', 'gpt-4.1-mini')
-
 
 get_analysis_examples = (
     ('How are you today?', ['is a greeting phrase', 'is a question'], 0.7, 1),
