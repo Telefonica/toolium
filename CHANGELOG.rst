@@ -11,6 +11,8 @@ v3.8.0
 - Add text analysis tool to get an overall match of a text against a list of expected characteristics
   using AI libraries that come with the `ai` extra dependency
 - Add langgraph methods to create a ReAct AI agent to test the behavior of other AI agents or LLMs
+- Add llm-as-a-judge methods to use an LLM to evaluate the answer of another LLM and give a similarity score based
+  on the user's question and a reference answer
 
 v3.7.0
 ------
