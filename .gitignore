@@ -65,6 +65,7 @@ cobertura.ser
 *.vi
 *~
 *.sass-cache
+__pycache__
 
 # Dreamweaver added files
 _notes

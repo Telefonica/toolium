@@ -21,6 +21,9 @@ import os
 
 import pytest
 
+from toolium.test.utils.ai_utils.common import (
+    configure_default_openai_model,  # noqa: F401, fixture needed to set the OpenAI model for all tests in this module
+)
 from toolium.utils.ai_utils.ai_agent import create_react_agent, execute_agent
 
 # Global variable to keep track of mock responses in the agent
@@ -68,9 +71,7 @@ TV_CONTENT_SYSTEM_MESSAGE = (
 
 @pytest.mark.skipif(not os.getenv('AZURE_OPENAI_API_KEY'), reason='AZURE_OPENAI_API_KEY environment variable not set')
 def test_react_agent():
-    agent = create_react_agent(
-        TV_CONTENT_SYSTEM_MESSAGE, tool_method=tv_recommendations, provider='azure', model_name='gpt-4o-mini'
-    )
+    agent = create_react_agent(TV_CONTENT_SYSTEM_MESSAGE, tool_method=tv_recommendations, provider='azure')
     agent_results = execute_agent(agent)
 
     # Check if the agent's final response contains a valid JSON with the expected structure and analyze the result

@@ -26,6 +26,9 @@ except ImportError:
     Field = None
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
+from toolium.test.utils.ai_utils.common import (
+    configure_default_openai_model,  # noqa: F401, fixture needed to set the OpenAI model for all tests in this module
+)
 from toolium.utils.ai_utils.evaluate_answer import assert_answer_evaluation, get_answer_evaluation_with_azure_openai
 
 test_data_get = [
@@ -68,9 +71,8 @@ test_data_assert = [(*element, value) for element, value in zip(test_data_get, d
     test_data_get,
 )
 def test_get_answer_evaluation_no_format_with_azure_openai(llm_answer, reference_answer, question):
-    model = 'gpt4o'
     similarity, response = get_answer_evaluation_with_azure_openai(
-        llm_answer=llm_answer, reference_answer=reference_answer, question=question, model_name=model
+        llm_answer=llm_answer, reference_answer=reference_answer, question=question
     )
     assert isinstance(similarity, float), 'Similarity should be a float'
     assert isinstance(response['explanation'], str), 'Explanation should be a string'
@@ -90,12 +92,10 @@ def test_get_answer_evaluation_with_format_with_azure_openai(llm_answer, referen
         similarity: float = Field(description='Similarity score between 0.0 and 1.0', ge=0.0, le=1.0)
         explanation: str = Field(description='Brief justification for the similarity score')
 
-    model = 'gpt4o'
     similarity, response = get_answer_evaluation_with_azure_openai(
         llm_answer=llm_answer,
         reference_answer=reference_answer,
         question=question,
-        model_name=model,
         response_format=SimilarityEvaluation,
     )
     assert isinstance(similarity, float), 'Similarity should be a float'
@@ -133,12 +133,10 @@ def test_get_answer_evaluation_with_complex_format_with_azure_openai(llm_answer,
             'Only answer 5 if the answer is completely relevant to the question and gives no additional information.'
         )
 
-    model = 'gpt4o'
     similarity, response = get_answer_evaluation_with_azure_openai(
         llm_answer=llm_answer,
         reference_answer=reference_answer,
         question=question,
-        model_name=model,
         response_format=AnswerEval,
     )
     assert isinstance(similarity, float), 'Similarity should be a float'
@@ -178,12 +176,10 @@ def test_get_answer_evaluation_ignored_format_with_azure_openai(llm_answer, refe
             'Only answer 5 if the answer is completely relevant to the question and gives no additional information.'
         )
 
-    model = 'gpt4o'
     similarity, response = get_answer_evaluation_with_azure_openai(
         llm_answer=llm_answer,
         reference_answer=reference_answer,
         question=question,
-        model_name=model,
         response_format=AnswerEval,
     )
     assert isinstance(similarity, float), 'Similarity should be a float'
@@ -197,13 +193,11 @@ def test_get_answer_evaluation_ignored_format_with_azure_openai(llm_answer, refe
     test_data_assert,
 )
 def test_assert_answer_with_azure_openai(llm_answer, reference_answer, question, expected_low):
-    model = 'gpt4o'
-    provider = 'azure_openai'
+    provider = 'azure'
     assert_answer_evaluation(
         llm_answer=llm_answer,
         reference_answers=reference_answer,
         question=question,
-        model_name=model,
         threshold=expected_low,
         provider=provider,
     )
@@ -221,11 +215,9 @@ def test_assert_answer_from_config(llm_answer, reference_answer, question, expec
     except Exception:
         pass
     config.set('AI', 'provider', 'azure')
-    model = 'gpt4o'
     assert_answer_evaluation(
         llm_answer=llm_answer,
         reference_answers=reference_answer,
         question=question,
-        model_name=model,
         threshold=expected_low,
     )
