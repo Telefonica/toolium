@@ -4,7 +4,7 @@ Toolium Changelog
 v3.8.0
 ------
 
-*Release date: In development*
+*Release date: 2026-03-13*
 
 - Add pyproject.toml file for packaging and publishing Toolium
 - Configure ruff for linting and formatting files, replacing flake8 and black
