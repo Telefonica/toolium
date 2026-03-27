@@ -1,18 +1,35 @@
 name: build
 
-on: [push, pull_request]
+on:
+  pull_request:
 
 jobs:
-  test:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements_dev.txt
+    - name: Lint and format check with ruff
+      run: |
+        ruff check .
+        ruff format --check .
+
+  tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13']
       fail-fast: false
-
     steps:
     - uses: actions/checkout@v6
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up python ${{ matrix.python-version }}
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
@@ -23,10 +40,6 @@ jobs:
         pip install -r requirements_ai.txt
         pip install -r requirements_dev.txt
         python -m spacy download en_core_web_md
-    - name: Lint and format check with ruff
-      run: |
-        ruff check .
-        ruff format --check .
     - name: Test with pytest and coverage
       env:
         AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
@@ -43,7 +56,7 @@ jobs:
         coveralls --service=github
 
   coveralls:
-    needs: test
+    needs: tests
     runs-on: ubuntu-latest
     steps:
     - name: Set up Python 3.10
@@ -59,3 +72,247 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         coveralls --finish
+
+  examples-behave-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+      fail-fast: false
+    steps:
+    - name: Checkout toolium repository
+      uses: actions/checkout@v6
+    - name: Checkout toolium-examples repository
+      uses: actions/checkout@v6
+      with:
+        repository: Telefonica/toolium-examples
+        ref: refs/heads/master
+        path: toolium-examples
+    - name: Set up python ${{ matrix.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install toolium dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Install toolium
+      run: |
+        python -m pip install .
+    - name: Install toolium-examples dependencies
+      run: |
+        cd toolium-examples
+        pip install -r requirements.txt
+    - name: Run tests
+      env:
+        TOOLIUM_DRIVER_HEADLESS: Driver_headless=true
+      run: |
+        cd toolium-examples
+        behave web_behave/features/ --junit --junit-directory web_behave/output/reports --tags=~@skip
+      continue-on-error: true
+    - name: Upload output folder
+      uses: actions/upload-artifact@v7
+      if: always()
+      with:
+        name: behave-tests-output-${{ matrix.python-version }}
+        path: toolium-examples/web_behave/output
+    - name: Publish test results
+      uses: dorny/test-reporter@v3
+      if: always()
+      with:
+        name: behave tests results (${{ matrix.python-version }})
+        path: toolium-examples/web_behave/output/reports/*.xml
+        reporter: java-junit
+        fail-on-error: true
+
+  examples-pytest-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+      fail-fast: false
+    steps:
+    - name: Checkout toolium repository
+      uses: actions/checkout@v6
+    - name: Checkout toolium-examples repository
+      uses: actions/checkout@v6
+      with:
+        repository: Telefonica/toolium-examples
+        ref: refs/heads/master
+        path: toolium-examples
+    - name: Set up python ${{ matrix.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install toolium dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Install toolium
+      run: |
+        python -m pip install .
+    - name: Install toolium-examples dependencies
+      run: |
+        cd toolium-examples
+        pip install -r requirements.txt
+    - name: Run tests
+      env:
+        TOOLIUM_DRIVER_HEADLESS: Driver_headless=true
+      run: |
+        cd toolium-examples/web_pytest
+        python -m pytest --junitxml=output/reports/junit-pytest.xml
+      continue-on-error: true
+    - name: Upload output folder
+      uses: actions/upload-artifact@v7
+      if: always()
+      with:
+        name: pytest-tests-output-${{ matrix.python-version }}
+        path: toolium-examples/web_pytest/output
+    - name: Publish test results
+      uses: dorny/test-reporter@v3
+      if: always()
+      with:
+        name: pytest tests results (${{ matrix.python-version }})
+        path: toolium-examples/web_pytest/output/reports/*.xml
+        reporter: java-junit
+        fail-on-error: true
+
+  examples-nose2-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+      fail-fast: false
+    steps:
+    - name: Checkout toolium repository
+      uses: actions/checkout@v6
+    - name: Checkout toolium-examples repository
+      uses: actions/checkout@v6
+      with:
+        repository: Telefonica/toolium-examples
+        ref: refs/heads/master
+        path: toolium-examples
+    - name: Set up python ${{ matrix.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install toolium dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Install toolium
+      run: |
+        python -m pip install .
+    - name: Install toolium-examples dependencies
+      run: |
+        cd toolium-examples
+        pip install -r requirements.txt
+    - name: Run tests
+      env:
+        TOOLIUM_DRIVER_HEADLESS: Driver_headless=true
+      run: |
+        cd toolium-examples
+        mkdir -p web_nose2/output/reports
+        python -m nose2 web_nose2 -A '!local' --junit-xml-path web_nose2/output/reports/junit-nose.xml
+      continue-on-error: true
+    - name: Upload output folder
+      uses: actions/upload-artifact@v7
+      if: always()
+      with:
+        name: nose2-tests-output-${{ matrix.python-version }}
+        path: toolium-examples/web_nose2/output
+    - name: Publish test results
+      uses: dorny/test-reporter@v3
+      if: always()
+      with:
+        name: nose2 tests results (${{ matrix.python-version }})
+        path: toolium-examples/web_nose2/output/reports/*.xml
+        reporter: java-junit
+        fail-on-error: true
+
+  examples-playwright-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+      fail-fast: false
+    steps:
+    - name: Checkout toolium repository
+      uses: actions/checkout@v6
+    - name: Checkout toolium-examples repository
+      uses: actions/checkout@v6
+      with:
+        repository: Telefonica/toolium-examples
+        ref: refs/heads/master
+        path: toolium-examples
+    - name: Set up python ${{ matrix.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install toolium dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Install toolium
+      run: |
+        python -m pip install .
+    - name: Install toolium-examples dependencies
+      run: |
+        cd toolium-examples
+        pip install -r requirements.txt
+        playwright install
+    - name: Run tests
+      env:
+        TOOLIUM_DRIVER_HEADLESS: Driver_headless=true
+      run: |
+        cd toolium-examples
+        behave web_playwright_behave/features --junit --junit-directory web_playwright_behave/output/reports/ --tags=~@skip
+      continue-on-error: true
+    - name: Upload output folder
+      uses: actions/upload-artifact@v7
+      if: always()
+      with:
+        name: playwright-tests-output-${{ matrix.python-version }}
+        path: toolium-examples/web_playwright_behave/output
+    - name: Publish test results
+      uses: dorny/test-reporter@v3
+      if: always()
+      with:
+        name: playwright tests results (${{ matrix.python-version }})
+        path: toolium-examples/web_playwright_behave/output/reports/*.xml
+        reporter: java-junit
+        fail-on-error: true
+
+  combine-output-artifacts:
+    runs-on: ubuntu-latest
+    needs: [examples-behave-tests, examples-pytest-tests, examples-nose2-tests, examples-playwright-tests]
+    if: always()
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v5
+      with:
+        path: all-artifacts
+    - name: Create combined structure
+      run: |
+        mkdir -p tests-output
+        echo "=== Downloaded artifacts ==="
+        ls -la all-artifacts/
+        # Organize by framework and Python version
+        for framework in behave pytest nose2 playwright; do
+          mkdir -p "tests-output/$framework"
+          for version in 3.10 3.11 3.12 3.13; do
+            if [ -d "all-artifacts/${framework}-tests-output-${version}" ]; then
+              echo "Moving $framework Python $version output..."
+              mv "all-artifacts/${framework}-tests-output-${version}" "tests-output/$framework/python-${version}"
+            fi
+          done
+        done
+        echo "=== Combined structure ==="
+        tree tests-output || find tests-output -type d
+        echo "=== Total files ==="
+        find tests-output -type f | wc -l
+    - name: Upload combined output artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: tests-output
+        path: tests-output/
