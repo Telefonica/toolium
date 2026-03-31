@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
-    - name: Set up Python 3.11
+    - name: Set up python 3.11
       uses: actions/setup-python@v6
       with:
         python-version: '3.11'
@@ -59,7 +59,7 @@ jobs:
     needs: tests
     runs-on: ubuntu-latest
     steps:
-    - name: Set up Python 3.10
+    - name: Set up python 3.10
       uses: actions/setup-python@v6
       with:
         python-version: '3.10'
@@ -297,12 +297,12 @@ jobs:
         mkdir -p tests-output
         echo "=== Downloaded artifacts ==="
         ls -la all-artifacts/
-        # Organize by framework and Python version
+        # Organize by framework and python version
         for framework in behave pytest nose2 playwright; do
           mkdir -p "tests-output/$framework"
           for version in 3.10 3.11 3.12 3.13; do
             if [ -d "all-artifacts/${framework}-tests-output-${version}" ]; then
-              echo "Moving $framework Python $version output..."
+              echo "Moving $framework python $version output..."
               mv "all-artifacts/${framework}-tests-output-${version}" "tests-output/$framework/python-${version}"
             fi
           done
