@@ -7,6 +7,7 @@ v3.8.1
 *Release date: In development*
 
 - Add token usage tracking to OpenAI requests
+- Add pytest and unittest runners documentation in `Docs <http://toolium.readthedocs.io/en/latest/tests_runners_integration.html>`_
 
 v3.8.0
 ------
@@ -596,7 +597,7 @@ v1.3.0
 
 *Release date: 2017-09-12*
 
-- Add Behave dynamic environment (more info in `Docs <http://toolium.readthedocs.io/en/latest/bdd_integration.html#behave-dynamic-environment>`_)
+- Add Behave dynamic environment (more info in `Docs <http://toolium.readthedocs.io/en/latest/tests_runners_integration.html#behave-dynamic-environment>`_)
 - Fix visual screenshot filename error when behave feature name contains :
 - Add a config property 'explicitly_wait' in [Driver] section to set the default timeout used in *wait_until* methods
 - When reuse_driver is true using behave, driver is initialized in *before_feature* method and closed in *after_feature*

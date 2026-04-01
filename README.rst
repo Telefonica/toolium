@@ -7,7 +7,7 @@ Toolium is a Python wrapper tool of Selenium, Playwright and Appium libraries to
 project. It provides a way of choosing and configuring the driver through a configuration file, implements a Page Object
 pattern and includes a simple visual testing solution.
 
-.. |Build Status| image:: https://github.com/Telefonica/toolium/workflows/build/badge.svg?branch=master
+.. |Build Status| image:: https://github.com/Telefonica/toolium/actions/workflows/ci.yml/badge.svg?branch=master
    :target: https://github.com/Telefonica/toolium/actions?query=branch%3Amaster
 .. |Documentation Status| image:: https://readthedocs.org/projects/toolium/badge/?version=latest
    :target: http://toolium.readthedocs.org/en/latest
@@ -100,7 +100,7 @@ Main Features
 
 - `Choosing a driver through a configuration file </docs/driver_configuration.rst>`_
 - `Page Object pattern </docs/page_objects.rst>`_
-- `BDD integration </docs/bdd_integration.rst>`_
+- `Tests runners integration </docs/tests_runners_integration.rst>`_
 - `Visual testing solution </docs/visual_testing.rst>`_
 - `Tests result analysis </docs/tests_result_analysis.rst>`_
 
