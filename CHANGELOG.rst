@@ -4,6 +4,8 @@ Toolium Changelog
 v3.8.1
 ------
 
+- Add token usage tracking to OpenAI requests
+
 *Release date: In development*
 
 v3.8.0
