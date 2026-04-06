@@ -69,11 +69,7 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
         response = completion.choices[0].message.content
     token_usage = {}
     if completion.usage:
-        token_usage = {
-            'prompt_tokens': completion.usage.prompt_tokens,
-            'completion_tokens': completion.usage.completion_tokens,
-            'total_tokens': completion.usage.total_tokens,
-        }
+        token_usage = completion.usage.model_dump()
         logger.info(
             'OpenAI token usage: prompt_tokens=%d, completion_tokens=%d, total_tokens=%d',
             completion.usage.prompt_tokens,

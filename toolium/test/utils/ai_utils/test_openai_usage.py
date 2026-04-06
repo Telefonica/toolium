@@ -28,10 +28,27 @@ from toolium.utils.ai_utils.openai import openai_request
 
 def _build_mock_completion(content='test response', prompt_tokens=10, completion_tokens=5, total_tokens=15):
     """Build a mock OpenAI completion object with usage data"""
+    usage_dump = {
+        'prompt_tokens': prompt_tokens,
+        'completion_tokens': completion_tokens,
+        'total_tokens': total_tokens,
+        'completion_tokens_details': {
+            'accepted_prediction_tokens': 0,
+            'audio_tokens': 0,
+            'reasoning_tokens': 0,
+            'rejected_prediction_tokens': 0,
+        },
+        'prompt_tokens_details': {
+            'audio_tokens': 0,
+            'cached_tokens': 0,
+        },
+    }
+
     mock_usage = mock.MagicMock()
     mock_usage.prompt_tokens = prompt_tokens
     mock_usage.completion_tokens = completion_tokens
     mock_usage.total_tokens = total_tokens
+    mock_usage.model_dump.return_value = usage_dump
 
     mock_message = mock.MagicMock()
     mock_message.content = content
@@ -56,7 +73,11 @@ def test_openai_request_returns_token_usage(mock_openai_class):
     response, token_usage = openai_request('system', 'user')
 
     assert response == 'hello'
-    assert token_usage == {'prompt_tokens': 20, 'completion_tokens': 10, 'total_tokens': 30}
+    assert token_usage['prompt_tokens'] == 20
+    assert token_usage['completion_tokens'] == 10
+    assert token_usage['total_tokens'] == 30
+    assert 'completion_tokens_details' in token_usage
+    assert 'prompt_tokens_details' in token_usage
 
 
 @mock.patch('toolium.utils.ai_utils.openai.OpenAI')
@@ -83,19 +104,16 @@ def test_openai_request_with_response_format_returns_token_usage(mock_openai_cla
     mock_message.parsed = mock_parsed
     mock_choice = mock.MagicMock()
     mock_choice.message = mock_message
-    mock_completion = mock.MagicMock()
+    mock_completion = _build_mock_completion(prompt_tokens=50, completion_tokens=25, total_tokens=75)
     mock_completion.choices = [mock_choice]
-    mock_usage = mock.MagicMock()
-    mock_usage.prompt_tokens = 50
-    mock_usage.completion_tokens = 25
-    mock_usage.total_tokens = 75
-    mock_completion.usage = mock_usage
     mock_client.beta.chat.completions.parse.return_value = mock_completion
 
     response, token_usage = openai_request('system', 'user', response_format=mock.MagicMock())
 
     assert response is mock_parsed
-    assert token_usage == {'prompt_tokens': 50, 'completion_tokens': 25, 'total_tokens': 75}
+    assert token_usage['prompt_tokens'] == 50
+    assert token_usage['completion_tokens'] == 25
+    assert token_usage['total_tokens'] == 75
 
 
 @pytest.mark.skipif(not os.getenv('AZURE_OPENAI_API_KEY'), reason='AZURE_OPENAI_API_KEY environment variable not set')
@@ -107,3 +125,5 @@ def test_openai_request_returns_token_usage_with_azure():
     assert token_usage['prompt_tokens'] > 0
     assert token_usage['completion_tokens'] > 0
     assert token_usage['total_tokens'] > 0
+    assert 'completion_tokens_details' in token_usage
+    assert 'prompt_tokens_details' in token_usage
