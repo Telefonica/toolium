@@ -38,7 +38,7 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
     :param model_name: name of the model to use
     :param azure: whether to use Azure OpenAI or standard OpenAI
     :param kwargs: additional parameters to be passed to the OpenAI client (azure_endpoint, timeout, etc.)
-    :returns: response from OpenAI
+    :returns: tuple with response from OpenAI and token usage dict
     """
     if OpenAI is None:
         raise ImportError("OpenAI is not installed. Please run 'pip install toolium[ai]' to use OpenAI features")
@@ -67,5 +67,18 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
     else:
         completion = client.chat.completions.create(model=model_name, messages=messages)
         response = completion.choices[0].message.content
+    token_usage = {}
+    if completion.usage:
+        token_usage = {
+            'prompt_tokens': completion.usage.prompt_tokens,
+            'completion_tokens': completion.usage.completion_tokens,
+            'total_tokens': completion.usage.total_tokens,
+        }
+        logger.info(
+            'OpenAI token usage: prompt_tokens=%d, completion_tokens=%d, total_tokens=%d',
+            completion.usage.prompt_tokens,
+            completion.usage.completion_tokens,
+            completion.usage.total_tokens,
+        )
     logger.debug('OpenAI response: %s', response)
-    return response
+    return response, token_usage

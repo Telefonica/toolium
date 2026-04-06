@@ -102,7 +102,7 @@ def get_text_similarity_with_openai(text, expected_text, model_name=None, azure=
         ' but its meaning should be similar.'
     )
     user_message = f'The expected answer is: {expected_text}. The LLM answer is: {text}.'
-    response = openai_request(system_message, user_message, model_name, azure, **kwargs)
+    response, _ = openai_request(system_message, user_message, model_name, azure, **kwargs)
     try:
         response = json.loads(response)
         similarity = float(response['similarity'])
