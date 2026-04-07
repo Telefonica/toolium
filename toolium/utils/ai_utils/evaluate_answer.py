@@ -116,7 +116,7 @@ def get_answer_evaluation_with_openai(
     if response_format:
         kwargs['response_format'] = response_format
 
-    response = openai_request(system_message, user_message, model_name, azure, **kwargs)
+    response, _ = openai_request(system_message, user_message, model_name, azure, **kwargs)
 
     try:
         if response_format and hasattr(response, 'similarity'):
