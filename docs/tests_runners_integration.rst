@@ -1,10 +1,10 @@
-.. _bdd_integration:
+.. _tests_runners_integration:
 
-BDD Integration
-===============
+Tests runners integration
+=========================
 
-Behave
-~~~~~~
+Behave (BDD)
+~~~~~~~~~~~~
 
 Behave tests should be developed as usual, only *environment.py* file should be modified to initialize driver and the
 rest of Toolium configuration.
@@ -260,3 +260,72 @@ returns the value of 'reference'
 * mode with value offline will try to get a local copy of POEditor terms from output directory, online mode (by default if not provided) will download always terms from POEditor
 
 * file_path contains relative path of downloaded POEditor terms file (default value: _output/poeditor_terms.json)
+
+Nose2 / unittest
+~~~~~~~~~~~~~~~~
+
+To use Toolium with nose2 or unittest, you only need to extend from one of the base test case classes provided by Toolium:
+
+- `BasicTestCase` for API tests
+- `SeleniumTestCase` for Selenium tests
+- `AppiumTestCase` for Appium tests
+
+These classes already implement the setup and teardown logic to initialize and close the driver automatically.
+
+Example:
+
+.. code-block:: python
+
+    from toolium.test_cases import SeleniumTestCase
+    from web_nose2.pageobjects.login import LoginPageObject
+
+    class LoginTest(SeleniumTestCase):
+        def test_successful_login(self):
+            user = {'username': 'tomsmith', 'password': 'SuperSecretPassword!'}
+            secure_area = LoginPageObject().open().login(user)
+            self.assertIn('You logged into a secure area!', secure_area.message.get_message())
+
+You can see a complete example of nose2 integration with Toolium in `toolium-examples repository <https://github.com/Telefonica/toolium-examples/tree/master/web_nose2>`_.
+
+Pytest
+~~~~~~
+
+To run tests with pytest using Toolium, simply import Toolium's fixtures in your `conftest.py` file:
+
+.. code-block:: python
+
+    from toolium.pytest_fixtures import *
+
+This will automatically initialize the driver before each test, module, or session, and close it automatically after
+the test execution, according to your configuration.
+
+Example:
+
+.. code-block:: python
+
+    from web_nose2.pageobjects.login import LoginPageObject
+
+    def test_successful_login():
+        user = {'username': 'tomsmith', 'password': 'SuperSecretPassword!'}
+        secure_area = LoginPageObject().open().login(user)
+        assert 'You logged into a secure area!' in secure_area.message.get_message()
+
+You can see a complete example of pytest integration with Toolium in `toolium-examples repository <https://github.com/Telefonica/toolium-examples/tree/master/web_pytest>`_.
+
+Pytest also allows to run tests that extend from a ``unittest.TestCase`` class. In this case, it is recommended to
+extend directly from ``unittest.TestCase``, not from Toolium's test case classes. In this scenario, the driver will be
+initialized using the Toolium fixtures (as shown above), not with setUp and tearDown methods. This ensures proper driver
+management and compatibility with pytest's fixture system.
+
+Example:
+
+.. code-block:: python
+
+    import unittest
+    from web_nose2.pageobjects.login import LoginPageObject
+
+    class LoginTest(unittest.TestCase):
+        def test_successful_login(self):
+            user = {'username': 'tomsmith', 'password': 'SuperSecretPassword!'}
+            secure_area = LoginPageObject().open().login(user)
+            self.assertIn('You logged into a secure area!', secure_area.message.get_message())

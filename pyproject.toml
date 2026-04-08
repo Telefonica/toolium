@@ -87,10 +87,7 @@ addopts = "-v --tb=short"
 [tool.coverage.run]
 source = ["toolium"]
 omit = [
-    "*/test*",
-    "*/tests/*",
-    "*/venv/*",
-    "*/.venv/*",
+    "*/test/*"
 ]
 
 [tool.coverage.report]
