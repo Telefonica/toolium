@@ -167,12 +167,11 @@ def patch_scenario_with_accuracy(context, scenario, data_key_suffix, accuracy=0.
                 scenario.set_status(Status.failed)
                 scenario.exception = AssertionError(final_message)
 
+            after_accuracy_scenario(context, scenario)
+
         # Clean accuracy execution data from context
         context.storage.pop('accuracy_execution_data', None)
         context.storage.pop('accuracy_execution_index', None)
-
-        after_accuracy_scenario(context, scenario)
-
         return run_response
 
     scenario_run = scenario.run
