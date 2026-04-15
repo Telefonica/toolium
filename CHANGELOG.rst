@@ -8,6 +8,7 @@ v3.8.1
 
 - Add token usage tracking to OpenAI requests
 - Add pytest and unittest runners documentation in `Docs <http://toolium.readthedocs.io/en/latest/tests_runners_integration.html>`_
+- Fix key error when a scenario with accuracy tag is skipped
 
 v3.8.0
 ------
