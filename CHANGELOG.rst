@@ -4,7 +4,7 @@ Toolium Changelog
 v3.8.1
 ------
 
-*Release date: 2026-04-25*
+*Release date: 2026-04-15*
 
 - Add token usage tracking to OpenAI requests
 - Add pytest and unittest runners documentation in `Docs <http://toolium.readthedocs.io/en/latest/tests_runners_integration.html>`_
