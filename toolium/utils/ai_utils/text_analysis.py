@@ -19,6 +19,7 @@ import json
 import logging
 
 from toolium.utils.ai_utils.openai import openai_request
+from toolium.driver_wrappers_pool import DriverWrappersPool
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +84,14 @@ def get_text_criteria_analysis(text_input, text_criteria, model_name=None, azure
     """
     # Build prompt using base prompt and target features
     system_message = build_system_message(text_criteria)
+    # Get config from config if azure is true and configuration exists.
+    config = DriverWrappersPool.get_default_wrapper().config
+    model_name = model_name or config.get_optional('AI', 'text_analysis_model', 'gpt-4o-mini')
+    if azure:
+        for key in ('azure_api_key', 'azure_endpoint', 'api_version', 'azure_deployment'):
+            value = config.get_optional('AI', key)
+            if value:
+                kwargs[key] = value
     response, _ = openai_request(system_message, text_input, model_name, azure, **kwargs)
     return response
 

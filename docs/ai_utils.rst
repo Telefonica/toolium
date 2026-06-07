@@ -91,6 +91,90 @@ you have (direct OpenAI access or Azure OpenAI):
     AZURE_OPENAI_ENDPOINT=<your_endpoint>
     OPENAI_API_VERSION=<your_api_version>
 
+Text Criteria Analysis
+----------------------
+
+Text criteria analysis evaluates how well an input text matches a set of target characteristics
+(e.g., tone, style, clarity, domain vocabulary, specific described content, etc) using an LLM.
+Toolium provides utilities to both retrieve a structured analysis and assert quality thresholds.
+
+Usage
+~~~~~
+
+You can use functions from the `toolium.utils.ai_utils.text_analysis` module:
+
+* **get_text_criteria_analysis()**: returns a JSON string with an overall score and low-scored criteria.
+* **assert_text_criteria()**: validates that the overall score is above a threshold and raises `AssertionError` otherwise.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.text_analysis import get_text_criteria_analysis, assert_text_criteria
+    import json
+
+    input_text = "Hey team! Quick heads-up: deployment is done, all checks green."
+    text_criteria = [
+        "professional tone",
+        "clear and concise message",
+        "it includes the status of the deployment"
+    ]
+
+    # Get analysis (JSON string)
+    raw_analysis = get_text_criteria_analysis(
+        text_input=input_text,
+        text_criteria=text_criteria,
+        model_name="gpt-4o-mini",  # optional
+        azure=False                 # True for Azure OpenAI
+    )
+
+    analysis = json.loads(raw_analysis)
+    print(analysis["overall_match"])
+    print(analysis["features"])  # Only low-scored features (<= 0.2)
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.text_analysis import assert_text_criteria
+
+    # Assert text quality against a minimum score
+    assert_text_criteria(
+        text_input="This message should be short, formal and informative.",
+        text_criteria=["formal tone", "brevity", "informative content"],
+        threshold=0.75,
+        model_name="gpt-4o-mini",  # optional
+        azure=False                 # set True for Azure OpenAI
+    )
+
+Response Format
+~~~~~~~~~~~~~~~
+
+`get_text_criteria_analysis()` expects the LLM to return a JSON object with:
+
+.. code-block:: json
+
+    {
+      "overall_match": 0.82,
+      "features": [
+        {
+          "name": "formal tone",
+          "score": 0.15
+        }
+      ]
+    }
+
+Where:
+
+- `overall_match`: float in `[0.0, 1.0]`
+- `features`: list containing only low-scored criteria (score `<= 0.2`)
+
+Assertion Behavior
+~~~~~~~~~~~~~~~~~~
+
+`assert_text_criteria()`:
+
+- parses the JSON response returned by `get_text_criteria_analysis()`
+- compares `overall_match` with the provided `threshold`
+- raises `AssertionError` if `overall_match < threshold`
+- logs low-scored features to help diagnose why validation failed
+
 
 Text Readability
 ----------------
