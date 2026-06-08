@@ -51,6 +51,11 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
         response_format = kwargs.pop('response_format')
         kwargs.pop('response_format', None)
     client = AzureOpenAI(**kwargs) if azure else OpenAI(**kwargs)
+    if azure:
+        for key in ('azure_api_key', 'azure_endpoint', 'api_version', 'azure_deployment'):
+            value = config.get_optional('AI', key)
+            if value:
+                kwargs[key] = value
     messages = []
     if isinstance(system_message, list):
         for prompt in system_message:

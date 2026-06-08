@@ -76,8 +76,8 @@ For SpaCy, you also need to download the language model, i.e. for small English 
 
     python -m spacy download en_core_web_sm
 
-For OpenAI LLM, you need to set up your configuration in environment variables, that it may depend on the type of access
-you have (direct OpenAI access or Azure OpenAI):
+For OpenAI LLM, you need to set up your configuration in environment variables or include them at toolium configuration,
+that it may depend on the type of access you have (direct OpenAI access or Azure OpenAI):
 
 .. code-block:: bash
 
@@ -90,6 +90,14 @@ you have (direct OpenAI access or Azure OpenAI):
     AZURE_OPENAI_API_KEY=<your_api_key>
     AZURE_OPENAI_ENDPOINT=<your_endpoint>
     OPENAI_API_VERSION=<your_api_version>
+
+.. code-block:: text
+[AI]
+text_similarity_method: azure_openai
+sentence_transformers_model: all-mpnet-base-v2
+azure_endpoint: https://your-endpoint.azure.com
+api_version: 2025-01-01-preview
+azure_deployment: gpt-4o-mini
 
 Text Criteria Analysis
 ----------------------
