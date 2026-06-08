@@ -18,8 +18,8 @@ limitations under the License.
 import json
 import logging
 
-from toolium.utils.ai_utils.openai import openai_request
 from toolium.driver_wrappers_pool import DriverWrappersPool
+from toolium.utils.ai_utils.openai import openai_request
 
 logger = logging.getLogger(__name__)
 
