@@ -57,7 +57,7 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
             if value:
                 kwargs.setdefault(key, value)
     else:
-        for key in ('openai_api_key', 'openai_model', 'openai_temperature'):
+        for key in ('openai_api_key', 'openai_temperature'):
             value = config.get_optional('AI', key)
             if value:
                 kwargs.setdefault(key, value)
