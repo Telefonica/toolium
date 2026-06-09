@@ -76,8 +76,8 @@ For SpaCy, you also need to download the language model, i.e. for small English 
 
     python -m spacy download en_core_web_sm
 
-For OpenAI LLM, you need to set up your configuration in environment variables or include them at toolium configuration,
-that it may depend on the type of access you have (direct OpenAI access or Azure OpenAI):
+For OpenAI LLM, you need to set up your configuration using environment variables or include it in the Toolium configuration.
+The required parameters will vary depending on your access type (direct OpenAI or Azure OpenAI):
 
 .. code-block:: bash
 
