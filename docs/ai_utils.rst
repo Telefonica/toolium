@@ -91,13 +91,14 @@ that it may depend on the type of access you have (direct OpenAI access or Azure
     AZURE_OPENAI_ENDPOINT=<your_endpoint>
     OPENAI_API_VERSION=<your_api_version>
 
-.. code-block:: text
+*[AI]* section::
+
 [AI]
 text_similarity_method: azure_openai
-sentence_transformers_model: all-mpnet-base-v2
 azure_endpoint: https://your-endpoint.azure.com
 api_version: 2025-01-01-preview
 azure_deployment: gpt-4o-mini
+
 
 Text Criteria Analysis
 ----------------------
@@ -150,6 +151,17 @@ You can use functions from the `toolium.utils.ai_utils.text_analysis` module:
         model_name="gpt-4o-mini",  # optional
         azure=False                 # set True for Azure OpenAI
     )
+
+
+Configuration
+~~~~~~~~~~~~~
+
+Default text analysis method can be set in the properties.cfg file with the property *text_analysis_method* in
+*[AI]* section::
+
+    [AI]
+    text_analysis_method: openai  # Options: 'openai', 'azure_openai' (default: azure_openai)
+
 
 Response Format
 ~~~~~~~~~~~~~~~
