@@ -55,7 +55,12 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
         for key in ('azure_api_key', 'azure_endpoint', 'api_version', 'azure_deployment'):
             value = config.get_optional('AI', key)
             if value:
-                kwargs[key] = value
+                kwargs.setdefault(key, value)
+    else:
+        for key in ('openai_api_key', 'openai_endpoint', 'openai_version', 'openai_deployment'):
+            value = config.get_optional('AI', key)
+            if value:
+                kwargs.setdefault(key, value)
     messages = []
     if isinstance(system_message, list):
         for prompt in system_message:
