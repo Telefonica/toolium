@@ -4,7 +4,9 @@ Toolium Changelog
 v3.8.2
 ------
 
-*Release date: In development*
+*Release date: 2026-07-13*
+
+- Update the `openai_request` method to centralize logic and allow loading the configuration from `toolium.cfg` file.
 
 v3.8.1
 ------
