@@ -95,6 +95,7 @@ The required parameters will vary depending on your access type (direct OpenAI o
 
 [AI]
 text_similarity_method: azure_openai
+azure_api_key: your-azure-api-key  # Or openai_api_key: your-openai-api-key if you are using OpenAI directly
 azure_endpoint: https://your-endpoint.azure.com
 api_version: 2025-01-01-preview
 azure_deployment: gpt-4o-mini
@@ -161,7 +162,7 @@ Default text analysis method can be set in the properties.cfg file with the prop
 
     [AI]
     text_analysis_method: openai  # Options: 'openai', 'azure_openai' (default: azure_openai)
-
+    azure_api_key: your-azure-api-key  # Or openai_api_key: your-openai-api-key if you are using OpenAI directly
 
 Response Format
 ~~~~~~~~~~~~~~~
@@ -384,6 +385,7 @@ Default OpenAI model can be set in the properties.cfg file in the *[AI]* section
     [AI]
     provider: azure  # AI provider to use, openai by default
     openai_model: gpt-4o  # OpenAI model to use, gpt-4o-mini by default
+    azure_api_key: your-azure-api-key  # Or openai_api_key: your-openai-api-key if you are using OpenAI directly
 
 Installation
 ~~~~~~~~~~~~
