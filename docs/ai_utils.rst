@@ -44,8 +44,10 @@ azure_api_key: your-azure-api-key
 azure_endpoint: https://your-endpoint.azure.com
 api_version: 2025-01-01-preview
 azure_deployment: gpt-4o-mini
+azure_temperature: 0.7 # Optional Temperature for OpenAI model, between 0 and 1.
 # If you are using OpenAI directly
 openai_api_key: your-openai-api-key
+openai_temperature: 0.7 # Optional Temperature for OpenAI model, between 0 and 1.
 
 Different AI providers can be used in the same project.
 
