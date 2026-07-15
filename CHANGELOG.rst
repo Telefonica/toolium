@@ -4,7 +4,7 @@ Toolium Changelog
 v3.8.3
 ------
 
-*Release date: In development*
+*Release date: 2026-07-15*
 
 - Fix `openai_request` to rename `azure_api_key` and `openai_api_key` parameters to `api_key` to avoid errors when Azure and OpenAI are created.
 - Add `openai_temperature` and `azure_temperature` parameters to be configurable in `toolium.cfg` file to set the temperature for OpenAI and Azure requests.
