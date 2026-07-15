@@ -3,6 +3,54 @@
 AI Utils
 ========
 
+Installation and configuration
+------------------------------
+
+Make sure to install the required libraries for the chosen method. For SpaCy, Sentence Transformers or OpenAI LLM, you
+can install them with the following command:
+
+.. code-block:: bash
+
+    pip install toolium[ai]
+
+**Additional Requirements:**
+
+For SpaCy, you also need to download the language model, i.e. for small English model:
+
+.. code-block:: bash
+
+    python -m spacy download en_core_web_sm
+
+For OpenAI LLM, you need to set up your configuration using environment variables or include it in the Toolium configuration.
+The required parameters will vary depending on your access type (direct OpenAI or Azure OpenAI):
+
+.. code-block:: bash
+
+    # For example, to configure direct OpenAI access:
+    OPENAI_API_KEY=<your_api_key>
+
+.. code-block:: bash
+
+    # For example, to configure Azure OpenAI:
+    AZURE_OPENAI_API_KEY=<your_api_key>
+    AZURE_OPENAI_ENDPOINT=<your_endpoint>
+    OPENAI_API_VERSION=<your_api_version>
+
+*[AI]* section::
+
+[AI]
+# If you are using Azure OpenAI
+azure_api_key: your-azure-api-key
+azure_endpoint: https://your-endpoint.azure.com
+api_version: 2025-01-01-preview
+azure_deployment: gpt-4o-mini
+azure_temperature: 0.7 # Optional Temperature for OpenAI model, between 0 and 1.
+# If you are using OpenAI directly
+openai_api_key: your-openai-api-key
+openai_temperature: 0.7 # Optional Temperature for OpenAI model, between 0 and 1.
+
+Different AI providers can be used in the same project.
+
 Text Similarity
 ---------------
 
@@ -57,48 +105,6 @@ To select models for each method, you can refer to the following links:
 * `SpaCy models <https://spacy.io/models>`_
 * `Sentence Transformers models <https://github.com/UKPLab/sentence-transformers>`_
 * `OpenAI models <https://platform.openai.com/docs/models>`_
-
-Installation
-~~~~~~~~~~~~
-
-Make sure to install the required libraries for the chosen method. For SpaCy, Sentence Transformers or OpenAI LLM, you
-can install them with the following command:
-
-.. code-block:: bash
-
-    pip install toolium[ai]
-
-**Additional Requirements:**
-
-For SpaCy, you also need to download the language model, i.e. for small English model:
-
-.. code-block:: bash
-
-    python -m spacy download en_core_web_sm
-
-For OpenAI LLM, you need to set up your configuration using environment variables or include it in the Toolium configuration.
-The required parameters will vary depending on your access type (direct OpenAI or Azure OpenAI):
-
-.. code-block:: bash
-
-    # For example, to configure direct OpenAI access:
-    OPENAI_API_KEY=<your_api_key>
-
-.. code-block:: bash
-
-    # For example, to configure Azure OpenAI:
-    AZURE_OPENAI_API_KEY=<your_api_key>
-    AZURE_OPENAI_ENDPOINT=<your_endpoint>
-    OPENAI_API_VERSION=<your_api_version>
-
-*[AI]* section::
-
-[AI]
-text_similarity_method: azure_openai
-azure_endpoint: https://your-endpoint.azure.com
-api_version: 2025-01-01-preview
-azure_deployment: gpt-4o-mini
-
 
 Text Criteria Analysis
 ----------------------
@@ -161,7 +167,6 @@ Default text analysis method can be set in the properties.cfg file with the prop
 
     [AI]
     text_analysis_method: openai  # Options: 'openai', 'azure_openai' (default: azure_openai)
-
 
 Response Format
 ~~~~~~~~~~~~~~~
@@ -235,13 +240,6 @@ Default readability method and spacy model can be set in the *[AI]* section of t
 For more information on SpaCy models, you can refer to the following link:
 
 * `SpaCy models <https://spacy.io/models>`_
-
-Installation
-~~~~~~~~~~~~
-
-The requirements are the same explained for `SpaCy` in the
-`installation section of Text Similarity <https://toolium.readthedocs.io/en/latest/ai_utils.html#installation>`_
-
 
 Answer Evaluation using LLM-as-a-Judge
 --------------------------------------
@@ -383,31 +381,6 @@ Default OpenAI model can be set in the properties.cfg file in the *[AI]* section
 
     [AI]
     provider: azure  # AI provider to use, openai by default
-    openai_model: gpt-4o  # OpenAI model to use, gpt-4o-mini by default
-
-Installation
-~~~~~~~~~~~~
-
-Make sure to install the required libraries:
-
-.. code-block:: bash
-
-    pip install toolium[ai]
-
-For Azure OpenAI, you need to set up your configuration in environment variables:
-
-.. code-block:: bash
-
-    AZURE_OPENAI_API_KEY=<your_api_key>
-    AZURE_OPENAI_ENDPOINT=<your_endpoint>
-    OPENAI_API_VERSION=<your_api_version>
-
-For standard OpenAI:
-
-.. code-block:: bash
-
-    OPENAI_API_KEY=<your_api_key>
-
 
 .. _accuracy_tags_for_behave_scenarios:
 

@@ -45,23 +45,23 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
     config = DriverWrappersPool.get_default_wrapper().config
     model_name = model_name or config.get_optional('AI', 'openai_model', 'gpt-4o-mini')
     logger.info('Calling to OpenAI API with model %s', model_name)
-
     response_format = None
     if kwargs.get('response_format'):
         response_format = kwargs.pop('response_format')
         kwargs.pop('response_format', None)
-    client = AzureOpenAI(**kwargs) if azure else OpenAI(**kwargs)
     if azure:
         for key in ('azure_api_key', 'azure_endpoint', 'api_version', 'azure_deployment'):
             value = config.get_optional('AI', key)
             if value:
-                kwargs.setdefault(key, value)
+                kwargs_key = 'api_key' if key == 'azure_api_key' else key
+                kwargs.setdefault(kwargs_key, value)
+        temperature = config.get_optional('AI', 'azure_temperature', None)
     else:
-        for key in ('openai_api_key', 'openai_temperature'):
-            value = config.get_optional('AI', key)
-            if value:
-                kwargs.setdefault(key, value)
+        kwargs.setdefault('api_key', config.get_optional('AI', 'openai_api_key'))
+        temperature = config.get_optional('AI', 'openai_temperature', None)
+    client = AzureOpenAI(**kwargs) if azure else OpenAI(**kwargs)
     messages = []
+    temperature = float(temperature) if temperature is not None else None
     if isinstance(system_message, list):
         for prompt in system_message:
             messages.append({'role': 'system', 'content': prompt})
@@ -71,11 +71,11 @@ def openai_request(system_message, user_message, model_name=None, azure=False, *
 
     if response_format:
         completion = client.beta.chat.completions.parse(
-            model=model_name, messages=messages, response_format=response_format
+            model=model_name, messages=messages, response_format=response_format, temperature=temperature
         )
         response = completion.choices[0].message.parsed
     else:
-        completion = client.chat.completions.create(model=model_name, messages=messages)
+        completion = client.chat.completions.create(model=model_name, messages=messages, temperature=temperature)
         response = completion.choices[0].message.content
     token_usage = {}
     if completion.usage:
