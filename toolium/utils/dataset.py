@@ -438,7 +438,7 @@ def map_param(param):
     if not isinstance(param, str):
         return param
 
-    map_regex = r'[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:][^\[\]]*\]'
+    map_regex = r'[\[CONF:|\[LANG:|\[POE:|\[ENV:|\[BASE64:|\[TOOLIUM:|\[CONTEXT:|\[FILE:|\[FILE_UTF8:][^\[\]]*\]'
     map_expressions = re.compile(map_regex)
 
     mapped_param = param
@@ -473,6 +473,7 @@ def map_one_param(param):
       value of the behave context attribute xxxx, if the former does not exist
     - [ENV:xxxx] Value of the OS environment variable xxxx
     - [FILE:xxxx] String with the content of the file in the path xxxx
+    - [FILE_UTF8:xxxx] String with the UTF-8 content of the file in the path xxxx
     - [BASE64:xxxx] String with the base64 representation of the file content in the path xxxx
 
     :param param: string parameter
@@ -519,6 +520,11 @@ def map_one_param(param):
             'function': get_file,
             'args': [key],
         },
+        'FILE_UTF8': {
+            'prerequisites': True,
+            'function': get_file,
+            'args': [key, 'utf-8'],
+        },
         'BASE64': {
             'prerequisites': True,
             'function': convert_file_to_base64,
@@ -538,7 +544,7 @@ def _get_mapping_type_and_key(param):
     :param param: string parameter to be parsed
     :return: a tuple with the type and the key to be mapped
     """
-    map_types = ['CONF', 'LANG', 'POE', 'ENV', 'BASE64', 'TOOLIUM', 'CONTEXT', 'FILE']
+    map_types = ['CONF', 'LANG', 'POE', 'ENV', 'BASE64', 'TOOLIUM', 'CONTEXT', 'FILE', 'FILE_UTF8']
     for map_type in map_types:
         match_group = re.match(rf'\[{map_type}:([^\[\]]*)\]', param)
         if match_group:
@@ -875,12 +881,13 @@ def set_file_path(path):
     base_file_path = path
 
 
-def get_file(file_path):
+def get_file(file_path, encoding=None):
     """
     Return the content of a file given its path. If a base path was previously set by using
     the set_file_path() function, the file path specified must be relative to that path.
 
     :param file_path: file path using slash as separator (e.g. "resources/files/doc.txt")
+    :param encoding: file encoding, or None to use the system default
     :return: string with the file content
     """
     file_path_parts = (base_file_path + file_path).split('/')
@@ -888,7 +895,7 @@ def get_file(file_path):
     if not os.path.exists(file_path):
         raise Exception(f' ERROR - Cannot read file "{file_path}". Does not exist.')
 
-    with open(file_path) as f:
+    with open(file_path, encoding=encoding) as f:
         return f.read()
 
 

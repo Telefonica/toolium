@@ -50,6 +50,15 @@ def test_a_file_param():
     assert expected == result
 
 
+def test_a_file_utf8_param():
+    """
+    Verification of a mapped parameter as FILE_UTF8
+    """
+    result = map_param('[FILE_UTF8:toolium/test/resources/document.txt]')
+    expected = 'Document used to verify functionalities in MSS '
+    assert expected == result
+
+
 def test_a_file_param_setting_path():
     """
     Verification of a mapped parameter as FILE setting previously the path

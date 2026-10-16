@@ -179,7 +179,7 @@ def save_downloaded_file(poeditor_terms):
     :param poeditor_terms: POEditor terms
     """
     file_path = get_poeditor_file_path()
-    with open(file_path, 'w') as f:
+    with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(poeditor_terms, f, indent=4)
     logger.info('POEditor terms have been saved in "%s" file', file_path)
 
@@ -307,7 +307,7 @@ def load_poeditor_texts():
                 logger.error(error_message)
                 raise AssertionError(error_message)
 
-            with open(file_path) as f:
+            with open(file_path, encoding='utf-8') as f:
                 dataset.poeditor_terms = json.load(f)
                 last_mod_time = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(file_path)))
                 logger.info('Using local POEditor file "%s" with date: %s', file_path, last_mod_time)

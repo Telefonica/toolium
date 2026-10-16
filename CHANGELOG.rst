@@ -6,6 +6,8 @@ v3.8.4
 
 *Release date: In development*
 
+- Add support for reading files with UTF-8 encoding using the `[FILE_UTF8:xxxx]` replacement.
+
 v3.8.3
 ------
 
