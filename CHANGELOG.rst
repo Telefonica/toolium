@@ -4,9 +4,10 @@ Toolium Changelog
 v3.8.4
 ------
 
-*Release date: In development*
+*Release date: 2026-10-19*
 
 - Add support for reading files with UTF-8 encoding using the `[FILE_UTF8:xxxx]` replacement.
+- Fix package metadata in `pyproject.toml` to use SPDX license syntax, remove the deprecated license classifier and include `toolium.resources` in the package configuration.
 
 v3.8.3
 ------
