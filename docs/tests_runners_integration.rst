@@ -199,6 +199,7 @@ There are also some special tags that allow to use parameter values configured a
 * :code:`[CONTEXT:xxxx]`: Value from the behave context storage dict in dataset.behave_context for the key xxxx, or value of the behave context attribute xxxx, if the former does not exist
 * :code:`[ENV:xxxx]`: Value of the OS environment variable xxxx
 * :code:`[FILE:xxxx]`: String with the content of the file in the path xxxx
+* :code:`[FILE_UTF8:xxxx]`: String with the UTF-8 content of the file in the path xxxx
 * :code:`[BASE64:xxxx]`: String with the base64 representation of the file content in the path xxxx
 
 In order to apply the string replacements in your code, import and call the corresponding function. E.g.:

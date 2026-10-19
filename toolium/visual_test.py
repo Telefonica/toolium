@@ -421,7 +421,7 @@ class VisualTest:
         :param data: data to be added
         :param tag: data will be added before this tag
         """
-        with open(os.path.join(self.output_directory, self.report_name), 'r+') as f:
+        with open(os.path.join(self.output_directory, self.report_name), 'r+', encoding='utf-8') as f:
             report = f.read()
             index = report.find(tag)
             report = report[:index] + data + report[index:]
@@ -431,7 +431,7 @@ class VisualTest:
     def _update_report_summary(self):
         """Update asserts counter in report"""
         new_results = 'Visual asserts</b>: {} ({} failed)'.format(sum(self.results.values()), self.results['diff'])
-        with open(os.path.join(self.output_directory, self.report_name), 'r+') as f:
+        with open(os.path.join(self.output_directory, self.report_name), 'r+', encoding='utf-8') as f:
             report = f.read()
             report = re.sub(r'Visual asserts</b>: [0-9]* \([0-9]* failed\)', new_results, report)
             f.seek(0)
