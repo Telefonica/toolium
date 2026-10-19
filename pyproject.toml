@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Wrapper tool of Selenium and Appium libraries to test web and mobile applications in a single project"
 readme = "README.rst"
-license = {text = "Apache 2.0"}
+license = "Apache-2.0"
 keywords = [
     "selenium",
     "appium",
@@ -28,7 +28,6 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Other Audience",
-    "License :: OSI Approved :: Apache Software License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.10",
@@ -60,7 +59,8 @@ packages = [
     "toolium.pageelements.playwright",
     "toolium.behave",
     "toolium.utils",
-    "toolium.utils.ai_utils"
+    "toolium.utils.ai_utils",
+    "toolium.resources"
 ]
 
 [tool.setuptools.package-data]
