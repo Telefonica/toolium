@@ -137,7 +137,8 @@ def test_get_chrome_options_additional(config, utils):
     config.set(
         'Chrome',
         'options',
-        "{'excludeSwitches': ['enable-automation'], 'perfLoggingPrefs': {'enableNetwork': True}}",
+        "{'excludeSwitches': ['enable-automation'], 'perfLoggingPrefs': {'enableNetwork': True}, "
+        "'debuggerAddress': 'localhost:9222'}",
     )
     config_driver = ConfigDriver(config, utils)
     expected_arguments = []
@@ -145,6 +146,7 @@ def test_get_chrome_options_additional(config, utils):
     expected_experimental_options = {
         'excludeSwitches': ['enable-automation'],
         'perfLoggingPrefs': {'enableNetwork': True},
+        'debuggerAddress': 'localhost:9222',
     }
     expected_extensions_len = 0
     expected_binary_location = ''
@@ -154,6 +156,7 @@ def test_get_chrome_options_additional(config, utils):
     assert options.arguments == expected_arguments
     assert options.capabilities == expected_capabilities
     assert options.experimental_options == expected_experimental_options
+    assert options.to_capabilities()['goog:chromeOptions']['debuggerAddress'] == 'localhost:9222'
     assert len(options.extensions) == expected_extensions_len
     assert options.binary_location == expected_binary_location
 

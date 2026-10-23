@@ -195,6 +195,29 @@ Additional `Chrome Options <https://chromedriver.chromium.org/capabilities#h.p_I
     [Chrome]
     options: {'excludeSwitches': ['enable-automation'], 'perfLoggingPrefs': {'enableNetwork': True}}
 
+To attach ChromeDriver to an existing Chrome instance, set ``debuggerAddress`` in the same
+``options`` dictionary. The value is a ``host:port`` address, not a WebSocket URL::
+
+    [Driver]
+    type: chrome
+
+    [Chrome]
+    options: {'debuggerAddress': 'localhost:9222'}
+
+Start the target browser separately with remote debugging enabled on the configured port
+(for example, ``--remote-debugging-port=9222``). Toolium passes this option to ChromeDriver;
+it does not enable remote debugging on an already running browser. For Chrome 136 and later,
+use a dedicated, non-default profile with ``--user-data-dir`` when starting that instance, as
+explained in the `Chrome remote debugging changes <https://developer.chrome.com/blog/remote-debugging-port>`_.
+Use a test profile and keep the debugging endpoint accessible only locally.
+
+Attaching to an existing session has `ChromeDriver limitations
+<https://developer.chrome.com/docs/chromedriver/help/operation-not-supported-when-using-remote-debugging>`_:
+some WebDriver commands, such as resizing the window, require the automation extension that
+ChromeDriver loads only when it starts a new browser session. This configuration alone does
+not establish full support for Electron or WebView2 applications; those targets require
+additional integration testing.
+
 When Chrome is installed in a non-default location, configure the Chrome binary path in *[Chrome]* configuration
 section::
 
