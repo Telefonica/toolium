@@ -6,6 +6,8 @@ v3.8.5
 
 *Release date: In development*
 
+- Add support for Python 3.14
+
 v3.8.4
 ------
 
