@@ -7,6 +7,7 @@ v3.8.5
 *Release date: In development*
 
 - Add support for Python 3.14
+- Remove Python 3.10 support (Python 3.10 reaches end of life in October 2026)
 
 v3.8.4
 ------
