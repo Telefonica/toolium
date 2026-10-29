@@ -18,7 +18,7 @@ limitations under the License.
 import logging
 import unittest
 
-from toolium.config_driver import get_error_message_from_exception, get_error_message_from_traceback
+from toolium.config_driver import get_error_message_from_traceback
 from toolium.config_files import ConfigFiles
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.jira import change_all_jira_status
@@ -65,18 +65,7 @@ class BasicTestCase(unittest.TestCase):
     def tearDown(self):
         # Get error message from unittest errors
         error_message = ''
-        if hasattr(self._outcome, 'errors') and len(self._outcome.errors) > 0:
-            # Python <3.11
-            exception_info = self._outcome.errors[-1][1]
-            if exception_info:
-                exception = exception_info[1]
-                error_message = get_error_message_from_exception(exception)
-        elif (
-            not hasattr(self._outcome, 'errors')
-            and hasattr(self._outcome.result, 'failures')
-            and len(self._outcome.result.failures) > 0
-        ):
-            # Python >=3.11
+        if hasattr(self._outcome.result, 'failures') and len(self._outcome.result.failures) > 0:
             traceback = self._outcome.result.failures[0][1]
             error_message = get_error_message_from_traceback(traceback)
 

@@ -203,10 +203,10 @@ def _replace_param_replacement(param, language):
         # make sure random is not made up of digits only, by forcing the first char to be a letter
         '[RANDOM]': ''.join([r.choice(string.ascii_lowercase), *(r.choice(alphanums) for i in range(7))]),
         '[RANDOM_PHONE_NUMBER]': _get_random_phone_number,
-        '[TIMESTAMP]': str(int(datetime.datetime.timestamp(datetime.datetime.now(datetime.timezone.utc)))),
-        '[DATETIME]': str(datetime.datetime.now(datetime.timezone.utc).strftime(datetime_format)),
-        '[NOW]': str(datetime.datetime.now(datetime.timezone.utc).strftime(date_format)),
-        '[TODAY]': str(datetime.datetime.now(datetime.timezone.utc).strftime(date_day_format)),
+        '[TIMESTAMP]': str(int(datetime.datetime.timestamp(datetime.datetime.now(datetime.UTC)))),
+        '[DATETIME]': str(datetime.datetime.now(datetime.UTC).strftime(datetime_format)),
+        '[NOW]': str(datetime.datetime.now(datetime.UTC).strftime(date_format)),
+        '[TODAY]': str(datetime.datetime.now(datetime.UTC).strftime(date_day_format)),
         r'\[ROUND:(.*?)::(\d*)\]': _get_rounded_float_number,
         '[SHARP]': '#',
     }
@@ -348,7 +348,7 @@ def _replace_param_date(param, language):
         return re.match(r'\[(NOW(?:\((?:.*)\)|)|TODAY)(?:\s*([\+|-]\s*\d+)\s*(\w+)\s*)?\]', param)
 
     def _offset_datetime(amount, units):
-        now = datetime.datetime.now(datetime.timezone.utc)
+        now = datetime.datetime.now(datetime.UTC)
         if not amount or not units:
             return now
         the_amount = int(amount.replace(' ', ''))
