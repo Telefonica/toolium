@@ -12,7 +12,7 @@ jobs:
     - name: Set supported python versions
       id: set-versions
       run: |
-        echo 'versions=["3.10", "3.11", "3.12", "3.13", "3.14"]' >> "$GITHUB_OUTPUT"
+        echo 'versions=["3.11", "3.12", "3.13", "3.14"]' >> "$GITHUB_OUTPUT"
 
   lint:
     runs-on: ubuntu-latest
