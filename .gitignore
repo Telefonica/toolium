@@ -100,3 +100,9 @@ docs/_build
 
 # Tests
 */test/output
+
+# DeepEval
+*.deepeval/
+
+# UV lock
+uv.lock
