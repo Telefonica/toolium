@@ -35,10 +35,11 @@ try:
     )
     from deepeval.test_case import LLMTestCase, SingleTurnParams, ToolCall, ToolCallParams
 except ImportError:
-    AnswerRelevancyMetric = ContextualPrecisionMetric = ContextualRecallMetric = ContextualRelevancyMetric = \
-        FaithfulnessMetric = GEval = HallucinationMetric = JsonCorrectnessMetric = PIILeakageMetric = \
-        SummarizationMetric = ToolCorrectnessMetric = ToxicityMetric = LLMTestCase = SingleTurnParams = \
-        ToolCall = ToolCallParams = None
+    AnswerRelevancyMetric = ContextualPrecisionMetric = ContextualRecallMetric = ContextualRelevancyMetric = (
+        FaithfulnessMetric
+    ) = GEval = HallucinationMetric = JsonCorrectnessMetric = PIILeakageMetric = SummarizationMetric = (
+        ToolCorrectnessMetric
+    ) = ToxicityMetric = LLMTestCase = SingleTurnParams = ToolCall = ToolCallParams = None
 
 try:
     from deepeval.models import GPTModel
@@ -140,15 +141,17 @@ def evaluate_contextual_with_deepeval(
     }
     unknown = set(metric_names) - set(contextual_metrics)
     if unknown:
-        raise ValueError(f"Unknown contextual metric(s): {', '.join(sorted(unknown))}")
+        raise ValueError(f'Unknown contextual metric(s): {", ".join(sorted(unknown))}')
     if metric_config is not None:
         for metric_name, config in metric_config.items():
             if 'threshold' not in config:
                 raise ValueError(f"Missing threshold for metric '{metric_name}'")
             if not 0 <= config['threshold'] <= 1:
                 raise ValueError(f"Threshold for metric '{metric_name}' must be between 0 and 1")
-        if any(name in ('contextual_precision', 'contextual_recall')
-               for name in metric_names) and expected_output is None:
+        if (
+            any(name in ('contextual_precision', 'contextual_recall') for name in metric_names)
+            and expected_output is None
+        ):
             raise ValueError('expected_output is required for contextual_precision and contextual_recall')
     model = _get_model(provider, model_name, kwargs.pop('model_kwargs', {}))
     metric_kwargs = kwargs.pop('metric_kwargs', {}) if metric_config is None else {}
@@ -163,8 +166,10 @@ def evaluate_contextual_with_deepeval(
     results = {}
     for metric_name in metric_names:
         config = metric_config[metric_name] if metric_config is not None else {}
-        metric_threshold = config.pop('threshold') if metric_config is not None else (
-            threshold.get(metric_name, 0.7) if isinstance(threshold, dict) else threshold
+        metric_threshold = (
+            config.pop('threshold')
+            if metric_config is not None
+            else (threshold.get(metric_name, 0.7) if isinstance(threshold, dict) else threshold)
         )
         metric = contextual_metrics[metric_name](threshold=metric_threshold, model=model, **(config or metric_kwargs))
         score, reason = _measure(metric, test_case)
@@ -188,9 +193,7 @@ def assert_contextual_with_deepeval(*args, **kwargs):
         raise AssertionError(f'Contextual DeepEval evaluation failed: {failed}')
 
 
-def get_text_similarity_with_deepeval(
-    text, expected_text, model_name=None, threshold=0.7, provider=None, **kwargs
-):
+def get_text_similarity_with_deepeval(text, expected_text, model_name=None, threshold=0.7, provider=None, **kwargs):
     """Return an LLM-as-a-Judge semantic similarity score for two texts.
 
     The score is between 0 and 1. ``model_name`` and ``provider`` select the evaluator;
@@ -213,8 +216,9 @@ def get_text_similarity_with_deepeval(
 
 def _serialize_context(context):
     """Convert JSON-compatible context items to readable strings for DeepEval."""
-    return [json.dumps(item, ensure_ascii=False, indent=2)
-            if isinstance(item, (dict, list)) else item for item in context]
+    return [
+        json.dumps(item, ensure_ascii=False, indent=2) if isinstance(item, (dict, list)) else item for item in context
+    ]
 
 
 def get_summarization_with_deepeval(
@@ -247,8 +251,9 @@ def assert_summarization_with_deepeval(
         raise AssertionError(f'DeepEval summarization is below threshold: {score} < {threshold}\nReason: {reason}')
 
 
-def get_pii_leakage_with_deepeval(actual_output, model_name=None, threshold=0.7, provider=None,
-                                  input_text='', **kwargs):
+def get_pii_leakage_with_deepeval(
+    actual_output, model_name=None, threshold=0.7, provider=None, input_text='', **kwargs
+):
     """Evaluate possible personally identifiable information leakage.
 
     A higher score indicates more leakage. Use the dedicated assertion with a
@@ -279,9 +284,7 @@ def get_toxicity_with_deepeval(actual_output, model_name=None, threshold=0.7, pr
     return score, reason
 
 
-def assert_toxicity_with_deepeval(
-    actual_output, threshold, model_name=None, provider=None, input_text='', **kwargs
-):
+def assert_toxicity_with_deepeval(actual_output, threshold, model_name=None, provider=None, input_text='', **kwargs):
     """Assert that an output stays below the toxicity threshold."""
     score, reason = get_toxicity_with_deepeval(actual_output, model_name, threshold, provider, input_text, **kwargs)
     if score > threshold:
@@ -385,8 +388,7 @@ def assert_contextual_precision_with_deepeval(
         input_text, actual_output, expected_output, context, model_name, threshold, provider, **kwargs
     )
     if score < threshold:
-        raise AssertionError(f'DeepEval contextual precision is below threshold: {score} < {threshold}'
-                             f'Reason: {reason}')
+        raise AssertionError(f'DeepEval contextual precision is below threshold: {score} < {threshold}Reason: {reason}')
 
 
 def get_contextual_relevancy_with_deepeval(
@@ -417,8 +419,9 @@ def assert_contextual_relevancy_with_deepeval(
         )
 
 
-def get_json_correctness_with_deepeval(actual_output, expected_schema, model_name=None, threshold=0.7,
-                                       provider=None, **kwargs):
+def get_json_correctness_with_deepeval(
+    actual_output, expected_schema, model_name=None, threshold=0.7, provider=None, **kwargs
+):
     """Evaluate whether a JSON response matches a Pydantic schema."""
     _require_deepeval()
     model = _get_model(provider, model_name, kwargs.pop('model_kwargs', {}))
@@ -602,6 +605,6 @@ def assert_text_criteria_with_deepeval(text_input, text_criteria, threshold, mod
     analysis = get_text_criteria_analysis_with_deepeval(text_input, text_criteria, model_name, threshold, **kwargs)
     if analysis['overall_match'] < threshold:
         raise AssertionError(
-            f"DeepEval text criteria analysis is below threshold: "
-            f"{analysis['overall_match']} < {threshold}\nFailed features: {analysis['features']}"
+            f'DeepEval text criteria analysis is below threshold: '
+            f'{analysis["overall_match"]} < {threshold}\nFailed features: {analysis["features"]}'
         )
