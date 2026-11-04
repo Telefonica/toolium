@@ -166,9 +166,7 @@ def evaluate_contextual_with_deepeval(
         metric_options = (
             {key: value for key, value in config.items() if key != 'threshold'} if metric_config else metric_kwargs
         )
-        metric = globals()[_CONTEXTUAL_METRICS[metric_name]](
-            threshold=metric_threshold, model=model, **metric_options
-        )
+        metric = globals()[_CONTEXTUAL_METRICS[metric_name]](threshold=metric_threshold, model=model, **metric_options)
         score, reason = _measure(metric, test_case)
         results[metric_name] = {
             'score': score,
