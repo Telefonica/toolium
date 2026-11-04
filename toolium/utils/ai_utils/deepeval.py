@@ -65,25 +65,24 @@ def _get_model(provider, model_name, kwargs):
     config = DriverWrappersPool.get_default_wrapper().config
     provider = provider or config.get_optional('AI', 'provider', 'openai')
     model_name = model_name or config.get_optional('AI', 'openai_model', 'gpt-4o-mini')
+    model_kwargs = {
+        'model': model_name,
+        'api_key': config.get_optional('AI', f'{provider}_api_key'),
+        'temperature': config.get_optional('AI', f'{provider}_temperature', None),
+    }
     if provider == 'openai':
-        model_kwargs = {
-            'model': model_name,
-            'api_key': config.get_optional('AI', 'openai_api_key'),
-            'temperature': config.get_optional('AI', 'openai_temperature', None),
-        }
-        model_kwargs.update(kwargs)
-        return GPTModel(**model_kwargs)
-    if provider == 'azure':
-        model_kwargs = {
-            'model': model_name,
-            'api_key': config.get_optional('AI', 'azure_api_key'),
-            'base_url': config.get_optional('AI', 'azure_endpoint'),
-            'deployment_name': config.get_optional('AI', 'azure_deployment', model_name),
-            'api_version': config.get_optional('AI', 'api_version'),
-            'temperature': config.get_optional('AI', 'azure_temperature', None),
-        }
-        model_kwargs.update(kwargs)
-        return AzureOpenAIModel(**model_kwargs)
+        model_class = GPTModel
+    elif provider == 'azure':
+        model_class = AzureOpenAIModel
+        model_kwargs.update(
+            base_url=config.get_optional('AI', 'azure_endpoint'),
+            deployment_name=config.get_optional('AI', 'azure_deployment', model_name),
+            api_version=config.get_optional('AI', 'api_version'),
+        )
+    else:
+        raise ValueError(f"Unknown provider: '{provider}', please use 'openai' or 'azure'")
+    model_kwargs.update(kwargs)
+    return model_class(**model_kwargs)
     raise ValueError(f"Unknown provider: '{provider}', please use 'openai' or 'azure'")
 
 
@@ -93,18 +92,18 @@ def _measure(metric, test_case):
 
 
 _CONTEXTUAL_METRICS = {
-    'faithfulness': FaithfulnessMetric,
-    'contextual_relevancy': ContextualRelevancyMetric,
-    'contextual_precision': ContextualPrecisionMetric,
-    'contextual_recall': ContextualRecallMetric,
-    'summarization': SummarizationMetric,
+    'faithfulness': 'FaithfulnessMetric',
+    'contextual_relevancy': 'ContextualRelevancyMetric',
+    'contextual_precision': 'ContextualPrecisionMetric',
+    'contextual_recall': 'ContextualRecallMetric',
+    'summarization': 'SummarizationMetric',
 }
 
 
 def evaluate_contextual_with_deepeval(
     input_text,
     actual_output,
-    context,
+    retrieved_context,
     expected_output=None,
     metrics='faithfulness',
     metric_config=None,
@@ -116,7 +115,7 @@ def evaluate_contextual_with_deepeval(
     """Evaluate one or more contextual metrics against the same test case.
 
     ``metrics`` accepts one metric name or a list of names. Alternatively, ``metric_config``
-    defines each metric, its required threshold and metric-specific options. The context may
+    defines each metric, its required threshold and metric-specific options. The retrieved context may
     contain plain strings or JSON-compatible dictionaries/lists. Returns per-metric scores,
     reasons and pass/fail values, plus an aggregated ``passed`` value.
 
@@ -132,14 +131,7 @@ def evaluate_contextual_with_deepeval(
         metric_names = list(metric_config)
     else:
         metric_names = [metrics] if isinstance(metrics, str) else list(metrics)
-    contextual_metrics = {
-        'faithfulness': FaithfulnessMetric,
-        'contextual_relevancy': ContextualRelevancyMetric,
-        'contextual_precision': ContextualPrecisionMetric,
-        'contextual_recall': ContextualRecallMetric,
-        'summarization': SummarizationMetric,
-    }
-    unknown = set(metric_names) - set(contextual_metrics)
+    unknown = set(metric_names) - set(_CONTEXTUAL_METRICS)
     if unknown:
         raise ValueError(f'Unknown contextual metric(s): {", ".join(sorted(unknown))}')
     if metric_config is not None:
@@ -155,23 +147,26 @@ def evaluate_contextual_with_deepeval(
             raise ValueError('expected_output is required for contextual_precision and contextual_recall')
     model = _get_model(provider, model_name, kwargs.pop('model_kwargs', {}))
     metric_kwargs = kwargs.pop('metric_kwargs', {}) if metric_config is None else {}
-    context = _serialize_context(context)
+    retrieved_context = _serialize_context(retrieved_context)
     test_case = LLMTestCase(
         input=input_text,
         actual_output=actual_output,
         expected_output=expected_output,
-        retrieval_context=context,
-        context=context,
+        retrieval_context=retrieved_context,
+        context=retrieved_context,
     )
     results = {}
     for metric_name in metric_names:
         config = metric_config[metric_name] if metric_config is not None else {}
         metric_threshold = (
-            config.pop('threshold')
+            config['threshold']
             if metric_config is not None
             else (threshold.get(metric_name, 0.7) if isinstance(threshold, dict) else threshold)
         )
-        metric = contextual_metrics[metric_name](threshold=metric_threshold, model=model, **(config or metric_kwargs))
+        metric_options = {key: value for key, value in config.items() if key != 'threshold'} if metric_config else metric_kwargs
+        metric = globals()[_CONTEXTUAL_METRICS[metric_name]](
+            threshold=metric_threshold, model=model, **metric_options
+        )
         score, reason = _measure(metric, test_case)
         results[metric_name] = {
             'score': score,
@@ -214,19 +209,19 @@ def get_text_similarity_with_deepeval(text, expected_text, model_name=None, thre
     return score
 
 
-def _serialize_context(context):
+def _serialize_context(context_items):
     """Convert JSON-compatible context items to readable strings for DeepEval."""
     return [
-        json.dumps(item, ensure_ascii=False, indent=2) if isinstance(item, (dict, list)) else item for item in context
+        json.dumps(item, ensure_ascii=False, indent=2) if isinstance(item, (dict, list)) else item for item in context_items
     ]
 
 
 def get_summarization_with_deepeval(
-    input_text, actual_output, context, model_name=None, threshold=0.7, provider=None, **kwargs
+    input_text, actual_output, source_context, model_name=None, threshold=0.7, provider=None, **kwargs
 ):
     """Evaluate a summary against its source context.
 
-    The metric checks coverage and factual consistency. ``context`` accepts text or
+    The metric checks coverage and factual consistency. ``source_context`` accepts text or
     JSON-compatible API response objects and the result is ``(score, reason)``.
     """
     _require_deepeval()
@@ -234,18 +229,18 @@ def get_summarization_with_deepeval(
     metric = SummarizationMetric(threshold=threshold, model=model, **kwargs)
     score, reason = _measure(
         metric,
-        LLMTestCase(input=input_text, actual_output=actual_output, context=_serialize_context(context)),
+        LLMTestCase(input=input_text, actual_output=actual_output, context=_serialize_context(source_context)),
     )
     logger.info('DeepEval summarization: %s', score)
     return score, reason
 
 
 def assert_summarization_with_deepeval(
-    input_text, actual_output, context, threshold, model_name=None, provider=None, **kwargs
+    input_text, actual_output, retrieved_context, threshold, model_name=None, provider=None, **kwargs
 ):
     """Assert that a summary meets the threshold."""
     score, reason = get_summarization_with_deepeval(
-        input_text, actual_output, context, model_name, threshold, provider, **kwargs
+        input_text, actual_output, retrieved_context, model_name, threshold, provider, **kwargs
     )
     if score < threshold:
         raise AssertionError(f'DeepEval summarization is below threshold: {score} < {threshold}\nReason: {reason}')
@@ -330,7 +325,7 @@ def assert_tool_correctness_with_deepeval(
 
 
 def get_contextual_recall_with_deepeval(
-    input_text, actual_output, expected_output, context, model_name=None, threshold=0.7, provider=None, **kwargs
+    input_text, actual_output, expected_output, retrieved_context, model_name=None, threshold=0.7, provider=None, **kwargs
 ):
     """Evaluate whether the retrieved context covers the expected answer information."""
     _require_deepeval()
@@ -342,7 +337,7 @@ def get_contextual_recall_with_deepeval(
             input=input_text,
             actual_output=actual_output,
             expected_output=expected_output,
-            retrieval_context=_serialize_context(context),
+            retrieval_context=_serialize_context(retrieved_context),
         ),
     )
     logger.info('DeepEval contextual recall: %s for input %s', score, input_text)
@@ -350,18 +345,18 @@ def get_contextual_recall_with_deepeval(
 
 
 def assert_contextual_recall_with_deepeval(
-    input_text, actual_output, expected_output, context, threshold, model_name=None, provider=None, **kwargs
+    input_text, actual_output, expected_output, retrieved_context, threshold, model_name=None, provider=None, **kwargs
 ):
     """Assert that the retrieved context covers the expected answer information."""
     score, reason = get_contextual_recall_with_deepeval(
-        input_text, actual_output, expected_output, context, model_name, threshold, provider, **kwargs
+        input_text, actual_output, expected_output, retrieved_context, model_name, threshold, provider, **kwargs
     )
     if score < threshold:
         raise AssertionError(f'DeepEval contextual recall is below threshold: {score} < {threshold}\nReason: {reason}')
 
 
 def get_contextual_precision_with_deepeval(
-    input_text, actual_output, expected_output, context, model_name=None, threshold=0.7, provider=None, **kwargs
+    input_text, actual_output, expected_output, retrieved_context, model_name=None, threshold=0.7, provider=None, **kwargs
 ):
     """Evaluate whether retrieved context is precise and relevant to the expected answer."""
     _require_deepeval()
@@ -373,7 +368,7 @@ def get_contextual_precision_with_deepeval(
             input=input_text,
             actual_output=actual_output,
             expected_output=expected_output,
-            retrieval_context=_serialize_context(context),
+            retrieval_context=_serialize_context(retrieved_context),
         ),
     )
     logger.info('DeepEval contextual precision: %s for input %s', score, input_text)
@@ -381,18 +376,18 @@ def get_contextual_precision_with_deepeval(
 
 
 def assert_contextual_precision_with_deepeval(
-    input_text, actual_output, expected_output, context, threshold, model_name=None, provider=None, **kwargs
+    input_text, actual_output, expected_output, retrieved_context, threshold, model_name=None, provider=None, **kwargs
 ):
     """Assert that retrieved context is precise and relevant."""
     score, reason = get_contextual_precision_with_deepeval(
-        input_text, actual_output, expected_output, context, model_name, threshold, provider, **kwargs
+        input_text, actual_output, expected_output, retrieved_context, model_name, threshold, provider, **kwargs
     )
     if score < threshold:
         raise AssertionError(f'DeepEval contextual precision is below threshold: {score} < {threshold}Reason: {reason}')
 
 
 def get_contextual_relevancy_with_deepeval(
-    input_text, actual_output, context, model_name=None, threshold=0.7, provider=None, **kwargs
+    input_text, actual_output, retrieved_context, model_name=None, threshold=0.7, provider=None, **kwargs
 ):
     """Evaluate whether the retrieved context is relevant to the input and answer."""
     _require_deepeval()
@@ -400,18 +395,18 @@ def get_contextual_relevancy_with_deepeval(
     metric = ContextualRelevancyMetric(threshold=threshold, model=model, **kwargs)
     score, reason = _measure(
         metric,
-        LLMTestCase(input=input_text, actual_output=actual_output, retrieval_context=_serialize_context(context)),
+        LLMTestCase(input=input_text, actual_output=actual_output, retrieval_context=_serialize_context(retrieved_context)),
     )
     logger.info('DeepEval contextual relevancy: %s for input %s', score, input_text)
     return score, reason
 
 
 def assert_contextual_relevancy_with_deepeval(
-    input_text, actual_output, context, threshold, model_name=None, provider=None, **kwargs
+    input_text, actual_output, retrieved_context, threshold, model_name=None, provider=None, **kwargs
 ):
     """Assert that the retrieved context is relevant."""
     score, reason = get_contextual_relevancy_with_deepeval(
-        input_text, actual_output, context, model_name, threshold, provider, **kwargs
+        input_text, actual_output, retrieved_context, model_name, threshold, provider, **kwargs
     )
     if score < threshold:
         raise AssertionError(
@@ -443,7 +438,7 @@ def assert_json_correctness_with_deepeval(
 
 
 def get_hallucination_evaluation_with_deepeval(
-    actual_output, context, model_name=None, threshold=0.7, provider=None, input_text='', **kwargs
+    actual_output, retrieved_context, model_name=None, threshold=0.7, provider=None, input_text='', **kwargs
 ):
     """Evaluate whether an output contains unsupported information."""
     _require_deepeval()
@@ -451,18 +446,18 @@ def get_hallucination_evaluation_with_deepeval(
     metric = HallucinationMetric(threshold=threshold, model=model, **kwargs)
     score, reason = _measure(
         metric,
-        LLMTestCase(input=input_text, actual_output=actual_output, context=_serialize_context(context)),
+        LLMTestCase(input=input_text, actual_output=actual_output, context=_serialize_context(retrieved_context)),
     )
     logger.info('DeepEval hallucination score: %s for output %s', score, actual_output)
     return score, reason
 
 
 def assert_hallucination_evaluation_with_deepeval(
-    actual_output, context, threshold, model_name=None, provider=None, input_text='', **kwargs
+    actual_output, retrieved_context, threshold, model_name=None, provider=None, input_text='', **kwargs
 ):
     """Assert that an output stays below the hallucination threshold."""
     score, reason = get_hallucination_evaluation_with_deepeval(
-        actual_output, context, model_name, threshold, provider, input_text, **kwargs
+        actual_output, retrieved_context, model_name, threshold, provider, input_text, **kwargs
     )
     if score > threshold:
         raise AssertionError(f'DeepEval hallucination is above threshold: {score} > {threshold}\nReason: {reason}')
@@ -492,27 +487,27 @@ def assert_answer_relevancy_with_deepeval(
 
 
 def get_faithfulness_evaluation_with_deepeval(
-    actual_output, context, model_name=None, threshold=0.7, provider=None, input_text='', **kwargs
+    actual_output, retrieved_context, model_name=None, threshold=0.7, provider=None, input_text='', **kwargs
 ):
     """Evaluate whether an output is supported by text or JSON API context."""
     _require_deepeval()
-    context = _serialize_context(context)
+    retrieved_context = _serialize_context(retrieved_context)
     model = _get_model(provider, model_name, kwargs.pop('model_kwargs', {}))
     metric = FaithfulnessMetric(threshold=threshold, model=model, **kwargs)
     score, reason = _measure(
         metric,
-        LLMTestCase(input=input_text, actual_output=actual_output, retrieval_context=context),
+        LLMTestCase(input=input_text, actual_output=actual_output, retrieval_context=retrieved_context),
     )
     logger.info('DeepEval faithfulness: %s for output %s', score, actual_output)
     return score, reason
 
 
 def assert_faithfulness_with_deepeval(
-    actual_output, context, threshold, model_name=None, provider=None, input_text='', **kwargs
+    actual_output, retrieved_context, threshold, model_name=None, provider=None, input_text='', **kwargs
 ):
     """Assert that an output is supported by the supplied context."""
     score, reason = get_faithfulness_evaluation_with_deepeval(
-        actual_output, context, model_name, threshold, provider, input_text, **kwargs
+        actual_output, retrieved_context, model_name, threshold, provider, input_text, **kwargs
     )
     if score < threshold:
         raise AssertionError(f'DeepEval faithfulness is below threshold: {score} < {threshold}\nReason: {reason}')

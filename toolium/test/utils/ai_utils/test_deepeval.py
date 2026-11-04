@@ -343,7 +343,7 @@ def test_get_summarization_with_deepeval():
         score, reason = deepeval.get_summarization_with_deepeval(
             input_text='Summarize the order update.',
             actual_output='The order is ready for pickup.',
-            context=[{'status': 'ready', 'delivery': 'pickup'}],
+            source_context=[{'status': 'ready', 'delivery': 'pickup'}],
             provider='azure',
             threshold=0.8,
         )
@@ -458,7 +458,7 @@ def test_get_contextual_recall_with_deepeval():
             input_text='What is the order status?',
             actual_output='The order is preparing.',
             expected_output='The order status is preparing.',
-            context=[{'status': 'preparing'}],
+            retrieved_context=[{'status': 'preparing'}],
             provider='azure',
             threshold=0.8,
         )
@@ -491,7 +491,7 @@ def test_get_contextual_precision_with_deepeval():
             input_text='What is the order status?',
             actual_output='The order is preparing.',
             expected_output='The order status is preparing.',
-            context=[{'status': 'preparing'}],
+            retrieved_context=[{'status': 'preparing'}],
             provider='azure',
             threshold=0.8,
         )
@@ -523,7 +523,7 @@ def test_get_contextual_relevancy_with_deepeval():
         score, reason = deepeval.get_contextual_relevancy_with_deepeval(
             input_text='What is the order status?',
             actual_output='The order is preparing.',
-            context=[{'status': 'preparing'}],
+            retrieved_context=[{'status': 'preparing'}],
             provider='azure',
             threshold=0.8,
         )
@@ -574,7 +574,7 @@ def test_get_hallucination_evaluation_with_deepeval():
     ):
         score, reason = deepeval.get_hallucination_evaluation_with_deepeval(
             actual_output='Paris is the capital of France.',
-            context=[{'country': 'France', 'capital': 'Paris'}],
+            retrieved_context=[{'country': 'France', 'capital': 'Paris'}],
             input_text='What is the capital of France?',
             provider='azure',
             threshold=0.2,
@@ -631,7 +631,7 @@ def test_get_faithfulness_evaluation_with_json_api_context():
     ):
         score, _ = deepeval.get_faithfulness_evaluation_with_deepeval(
             actual_output='The order is being prepared.',
-            context=[{'order_id': '12345', 'status': 'preparing'}],
+            retrieved_context=[{'order_id': '12345', 'status': 'preparing'}],
             threshold=0.7,
         )
 
@@ -650,7 +650,7 @@ def test_get_faithfulness_evaluation_with_deepeval():
     ):
         score, reason = deepeval.get_faithfulness_evaluation_with_deepeval(
             actual_output='Paris is the capital of France.',
-            context=['France has Paris as its capital.'],
+            retrieved_context=['France has Paris as its capital.'],
             input_text='What is the capital of France?',
             model_name='model',
             provider='azure',
