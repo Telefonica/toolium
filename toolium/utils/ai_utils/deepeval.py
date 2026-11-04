@@ -163,7 +163,9 @@ def evaluate_contextual_with_deepeval(
             if metric_config is not None
             else (threshold.get(metric_name, 0.7) if isinstance(threshold, dict) else threshold)
         )
-        metric_options = {key: value for key, value in config.items() if key != 'threshold'} if metric_config else metric_kwargs
+        metric_options = (
+            {key: value for key, value in config.items() if key != 'threshold'} if metric_config else metric_kwargs
+        )
         metric = globals()[_CONTEXTUAL_METRICS[metric_name]](
             threshold=metric_threshold, model=model, **metric_options
         )
@@ -212,7 +214,8 @@ def get_text_similarity_with_deepeval(text, expected_text, model_name=None, thre
 def _serialize_context(context_items):
     """Convert JSON-compatible context items to readable strings for DeepEval."""
     return [
-        json.dumps(item, ensure_ascii=False, indent=2) if isinstance(item, (dict, list)) else item for item in context_items
+        json.dumps(item, ensure_ascii=False, indent=2) if isinstance(item, (dict, list)) else item
+        for item in context_items
     ]
 
 
@@ -325,7 +328,14 @@ def assert_tool_correctness_with_deepeval(
 
 
 def get_contextual_recall_with_deepeval(
-    input_text, actual_output, expected_output, retrieved_context, model_name=None, threshold=0.7, provider=None, **kwargs
+    input_text,
+    actual_output,
+    expected_output,
+    retrieved_context,
+    model_name=None,
+    threshold=0.7,
+    provider=None,
+    **kwargs,
 ):
     """Evaluate whether the retrieved context covers the expected answer information."""
     _require_deepeval()
@@ -356,7 +366,14 @@ def assert_contextual_recall_with_deepeval(
 
 
 def get_contextual_precision_with_deepeval(
-    input_text, actual_output, expected_output, retrieved_context, model_name=None, threshold=0.7, provider=None, **kwargs
+    input_text,
+    actual_output,
+    expected_output,
+    retrieved_context,
+    model_name=None,
+    threshold=0.7,
+    provider=None,
+    **kwargs,
 ):
     """Evaluate whether retrieved context is precise and relevant to the expected answer."""
     _require_deepeval()
@@ -395,7 +412,11 @@ def get_contextual_relevancy_with_deepeval(
     metric = ContextualRelevancyMetric(threshold=threshold, model=model, **kwargs)
     score, reason = _measure(
         metric,
-        LLMTestCase(input=input_text, actual_output=actual_output, retrieval_context=_serialize_context(retrieved_context)),
+        LLMTestCase(
+            input=input_text,
+            actual_output=actual_output,
+            retrieval_context=_serialize_context(retrieved_context),
+        ),
     )
     logger.info('DeepEval contextual relevancy: %s for input %s', score, input_text)
     return score, reason
