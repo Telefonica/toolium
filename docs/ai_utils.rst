@@ -595,18 +595,43 @@ Default similarity method can be set in the properties.cfg file with the propert
     sentence_transformers_model: all-MiniLM-L6-v2  # Sentence Transformers model to use, all-mpnet-base-v2 by default
     openai_model: gpt-3.5-turbo  # OpenAI model to use, gpt-4o-mini by default
     provider: openai  # AI provider: 'openai' (default) or 'azure'
-    azure_deployment: gpt-4o-mini  # Azure deployment used by DeepEval
 
-DeepEval uses the same provider and model configuration as the other LLM utilities:
+DeepEval resolves each setting independently, in this order:
 
-* `provider`: `openai` (default) or `azure`. An explicit `provider` argument takes precedence.
-* `openai_model`: model name used by DeepEval when `model_name` is not specified.
+1. Explicit function arguments (`provider`, `model_name` and options in `model_kwargs`).
+2. The key in the `[DeepEval]` section.
+3. The same key in the `[AI]` section, if absent from `[DeepEval]`.
+4. The evaluator default, if absent from both sections.
+
+Configuration keys keep their existing names, without a `deepeval_` prefix:
+
+* `provider`: `openai` (default) or `azure`.
+* `openai_model`: evaluator model name (default `gpt-4o-mini`), for either provider.
 * `openai_api_key` and `openai_temperature`: OpenAI credentials and temperature.
-* `azure_api_key`, `azure_endpoint`, `api_version` and `azure_deployment`: Azure OpenAI credentials and deployment settings.
-* `azure_temperature`: Azure OpenAI temperature.
+* `azure_api_key`, `azure_endpoint`, `api_version` and `azure_deployment`: Azure connection settings.
+* `azure_temperature`: Azure evaluator temperature.
 
-DeepEval functions also accept `model_name`. It takes precedence over `openai_model`. Provider-specific DeepEval model
-options can be passed through `model_kwargs`:
+The provider is resolved first, then its credentials and temperature. Temperature defaults to `0.0` when absent from
+both sections. A configured zero is preserved. Credentials and Azure connection settings default to `None`, allowing
+DeepEval's own environment-based configuration. Azure deployment defaults to the resolved model name.
+
+For example, share the agent connection while overriding the evaluator model and temperature::
+
+    [AI]
+    provider: azure
+    openai_model: agent-model
+    azure_temperature: 0.7
+    azure_endpoint: https://example.openai.azure.com
+    azure_api_key: your-key
+    api_version: your-api-version
+
+    [DeepEval]
+    openai_model: judge-model
+    azure_deployment: judge-deployment
+    azure_temperature: 0.0
+
+Section names are case-sensitive: use `[DeepEval]`. Fallback happens only when a key is absent; an empty or invalid
+value is not replaced by the value in `[AI]`. To isolate the evaluator, configure its settings explicitly in `[DeepEval]`.
 
 .. code-block:: python
 
@@ -615,8 +640,8 @@ options can be passed through `model_kwargs`:
     score = get_text_similarity_with_deepeval(
         text="The received answer",
         expected_text="The expected answer",
-        provider="azure",              # optional; uses [AI].provider by default
-        model_name="my-deployment",     # optional; uses [AI].openai_model by default
+        provider="azure",              # overrides the configured provider
+        model_name="my-model",         # overrides the configured openai_model
         model_kwargs={"temperature": 0.1},
     )
 

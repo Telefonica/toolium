@@ -71,29 +71,39 @@ def _require_deepeval():
     ) from _DEEPEVAL_IMPORT_ERROR
 
 
+def _get_deepeval_config(config, key, default=None):
+    """Resolve each evaluator setting from DeepEval, AI, then its default."""
+    missing = object()
+    value = config.get_optional('DeepEval', key, missing)
+    if value is missing:
+        value = config.get_optional('AI', key, default)
+    return value
+
+
 def _get_model(provider, model_name, kwargs):
     config = DriverWrappersPool.get_default_wrapper().config
-    provider = provider or config.get_optional('AI', 'provider', 'openai')
-    model_name = model_name or config.get_optional('AI', 'openai_model', 'gpt-4o-mini')
-    model_kwargs = {
-        'model': model_name,
-        'api_key': config.get_optional('AI', f'{provider}_api_key'),
-        'temperature': config.get_optional('AI', f'{provider}_temperature', None),
+    deepeval_provider = provider if provider is not None else _get_deepeval_config(config, 'provider', 'openai')
+    deepeval_model = (
+        model_name if model_name is not None else _get_deepeval_config(config, 'openai_model', 'gpt-4o-mini')
+    )
+    deepeval_model_kwargs = {
+        'model': deepeval_model,
+        'api_key': _get_deepeval_config(config, f'{deepeval_provider}_api_key'),
+        'temperature': _get_deepeval_config(config, f'{deepeval_provider}_temperature', 0.0),
     }
-    if provider == 'openai':
-        model_class = GPTModel
-    elif provider == 'azure':
-        model_class = AzureOpenAIModel
-        model_kwargs.update(
-            base_url=config.get_optional('AI', 'azure_endpoint'),
-            deployment_name=config.get_optional('AI', 'azure_deployment', model_name),
-            api_version=config.get_optional('AI', 'api_version'),
+    if deepeval_provider == 'openai':
+        deepeval_model_class = GPTModel
+    elif deepeval_provider == 'azure':
+        deepeval_model_class = AzureOpenAIModel
+        deepeval_model_kwargs.update(
+            base_url=_get_deepeval_config(config, 'azure_endpoint'),
+            deployment_name=_get_deepeval_config(config, 'azure_deployment', deepeval_model),
+            api_version=_get_deepeval_config(config, 'api_version'),
         )
     else:
-        raise ValueError(f"Unknown provider: '{provider}', please use 'openai' or 'azure'")
-    model_kwargs.update(kwargs)
-    return model_class(**model_kwargs)
-    raise ValueError(f"Unknown provider: '{provider}', please use 'openai' or 'azure'")
+        raise ValueError(f"Unknown provider: '{deepeval_provider}', please use 'openai' or 'azure'")
+    deepeval_model_kwargs.update(kwargs)
+    return deepeval_model_class(**deepeval_model_kwargs)
 
 
 def _measure(metric, test_case):

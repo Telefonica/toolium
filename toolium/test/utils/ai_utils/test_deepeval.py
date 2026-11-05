@@ -108,6 +108,71 @@ def test_get_model_rejects_unknown_provider():
             deepeval._get_model(None, None, {})
 
 
+@pytest.mark.parametrize(
+    ('sections', 'expected_model', 'expected_key', 'expected_temperature'),
+    [
+        ({}, 'gpt-4o-mini', None, 0.0),
+        (
+            {'AI': {'openai_model': 'agent', 'openai_api_key': 'shared', 'openai_temperature': '0.7'}},
+            'agent',
+            'shared',
+            '0.7',
+        ),
+        (
+            {
+                'AI': {'openai_model': 'agent', 'openai_api_key': 'shared', 'openai_temperature': '0.7'},
+                'DeepEval': {'openai_model': 'judge', 'openai_temperature': '0'},
+            },
+            'judge',
+            'shared',
+            '0',
+        ),
+        ({'DeepEval': {'openai_model': 'judge', 'openai_api_key': 'judge-key'}}, 'judge', 'judge-key', 0.0),
+    ],
+)
+def test_get_model_configuration_precedence(sections, expected_model, expected_key, expected_temperature):
+    from toolium.config_parser import ExtendedConfigParser
+
+    config = ExtendedConfigParser()
+    config.read_dict(sections)
+    with (
+        mock.patch.object(deepeval.DriverWrappersPool, 'get_default_wrapper', return_value=mock.Mock(config=config)),
+        mock.patch.object(deepeval, 'GPTModel') as model_class,
+    ):
+        deepeval._get_model(None, None, {})
+    model_class.assert_called_once_with(model=expected_model, api_key=expected_key, temperature=expected_temperature)
+
+
+def test_get_model_resolves_provider_before_connection_and_allows_explicit_overrides():
+    from toolium.config_parser import ExtendedConfigParser
+
+    config = ExtendedConfigParser()
+    config.read_dict(
+        {
+            'AI': {'provider': 'openai', 'azure_api_key': 'shared-azure', 'azure_temperature': '0.7'},
+            'DeepEval': {
+                'provider': 'azure',
+                'openai_model': 'judge',
+                'azure_endpoint': 'https://judge',
+                'api_version': 'version',
+            },
+        }
+    )
+    with (
+        mock.patch.object(deepeval.DriverWrappersPool, 'get_default_wrapper', return_value=mock.Mock(config=config)),
+        mock.patch.object(deepeval, 'AzureOpenAIModel') as model_class,
+    ):
+        deepeval._get_model(None, 'explicit-model', {'temperature': 0.1, 'api_key': 'explicit-key'})
+    model_class.assert_called_once_with(
+        model='explicit-model',
+        api_key='explicit-key',
+        temperature=0.1,
+        base_url='https://judge',
+        deployment_name='explicit-model',
+        api_version='version',
+    )
+
+
 def test_evaluate_contextual_with_metric_config():
     metric = mock.Mock(score=0.9, reason='Supported')
     with (

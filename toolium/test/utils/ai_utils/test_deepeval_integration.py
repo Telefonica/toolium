@@ -16,19 +16,19 @@ AZURE_REQUIRED_VARS = ('AZURE_OPENAI_API_KEY', 'AZURE_OPENAI_ENDPOINT', 'OPENAI_
 AZURE_AVAILABLE = all(os.getenv(name) for name in AZURE_REQUIRED_VARS)
 
 
-def _configure_ai(**values):
+def _configure_deepeval(**values):
     config = DriverWrappersPool.get_default_wrapper().config
     try:
-        config.add_section('AI')
+        config.add_section('DeepEval')
     except Exception:
         pass
     for key, value in values.items():
-        config.set('AI', key, value)
+        config.set('DeepEval', key, value)
 
 
 @pytest.fixture(scope='module', autouse=True)
 def configure_models():
-    _configure_ai(
+    _configure_deepeval(
         openai_model=os.getenv('DEEPEVAL_OPENAI_MODEL', 'gpt-4o-mini'),
         azure_endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),
         azure_api_key=os.getenv('AZURE_OPENAI_API_KEY'),
