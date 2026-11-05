@@ -363,7 +363,7 @@ def test_assert_summarization_with_deepeval_fails_below_threshold():
 
 
 def test_get_pii_leakage_with_deepeval():
-    metric = mock.Mock(score=0.1, reason='No PII detected')
+    metric = mock.Mock(score=1.0, reason='No PII detected')
     with (
         mock.patch.object(deepeval, 'LLMTestCase', FakeTestCase),
         mock.patch.object(deepeval, 'PIILeakageMetric', return_value=metric) as metric_class,
@@ -376,17 +376,24 @@ def test_get_pii_leakage_with_deepeval():
             threshold=0.5,
         )
 
-    assert (score, reason) == (0.1, 'No PII detected')
+    assert (score, reason) == (1.0, 'No PII detected')
     metric_class.assert_called_once_with(threshold=0.5, model=mock.sentinel.model)
     test_case = metric.measure.call_args.args[0]
     assert test_case.input == 'Tell me the order status.'
     assert test_case.actual_output == 'Your order is ready for pickup.'
 
 
-def test_assert_pii_leakage_with_deepeval_fails_above_threshold():
-    with mock.patch.object(deepeval, 'get_pii_leakage_with_deepeval', return_value=(0.8, 'PII detected')):
-        with pytest.raises(AssertionError, match='DeepEval PII leakage is above threshold'):
+@pytest.mark.parametrize('score', [0.0, 0.4])
+def test_assert_pii_leakage_with_deepeval_fails_below_threshold(score):
+    with mock.patch.object(deepeval, 'get_pii_leakage_with_deepeval', return_value=(score, 'PII detected')):
+        with pytest.raises(AssertionError, match='DeepEval PII privacy score is below threshold'):
             deepeval.assert_pii_leakage_with_deepeval('Email: user@example.com', threshold=0.5)
+
+
+@pytest.mark.parametrize('score', [0.5, 1.0])
+def test_assert_pii_leakage_with_deepeval_passes_at_or_above_threshold(score):
+    with mock.patch.object(deepeval, 'get_pii_leakage_with_deepeval', return_value=(score, 'Acceptable privacy score')):
+        deepeval.assert_pii_leakage_with_deepeval('Your order is ready for pickup.', threshold=0.5)
 
 
 def test_get_toxicity_with_deepeval():

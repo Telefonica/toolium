@@ -252,8 +252,8 @@ def get_pii_leakage_with_deepeval(
 ):
     """Evaluate possible personally identifiable information leakage.
 
-    A higher score indicates more leakage. Use the dedicated assertion with a
-    threshold that represents the maximum acceptable leakage.
+    A higher score indicates better privacy protection; 1.0 means no PII leakage
+    was detected. The threshold is the minimum acceptable privacy score.
     """
     _require_deepeval()
     model = _get_model(provider, model_name, kwargs.pop('model_kwargs', {}))
@@ -264,10 +264,10 @@ def get_pii_leakage_with_deepeval(
 
 
 def assert_pii_leakage_with_deepeval(actual_output, threshold, model_name=None, provider=None, input_text='', **kwargs):
-    """Assert that an output stays below the PII leakage threshold."""
+    """Assert that an output meets the minimum PII privacy score."""
     score, reason = get_pii_leakage_with_deepeval(actual_output, model_name, threshold, provider, input_text, **kwargs)
-    if score > threshold:
-        raise AssertionError(f'DeepEval PII leakage is above threshold: {score} > {threshold}\nReason: {reason}')
+    if score < threshold:
+        raise AssertionError(f'DeepEval PII privacy score is below threshold: {score} < {threshold}\nReason: {reason}')
 
 
 def get_toxicity_with_deepeval(actual_output, model_name=None, threshold=0.7, provider=None, input_text='', **kwargs):

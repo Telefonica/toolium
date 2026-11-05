@@ -410,8 +410,10 @@ The contextual metrics currently supported by the combined evaluation are:
 * **summarization**: checks whether the output is a complete and factually consistent summary of the supplied context. A high score is better.
 
 All these contextual metrics use the normal rule `score >= threshold`. This differs from safety-oriented metrics such as
-`toxicity`, `PII leakage` and `hallucination`, where a lower score is better and which are evaluated with their dedicated
-methods. Thresholds should be calibrated independently for each metric and model; scores from different metrics or
+`toxicity` and `hallucination`, where a lower score is better and which are evaluated with their dedicated
+methods. `PII leakage` also uses `score >= threshold`: a higher score indicates better privacy protection,
+and 1.0 means no PII leakage was detected. Its threshold is the minimum acceptable privacy score.
+Thresholds should be calibrated independently for each metric and model; scores from different metrics or
 providers should not be assumed to be directly equivalent.
 
 Metric options
