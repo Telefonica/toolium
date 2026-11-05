@@ -320,7 +320,7 @@ and the combined `passed` value is `True` only when all configured metrics pass.
         input_text="What is the status and total of order 12345?",
         actual_output="The order is being prepared and costs 49.99 EUR.",
         expected_output="Order 12345 is preparing and costs 49.99 EUR.",
-        context=[
+        retrieved_context=[
             {
                 "order_id": "12345",
                 "status": "preparing",
@@ -343,7 +343,7 @@ A single metric can be selected with a string:
     result = evaluate_contextual_with_deepeval(
         input_text="What is the order status?",
         actual_output="The order is being prepared.",
-        context=[{"status": "preparing"}],
+        retrieved_context=[{"status": "preparing"}],
         metrics="faithfulness",
         provider="azure",
         threshold=0.7,
@@ -357,7 +357,7 @@ Different thresholds can be configured for each metric with a dictionary:
         input_text="What is the status and total?",
         actual_output=answer,
         expected_output=expected_answer,
-        context=[api_response],
+        retrieved_context=[api_response],
         metrics=["faithfulness", "contextual_precision", "contextual_recall"],
         threshold={
             "faithfulness": 0.7,
@@ -376,7 +376,7 @@ with `metrics`, `threshold` or `metric_kwargs`.
     result = evaluate_contextual_with_deepeval(
         input_text="Summarize the order update.",
         actual_output="The order is ready for pickup.",
-        context=[{"status": "ready", "delivery": "pickup"}],
+        retrieved_context=[{"status": "ready", "delivery": "pickup"}],
         metric_config={
             "faithfulness": {"threshold": 0.7},
             "contextual_relevancy": {"threshold": 0.8},
@@ -398,7 +398,7 @@ Use `assert_contextual_with_deepeval()` when the test should fail if one or more
         input_text=question,
         actual_output=answer,
         expected_output=expected_answer,
-        context=context,
+        retrieved_context=retrieved_context,
         metric_config={
             "faithfulness": {"threshold": 0.7},
             "contextual_relevancy": {"threshold": 0.8},
@@ -553,7 +553,7 @@ each dictionary or list to a JSON string before sending it as `retrieval_context
 
     score, reason = get_faithfulness_evaluation_with_deepeval(
         actual_output="The order is being prepared and costs 49.99 EUR.",
-        context=[api_response],
+        retrieved_context=[api_response],
         input_text="What is the status and total of order 12345?",
         provider="azure",
         threshold=0.6,
@@ -563,11 +563,11 @@ For several API responses, pass one JSON object per context item:
 
 .. code-block:: python
 
-    context = [order_response, customer_response, shipping_response]
+    retrieved_context = [order_response, customer_response, shipping_response]
 
     assert_faithfulness_with_deepeval(
         actual_output=answer,
-        context=context,
+        retrieved_context=retrieved_context,
         input_text=question,
         provider="azure",
         threshold=0.6,
@@ -577,7 +577,7 @@ Text context remains supported as well:
 
 .. code-block:: python
 
-    context = ["The order is in preparation.", "The total is 49.99 EUR."]
+    retrieved_context = ["The order is in preparation.", "The total is 49.99 EUR."]
 
 JSON is serialized with `ensure_ascii=False` and indentation for readability. For critical fields such as identifiers,
 amounts, dates and statuses, combine faithfulness evaluation with deterministic assertions because an LLM metric should
