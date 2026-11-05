@@ -58,13 +58,15 @@ def _require_deepeval():
     if _DEEPEVAL_IMPORT_ERROR is None:
         return
     if isinstance(_DEEPEVAL_IMPORT_ERROR, ModuleNotFoundError) and _DEEPEVAL_IMPORT_ERROR.name == 'deepeval':
-        raise ImportError("DeepEval is not installed. Please run 'pip install toolium[ai]'") from _DEEPEVAL_IMPORT_ERROR
+        raise ImportError(
+            "DeepEval is not installed. Please run 'pip install toolium[deepeval]'"
+        ) from _DEEPEVAL_IMPORT_ERROR
     try:
         installed_version = version('deepeval')
     except PackageNotFoundError:
         installed_version = 'unknown (package metadata unavailable)'
     raise ImportError(
-        f'Could not import DeepEval (installed version: {installed_version}; required: deepeval~=3.0). '
+        f'Could not import DeepEval (installed version: {installed_version}; required: deepeval~=3.9.9). '
         f'Check version compatibility and dependencies. Original error: {_DEEPEVAL_IMPORT_ERROR}'
     ) from _DEEPEVAL_IMPORT_ERROR
 

@@ -13,6 +13,14 @@ can install them with the following command:
 
     pip install toolium[ai]
 
+DeepEval has a separate optional extra so that its pytest plugins are only installed when explicitly requested:
+
+.. code-block:: bash
+
+    pip install "toolium[deepeval]"
+
+This extra requires DeepEval >=3.9.9,<3.10.0. To use all AI utilities, install "toolium[ai,deepeval]".
+
 **Additional Requirements:**
 
 For SpaCy, you also need to download the language model, i.e. for small English model:
@@ -119,7 +127,7 @@ Sentence Transformers or OpenAI, and it does not change the default similarity m
     )
 
 `get_text_similarity_with_deepeval()` returns a score between 0 and 1. The assertion succeeds when at least one
-expected text reaches the threshold. DeepEval must be installed with `pip install toolium[ai]`.
+expected text reaches the threshold. DeepEval must be installed with `pip install "toolium[deepeval]"`.
 
 When to use DeepEval
 ~~~~~~~~~~~~~~~~~~~~
@@ -614,7 +622,7 @@ options can be passed through `model_kwargs`:
 
 For Azure OpenAI, `azure_deployment` identifies the deployment and `azure_endpoint` is used as the model base URL.
 The `deepeval` module creates the corresponding DeepEval `GPTModel` or `AzureOpenAIModel` and passes the configured
-credentials to it. DeepEval must be installed with `pip install toolium[ai]`.
+credentials to it. DeepEval must be installed with `pip install "toolium[deepeval]"`.
 
 To select models for each method, you can refer to the following links:
 

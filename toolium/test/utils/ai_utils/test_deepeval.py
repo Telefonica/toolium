@@ -791,7 +791,7 @@ def test_deepeval_import_failure_reports_version_and_original_cause(error):
         mock.patch.object(deepeval, '_DEEPEVAL_IMPORT_ERROR', error),
         mock.patch.object(deepeval, 'version', return_value='3.0.0'),
     ):
-        with pytest.raises(ImportError, match=r'installed version: 3.0.0; required: deepeval~=3.0') as caught:
+        with pytest.raises(ImportError, match=r'installed version: 3.0.0; required: deepeval~=3.9.9') as caught:
             deepeval.get_text_similarity_with_deepeval('actual', 'expected')
     assert caught.value.__cause__ is error
     assert str(error) in str(caught.value)
