@@ -771,6 +771,38 @@ def test_assert_text_criteria_with_deepeval_fails_below_threshold():
 
 
 def test_deepeval_functions_fail_with_clear_error_when_dependency_is_missing():
-    with mock.patch.object(deepeval, 'LLMTestCase', None):
-        with pytest.raises(ImportError, match='DeepEval is not installed'):
+    error = ModuleNotFoundError("No module named 'deepeval'", name='deepeval')
+    with mock.patch.object(deepeval, '_DEEPEVAL_IMPORT_ERROR', error):
+        with pytest.raises(ImportError, match='DeepEval is not installed') as caught:
             deepeval.get_text_similarity_with_deepeval('actual', 'expected')
+    assert caught.value.__cause__ is error
+
+
+@pytest.mark.parametrize(
+    'error',
+    [
+        ImportError("cannot import name 'SingleTurnParams' from 'deepeval.test_case'"),
+        ModuleNotFoundError("No module named 'dependency'", name='dependency'),
+        ImportError("cannot import name 'GPTModel' from 'deepeval.models'"),
+    ],
+)
+def test_deepeval_import_failure_reports_version_and_original_cause(error):
+    with (
+        mock.patch.object(deepeval, '_DEEPEVAL_IMPORT_ERROR', error),
+        mock.patch.object(deepeval, 'version', return_value='3.0.0'),
+    ):
+        with pytest.raises(ImportError, match=r'installed version: 3.0.0; required: deepeval~=3.0') as caught:
+            deepeval.get_text_similarity_with_deepeval('actual', 'expected')
+    assert caught.value.__cause__ is error
+    assert str(error) in str(caught.value)
+
+
+def test_deepeval_import_failure_without_package_metadata():
+    error = ImportError('Broken dependency')
+    with (
+        mock.patch.object(deepeval, '_DEEPEVAL_IMPORT_ERROR', error),
+        mock.patch.object(deepeval, 'version', side_effect=deepeval.PackageNotFoundError('deepeval')),
+    ):
+        with pytest.raises(ImportError, match='package metadata unavailable') as caught:
+            deepeval._require_deepeval()
+    assert caught.value.__cause__ is error

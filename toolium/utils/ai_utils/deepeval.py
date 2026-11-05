@@ -17,6 +17,11 @@ limitations under the License.
 
 import json
 import logging
+from importlib.metadata import PackageNotFoundError, version
+
+from toolium.driver_wrappers_pool import DriverWrappersPool
+
+_DEEPEVAL_IMPORT_ERROR = None
 
 try:
     from deepeval.metrics import (
@@ -33,32 +38,35 @@ try:
         ToolCorrectnessMetric,
         ToxicityMetric,
     )
+    from deepeval.models import GPTModel
+    from deepeval.models.llms import AzureOpenAIModel
     from deepeval.test_case import LLMTestCase, SingleTurnParams, ToolCall, ToolCallParams
-except ImportError:
+except ImportError as exc:
+    _DEEPEVAL_IMPORT_ERROR = exc
     AnswerRelevancyMetric = ContextualPrecisionMetric = ContextualRecallMetric = ContextualRelevancyMetric = (
         FaithfulnessMetric
     ) = GEval = HallucinationMetric = JsonCorrectnessMetric = PIILeakageMetric = SummarizationMetric = (
         ToolCorrectnessMetric
     ) = ToxicityMetric = LLMTestCase = SingleTurnParams = ToolCall = ToolCallParams = None
-
-try:
-    from deepeval.models import GPTModel
-except ImportError:
     GPTModel = None
-
-try:
-    from deepeval.models.llms import AzureOpenAIModel
-except ImportError:
     AzureOpenAIModel = None
-
-from toolium.driver_wrappers_pool import DriverWrappersPool
 
 logger = logging.getLogger(__name__)
 
 
 def _require_deepeval():
-    if LLMTestCase is None:
-        raise ImportError("DeepEval is not installed. Please run 'pip install toolium[ai]'")
+    if _DEEPEVAL_IMPORT_ERROR is None:
+        return
+    if isinstance(_DEEPEVAL_IMPORT_ERROR, ModuleNotFoundError) and _DEEPEVAL_IMPORT_ERROR.name == 'deepeval':
+        raise ImportError("DeepEval is not installed. Please run 'pip install toolium[ai]'") from _DEEPEVAL_IMPORT_ERROR
+    try:
+        installed_version = version('deepeval')
+    except PackageNotFoundError:
+        installed_version = 'unknown (package metadata unavailable)'
+    raise ImportError(
+        f'Could not import DeepEval (installed version: {installed_version}; required: deepeval~=3.0). '
+        f'Check version compatibility and dependencies. Original error: {_DEEPEVAL_IMPORT_ERROR}'
+    ) from _DEEPEVAL_IMPORT_ERROR
 
 
 def _get_model(provider, model_name, kwargs):
