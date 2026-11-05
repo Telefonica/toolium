@@ -197,8 +197,8 @@ Both approaches use an OpenAI or Azure OpenAI model as an evaluator, but they ex
 * The existing methods call the provider client directly through `openai_request()` and send Toolium-owned prompts.
   The prompt, JSON response format and parsing logic are controlled by Toolium.
 * DeepEval creates an evaluation metric such as `GEval`, builds an `LLMTestCase` and delegates the evaluation workflow to
-  DeepEval. DeepEval generates the evaluation steps, invokes the configured model and exposes the score and reason using
-  its metric API.
+  DeepEval. Toolium supplies versioned default GEval steps, and DeepEval invokes the configured model and exposes
+  the score, reason and native pass/fail decision.
 * `get_text_similarity_with_openai()` is a focused comparison of two texts. Its prompt asks whether the answer is
   semantically similar to the expected text and returns the similarity value.
 * `get_answer_evaluation_with_openai()` includes more explicit criteria such as semantic similarity, factual accuracy,
@@ -305,6 +305,112 @@ The existing `get_answer_evaluation_with_openai()` method has a predefined evalu
 structured fields through Pydantic. DeepEval is more convenient when criteria are passed as part of the metric, whereas
 the existing method provides more control over the response schema.
 
+Single responses, conversations and reusable evaluators
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Toolium supports independent single-turn and multi-turn evaluations. A response evaluation builds an `LLMTestCase`;
+a conversation evaluation builds a `ConversationalTestCase` from explicit user/assistant turns. Toolium does not collect
+messages or retain scenario history. A scenario may evaluate one response during the interaction and the conversation
+at its end.
+
+Both APIs return `{"results": {metric_name: {"score": ..., "reason": ..., "passed": ...}}, "passed": ...}`.
+Only selected metrics run, and every selected metric must pass. Assertions use the same decision without measuring
+again. Evaluation errors propagate; they are not converted into successful or fabricated scores.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import (
+        evaluate_response_with_deepeval,
+        assert_conversation_with_deepeval,
+    )
+
+    response_result = evaluate_response_with_deepeval(
+        input_text="Where is my order?",
+        actual_output="It is ready for pickup.",
+        retrieved_context=["The order is ready for pickup."],
+        metric_config={
+            "answer_relevancy": {"threshold": 0.7},
+            "faithfulness": {"threshold": 0.8},
+        },
+    )
+    messages = [
+        {"role": "user", "content": "Where is my order?"},
+        {"role": "assistant", "content": "It is ready for pickup."},
+        {"role": "user", "content": "Is it being delivered?"},
+        {"role": "assistant", "content": "No, you need to collect it."},
+    ]
+    assert_conversation_with_deepeval(
+        messages,
+        metric_config={
+            "turn_relevancy": {"threshold": 0.7},
+            "knowledge_retention": {"threshold": 0.8},
+        },
+    )
+
+Response metric names are `answer_relevancy`, `faithfulness`, `contextual_relevancy`, `contextual_precision`,
+`contextual_recall`, `toxicity`, `pii_leakage`, `hallucination`, `json_correctness`, `tool_correctness`, `text_similarity`,
+`answer_correctness` and `geval`. Supply each metric's required case fields (for example `expected_output`,
+`tools_called`, `expected_tools`) and constructor options (for example `expected_schema` inside `metric_config`).
+Custom `geval` requires `criteria` or `evaluation_steps`; `evaluation_params` can select its case fields.
+
+Conversation metric names are `turn_relevancy`, `knowledge_retention`, `conversation_completeness` and
+`conversational_geval`. Messages may be dictionaries or DeepEval `Turn` objects, with `user` or `assistant` roles.
+Additional case options such as `scenario` and `expected_outcome` are accepted. Single-turn metrics cannot be used
+in conversation evaluations or vice versa. `assert_response_with_deepeval()` and `assert_conversation_with_deepeval()`
+fail with details of all failed selected metrics. Without `metric_config`, the defaults are `answer_relevancy` for
+responses and `turn_relevancy` for conversations, each with threshold `0.7`.
+
+Judge creation and reuse
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Every evaluation function accepts `model=judge`, including the individual getters and assertions. A supplied model is
+used directly, without consulting the default driver wrapper or creating another model. Do not combine it with
+`provider`, `model_name` or non-empty `model_kwargs`. Models created directly through DeepEval are also accepted.
+Without an injected model, standalone functions create a model for that invocation.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import create_deepeval_model, DeepEvalEvaluator
+
+    judge = create_deepeval_model(provider="azure", temperature=0.0)
+    evaluator = DeepEvalEvaluator(
+        model=judge,
+        metric_config={"faithfulness": {"threshold": 0.8}},
+        conversation_metric_config={"turn_relevancy": {"threshold": 0.7}},
+    )
+    result = evaluator.evaluate_response(
+        "Where is my order?", "Ready for pickup.", retrieved_context=["Ready for pickup."],
+    )
+    evaluator.assert_conversation(messages)
+    evaluator.assert_summary("The order is ready for pickup.", "Order ready for pickup.", threshold=0.7)
+
+`create_deepeval_model()` resolves [DeepEval], [AI] and defaults as described below. Pass `config=your_config_parser`
+to avoid the default driver wrapper. Without `model`, `DeepEvalEvaluator` creates a judge once at construction and
+accepts the same model configuration options. It keeps copies of response and conversation metric definitions.
+
+Each call creates fresh metrics and a fresh case, and returns a separate result. Supplying `metric_config` to an
+evaluator method replaces its defaults for that call only; it does not merge with or modify the stored selection.
+The evaluator retains no conversation, last result or metric instances. It offers `evaluate_response`,
+`evaluate_conversation`, `evaluate_summary` and corresponding `assert_*` methods.
+
+With Behave, the evaluator can be prepared in `before_all`, and each scenario supplies its own messages. With pytest,
+a session fixture can serve the same purpose. Multiple processes each own their evaluator. Concurrent threads may
+share an evaluator only if the injected judge supports concurrent calls; otherwise use one judge/evaluator per thread.
+Toolium isolates metric and case state but does not add locking to third-party models. Configure the default wrapper
+before starting concurrent evaluations; do not mutate shared configuration during model creation.
+
+GEval rubrics
+^^^^^^^^^^^^^
+
+Similarity, answer correctness and the default conversational GEval use explicit steps versioned in Toolium's source.
+Text-characteristic analysis builds explicit steps for each requested characteristic. This avoids the additional LLM
+request to generate steps for those defaults; it does not make LLM verdicts deterministic.
+
+Pass `evaluation_steps=[...]` to customize the rubric. For similarity and answer correctness, custom `criteria` without
+`evaluation_steps` lets DeepEval generate matching steps instead of applying the default rubric. The same rule applies
+to custom `geval` and `conversational_geval` metric configurations. In characteristic analysis use `text_criteria` for
+the characteristics; optional `evaluation_steps` are applied to each selected characteristic.
+
 Contextual evaluation with one or more metrics
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -374,13 +480,12 @@ with `metrics`, `threshold` or `metric_kwargs`.
 .. code-block:: python
 
     result = evaluate_contextual_with_deepeval(
-        input_text="Summarize the order update.",
+        input_text="What is the order status and delivery method?",
         actual_output="The order is ready for pickup.",
         retrieved_context=[{"status": "ready", "delivery": "pickup"}],
         metric_config={
             "faithfulness": {"threshold": 0.7},
             "contextual_relevancy": {"threshold": 0.8},
-            "summarization": {"threshold": 0.75, "n": 3},
         },
         provider="azure",
     )
@@ -415,9 +520,9 @@ The contextual metrics currently supported by the combined evaluation are:
 * **contextual_relevancy**: checks whether the retrieved context is relevant to the input and answer. A high score is better.
 * **contextual_precision**: checks whether the relevant context is ranked or selected precisely for the expected answer. It requires `expected_output`. A high score is better.
 * **contextual_recall**: checks whether the context contains the information needed to cover the expected answer. It requires `expected_output`. A high score is better.
-* **summarization**: checks whether the output is a complete and factually consistent summary of the supplied context. A high score is better.
 
-All these contextual metrics use the normal rule `score >= threshold`. This differs from safety-oriented metrics such as
+Toolium delegates pass/fail to `metric.is_successful()`, including the effective threshold in `strict_mode`.
+For these contextual metrics, a higher score is better. This differs from safety-oriented metrics such as
 `toxicity` and `hallucination`, where a lower score is better and which are evaluated with their dedicated
 methods. `PII leakage` also uses `score >= threshold`: a higher score indicates better privacy protection,
 and 1.0 means no PII leakage was detected. Its threshold is the minimum acceptable privacy score.
@@ -438,7 +543,7 @@ are:
 * `evaluation_template`: custom DeepEval evaluation template, for advanced integrations.
 
 The `model` option is managed by Toolium and should not be placed inside `metric_config`. Use `provider`, `model_name` and
-`model_kwargs` at the top level instead.
+`model_kwargs`, or an explicit `model=judge`, at the top level instead.
 
 Supported options by metric
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -505,34 +610,42 @@ needed to cover the expected answer.
         }
     }
 
-**`summarization`**
+The `threshold` option is required for every `metric_config` entry and must be between `0` and `1`.
+Unsupported options are rejected by the corresponding DeepEval metric. Every selected metric must pass its native
+`is_successful()` decision. An empty metric selection is rejected.
 
-In addition to the shared options, it supports:
+Summaries against source text
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* `n`: number of assessment questions used to evaluate the summary (default `5`). Higher values can increase coverage,
-  latency and token usage.
-* `assessment_questions`: explicit questions to use instead of relying only on automatically generated assessments.
-* `truths_extraction_limit`: limits the number of extracted truths used in the evaluation.
-
-Example:
+Summarization is a separate operation: DeepEval expects the original document in `input` and the summary in
+`actual_output`. A question or instruction such as "Summarize the document" is not the source text. It is not a metric
+in `evaluate_contextual_with_deepeval()` or `evaluate_response_with_deepeval()`.
 
 .. code-block:: python
 
-    metric_config={
-        "summarization": {
-            "threshold": 0.75,
-            "n": 5,
-            "assessment_questions": [
-                "Does the summary include the order status?",
-                "Does it preserve the total amount?",
-            ],
-            "truths_extraction_limit": 10,
-        }
-    }
+    from toolium.utils.ai_utils.deepeval import (
+        get_summarization_with_deepeval,
+        assert_summarization_with_deepeval,
+    )
 
-The `threshold` option is required for every `metric_config` entry and must be between `0` and `1`. Options not listed
-for a metric should not be added to that metric's configuration; DeepEval may reject unsupported arguments. All contextual
-metrics use the rule `score >= threshold`, so a higher score represents a better contextual evaluation.
+    source_text = "Order 12345 is ready for pickup. Its total is 49.99 EUR."
+    summary = "Order 12345 is ready for pickup and costs 49.99 EUR."
+    score, reason = get_summarization_with_deepeval(
+        source_text=source_text,
+        summary=summary,
+        threshold=0.75,
+        n=5,
+        assessment_questions=["Does it include the order status?", "Does it preserve the total?"],
+        truths_extraction_limit=10,
+    )
+    assert_summarization_with_deepeval(source_text, summary, threshold=0.75)
+
+A higher summary score is better. `n` controls the number of generated assessment questions; `assessment_questions`
+provides explicit questions, and `truths_extraction_limit` limits extracted facts. Other options are passed to
+`SummarizationMetric`. For JSON sources, serialize the source into one string before calling this API.
+
+Migration from the initial PR interface: replace `input_text`, `actual_output`, `source_context` with `source_text`
+and `summary`. Replace a combined `summarization` metric with a separate summarization call.
 
 API responses as JSON context
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -913,8 +1026,8 @@ existing OpenAI-based functions:
 
 * **get_answer_evaluation_with_deepeval()**: evaluates an answer against a reference answer and returns `(score, reason)`.
 * **assert_answer_evaluation_with_deepeval()**: accepts one or more reference answers and succeeds when any score reaches the threshold.
-* **get_text_criteria_analysis_with_deepeval()**: evaluates each criterion independently and returns `overall_match` and failed features.
-* **assert_text_criteria_with_deepeval()**: asserts that the overall criteria score reaches the threshold.
+* **get_text_criteria_analysis_with_deepeval()**: returns the mean `overall_match`, failed `features` and aggregate `passed`.
+* **assert_text_criteria_with_deepeval()**: requires every selected characteristic to pass its native DeepEval decision.
 
 .. code-block:: python
 
@@ -952,8 +1065,10 @@ existing OpenAI-based functions:
         threshold=0.7,
     )
 
-`get_text_criteria_analysis_with_deepeval()` returns a dictionary with `overall_match` and a `features` list containing
-criteria whose score is below the threshold. These functions require DeepEval and can incur model usage costs.
+`get_text_criteria_analysis_with_deepeval()` returns `overall_match` (the mean, for information), a `features` list
+containing failed characteristics, and `passed`. All selected characteristics must pass; a high average does not offset
+a failed characteristic. An empty selection is rejected. Reference-answer and similarity assertions still accept any
+one successful reference. These functions require DeepEval and can incur model usage costs.
 
 Evaluation Criteria
 ~~~~~~~~~~~~~~~~~~~
