@@ -30,4 +30,5 @@ def configure_default_openai_model():
         config.add_section('AI')
     except Exception:
         pass
-    config.set('AI', 'openai_model', 'gpt-4.1-mini')
+    config.set('AI', 'openai_model', 'gpt-4o-mini')
+    config.set('AI', 'azure_deployment', 'gpt-4o-mini')

@@ -13,6 +13,14 @@ can install them with the following command:
 
     pip install toolium[ai]
 
+DeepEval has a separate optional extra so that its pytest plugins are only installed when explicitly requested:
+
+.. code-block:: bash
+
+    pip install "toolium[deepeval]"
+
+This extra requires DeepEval >=3.9.9,<3.10.0. To use all AI utilities, install "toolium[ai,deepeval]".
+
 **Additional Requirements:**
 
 For SpaCy, you also need to download the language model, i.e. for small English model:
@@ -67,6 +75,10 @@ similarity.
 3. `OpenAI <https://github.com/openai/openai-python>`_: Utilizes OpenAI's language models for advanced semantic text
 comparison. Provides the most sophisticated analysis but requires API access and it may incur costs.
 
+4. `DeepEval <https://deepeval.com/>`_: Provides additional semantic similarity and LLM-as-a-Judge metrics. It is optional and does not change the existing methods or defaults.
+
+DeepEval can be used explicitly through `toolium.utils.ai_utils.deepeval`. Its methods are independent from the methods described above.
+
 Usage
 ~~~~~
 
@@ -88,6 +100,489 @@ completely different).
     # Validate similarity
     assert_text_similarity(input_text, expected_text, threshold=threshold, similarity_method=similarity_method)
 
+DeepEval alternative
+~~~~~~~~~~~~~~~~~~~~
+
+DeepEval is available as an additional implementation. It must be selected explicitly; it does not replace SpaCy,
+Sentence Transformers or OpenAI, and it does not change the default similarity method.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import (
+        assert_text_similarity_with_deepeval,
+        get_text_similarity_with_deepeval,
+    )
+
+    similarity = get_text_similarity_with_deepeval(
+        text="The quick brown fox jumps over the lazy dog",
+        expected_text="A fast brown fox leaps over a sleepy dog",
+        model_name="gpt-4o-mini",  # optional DeepEval evaluation model
+        threshold=0.8,
+    )
+
+    assert_text_similarity_with_deepeval(
+        text="The quick brown fox jumps over the lazy dog",
+        expected_texts=["A fast brown fox leaps over a sleepy dog"],
+        threshold=0.8,
+    )
+
+`get_text_similarity_with_deepeval()` returns a score between 0 and 1. The assertion succeeds when at least one
+expected text reaches the threshold. DeepEval must be installed with `pip install "toolium[deepeval]"`.
+
+When to use DeepEval
+~~~~~~~~~~~~~~~~~~~~
+
+DeepEval can provide better results when similarity depends on meaning, context and correctness instead of only shared
+words or vector distance. It is particularly useful for evaluating generated answers, paraphrases and responses where
+an explanation of the score is valuable.
+
+For example, these texts express approximately the same idea even though they use different words:
+
+.. code-block:: python
+
+    received = "The payment was accepted and the order is being prepared."
+    expected = "Your purchase went through successfully and is now in preparation."
+
+    score = get_text_similarity_with_deepeval(
+        text=received,
+        expected_text=expected,
+        provider="azure",
+        threshold=0.6,
+    )
+
+A lexical comparison can score this pair lower because several words differ. A DeepEval `GEval` metric can consider the
+shared meaning and the relationship between both outputs. The score should still be calibrated with representative
+examples; DeepEval scores are not directly equivalent to SpaCy, Sentence Transformers or OpenAI scores.
+
+DeepEval is also useful when the answer must be judged against a question and a reference answer:
+
+.. code-block:: python
+
+    score, reason = get_answer_evaluation_with_deepeval(
+        llm_answer="The refund will be issued to the original payment method within five business days.",
+        reference_answer="Refunds are returned to the original payment method within five business days.",
+        question="How and when will the customer receive the refund?",
+        provider="azure",
+        threshold=0.6,
+    )
+
+    print(score)
+    print(reason)
+
+In this case, `GEval` can take into account semantic equivalence, factual accuracy, completeness and relevance to the
+question. A plain similarity comparison does not necessarily verify all these aspects.
+
+Comparison with the existing methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* **SpaCy** is local and fast. It is useful for low-latency comparisons, but results depend on the selected word-vector
+  model and may be weaker for paraphrases, domain-specific language or factual correctness.
+* **Sentence Transformers** compares embeddings and is usually a good choice for scalable semantic similarity. It does
+  not normally provide an explanation and does not independently check whether an answer is factually correct.
+* **OpenAI methods in `text_similarity.py` and `evaluate_answer.py`** use a custom prompt and return an LLM-based
+  evaluation. They remain available when their existing prompt and response contract are preferred.
+* **DeepEval** provides evaluation metrics such as `GEval`, explicit criteria and a reason for the score. It is useful
+  when the evaluation needs context, multiple criteria or an LLM-as-a-Judge workflow, but it requires model access and
+  can be slower and more expensive than local embedding-based methods.
+
+The scores from these methods must not be compared using the same threshold automatically. A threshold such as `0.6` in
+DeepEval may represent an acceptable result that would receive a different score with SpaCy or Sentence Transformers.
+Thresholds should be calibrated independently with representative positive, borderline and negative examples.
+
+DeepEval compared with the existing OpenAI methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both approaches use an OpenAI or Azure OpenAI model as an evaluator, but they expose different levels of abstraction:
+
+* The existing methods call the provider client directly through `openai_request()` and send Toolium-owned prompts.
+  The prompt, JSON response format and parsing logic are controlled by Toolium.
+* DeepEval creates an evaluation metric such as `GEval`, builds an `LLMTestCase` and delegates the evaluation workflow to
+  DeepEval. DeepEval generates the evaluation steps, invokes the configured model and exposes the score and reason using
+  its metric API.
+* `get_text_similarity_with_openai()` is a focused comparison of two texts. Its prompt asks whether the answer is
+  semantically similar to the expected text and returns the similarity value.
+* `get_answer_evaluation_with_openai()` includes more explicit criteria such as semantic similarity, factual accuracy,
+  completeness and relevance, and can return a structured Pydantic response.
+* `get_text_similarity_with_deepeval()` uses `GEval` with actual and expected output parameters. Its criteria are defined
+  as a metric and the result includes DeepEval's reason.
+* `get_answer_evaluation_with_deepeval()` uses `GEval` with the question, actual output and expected output, making the
+  evaluation criteria explicit and reusable independently from the provider request code.
+
+The existing OpenAI methods can be preferable when exact compatibility with the current Toolium prompt, JSON contract,
+Pydantic response format, token usage handling or OpenAI client options is required. DeepEval can be preferable when the
+evaluation should be expressed as reusable criteria, when the reason generated by the metric is useful, or when several
+DeepEval metrics and test cases will be used consistently in a larger evaluation suite.
+
+DeepEval does not automatically produce more accurate results. Both approaches depend on the selected model, prompt or
+criteria, temperature and threshold. They may return different scores for the same pair of texts because they use
+different instructions and evaluation workflows, even when they use the same OpenAI model. Consequently, thresholds from
+`text_similarity.py` or `evaluate_answer.py` should not be copied to DeepEval without calibration.
+
+Examples of different evaluation behavior
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Example 1: paraphrases with different wording**
+
+The existing OpenAI similarity method uses a general-purpose prompt:
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.text_similarity import get_text_similarity_with_openai
+    from toolium.utils.ai_utils.deepeval import get_text_similarity_with_deepeval
+
+    received = "The payment was accepted and the order is being prepared."
+    expected = "Your purchase went through successfully and is now in preparation."
+
+    openai_score = get_text_similarity_with_openai(
+        received,
+        expected,
+        model_name="gpt-4o-mini",
+        azure=True,
+    )
+    deepeval_score = get_text_similarity_with_deepeval(
+        received,
+        expected,
+        model_name="gpt-4o-mini",
+        provider="azure",
+    )
+
+Both methods use an LLM, but they send different instructions. DeepEval evaluates the pair through `GEval` and its
+metric criteria, while the existing method uses Toolium's fixed prompt and JSON response. The scores can therefore be
+different even when both calls use the same deployment.
+
+**Example 2: correctness against a question**
+
+For an answer that must address a question, `get_answer_evaluation_with_deepeval()` makes the input, expected answer and
+actual answer explicit:
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.evaluate_answer import get_answer_evaluation_with_openai
+    from toolium.utils.ai_utils.deepeval import get_answer_evaluation_with_deepeval
+
+    question = "What is the refund period and where is the money returned?"
+    expected = "The refund is returned to the original payment method within five business days."
+    received = "The refund will arrive within five days."
+
+    openai_score, _ = get_answer_evaluation_with_openai(
+        received,
+        expected,
+        model_name="gpt-4o-mini",
+        azure=True,
+        question=question,
+    )
+    deepeval_score, reason = get_answer_evaluation_with_deepeval(
+        llm_answer=received,
+        reference_answer=expected,
+        question=question,
+        model_name="gpt-4o-mini",
+        provider="azure",
+    )
+
+Here the answer mentions the time but omits the original payment method. Both evaluators may penalize the omission, but
+there is no guarantee that they assign the same score. The DeepEval `reason` can make the missing information explicit,
+while the existing method is preferable when a stable Pydantic response schema or the current Toolium prompt contract is
+required.
+
+**Example 3: custom criteria**
+
+DeepEval is useful when the evaluation criteria need to be stated directly:
+
+.. code-block:: python
+
+    score, reason = get_answer_evaluation_with_deepeval(
+        llm_answer="The system is fine.",
+        reference_answer="The service recovered after a short outage.",
+        question="Summarize the incident status.",
+        provider="azure",
+        criteria=(
+            "The answer must mention that there was an outage and that the service recovered. "
+            "Penalize vague answers that do not describe both facts."
+        ),
+    )
+
+The existing `get_answer_evaluation_with_openai()` method has a predefined evaluation prompt and supports additional
+structured fields through Pydantic. DeepEval is more convenient when criteria are passed as part of the metric, whereas
+the existing method provides more control over the response schema.
+
+Contextual evaluation with one or more metrics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`evaluate_contextual_with_deepeval()` evaluates a response against contextual data using one or more metrics in the
+same call. Context can be plain text or JSON objects returned by an API. Each metric produces its own score and reason,
+and the combined `passed` value is `True` only when all configured metrics pass.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import evaluate_contextual_with_deepeval
+
+    result = evaluate_contextual_with_deepeval(
+        input_text="What is the status and total of order 12345?",
+        actual_output="The order is being prepared and costs 49.99 EUR.",
+        expected_output="Order 12345 is preparing and costs 49.99 EUR.",
+        retrieved_context=[
+            {
+                "order_id": "12345",
+                "status": "preparing",
+                "total": 49.99,
+                "currency": "EUR",
+            }
+        ],
+        metrics=["faithfulness", "contextual_relevancy"],
+        provider="azure",
+        threshold=0.7,
+    )
+
+    print(result["results"])
+    print(result["passed"])
+
+A single metric can be selected with a string:
+
+.. code-block:: python
+
+    result = evaluate_contextual_with_deepeval(
+        input_text="What is the order status?",
+        actual_output="The order is being prepared.",
+        retrieved_context=[{"status": "preparing"}],
+        metrics="faithfulness",
+        provider="azure",
+        threshold=0.7,
+    )
+
+Different thresholds can be configured for each metric with a dictionary:
+
+.. code-block:: python
+
+    result = evaluate_contextual_with_deepeval(
+        input_text="What is the status and total?",
+        actual_output=answer,
+        expected_output=expected_answer,
+        retrieved_context=[api_response],
+        metrics=["faithfulness", "contextual_precision", "contextual_recall"],
+        threshold={
+            "faithfulness": 0.7,
+            "contextual_precision": 0.8,
+            "contextual_recall": 0.8,
+        },
+        provider="azure",
+    )
+
+For step definitions and other dynamic callers, `metric_config` groups each metric with its threshold and optional
+metric-specific parameters. When `metric_config` is used, the metric names are obtained from its keys; do not combine it
+with `metrics`, `threshold` or `metric_kwargs`.
+
+.. code-block:: python
+
+    result = evaluate_contextual_with_deepeval(
+        input_text="Summarize the order update.",
+        actual_output="The order is ready for pickup.",
+        retrieved_context=[{"status": "ready", "delivery": "pickup"}],
+        metric_config={
+            "faithfulness": {"threshold": 0.7},
+            "contextual_relevancy": {"threshold": 0.8},
+            "summarization": {"threshold": 0.75, "n": 3},
+        },
+        provider="azure",
+    )
+
+Every `metric_config` entry requires a threshold between `0` and `1`. `contextual_precision` and `contextual_recall`
+also require `expected_output`.
+
+Use `assert_contextual_with_deepeval()` when the test should fail if one or more metrics do not pass:
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import assert_contextual_with_deepeval
+
+    assert_contextual_with_deepeval(
+        input_text=question,
+        actual_output=answer,
+        expected_output=expected_answer,
+        retrieved_context=retrieved_context,
+        metric_config={
+            "faithfulness": {"threshold": 0.7},
+            "contextual_relevancy": {"threshold": 0.8},
+        },
+        provider="azure",
+    )
+
+Contextual metrics
+~~~~~~~~~~~~~~~~~~
+
+The contextual metrics currently supported by the combined evaluation are:
+
+* **faithfulness**: checks whether the claims in the answer are supported by the supplied context. A high score is better.
+* **contextual_relevancy**: checks whether the retrieved context is relevant to the input and answer. A high score is better.
+* **contextual_precision**: checks whether the relevant context is ranked or selected precisely for the expected answer. It requires `expected_output`. A high score is better.
+* **contextual_recall**: checks whether the context contains the information needed to cover the expected answer. It requires `expected_output`. A high score is better.
+* **summarization**: checks whether the output is a complete and factually consistent summary of the supplied context. A high score is better.
+
+All these contextual metrics use the normal rule `score >= threshold`. This differs from safety-oriented metrics such as
+`toxicity` and `hallucination`, where a lower score is better and which are evaluated with their dedicated
+methods. `PII leakage` also uses `score >= threshold`: a higher score indicates better privacy protection,
+and 1.0 means no PII leakage was detected. Its threshold is the minimum acceptable privacy score.
+Thresholds should be calibrated independently for each metric and model; scores from different metrics or
+providers should not be assumed to be directly equivalent.
+
+Metric options
+~~~~~~~~~~~~~~
+
+`metric_config` accepts `threshold` plus the options supported by the corresponding DeepEval metric. The shared options
+are:
+
+* `include_reason`: includes the explanation in the result when `True` (default `True`).
+* `async_mode`: enables DeepEval's asynchronous evaluation mode (default `True`). Set it to `False` when the calling
+  environment requires synchronous execution.
+* `strict_mode`: enables stricter pass/fail behavior (default `False`).
+* `verbose_mode`: enables additional DeepEval diagnostic output (default `False`).
+* `evaluation_template`: custom DeepEval evaluation template, for advanced integrations.
+
+The `model` option is managed by Toolium and should not be placed inside `metric_config`. Use `provider`, `model_name` and
+`model_kwargs` at the top level instead.
+
+Supported options by metric
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**`faithfulness`**
+
+In addition to the shared options, it supports:
+
+* `truths_extraction_limit`: limits the number of extracted claims to evaluate.
+* `penalize_ambiguous_claims`: penalizes claims that are ambiguous instead of treating them as acceptable.
+
+Example:
+
+.. code-block:: python
+
+    metric_config={
+        "faithfulness": {
+            "threshold": 0.7,
+            "include_reason": True,
+            "truths_extraction_limit": 10,
+            "penalize_ambiguous_claims": True,
+        }
+    }
+
+**`contextual_relevancy`**
+
+It supports the shared options. It evaluates whether the retrieved context is relevant to the input and generated answer.
+
+.. code-block:: python
+
+    metric_config={
+        "contextual_relevancy": {
+            "threshold": 0.8,
+            "include_reason": True,
+            "strict_mode": False,
+        }
+    }
+
+**`contextual_precision`**
+
+It supports the shared options and requires `expected_output` in the call to
+`evaluate_contextual_with_deepeval()`. It evaluates whether relevant context is selected or ranked precisely.
+
+.. code-block:: python
+
+    metric_config={
+        "contextual_precision": {
+            "threshold": 0.8,
+            "include_reason": True,
+        }
+    }
+
+**`contextual_recall`**
+
+It supports the shared options and requires `expected_output`. It evaluates whether the context contains the information
+needed to cover the expected answer.
+
+.. code-block:: python
+
+    metric_config={
+        "contextual_recall": {
+            "threshold": 0.8,
+            "include_reason": True,
+        }
+    }
+
+**`summarization`**
+
+In addition to the shared options, it supports:
+
+* `n`: number of assessment questions used to evaluate the summary (default `5`). Higher values can increase coverage,
+  latency and token usage.
+* `assessment_questions`: explicit questions to use instead of relying only on automatically generated assessments.
+* `truths_extraction_limit`: limits the number of extracted truths used in the evaluation.
+
+Example:
+
+.. code-block:: python
+
+    metric_config={
+        "summarization": {
+            "threshold": 0.75,
+            "n": 5,
+            "assessment_questions": [
+                "Does the summary include the order status?",
+                "Does it preserve the total amount?",
+            ],
+            "truths_extraction_limit": 10,
+        }
+    }
+
+The `threshold` option is required for every `metric_config` entry and must be between `0` and `1`. Options not listed
+for a metric should not be added to that metric's configuration; DeepEval may reject unsupported arguments. All contextual
+metrics use the rule `score >= threshold`, so a higher score represents a better contextual evaluation.
+
+API responses as JSON context
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When the facts come from an API, JSON objects and arrays can be passed as context. The DeepEval implementation serializes
+each dictionary or list to a JSON string before sending it as `retrieval_context`:
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import get_faithfulness_evaluation_with_deepeval
+
+    api_response = {
+        "order_id": "12345",
+        "status": "preparing",
+        "total": 49.99,
+        "currency": "EUR",
+    }
+
+    score, reason = get_faithfulness_evaluation_with_deepeval(
+        actual_output="The order is being prepared and costs 49.99 EUR.",
+        retrieved_context=[api_response],
+        input_text="What is the status and total of order 12345?",
+        provider="azure",
+        threshold=0.6,
+    )
+
+For several API responses, pass one JSON object per context item:
+
+.. code-block:: python
+
+    retrieved_context = [order_response, customer_response, shipping_response]
+
+    assert_faithfulness_with_deepeval(
+        actual_output=answer,
+        retrieved_context=retrieved_context,
+        input_text=question,
+        provider="azure",
+        threshold=0.6,
+    )
+
+Text context remains supported as well:
+
+.. code-block:: python
+
+    retrieved_context = ["The order is in preparation.", "The total is 49.99 EUR."]
+
+JSON is serialized with `ensure_ascii=False` and indentation for readability. For critical fields such as identifiers,
+amounts, dates and statuses, combine faithfulness evaluation with deterministic assertions because an LLM metric should
+not be the only validation for exact API values.
+
 Configuration
 ~~~~~~~~~~~~~
 
@@ -99,6 +594,60 @@ Default similarity method can be set in the properties.cfg file with the propert
     spacy_model: en_core_web_lg  # SpaCy model to use, en_core_web_sm by default
     sentence_transformers_model: all-MiniLM-L6-v2  # Sentence Transformers model to use, all-mpnet-base-v2 by default
     openai_model: gpt-3.5-turbo  # OpenAI model to use, gpt-4o-mini by default
+    provider: openai  # AI provider: 'openai' (default) or 'azure'
+
+DeepEval resolves each setting independently, in this order:
+
+1. Explicit function arguments (`provider`, `model_name` and options in `model_kwargs`).
+2. The key in the `[DeepEval]` section.
+3. The same key in the `[AI]` section, if absent from `[DeepEval]`.
+4. The evaluator default, if absent from both sections.
+
+Configuration keys keep their existing names, without a `deepeval_` prefix:
+
+* `provider`: `openai` (default) or `azure`.
+* `openai_model`: evaluator model name (default `gpt-4o-mini`), for either provider.
+* `openai_api_key` and `openai_temperature`: OpenAI credentials and temperature.
+* `azure_api_key`, `azure_endpoint`, `api_version` and `azure_deployment`: Azure connection settings.
+* `azure_temperature`: Azure evaluator temperature.
+
+The provider is resolved first, then its credentials and temperature. Temperature defaults to `0.0` when absent from
+both sections. A configured zero is preserved. Credentials and Azure connection settings default to `None`, allowing
+DeepEval's own environment-based configuration. Azure deployment defaults to the resolved model name.
+
+For example, share the agent connection while overriding the evaluator model and temperature::
+
+    [AI]
+    provider: azure
+    openai_model: agent-model
+    azure_temperature: 0.7
+    azure_endpoint: https://example.openai.azure.com
+    azure_api_key: your-key
+    api_version: your-api-version
+
+    [DeepEval]
+    openai_model: judge-model
+    azure_deployment: judge-deployment
+    azure_temperature: 0.0
+
+Section names are case-sensitive: use `[DeepEval]`. Fallback happens only when a key is absent; an empty or invalid
+value is not replaced by the value in `[AI]`. To isolate the evaluator, configure its settings explicitly in `[DeepEval]`.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import get_text_similarity_with_deepeval
+
+    score = get_text_similarity_with_deepeval(
+        text="The received answer",
+        expected_text="The expected answer",
+        provider="azure",              # overrides the configured provider
+        model_name="my-model",         # overrides the configured openai_model
+        model_kwargs={"temperature": 0.1},
+    )
+
+For Azure OpenAI, `azure_deployment` identifies the deployment and `azure_endpoint` is used as the model base URL.
+The `deepeval` module creates the corresponding DeepEval `GPTModel` or `AzureOpenAIModel` and passes the configured
+credentials to it. DeepEval must be installed with `pip install "toolium[deepeval]"`.
 
 To select models for each method, you can refer to the following links:
 
@@ -249,7 +798,7 @@ by comparing it against a reference answer using another LLM. This approach prov
 semantic similarity, factual accuracy, completeness, and relevance.
 
 Toolium provides methods to evaluate answers using OpenAI and Azure OpenAI models with optional structured output
-using Pydantic models.
+using Pydantic models. DeepEval provides an additional, independent implementation based on its evaluation metrics.
 
 Usage
 ~~~~~
@@ -355,6 +904,56 @@ The module provides the following evaluation methods:
 * **assert_answer_evaluation()**: Evaluates answer and asserts if similarity meets threshold
 * **get_answer_evaluation_with_openai()**: Uses OpenAI's API directly for evaluation
 * **get_answer_evaluation_with_azure_openai()**: Uses Azure OpenAI's API for evaluation
+
+DeepEval alternative
+~~~~~~~~~~~~~~~~~~~~
+
+The following functions provide the same type of answer and criteria validations using DeepEval, without changing the
+existing OpenAI-based functions:
+
+* **get_answer_evaluation_with_deepeval()**: evaluates an answer against a reference answer and returns `(score, reason)`.
+* **assert_answer_evaluation_with_deepeval()**: accepts one or more reference answers and succeeds when any score reaches the threshold.
+* **get_text_criteria_analysis_with_deepeval()**: evaluates each criterion independently and returns `overall_match` and failed features.
+* **assert_text_criteria_with_deepeval()**: asserts that the overall criteria score reaches the threshold.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import (
+        get_answer_evaluation_with_deepeval,
+        assert_answer_evaluation_with_deepeval,
+        get_text_criteria_analysis_with_deepeval,
+        assert_text_criteria_with_deepeval,
+    )
+
+    score, reason = get_answer_evaluation_with_deepeval(
+        llm_answer="Paris is the capital of France.",
+        reference_answer="The capital of France is Paris.",
+        question="What is the capital of France?",
+        model_name="gpt-4o-mini",  # optional
+        threshold=0.7,
+    )
+
+    assert_answer_evaluation_with_deepeval(
+        llm_answer="Paris is the capital of France.",
+        reference_answers=["The capital of France is Paris."],
+        question="What is the capital of France?",
+        threshold=0.7,
+    )
+
+    analysis = get_text_criteria_analysis_with_deepeval(
+        text_input="The deployment is complete and all checks passed.",
+        text_criteria=["clear message", "deployment status is included"],
+        threshold=0.7,
+    )
+
+    assert_text_criteria_with_deepeval(
+        text_input="The deployment is complete and all checks passed.",
+        text_criteria=["clear message", "deployment status is included"],
+        threshold=0.7,
+    )
+
+`get_text_criteria_analysis_with_deepeval()` returns a dictionary with `overall_match` and a `features` list containing
+criteria whose score is below the threshold. These functions require DeepEval and can incur model usage costs.
 
 Evaluation Criteria
 ~~~~~~~~~~~~~~~~~~~
