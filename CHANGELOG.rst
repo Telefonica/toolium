@@ -1,13 +1,14 @@
 Toolium Changelog
 =================
 
-v3.8.5
+v3.9.0
 ------
 
 *Release date: In development*
 
 - Add support for Python 3.14
 - Remove Python 3.10 support (Python 3.10 reaches end of life in October 2026)
+- Fix scenario status in Allure report when an action before the feature fails: scenarios are now reported as failed instead of skipped.
 
 v3.8.4
 ------
