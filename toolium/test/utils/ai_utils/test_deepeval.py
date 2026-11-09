@@ -608,6 +608,27 @@ def test_get_answer_relevancy_with_deepeval():
     assert test_case.actual_output == 'Paris is the capital of France.'
 
 
+@pytest.mark.parametrize(
+    ('supplied', 'expected'),
+    [
+        ('The order is ready', ['The order is ready']),
+        ({'status': 'listo'}, ['{\n  "status": "listo"\n}']),
+        (['ready', 'pickup'], ['ready', 'pickup']),
+        ([{'status': 'ready'}, {'delivery': 'pickup'}], ['{\n  "status": "ready"\n}', '{\n  "delivery": "pickup"\n}']),
+        ([['ready', {'status': 'listo'}]], ['[\n  "ready",\n  {\n    "status": "listo"\n  }\n]']),
+        ([], []),
+    ],
+)
+def test_response_serializes_individual_and_multiple_context_items(supplied, expected):
+    with mock.patch.object(deepeval, '_evaluate_metrics') as evaluate:
+        deepeval.evaluate_response_with_deepeval(
+            'question', 'answer', retrieved_context=supplied, reference_context=supplied, model=mock.sentinel.judge
+        )
+    test_case = evaluate.call_args.args[0]
+    assert test_case.retrieval_context == expected
+    assert test_case.context == expected
+
+
 def test_get_faithfulness_evaluation_with_json_api_context():
     metric = _metric(score=0.9, reason='Supported by context')
     with (

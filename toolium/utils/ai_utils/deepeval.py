@@ -302,7 +302,13 @@ def get_text_similarity_with_deepeval(text, expected_text, model_name=None, thre
 
 
 def _serialize_context(context_items):
-    """Convert JSON-compatible context items to readable strings for DeepEval."""
+    """Normalize a string, dictionary or iterable of context items to DeepEval strings.
+
+    A string or dictionary is one item. A list contains separate items; wrap a JSON
+    array in an outer list to serialize the entire array as a single item.
+    """
+    if isinstance(context_items, (str, dict)):
+        context_items = [context_items]
     return [
         json.dumps(item, ensure_ascii=False, indent=2) if isinstance(item, (dict, list)) else item
         for item in context_items
@@ -982,8 +988,9 @@ def evaluate_response_with_deepeval(
 
     ``retrieved_context`` supplies retrieved evidence for faithfulness and contextual
     metrics. ``reference_context`` supplies reference facts for hallucination; when
-    omitted (None), it defaults to ``retrieved_context``. Both accept strings and JSON
-    objects/lists as items. ``context`` is reserved for Behave context in Toolium and
+    omitted (None), it defaults to ``retrieved_context``. Both accept a single string
+    or dictionary, or a list of items. Wrap a JSON array in an outer list to use it
+    as a single item. ``context`` is reserved for Behave context in Toolium and
     is not accepted here. Only the internal DeepEval test case uses that field name.
 
     The tool_correctness metric compares only tool names by default. To also compare
