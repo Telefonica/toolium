@@ -403,7 +403,13 @@ def assert_toxicity_with_deepeval(actual_output, threshold, model_name=None, pro
 def _evaluate_tool_correctness_with_deepeval(
     input_text, tools_called, expected_tools, model_name=None, threshold=0.7, provider=None, **kwargs
 ):
-    """Evaluate whether an agent called the expected tools with correct arguments and output."""
+    """Evaluate expected tool calls using DeepEval's selected comparison fields.
+
+    By default, only tool names are compared. Pass ``evaluation_params`` containing
+    ``ToolCallParams.INPUT_PARAMETERS`` and/or ``ToolCallParams.OUTPUT`` to also
+    compare arguments and/or output. Providing those values in ``expected_tools``
+    alone does not enable their comparison.
+    """
     _require_deepeval()
     model = _resolve_model(provider, model_name, kwargs)
     available_tools = kwargs.pop('available_tools', None)
@@ -431,7 +437,12 @@ def _evaluate_tool_correctness_with_deepeval(
 def get_tool_correctness_with_deepeval(
     input_text, tools_called, expected_tools, model_name=None, threshold=0.7, provider=None, **kwargs
 ):
-    """Evaluate whether an agent called the expected tools with correct arguments and output.
+    """Return (score, reason) for the expected tool calls.
+
+    By default, only tool names are compared. To also compare arguments and output,
+    pass ``evaluation_params=[ToolCallParams.INPUT_PARAMETERS, ToolCallParams.OUTPUT]``.
+    Either field can be selected independently. Providing arguments or output in
+    ``expected_tools`` alone does not enable their comparison.
 
     Pass ``model=judge`` to reuse a caller-owned DeepEval model.
     """
@@ -444,7 +455,13 @@ def get_tool_correctness_with_deepeval(
 def assert_tool_correctness_with_deepeval(
     input_text, tools_called, expected_tools, threshold, model_name=None, provider=None, **kwargs
 ):
-    """Assert that an agent used the expected tools correctly."""
+    """Assert that the tool calls pass DeepEval's decision for the selected fields.
+
+    By default, only tool names are compared. To also compare arguments and output,
+    pass ``evaluation_params=[ToolCallParams.INPUT_PARAMETERS, ToolCallParams.OUTPUT]``.
+    Either field can be selected independently. Providing arguments or output in
+    ``expected_tools`` alone does not enable their comparison.
+    """
     result = _evaluate_tool_correctness_with_deepeval(
         input_text, tools_called, expected_tools, model_name, threshold, provider, **kwargs
     )
@@ -875,8 +892,9 @@ def assert_text_criteria_with_deepeval(text_input, text_criteria, threshold, mod
     analysis = get_text_criteria_analysis_with_deepeval(text_input, text_criteria, model_name, threshold, **kwargs)
     if not analysis['passed']:
         raise AssertionError(
-            f'DeepEval text criteria analysis failed: '
-            f'{analysis["overall_match"]} < {threshold}\nFailed features: {analysis["features"]}'
+            f'DeepEval text criteria analysis failed: one or more characteristics did not pass.\n'
+            f'Overall match (informational mean): {analysis["overall_match"]}; requested threshold: {threshold}\n'
+            f'Failed features: {analysis["features"]}'
         )
 
 
@@ -954,14 +972,30 @@ def evaluate_response_with_deepeval(
     model_name=None,
     provider=None,
     model_kwargs=None,
+    reference_context=None,
     **test_case_options,
 ):
     """Evaluate selected single-turn metrics, returning results and an aggregate passed value.
 
     Additional test case fields, such as tools_called and expected_tools, are forwarded
     to LLMTestCase. Summaries use the separate source_text/summary API.
+
+    ``retrieved_context`` supplies retrieved evidence for faithfulness and contextual
+    metrics. ``reference_context`` supplies reference facts for hallucination; when
+    omitted (None), it defaults to ``retrieved_context``. Both accept strings and JSON
+    objects/lists as items. ``context`` is reserved for Behave context in Toolium and
+    is not accepted here. Only the internal DeepEval test case uses that field name.
+
+    The tool_correctness metric compares only tool names by default. To also compare
+    arguments and output, set ``evaluation_params`` in its ``metric_config`` options
+    to ``[ToolCallParams.INPUT_PARAMETERS, ToolCallParams.OUTPUT]``. Either field can
+    be selected independently; expected_tools values alone do not enable comparison.
     """
     _require_deepeval()
+    if 'context' in test_case_options:
+        raise TypeError(
+            'context is reserved for Behave context in Toolium; use reference_context for hallucination reference facts'
+        )
     if metric_config is None:
         metric_config = {'answer_relevancy': {'threshold': 0.7}}
     _validate_metric_config(metric_config, _RESPONSE_METRICS, 'response')
@@ -972,7 +1006,7 @@ def evaluate_response_with_deepeval(
         actual_output=actual_output,
         expected_output=expected_output,
         retrieval_context=serialized,
-        context=serialized,
+        context=_serialize_context(reference_context) if reference_context is not None else serialized,
         **deepcopy(test_case_options),
     )
     return _evaluate_metrics(test_case, metric_config, _RESPONSE_METRICS, judge)

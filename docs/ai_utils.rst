@@ -353,6 +353,26 @@ Response metric names are `answer_relevancy`, `faithfulness`, `contextual_releva
 `tools_called`, `expected_tools`) and constructor options (for example `expected_schema` inside `metric_config`).
 Custom `geval` requires `criteria` or `evaluation_steps`; `evaluation_params` can select its case fields.
 
+`retrieved_context` supplies retrieved evidence for faithfulness and contextual metrics.
+`reference_context` supplies reference facts for hallucination. If `reference_context` is omitted or `None`,
+the retrieved evidence is also used as the hallucination reference. An explicit empty list remains empty.
+Both parameters accept lists containing strings or JSON-compatible objects/arrays.
+Toolium reserves `context` for Behave context; it is not accepted as an evaluation argument.
+The mapping to DeepEval's internal `context` field is handled by Toolium.
+
+.. code-block:: python
+
+    response_result = evaluate_response_with_deepeval(
+        input_text="Where is my order?",
+        actual_output="It is ready for pickup.",
+        retrieved_context=["The order is ready for pickup."],
+        reference_context=[{"order_status": "ready", "delivery": "pickup"}],
+        metric_config={
+            "faithfulness": {"threshold": 0.8},
+            "hallucination": {"threshold": 0.2},
+        },
+    )
+
 Conversation metric names are `turn_relevancy`, `knowledge_retention`, `conversation_completeness` and
 `conversational_geval`. Messages may be dictionaries or DeepEval `Turn` objects, with `user` or `assistant` roles.
 Additional case options such as `scenario` and `expected_outcome` are accepted. Single-turn metrics cannot be used

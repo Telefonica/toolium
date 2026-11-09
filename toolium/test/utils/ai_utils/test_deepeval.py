@@ -816,13 +816,18 @@ def test_reference_asserts_fail_without_references(function_name):
 def test_criteria_assert_fails_when_average_passes_but_one_characteristic_fails():
     metrics = [_metric(1.0, passed=True), _metric(0.6, reason='Not brief', passed=False)]
     with mock.patch.object(deepeval, 'GEval', side_effect=metrics):
-        with pytest.raises(AssertionError, match='Not brief'):
+        with pytest.raises(AssertionError, match='Not brief') as caught:
             deepeval.assert_text_criteria_with_deepeval(
                 'text',
                 ['formal', 'brief'],
                 threshold=0.7,
                 model=mock.sentinel.judge,
             )
+    message = str(caught.value)
+    assert 'one or more characteristics did not pass' in message
+    assert 'Overall match (informational mean): 0.8; requested threshold: 0.7' in message
+    assert "Failed features: [{'name': 'brief', 'score': 0.6, 'explanation': 'Not brief'}]" in message
+    assert '<' not in message
     assert all(metric.measure.call_count == 1 for metric in metrics)
     assert all(metric.measure.call_args.args[0].input == '' for metric in metrics)
 
@@ -944,6 +949,35 @@ def test_response_rejects_invalid_metric_selection_before_creating_judge(entry):
     with mock.patch.object(deepeval, '_get_model', side_effect=AssertionError('must validate first')):
         with pytest.raises(ValueError, match=r'metric|threshold'):
             deepeval.evaluate_response_with_deepeval('question', 'answer', metric_config=entry)
+
+
+@pytest.mark.parametrize('reference_facts', [None, [], ['Independent reference'], [{'status': 'ready'}]])
+def test_response_maps_reference_facts_independently_from_retrieved_evidence(reference_facts):
+    evaluator = deepeval.DeepEvalEvaluator(model=mock.sentinel.judge)
+    evidence = ['Retrieved evidence']
+    with mock.patch.object(deepeval, '_evaluate_metrics', return_value={'passed': True}) as evaluate:
+        evaluator.assert_response('question', 'answer', retrieved_context=evidence, reference_context=reference_facts)
+
+    test_case = evaluate.call_args.args[0]
+    assert test_case.retrieval_context == evidence
+    expected = evidence if reference_facts is None else deepeval._serialize_context(reference_facts)
+    assert test_case.context == expected
+
+
+def test_response_accepts_reference_facts_without_retrieved_evidence():
+    with mock.patch.object(deepeval, '_evaluate_metrics') as evaluate:
+        deepeval.evaluate_response_with_deepeval(
+            'question', 'answer', reference_context=['Reference'], model=mock.sentinel.judge
+        )
+    test_case = evaluate.call_args.args[0]
+    assert test_case.context == ['Reference']
+    assert test_case.retrieval_context is None
+
+
+def test_response_rejects_reserved_behave_context_before_creating_judge():
+    with mock.patch.object(deepeval, '_get_model', side_effect=AssertionError('must validate first')):
+        with pytest.raises(TypeError, match=r'context is reserved for Behave context.*reference_context'):
+            deepeval.evaluate_response_with_deepeval('question', 'answer', context=mock.sentinel.behave_context)
 
 
 def test_empty_contextual_selection_does_not_vacuously_pass():
