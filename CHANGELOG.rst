@@ -8,15 +8,7 @@ v3.8.5
 
 - Add support for Python 3.14
 - Remove Python 3.10 support (Python 3.10 reaches end of life in October 2026)
-- Add optional DeepEval integration for contextual evaluation of text, answers and API-derived JSON data.
-- Add DeepEval metrics for semantic similarity, answer relevancy, faithfulness, hallucination, JSON correctness, contextual relevancy, contextual precision, contextual recall, tool correctness, toxicity, PII leakage and summarization.
-- Add combined contextual evaluation with one or multiple metrics, per-metric thresholds and metric-specific configuration through `metric_config`.
-- Add OpenAI and Azure OpenAI provider configuration support for DeepEval using `[DeepEval]` settings with per-key fallback to `[AI]`.
-- Add reusable DeepEval judges, response and conversation evaluation APIs, and an optional evaluator with isolated per-call metrics.
-- Delegate DeepEval assertions to native pass/fail decisions, use explicit GEval rubrics, and evaluate summaries against their source text.
-- Require all selected DeepEval text characteristics to pass; keep the mean score informational.
-- Add unit and Azure OpenAI integration tests for the DeepEval utilities.
-- Extend AI utilities documentation with DeepEval usage, configuration, metric options, API JSON context examples and comparisons with the existing OpenAI methods.
+- Add optional DeepEval integration for contextual evaluation of text, answers and API-derived JSON data (review docs/ai_utils.rst for details)
 
 v3.8.4
 ------
