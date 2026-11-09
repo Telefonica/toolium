@@ -120,6 +120,8 @@ class DynamicEnvironment:
                 before_scenario and after_scenario are not executed
                 after_feature is executed
                 each scenario is marked as failed
+                scenarios are marked as failed in before_feature too, to be reported properly by Allure,
+                which closes the scenario result before after_feature is executed
         * Error in before_scenario:
                 after_scenario is executed
                 the scenario is marked as failed
@@ -127,6 +129,10 @@ class DynamicEnvironment:
                 the scenario status is not changed
         * Error in after_feature:
                 the scenarios status are not changed
+
+    Note that when an action before the feature fails and behave is executed with the `--no-skipped` option,
+    scenarios are not included in the Allure report, because the scenario status is still skipped. This cannot
+    be avoided without executing the scenarios.
     """
 
     def __init__(self, **kwargs):
@@ -247,9 +253,17 @@ class DynamicEnvironment:
         self.__execute_steps_by_action(context, ACTIONS_BEFORE_FEATURE)
 
         if self.feature_error:
+            # Get the scenarios to fail before marking the feature as skipped, because mark_skipped makes
+            # should_run return False for all the scenarios
+            scenarios = self.get_feature_scenarios_to_fail(context)
+
             # Mark this Feature as skipped to do not execute any Scenario
-            # Status will be changed to failed in after_feature method
             context.feature.mark_skipped()
+
+            # Mark first step of each scenario as failed now, because Allure closes the scenario result before
+            # after_feature is executed and would report it as skipped otherwise. It must be done after
+            # mark_skipped, since it requires the steps to be in a not-executed status.
+            self.fail_scenarios_first_step(context, scenarios, self.before_error_message)
 
     def execute_before_scenario_steps(self, context):
         """
@@ -295,12 +309,39 @@ class DynamicEnvironment:
             self.feature_error = False
             self.before_error_message = None
             context.feature.reset()
-            for scenario in context.feature.walk_scenarios():
-                if scenario.should_run(context.config):
-                    self.fail_first_step_precondition_exception(scenario, error_message)
-                    if len(scenario.background_steps) > 0:
-                        context.logger.warning('Background from scenario status udpated to fail')
+            self.fail_scenarios_first_step(context, self.get_feature_scenarios_to_fail(context), error_message)
             raise Exception(f'Before feature steps have failed: {error_message}')
+
+    def get_feature_scenarios_to_fail(self, context):
+        """
+        Get the scenarios of the feature that should run and must be marked as failed.
+        It must be called before the feature is marked as skipped, because then should_run returns False for
+        all the scenarios.
+
+        :param context: It's a clever place where you and behave can store information to share around,
+                        automatically managed by behave.
+        :return: List of scenarios to fail
+        """
+        return [scenario for scenario in context.feature.walk_scenarios() if scenario.should_run(context.config)]
+
+    def fail_scenarios_first_step(self, context, scenarios, error_message):
+        """
+        Fail first step in the given scenarios and add exception message for the output.
+        This is needed because xUnit exporter in Behave fails if there are not failed steps and because Allure
+        reports a skipped scenario when the feature has been marked as skipped.
+
+        Note that after a feature error, steps are marked as skipped, but their exception is kept. Allure reads
+        the exception before the status, so setting the exception is enough to report the scenario as failed.
+
+        :param context: It's a clever place where you and behave can store information to share around,
+                        automatically managed by behave.
+        :param scenarios: List of scenarios to fail
+        :param error_message: Exception message
+        """
+        for scenario in scenarios:
+            self.fail_first_step_precondition_exception(scenario, error_message)
+            if len(scenario.background_steps) > 0:
+                context.logger.warning('Background from scenario status udpated to fail')
 
     def fail_first_step_precondition_exception(self, scenario, error_message):
         """

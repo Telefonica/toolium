@@ -68,12 +68,72 @@ def test_execute_before_feature_steps_passed_actions(context, dyn_env):
 
 def test_execute_before_feature_steps_failed_actions(context, dyn_env):
     context.execute_steps.side_effect = Exception('Exception in before feature step')
+    dyn_env.get_feature_scenarios_to_fail = mock.MagicMock(return_value=[context.scenario])
+    dyn_env.fail_scenarios_first_step = mock.MagicMock()
 
     dyn_env.execute_before_feature_steps(context)
     assert dyn_env.feature_error is True
     assert dyn_env.scenario_error is False
     context.execute_steps.assert_called_with('Given before feature step')
     context.feature.mark_skipped.assert_called_once_with()
+    # Scenarios must be collected before marking the feature as skipped and failed after
+    dyn_env.get_feature_scenarios_to_fail.assert_called_once_with(context)
+    dyn_env.fail_scenarios_first_step.assert_called_once_with(
+        context,
+        [context.scenario],
+        context.execute_steps.side_effect,
+    )
+
+
+def test_execute_before_feature_steps_failed_actions_order(context, dyn_env):
+    """Scenarios must be collected before the feature is marked as skipped, because mark_skipped makes
+    should_run return False for all the scenarios."""
+    context.execute_steps.side_effect = Exception('Exception in before feature step')
+    manager = mock.MagicMock()
+    manager.get_feature_scenarios_to_fail = mock.MagicMock()
+    manager.mark_skipped = mock.MagicMock()
+    manager.fail_scenarios_first_step = mock.MagicMock()
+    dyn_env.get_feature_scenarios_to_fail = manager.get_feature_scenarios_to_fail
+    dyn_env.fail_scenarios_first_step = manager.fail_scenarios_first_step
+    context.feature.mark_skipped = manager.mark_skipped
+
+    dyn_env.execute_before_feature_steps(context)
+
+    assert [call[0] for call in manager.mock_calls] == [
+        'get_feature_scenarios_to_fail',
+        'mark_skipped',
+        'fail_scenarios_first_step',
+    ]
+
+
+def test_get_feature_scenarios_to_fail(context, dyn_env):
+    runnable = mock.MagicMock()
+    skipped_by_tags = mock.MagicMock()
+    runnable.should_run.return_value = True
+    skipped_by_tags.should_run.return_value = False
+    context.feature.walk_scenarios.return_value = [runnable, skipped_by_tags]
+
+    scenarios = dyn_env.get_feature_scenarios_to_fail(context)
+
+    assert scenarios == [runnable]
+    runnable.should_run.assert_called_once_with(context.config)
+
+
+def test_fail_scenarios_first_step(context, dyn_env):
+    scenario_with_steps = mock.MagicMock()
+    scenario_with_steps.steps = [mock.MagicMock()]
+    scenario_with_steps.background_steps = []
+    scenario_with_background = mock.MagicMock()
+    scenario_with_background.steps = [mock.MagicMock()]
+    scenario_with_background.background_steps = [mock.MagicMock()]
+    dyn_env.fail_first_step_precondition_exception = mock.MagicMock()
+
+    dyn_env.fail_scenarios_first_step(context, [scenario_with_steps, scenario_with_background], 'error message')
+
+    assert dyn_env.fail_first_step_precondition_exception.call_count == 2
+    dyn_env.fail_first_step_precondition_exception.assert_any_call(scenario_with_steps, 'error message')
+    dyn_env.fail_first_step_precondition_exception.assert_any_call(scenario_with_background, 'error message')
+    context.logger.warning.assert_called_once_with('Background from scenario status udpated to fail')
 
 
 def test_execute_before_scenario_steps_without_actions(context):
