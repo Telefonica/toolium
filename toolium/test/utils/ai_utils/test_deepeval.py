@@ -123,7 +123,7 @@ def test_get_model_rejects_unknown_provider():
             {'AI': {'openai_model': 'agent', 'openai_api_key': 'shared', 'openai_temperature': '0.7'}},
             'agent',
             'shared',
-            '0.7',
+            0.0,
         ),
         (
             {
@@ -137,17 +137,27 @@ def test_get_model_rejects_unknown_provider():
         ({'DeepEval': {'openai_model': 'judge', 'openai_api_key': 'judge-key'}}, 'judge', 'judge-key', 0.0),
     ],
 )
-def test_get_model_configuration_precedence(sections, expected_model, expected_key, expected_temperature):
+@pytest.mark.parametrize('provider', ['openai', 'azure'])
+def test_get_model_configuration_precedence(sections, expected_model, expected_key, expected_temperature, provider):
     from toolium.config_parser import ExtendedConfigParser
 
     config = ExtendedConfigParser()
+    sections = {
+        section: {
+            key.replace('openai', provider) if key != 'openai_model' else key: value for key, value in values.items()
+        }
+        for section, values in sections.items()
+    }
     config.read_dict(sections)
     with (
         mock.patch.object(deepeval.DriverWrappersPool, 'get_default_wrapper', return_value=mock.Mock(config=config)),
-        mock.patch.object(deepeval, 'GPTModel') as model_class,
+        mock.patch.object(deepeval, 'GPTModel' if provider == 'openai' else 'AzureOpenAIModel') as model_class,
     ):
-        deepeval._get_model(None, None, {})
-    model_class.assert_called_once_with(model=expected_model, api_key=expected_key, temperature=expected_temperature)
+        deepeval._get_model(provider, None, {})
+    expected = {'model': expected_model, 'api_key': expected_key, 'temperature': expected_temperature}
+    if provider == 'azure':
+        expected.update(base_url=None, deployment_name=expected_model, api_version=None)
+    model_class.assert_called_once_with(**expected)
 
 
 def test_get_model_resolves_provider_before_connection_and_allows_explicit_overrides():
@@ -773,6 +783,43 @@ class OfflineJudge(DeepEvalBaseLLM):
 
     async def a_generate(self, prompt, schema=None):
         return self.generate(prompt, schema=schema)
+
+
+class PIIJudge(OfflineJudge):
+    def __init__(self, leaks_pii):
+        self.leaks_pii = leaks_pii
+        super().__init__()
+
+    def generate(self, _prompt, schema=None):
+        if schema.__name__ == 'ExtractedPII':
+            return schema(extracted_pii=['alice@example.com'] if self.leaks_pii else [])
+        if schema.__name__ == 'Verdicts':
+            return schema(verdicts=[{'verdict': 'yes', 'reason': 'Private email disclosed'}])
+        if schema.__name__ == 'PIILeakageScoreReason':
+            return schema(reason='PII detected' if self.leaks_pii else 'No PII detected')
+        raise AssertionError(f'Unexpected schema: {schema}')
+
+
+@pytest.mark.parametrize('async_mode', [False, True])
+@pytest.mark.parametrize(('leaks_pii', 'expected_score'), [(False, 1.0), (True, 0.0)])
+def test_real_pii_metric_with_offline_judge(leaks_pii, expected_score, async_mode):
+    judge = PIIJudge(leaks_pii)
+    output = 'Email: alice@example.com' if leaks_pii else 'Your order is ready.'
+    options = {'model': judge, 'input_text': 'Order status?', 'async_mode': async_mode}
+    score, reason = deepeval.get_pii_leakage_with_deepeval(output, **options)
+    assert score == expected_score
+    assert reason == ('PII detected' if leaks_pii else 'No PII detected')
+    if leaks_pii:
+        with pytest.raises(AssertionError, match='DeepEval PII privacy score'):
+            deepeval.assert_pii_leakage_with_deepeval(output, threshold=1.0, **options)
+    else:
+        deepeval.assert_pii_leakage_with_deepeval(output, threshold=1.0, **options)
+
+
+def test_pii_default_threshold():
+    with mock.patch.object(deepeval, 'PIILeakageMetric', return_value=_metric(0.9)) as constructor:
+        deepeval.get_pii_leakage_with_deepeval('answer', model=mock.sentinel.judge)
+    constructor.assert_called_once_with(threshold=1.0, model=mock.sentinel.judge)
 
 
 _ASSERT_CASES = [

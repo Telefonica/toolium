@@ -256,6 +256,7 @@ Toolium uses the metric's native `is_successful()` decision, including `strict_m
 * `contextual_recall`: checks whether evidence covers `expected_output`.
 * `toxicity` and `hallucination`: lower scores are better; the threshold is the maximum acceptable score.
 * `pii_leakage`: higher scores indicate better privacy protection; 1.0 means no detected leakage.
+  `get_pii_leakage_with_deepeval` defaults to a threshold of `1.0`; callers can set a different threshold explicitly.
 * `json_correctness`: requires `expected_schema` in the metric options.
 * `tool_correctness`: requires `tools_called` and `expected_tools` as case fields. By default only tool names are
   compared; set `evaluation_params=[ToolCallParams.INPUT_PARAMETERS, ToolCallParams.OUTPUT]` in the metric options
@@ -378,7 +379,7 @@ success and raise `AssertionError` on native metric failure. They accept `model=
 DeepEval configuration
 ~~~~~~~~~~~~~~~~~~~~~~
 
-DeepEval resolves each setting independently, in this order:
+Except for temperature, DeepEval resolves each setting independently, in this order:
 
 1. Explicit function arguments (`provider`, `model_name` and options in `model_kwargs`).
 2. The key in the `[DeepEval]` section.
@@ -393,8 +394,9 @@ Configuration keys keep their existing names, without a `deepeval_` prefix:
 * `azure_api_key`, `azure_endpoint`, `api_version` and `azure_deployment`: Azure connection settings.
 * `azure_temperature`: Azure evaluator temperature.
 
-The provider is resolved first, then its credentials and temperature. Temperature defaults to `0.0` when absent from
-both sections. A configured zero is preserved. Credentials and Azure connection settings default to `None`, allowing
+The provider is resolved first, then its credentials and temperature. Temperature is read only from `[DeepEval]`
+and defaults to `0.0`; it never inherits the agent temperature from `[AI]`. Explicit temperature options still take
+precedence. A configured zero is preserved. Credentials and Azure connection settings default to `None`, allowing
 DeepEval's own environment-based configuration. Azure deployment defaults to the resolved model name.
 
 For example, share the agent connection while overriding the evaluator model and temperature::

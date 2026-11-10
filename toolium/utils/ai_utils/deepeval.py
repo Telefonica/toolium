@@ -106,7 +106,7 @@ def _get_model(provider, model_name, kwargs, config=None):
     deepeval_model_kwargs = {
         'model': deepeval_model,
         'api_key': _get_deepeval_config(config, f'{deepeval_provider}_api_key'),
-        'temperature': _get_deepeval_config(config, f'{deepeval_provider}_temperature', 0.0),
+        'temperature': config.get_optional('DeepEval', f'{deepeval_provider}_temperature', 0.0),
     }
     if deepeval_provider == 'openai':
         deepeval_model_class = GPTModel
@@ -146,6 +146,7 @@ def create_deepeval_model(model_name=None, provider=None, config=None, **kwargs)
     """Create a judge using explicit options, [DeepEval], [AI], then defaults.
 
     Pass a Toolium config parser to avoid consulting the default driver wrapper.
+    Temperature only falls back to [DeepEval], then 0.0.
     The caller owns the returned model and its lifecycle.
     """
     _require_deepeval()
@@ -342,7 +343,7 @@ def assert_summarization_with_deepeval(source_text, summary, threshold, model_na
 
 
 def _evaluate_pii_leakage_with_deepeval(
-    actual_output, model_name=None, threshold=0.7, provider=None, input_text='', **kwargs
+    actual_output, model_name=None, threshold=1.0, provider=None, input_text='', **kwargs
 ):
     """Evaluate possible personally identifiable information leakage.
 
@@ -359,7 +360,7 @@ def _evaluate_pii_leakage_with_deepeval(
 
 
 def get_pii_leakage_with_deepeval(
-    actual_output, model_name=None, threshold=0.7, provider=None, input_text='', **kwargs
+    actual_output, model_name=None, threshold=1.0, provider=None, input_text='', **kwargs
 ):
     """Evaluate possible personally identifiable information leakage.
 
