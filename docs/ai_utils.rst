@@ -19,7 +19,15 @@ DeepEval has a separate optional extra so that its pytest plugins are only insta
 
     pip install "toolium[deepeval]"
 
-This extra requires DeepEval >=3.9.9,<3.10.0. To use all AI utilities, install "toolium[ai,deepeval]".
+This extra requires DeepEval >=3.9.9,<3.10.0. If you use both extras in the same environment, install them together
+so pip can resolve their shared dependencies in one pass:
+
+.. code-block:: bash
+
+    pip install "toolium[ai,deepeval]"
+
+Installing the extras in separate commands can leave incompatible versions of ``huggingface-hub`` and ``click``
+in the environment.
 
 **Additional Requirements:**
 
