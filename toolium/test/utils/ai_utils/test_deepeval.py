@@ -785,6 +785,35 @@ class OfflineJudge(DeepEvalBaseLLM):
         return self.generate(prompt, schema=schema)
 
 
+@pytest.mark.parametrize('steps', [None, ['Check the requested custom criterion.'], ['Check something else.']])
+def test_response_metadata_hashes_effective_steps(steps):
+    import json
+    from hashlib import sha256
+
+    options = {'threshold': 0.7, 'async_mode': False}
+    generated_steps = ['Check the requested custom criterion.']
+    if steps is None:
+        options['criteria'] = 'Check the requested custom criterion.'
+    else:
+        options['evaluation_steps'] = steps
+
+    evaluator = deepeval.DeepEvalEvaluator(model=OfflineJudge(), metric_config={'geval': options})
+    baseline = evaluator.evaluate_response('question', 'answer', expected_output='reference')
+    result = evaluator.evaluate_response('question', 'answer', expected_output='reference', include_metadata=True)
+
+    assert 'metadata' not in baseline
+    metadata = result.pop('metadata')
+    assert result == baseline
+    assert metadata['deepeval_version'] == deepeval.version('deepeval')
+    assert 'toolium_version' in metadata
+    assert metadata['judge'] == {'model': 'offline-judge'}
+    effective_steps = json.dumps(steps or generated_steps, separators=(',', ':')).encode()
+    assert metadata['metrics'] == {
+        'geval': {'threshold': 0.7, 'evaluation_steps_sha256': sha256(effective_steps).hexdigest()}
+    }
+    json.dumps(metadata)
+
+
 class PIIJudge(OfflineJudge):
     def __init__(self, leaks_pii):
         self.leaks_pii = leaks_pii

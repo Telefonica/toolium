@@ -251,6 +251,14 @@ Pass `evaluation_steps=[...]` to customize the rubric. For similarity and answer
 to custom `geval` and `conversational_geval` metric configurations. In characteristic analysis use `text_criteria` for
 the characteristics; optional `evaluation_steps` are applied to each selected characteristic.
 
+The Toolium release or commit identifies the built-in rubrics. Pass ``include_metadata=True`` to
+``evaluate_response_with_deepeval`` or ``DeepEvalEvaluator.evaluate_response`` to include a ``metadata`` field
+with the installed Toolium and DeepEval versions, available judge settings, and each metric's effective threshold.
+When DeepEval exposes the effective steps, the metric metadata also includes their SHA-256 hash. Judge metadata
+includes the model name when available, plus provider and temperature for OpenAI and Azure judges and deployment
+for Azure. Credentials are excluded. Save the result in your own history, and save custom steps separately if
+you need to recover their text later.
+
 Metrics and options
 ~~~~~~~~~~~~~~~~~~~
 

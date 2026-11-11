@@ -19,6 +19,7 @@ import json
 import logging
 from copy import deepcopy
 from dataclasses import asdict, dataclass
+from hashlib import sha256
 from importlib.metadata import PackageNotFoundError, version
 
 from toolium.driver_wrappers_pool import DriverWrappersPool
@@ -943,8 +944,32 @@ def _validate_metric_config(metric_config, registry, kind):
             raise ValueError('geval requires criteria or evaluation_steps')
 
 
-def _evaluate_metrics(test_case, metric_config, registry, model):
+def _evaluation_metadata(model, metrics):
+    from deepeval.models import DeepEvalBaseLLM, GPTModel
+    from deepeval.models.llms import AzureOpenAIModel
+
+    judge = {}
+    if isinstance(model, AzureOpenAIModel):
+        judge.update(provider='azure', deployment=model.deployment_name, temperature=model.temperature)
+    elif isinstance(model, GPTModel):
+        judge.update(provider='openai', temperature=model.temperature)
+    if isinstance(model, DeepEvalBaseLLM):
+        model_name = model.name if judge else model.get_model_name()
+        if isinstance(model_name, str):
+            judge['model'] = model_name
+
+    metadata = {'judge': judge, 'metrics': metrics}
+    for package in ('toolium', 'deepeval'):
+        try:
+            metadata[f'{package}_version'] = version(package)
+        except PackageNotFoundError:
+            metadata[f'{package}_version'] = None
+    return metadata
+
+
+def _evaluate_metrics(test_case, metric_config, registry, model, *, include_metadata=False):
     results = {}
+    metric_metadata = {}
     for name, options in deepcopy(metric_config).items():
         if name in ('text_similarity', 'answer_correctness', 'geval'):
             defaults = _SIMILARITY_STEPS if name == 'text_similarity' else _ANSWER_STEPS
@@ -960,7 +985,18 @@ def _evaluate_metrics(test_case, metric_config, registry, model):
             options.setdefault('evaluation_params', [MultiTurnParams.CONTENT])
         metric = globals()[registry[name]](model=model, **options)
         results[name] = asdict(_measure(metric, test_case))
-    return {'results': results, 'passed': all(result['passed'] for result in results.values())}
+        if include_metadata:
+            details = {'threshold': metric.threshold}
+            steps = getattr(metric, 'evaluation_steps', None)
+            if steps:
+                encoded_steps = json.dumps(steps, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+                details['evaluation_steps_sha256'] = sha256(encoded_steps).hexdigest()
+            metric_metadata[name] = details
+
+    evaluation = {'results': results, 'passed': all(result['passed'] for result in results.values())}
+    if include_metadata:
+        evaluation['metadata'] = _evaluation_metadata(model, metric_metadata)
+    return evaluation
 
 
 def _assert_evaluation(evaluation, label):
@@ -980,9 +1016,13 @@ def evaluate_response_with_deepeval(
     provider=None,
     model_kwargs=None,
     reference_context=None,
+    *,
+    include_metadata=False,
     **test_case_options,
 ):
     """Evaluate selected single-turn metrics, returning results and an aggregate passed value.
+
+    Set ``include_metadata=True`` to include versions, judge details and metric settings.
 
     Additional test case fields, such as tools_called and expected_tools, are forwarded
     to LLMTestCase. Summaries use the separate source_text/summary API.
@@ -1017,7 +1057,7 @@ def evaluate_response_with_deepeval(
         context=_serialize_context(reference_context) if reference_context is not None else serialized,
         **deepcopy(test_case_options),
     )
-    return _evaluate_metrics(test_case, metric_config, _RESPONSE_METRICS, judge)
+    return _evaluate_metrics(test_case, metric_config, _RESPONSE_METRICS, judge, include_metadata=include_metadata)
 
 
 def assert_response_with_deepeval(*args, **kwargs):
@@ -1092,7 +1132,9 @@ class DeepEvalEvaluator:
             else create_deepeval_model(model_name=model_name, provider=provider, config=config, **model_kwargs)
         )
 
-    def evaluate_response(self, input_text, actual_output, metric_config=None, **test_case_options):
+    def evaluate_response(
+        self, input_text, actual_output, metric_config=None, *, include_metadata=False, **test_case_options
+    ):
         """Evaluate this response using an override selection or the evaluator defaults."""
         selection = self._metric_config if metric_config is None else metric_config
         return evaluate_response_with_deepeval(
@@ -1100,6 +1142,7 @@ class DeepEvalEvaluator:
             actual_output,
             metric_config=selection,
             model=self._model,
+            include_metadata=include_metadata,
             **test_case_options,
         )
 
