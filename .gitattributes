@@ -1,0 +1,5 @@
+# Normalize line endings in the repository so the files are identical on every
+# platform. This matters for CHANGELOG.rst: python-semantic-release looks for its
+# insertion flag in that file, and it builds the flag with the line separator of the
+# current platform. With CRLF in the working tree, the flag is not found on Linux.
+* text=auto eol=lf
