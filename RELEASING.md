@@ -1,8 +1,9 @@
 # Releasing Toolium
 
-Releases are fully automated. Every merge to `master` is analysed by
-[python-semantic-release](https://python-semantic-release.readthedocs.io/) (PSR), which decides the next version,
-updates the version and the changelog, commits, tags, and publishes. **There is no manual release step.**
+Releases are fully automated and cut **once a month**. On the 1st,
+[python-semantic-release](https://python-semantic-release.readthedocs.io/) (PSR) looks at everything merged into
+`master` since the last release, decides the next version, updates the version and the changelog, commits, tags, and
+publishes. **There is no manual release step**, beyond starting the workflow by hand for a hotfix.
 
 ## Versioning rules
 
@@ -23,8 +24,7 @@ deliberately narrow. A change worth publishing must use one of the three prefixe
 dropped, both from the version and from the changelog. In particular, a performance improvement is written as `fix:`,
 not `perf:`, so that it reaches the patch release and the changelog.
 
-Commits that do not follow the convention are ignored for versioning. A merge that releases nothing simply skips the
-whole workflow.
+Commits that do not follow the convention are ignored for versioning, and are left out of the release.
 
 **The pull request title is the commit message.** Pull requests are merged with squash, so the title of the PR becomes
 the single commit that lands on `master` — and that is what semantic-release reads. A malformed title is silently
@@ -42,32 +42,18 @@ not raise the major version.
 Because the version is derived from the commits, `VERSION` is never edited by hand again, and the `X.Y.Z.dev0` scheme
 is no longer used: after a release, `VERSION` holds the released version, and the next release is computed from it.
 
-### Postponing a release
+## When a release happens
 
-To land a change without releasing it, put `[skip release]` in the **pull request title**. The release workflow is
-skipped, but the commits it carries stay pending, so the **next** release includes them — with their own entry in the
-changelog and their own effect on the version. It only affects the release workflow, not CI, which runs as usual.
+Releases are cut **once a month**: on the 1st, the workflow picks up everything merged into `master` since the last
+tag and publishes it as a single release. Changes therefore accumulate during the month, instead of going out one by
+one, which keeps the number of versions published on PyPI close to what it used to be before the automation.
 
-```
-feat!: remove the deprecated page object API [skip release]
-```
+For anything that cannot wait for the monthly release, such as a hotfix, the workflow can also be started by hand from
+the *Actions* tab (*release → Run workflow*). It will publish whatever is pending at that moment.
 
-The PR title is where the marker has to go because that is what a squash merge copies into the commit that lands on
-`master`. The body of the commit is not reliable: it survives in a single-commit pull request but is dropped when the
-pull request has more than one commit, so a marker there would be lost and the release would go out.
+There is no way to hold back a single change: whatever is merged into `master` goes into the next release.
 
-This is useful to group related changes into a single release: merge the first PR with the marker, and merge the last
-one without it. Both `feat:` entries then appear together in the same release.
-
-Note that the marker ends up in the changelog entry of the release it lands in, since it is part of the title that
-generates it (`* Remove the deprecated page object API [skip release]`). Remove it by hand from that entry afterwards.
-
-A `chore:` does not release on its own either, but it does appear in the changelog under its own section, so it is the
-one to use for maintenance that should be listed. Use `[skip release]` instead when the change must stay out of the
-changelog until it is released together with something else — which is the only option for a `feat:` that should not
-trigger a release yet.
-
-## What happens on a merge to master
+## What the release workflow does
 
 `.github/workflows/release.yml` runs:
 
@@ -88,8 +74,8 @@ because the version commit and the tag are pushed straight to `master`, which is
 allowed to do it, instead of having to exempt the `github-actions` bot from the rule.
 
 One consequence: a push made with an app token **does** trigger workflows, unlike one made with `GITHUB_TOKEN`. So the
-version commit starts a second run of this same workflow, which finds no new `fix:` or `feat:` and does nothing, and
-also a run of CI over that commit. That is expected, and it does not loop.
+version commit starts a run of CI, which is what we want (the released commit gets tested), and no run of this workflow,
+since it no longer listens to pushes.
 
 If the app is renamed or replaced, update the two values above and the workflow, and note that the workflow pushes on
 behalf of that app.
