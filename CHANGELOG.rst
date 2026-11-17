@@ -25,22 +25,20 @@ Features
 
 * Automate releases with semantic-release (`#488`_, `6b0ee5f`_)
 
-* **python**: Toolium is ending support for Python 3.10 (`#484`_, `abed2fc`_)
+* Add support for Python 3.14 (`#483`_, `bf0eadb`_)
 
+* Toolium is ending support for Python 3.10 (`#484`_, `abed2fc`_)
+
+.. _#483: https://github.com/Telefonica/toolium/pull/483
 .. _#484: https://github.com/Telefonica/toolium/pull/484
 .. _#486: https://github.com/Telefonica/toolium/pull/486
 .. _#487: https://github.com/Telefonica/toolium/pull/487
 .. _#488: https://github.com/Telefonica/toolium/pull/488
+.. _bf0eadb: https://github.com/Telefonica/toolium/commit/bf0eadb78a17b1f35ceab4cfa63b0a29b4b8d742
 .. _092601d: https://github.com/Telefonica/toolium/commit/092601d8a10a27f6bcbb3f8e6d415563ba0cc834
 .. _3e04e1f: https://github.com/Telefonica/toolium/commit/3e04e1faf26d585438876894e2686b590163222c
 .. _6b0ee5f: https://github.com/Telefonica/toolium/commit/6b0ee5fc7ec9f97853360c16e791bc881559770a
 .. _abed2fc: https://github.com/Telefonica/toolium/commit/abed2fce00a643adc4ff67dd66066c8136923595
-
-
-* Add support for Python 3.14 (`#483`_, `bf0eadb`_)
-
-.. _#483: https://github.com/Telefonica/toolium/pull/483
-.. _bf0eadb: https://github.com/Telefonica/toolium/commit/bf0eadb78a17b1f35ceab4cfa63b0a29b4b8d742
 
 .. _changelog-v3.8.4:
 
