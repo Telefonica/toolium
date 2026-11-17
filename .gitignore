@@ -103,6 +103,3 @@ docs/_build
 
 # DeepEval
 *.deepeval/
-
-# UV lock
-uv.lock
