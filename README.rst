@@ -95,6 +95,9 @@ Finally, before accepting your contribution, we need you to sign our
 `Contributor License Agreement <https://raw.githubusercontent.com/telefonicaid/Licensing/master/ContributionPolicy.txt>`_
 and send it to ruben.gonzalezalonso@telefonica.com.
 
+If you are a maintainer, see `RELEASING.md <https://github.com/Telefonica/toolium/blob/master/RELEASING.md>`_
+for the steps to publish a new release.
+
 Main Features
 -------------
 

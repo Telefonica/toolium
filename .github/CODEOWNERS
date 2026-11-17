@@ -1,0 +1,8 @@
+# Lines starting with '#' are comments.
+# Each line is a file pattern followed by one or more owners.
+
+# Default owners for everything in the repository.
+# Only @Telefonica/toolium is listed on purpose: the code owner rule is used to
+# guarantee that at least one approval comes from a member of that team. If a
+# second team were added here, an approval from either team would satisfy it.
+*    @Telefonica/toolium

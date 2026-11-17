@@ -1,0 +1,108 @@
+name: release-test
+
+# Rehearses the release flow without touching PyPI, master or the real versioning.
+#
+# It can be started in two ways:
+#   - Manually, from the Actions tab (workflow_dispatch). GitHub only shows the button
+#     when this file exists on the default branch, so this path works after the first
+#     merge to master.
+#   - Pushing to a branch named test/*, which works before that first merge.
+#
+# The version is a prerelease (X.Y.Z-dev.N), so TestPyPI and PyPI never see a version
+# that could be confused with a real release. The release commit and tag are created
+# locally inside the run, but never pushed, so nothing lands in the repository: each run
+# leaves the remote branches and tags untouched.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'test/**'
+
+permissions:
+  contents: read
+
+# Sequential runs, so two rehearsals never race on the shared version calculation.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  rehearsal:
+    name: Build prerelease and publish on TestPyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/toolium
+    permissions:
+      id-token: write  # required for TestPyPI trusted publishing (OIDC)
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0  # semantic-release needs the full history and tags
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set up python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+    - name: Calculate the next prerelease version
+      id: version
+      uses: python-semantic-release/python-semantic-release@v10
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        # The action requires the `commit_sha` output whenever a release happens, and
+        # python-semantic-release only sets it inside its tagging step. So a tag must be
+        # created locally for the action to succeed. Nothing reaches the remote: push and
+        # vcs_release stay off, so the commit and the tag exist only inside this run and the
+        # branch is left untouched.
+        commit: 'true'
+        tag: 'true'
+        push: 'false'
+        vcs_release: 'false'
+        # The changelog is generated, so its entry for this version can be reviewed in the
+        # run summary below.
+        changelog: 'true'
+        # This action runs in its own Docker container, which does not include the `build`
+        # package, so its build_command would fail with "No module named build". The build
+        # is done in a later step on the runner instead, where it is installed.
+        build: 'false'
+    - name: Show the version that would be released
+      run: |
+        echo "::notice::Rehearsal version: ${{ steps.version.outputs.version }} (tag ${{ steps.version.outputs.tag }})"
+    - name: Build sdist and wheel
+      run: python -m build
+    - name: Show the changelog entry that would be generated
+      run: |
+        python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+        import re
+        import pathlib
+
+        version = '${{ steps.version.outputs.version }}'
+        text = pathlib.Path('CHANGELOG.rst').read_text(encoding='utf-8')
+        match = re.search(rf'(v{re.escape(version)} \(.*?)\n(?=\S*\.\. _changelog-|\Z)', text, re.S)
+        body = match.group(1).rstrip() if match else "No entry was generated for this version."
+        print(f"## Changelog entry for `{version}`\n")
+        print("```rst")
+        print(body)
+        print("```")
+        PY
+    - name: Check distribution metadata
+      run: twine check dist/*
+    - name: Upload distribution
+      uses: actions/upload-artifact@v7
+      with:
+        name: dist-testpypi
+        path: dist/
+    - name: Publish on TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        # A rehearsal may be run several times, and TestPyPI rejects uploads of a file
+        # that already exists. With this, a repeated run reports success instead of
+        # failing on the duplicate.
+        skip-existing: true
