@@ -15,14 +15,20 @@ permissions:
 
 # Only one release at a time, and never cancel one in progress: cancelling while
 # semantic-release is pushing its version commit would leave the repository inconsistent.
+# The group is keyed to the branch every run targets (master), not to github.ref: a manual
+# dispatch can be started from any branch, but all of them release master, so keying it to
+# the ref would let two runs race on the same release.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-master
   cancel-in-progress: false
 
 jobs:
   release:
     name: Version and tag
     runs-on: ubuntu-latest
+    # A hung pip install or a semantic-release run would otherwise hold the runner
+    # indefinitely.
+    timeout-minutes: 15
     permissions:
       contents: write  # required to push the version commit and the tag
     outputs:
@@ -40,11 +46,14 @@ jobs:
     - name: Checkout master
       uses: actions/checkout@v6
       with:
-        ref: ${{ github.ref_name }}  # always the tip of master, not the triggering SHA
-        fetch-depth: 0               # semantic-release needs the full history and tags
+        # Always master, not github.ref_name: a manual dispatch can be started from any
+        # branch, and releasing from there would be refused (or, worse, would tag the wrong
+        # branch). A release only ever comes out of master.
+        ref: master
+        fetch-depth: 0  # semantic-release needs the full history and tags
         token: ${{ steps.ci-token.outputs.token }}
-    - name: Force the branch to the current commit
-      run: git reset --hard "$GITHUB_SHA"
+    - name: Force the branch to the current tip of master
+      run: git reset --hard origin/master
     - name: Set up python
       uses: actions/setup-python@v6
       with:
