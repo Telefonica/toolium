@@ -75,6 +75,7 @@ version = {file = "VERSION"}
 dependencies = {file = ["requirements.txt"]}
 optional-dependencies.playwright = {file = ["requirements_playwright.txt"]}
 optional-dependencies.ai = {file = ["requirements_ai.txt"]}
+optional-dependencies.deepeval = {file = ["requirements_deepeval.txt"]}
 optional-dependencies.dev = {file = ["requirements_dev.txt"]}
 
 [tool.pytest.ini_options]

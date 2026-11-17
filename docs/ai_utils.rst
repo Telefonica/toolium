@@ -13,6 +13,22 @@ can install them with the following command:
 
     pip install toolium[ai]
 
+DeepEval has a separate optional extra so that its pytest plugins are only installed when explicitly requested:
+
+.. code-block:: bash
+
+    pip install "toolium[deepeval]"
+
+This extra requires DeepEval >=3.9.9,<3.10.0. If you use both extras in the same environment, install them together
+so pip can resolve their shared dependencies in one pass:
+
+.. code-block:: bash
+
+    pip install "toolium[ai,deepeval]"
+
+Installing the extras in separate commands can leave incompatible versions of ``huggingface-hub`` and ``click``
+in the environment.
+
 **Additional Requirements:**
 
 For SpaCy, you also need to download the language model, i.e. for small English model:
@@ -67,6 +83,10 @@ similarity.
 3. `OpenAI <https://github.com/openai/openai-python>`_: Utilizes OpenAI's language models for advanced semantic text
 comparison. Provides the most sophisticated analysis but requires API access and it may incur costs.
 
+4. `DeepEval <https://deepeval.com/>`_: Provides additional semantic similarity and LLM-as-a-Judge metrics. It is optional and does not change the existing methods or defaults.
+
+See :ref:`deepeval_utilities` for usage, metric options and configuration.
+
 Usage
 ~~~~~
 
@@ -99,12 +119,335 @@ Default similarity method can be set in the properties.cfg file with the propert
     spacy_model: en_core_web_lg  # SpaCy model to use, en_core_web_sm by default
     sentence_transformers_model: all-MiniLM-L6-v2  # Sentence Transformers model to use, all-mpnet-base-v2 by default
     openai_model: gpt-3.5-turbo  # OpenAI model to use, gpt-4o-mini by default
+    provider: openai  # AI provider: 'openai' (default) or 'azure'
 
 To select models for each method, you can refer to the following links:
 
 * `SpaCy models <https://spacy.io/models>`_
 * `Sentence Transformers models <https://github.com/UKPLab/sentence-transformers>`_
 * `OpenAI models <https://platform.openai.com/docs/models>`_
+
+.. _deepeval_utilities:
+
+DeepEval evaluation
+-------------------
+
+Use `toolium.utils.ai_utils.deepeval` explicitly; it does not change existing similarity methods or defaults.
+DeepEval provides reusable metrics, evaluation criteria and explanations. The existing OpenAI utilities instead use
+Toolium prompts and response parsing, including their Pydantic response contracts. Local SpaCy and Sentence Transformers
+methods remain useful for fast comparisons without provider calls. DeepEval requires model access and can incur costs;
+it does not guarantee better accuracy. Calibrate thresholds with positive, borderline and negative examples for each
+metric and model rather than copying thresholds from another method.
+
+Prefer the response and conversation APIs below for a consistent result contract. Individual metric functions remain
+available as shortcuts; their return values are described under :ref:`deepeval_shortcuts`.
+
+Responses and conversations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Toolium supports independent single-turn and multi-turn evaluations. A response evaluation builds an `LLMTestCase`;
+a conversation evaluation builds a `ConversationalTestCase` from explicit user/assistant turns. Toolium does not collect
+messages or retain scenario history. A scenario may evaluate one response during the interaction and the conversation
+at its end.
+
+Both APIs return `{"results": {metric_name: {"score": ..., "reason": ..., "passed": ...}}, "passed": ...}`.
+Only selected metrics run, and every selected metric must pass. Assertions use the same decision without measuring
+again. Evaluation errors propagate; they are not converted into successful or fabricated scores.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import (
+        evaluate_response_with_deepeval,
+        assert_conversation_with_deepeval,
+    )
+
+    response_result = evaluate_response_with_deepeval(
+        input_text="Where is my order?",
+        actual_output="It is ready for pickup.",
+        retrieved_context=["The order is ready for pickup."],
+        metric_config={
+            "answer_relevancy": {"threshold": 0.7},
+            "faithfulness": {"threshold": 0.8},
+        },
+    )
+    messages = [
+        {"role": "user", "content": "Where is my order?"},
+        {"role": "assistant", "content": "It is ready for pickup."},
+        {"role": "user", "content": "Is it being delivered?"},
+        {"role": "assistant", "content": "No, you need to collect it."},
+    ]
+    assert_conversation_with_deepeval(
+        messages,
+        metric_config={
+            "turn_relevancy": {"threshold": 0.7},
+            "knowledge_retention": {"threshold": 0.8},
+        },
+    )
+
+Response metric names are `answer_relevancy`, `faithfulness`, `contextual_relevancy`, `contextual_precision`,
+`contextual_recall`, `toxicity`, `pii_leakage`, `hallucination`, `json_correctness`, `tool_correctness`, `text_similarity`,
+`answer_correctness` and `geval`. Supply each metric's required case fields (for example `expected_output`,
+`tools_called`, `expected_tools`) and constructor options (for example `expected_schema` inside `metric_config`).
+Custom `geval` requires `criteria` or `evaluation_steps`; `evaluation_params` can select its case fields.
+
+For evidence, reference facts and JSON inputs, see :ref:`deepeval_context_inputs`.
+
+Conversation metric names are `turn_relevancy`, `knowledge_retention`, `conversation_completeness` and
+`conversational_geval`. Messages may be dictionaries or DeepEval `Turn` objects, with `user` or `assistant` roles.
+Additional case options such as `scenario` and `expected_outcome` are accepted. Single-turn metrics cannot be used
+in conversation evaluations or vice versa. `assert_response_with_deepeval()` and `assert_conversation_with_deepeval()`
+fail with details of all failed selected metrics. Without `metric_config`, the defaults are `answer_relevancy` for
+responses and `turn_relevancy` for conversations, each with threshold `0.7`.
+
+Judge creation and reuse
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Every evaluation function accepts `model=judge`, including the individual getters and assertions. A supplied model is
+used directly, without consulting the default driver wrapper or creating another model. Do not combine it with
+`provider`, `model_name` or non-empty `model_kwargs`. Models created directly through DeepEval are also accepted.
+Without an injected model, standalone functions create a model for that invocation.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import create_deepeval_model, DeepEvalEvaluator
+
+    judge = create_deepeval_model(provider="azure", temperature=0.0)
+    evaluator = DeepEvalEvaluator(
+        model=judge,
+        metric_config={"faithfulness": {"threshold": 0.8}},
+        conversation_metric_config={"turn_relevancy": {"threshold": 0.7}},
+    )
+    result = evaluator.evaluate_response(
+        "Where is my order?", "Ready for pickup.", retrieved_context=["Ready for pickup."],
+    )
+    evaluator.assert_conversation(messages)
+    evaluator.assert_summary("The order is ready for pickup.", "Order ready for pickup.", threshold=0.7)
+
+`create_deepeval_model()` resolves [DeepEval], [AI] and defaults as described below. Pass `config=your_config_parser`
+to avoid the default driver wrapper. Without `model`, `DeepEvalEvaluator` creates a judge once at construction and
+accepts the same model configuration options. It keeps copies of response and conversation metric definitions.
+
+Each call creates fresh metrics and a fresh case, and returns a separate result. Supplying `metric_config` to an
+evaluator method replaces its defaults for that call only; it does not merge with or modify the stored selection.
+The evaluator retains no conversation, last result or metric instances. It offers `evaluate_response`,
+`evaluate_conversation`, `evaluate_summary` and corresponding `assert_*` methods.
+
+With Behave, the evaluator can be prepared in `before_all`, and each scenario supplies its own messages. With pytest,
+a session fixture can serve the same purpose. Multiple processes each own their evaluator. Concurrent threads may
+share an evaluator only if its judge supports concurrent calls, whether injected or created by Toolium; otherwise
+use a separate judge and evaluator per thread.
+Toolium isolates metric and case state but does not add locking to third-party models. Configure the default wrapper
+before starting concurrent evaluations; do not mutate shared configuration during model creation.
+
+GEval rubrics
+~~~~~~~~~~~~~
+
+Similarity, answer correctness and the default conversational GEval use explicit steps versioned in Toolium's source.
+Text-characteristic analysis builds explicit steps for each requested characteristic. This avoids the additional LLM
+request to generate steps for those defaults; it does not make LLM verdicts deterministic.
+
+Pass `evaluation_steps=[...]` to customize the rubric. For similarity and answer correctness, custom `criteria` without
+`evaluation_steps` lets DeepEval generate matching steps instead of applying the default rubric. The same rule applies
+to custom `geval` and `conversational_geval` metric configurations. In characteristic analysis use `text_criteria` for
+the characteristics; optional `evaluation_steps` are applied to each selected characteristic.
+
+The Toolium release or commit identifies the built-in rubrics. Pass ``include_metadata=True`` to
+``evaluate_response_with_deepeval`` or ``DeepEvalEvaluator.evaluate_response`` to include a ``metadata`` field
+with the installed Toolium and DeepEval versions, available judge settings, and each metric's effective threshold.
+When DeepEval exposes the effective steps, the metric metadata also includes their SHA-256 hash. Judge metadata
+includes the model name when available, plus provider and temperature for OpenAI and Azure judges and deployment
+for Azure. Credentials are excluded. Save the result in your own history, and save custom steps separately if
+you need to recover their text later.
+
+Metrics and options
+~~~~~~~~~~~~~~~~~~~
+
+Every `metric_config` entry requires a `threshold` between 0 and 1. Empty selections are rejected.
+Options are forwarded to the corresponding DeepEval metric; unsupported options are rejected by its constructor.
+Toolium uses the metric's native `is_successful()` decision, including `strict_mode`.
+
+* `faithfulness`: checks that answer claims are supported by `retrieved_context`.
+* `contextual_relevancy`: checks the relevance of retrieved evidence to the question.
+* `contextual_precision`: checks the ranking of relevant evidence against `expected_output`.
+* `contextual_recall`: checks whether evidence covers `expected_output`.
+* `toxicity` and `hallucination`: lower scores are better; the threshold is the maximum acceptable score.
+* `pii_leakage`: higher scores indicate better privacy protection; 1.0 means no detected leakage.
+  `get_pii_leakage_with_deepeval` defaults to a threshold of `1.0`; callers can set a different threshold explicitly.
+* `json_correctness`: requires `expected_schema` in the metric options.
+* `tool_correctness`: requires `tools_called` and `expected_tools` as case fields. By default only tool names are
+  compared; set `evaluation_params=[ToolCallParams.INPUT_PARAMETERS, ToolCallParams.OUTPUT]` in the metric options
+  to compare arguments and output as well. Either field may be selected independently.
+
+Higher scores are better for contextual, similarity, correctness and summarization metrics. Contextual precision and
+recall require `expected_output`; similarity and answer correctness use it as the reference answer.
+
+The four contextual metrics support `include_reason` (default `True`), `async_mode` (default `True`), `strict_mode`
+(default `False`), `verbose_mode` (default `False`) and `evaluation_template`. Faithfulness also accepts
+`truths_extraction_limit` and `penalize_ambiguous_claims`. For example::
+
+    metric_config={
+        "faithfulness": {"threshold": 0.7, "truths_extraction_limit": 10, "penalize_ambiguous_claims": True},
+        "contextual_recall": {"threshold": 0.8, "include_reason": True},
+    }
+
+Set `async_mode=False` where synchronous execution is required. Available options vary for other metrics.
+Keep the judge outside `metric_config`: use top-level `model=judge`, or `provider`, `model_name` and `model_kwargs`.
+
+Contextual shortcut
+~~~~~~~~~~~~~~~~~~~
+
+`evaluate_contextual_with_deepeval()` selects only the four contextual metrics and returns the same result contract
+as the response API. Use `metric_config` as above, or select `metrics="faithfulness"` (the default) or a list of names.
+With `metrics`, `threshold` may be one number (default 0.7) or a mapping of metric names to thresholds; omitted mapping
+entries use 0.7. `metric_kwargs` supplies common metric options. Do not combine these settings with `metric_config`.
+`assert_contextual_with_deepeval()` raises `AssertionError` if any selected metric fails.
+
+.. _deepeval_context_inputs:
+
+Evidence, reference facts and JSON inputs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`retrieved_context` supplies retrieved evidence for faithfulness and contextual metrics.
+`reference_context` supplies reference facts for hallucination. If `reference_context` is omitted or `None`,
+the retrieved evidence is also used as the hallucination reference. An explicit empty list remains empty.
+Both parameters accept a single string or dictionary, or a list containing strings or
+JSON-compatible objects/arrays. A list represents separate context items; to use a JSON array
+as one item, wrap it in an outer list (for example `retrieved_context=[["ready", "pickup"]]`).
+Toolium reserves `context` for Behave context; it is not accepted as an evaluation argument.
+The mapping to DeepEval's internal `context` field is handled by Toolium.
+
+.. code-block:: python
+
+    response_result = evaluate_response_with_deepeval(
+        input_text="Where is my order?",
+        actual_output="It is ready for pickup.",
+        retrieved_context=["The order is ready for pickup."],
+        reference_context=[{"order_status": "ready", "delivery": "pickup"}],
+        metric_config={
+            "faithfulness": {"threshold": 0.8},
+            "hallucination": {"threshold": 0.2},
+        },
+    )
+
+Dictionaries and nested lists are serialized with `ensure_ascii=False` and indentation; strings remain unchanged.
+The same normalization applies to contextual and individual faithfulness/hallucination functions. For several API
+responses, use one object per item, such as `[order_response, customer_response]`. Combine LLM evaluation with
+deterministic assertions for exact identifiers, amounts, dates and statuses.
+
+Summaries against source text
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Summarization is a separate operation: DeepEval expects the original document in `input` and the summary in
+`actual_output`. A question or instruction such as "Summarize the document" is not the source text. It is not a metric
+in `evaluate_contextual_with_deepeval()` or `evaluate_response_with_deepeval()`.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import (
+        get_summarization_with_deepeval,
+        assert_summarization_with_deepeval,
+    )
+
+    source_text = "Order 12345 is ready for pickup. Its total is 49.99 EUR."
+    summary = "Order 12345 is ready for pickup and costs 49.99 EUR."
+    score, reason = get_summarization_with_deepeval(
+        source_text=source_text,
+        summary=summary,
+        threshold=0.75,
+        n=5,
+        assessment_questions=["Does it include the order status?", "Does it preserve the total?"],
+        truths_extraction_limit=10,
+    )
+    assert_summarization_with_deepeval(source_text, summary, threshold=0.75)
+
+A higher summary score is better. `n` controls the number of generated assessment questions; `assessment_questions`
+provides explicit questions, and `truths_extraction_limit` limits extracted facts. Other options are passed to
+`SummarizationMetric`. For JSON sources, serialize the source into one string before calling this API.
+
+.. _deepeval_shortcuts:
+
+Individual metric shortcuts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `get_*_with_deepeval` functions evaluate one metric; matching `assert_*_with_deepeval` functions return `None` on
+success and raise `AssertionError` on native metric failure. They accept `model=judge` and metric-specific options.
+
+* `get_text_similarity_with_deepeval(text, expected_text)` returns a float. Its assertion accepts a string or a list
+  in `expected_texts` and succeeds if any reference passes.
+* `get_answer_evaluation_with_deepeval(llm_answer, reference_answer, question=...)` returns `(score, reason)`.
+  Its assertion accepts `reference_answers` and succeeds if any reference passes.
+* Summarization, PII leakage, toxicity, tool correctness, contextual recall/precision/relevancy, JSON correctness,
+  hallucination and faithfulness getters return `(score, reason)`.
+* `get_text_criteria_analysis_with_deepeval(text_input, text_criteria)` returns `overall_match` (informational mean),
+  `features` (failed characteristics with scores and explanations) and `passed`. Every characteristic must pass;
+  a high mean does not compensate for a failure. Empty criteria are rejected.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import assert_text_criteria_with_deepeval
+
+    assert_text_criteria_with_deepeval(
+        text_input="The deployment is complete and all checks passed.",
+        text_criteria=["clear message", "deployment status is included"],
+        threshold=0.7,
+    )
+
+DeepEval configuration
+~~~~~~~~~~~~~~~~~~~~~~
+
+Except for temperature, DeepEval resolves each setting independently, in this order:
+
+1. Explicit function arguments (`provider`, `model_name` and options in `model_kwargs`).
+2. The key in the `[DeepEval]` section.
+3. The same key in the `[AI]` section, if absent from `[DeepEval]`.
+4. The evaluator default, if absent from both sections.
+
+Configuration keys keep their existing names, without a `deepeval_` prefix:
+
+* `provider`: `openai` (default) or `azure`.
+* `openai_model`: evaluator model name (default `gpt-4o-mini`), for either provider.
+* `openai_api_key` and `openai_temperature`: OpenAI credentials and temperature.
+* `azure_api_key`, `azure_endpoint`, `api_version` and `azure_deployment`: Azure connection settings.
+* `azure_temperature`: Azure evaluator temperature.
+
+The provider is resolved first, then its credentials and temperature. Temperature is read only from `[DeepEval]`
+and defaults to `0.0`; it never inherits the agent temperature from `[AI]`. Explicit temperature options still take
+precedence. A configured zero is preserved. Credentials and Azure connection settings default to `None`, allowing
+DeepEval's own environment-based configuration. Azure deployment defaults to the resolved model name.
+
+For example, share the agent connection while overriding the evaluator model and temperature::
+
+    [AI]
+    provider: azure
+    openai_model: agent-model
+    azure_temperature: 0.7
+    azure_endpoint: https://example.openai.azure.com
+    azure_api_key: your-key
+    api_version: your-api-version
+
+    [DeepEval]
+    openai_model: judge-model
+    azure_deployment: judge-deployment
+    azure_temperature: 0.0
+
+Section names are case-sensitive: use `[DeepEval]`. Fallback happens only when a key is absent; an empty or invalid
+value is not replaced by the value in `[AI]`. To isolate the evaluator, configure its settings explicitly in `[DeepEval]`.
+
+.. code-block:: python
+
+    from toolium.utils.ai_utils.deepeval import get_text_similarity_with_deepeval
+
+    score = get_text_similarity_with_deepeval(
+        text="The received answer",
+        expected_text="The expected answer",
+        provider="azure",              # overrides the configured provider
+        model_name="my-model",         # overrides the configured openai_model
+        model_kwargs={"temperature": 0.1},
+    )
+
+For Azure OpenAI, `azure_deployment` identifies the deployment and `azure_endpoint` is used as the model base URL.
+The `deepeval` module creates the corresponding DeepEval `GPTModel` or `AzureOpenAIModel` and passes the configured
+credentials to it.
 
 Text Criteria Analysis
 ----------------------
@@ -249,7 +592,7 @@ by comparing it against a reference answer using another LLM. This approach prov
 semantic similarity, factual accuracy, completeness, and relevance.
 
 Toolium provides methods to evaluate answers using OpenAI and Azure OpenAI models with optional structured output
-using Pydantic models.
+using Pydantic models. DeepEval provides an additional, independent implementation based on its evaluation metrics.
 
 Usage
 ~~~~~
@@ -355,6 +698,13 @@ The module provides the following evaluation methods:
 * **assert_answer_evaluation()**: Evaluates answer and asserts if similarity meets threshold
 * **get_answer_evaluation_with_openai()**: Uses OpenAI's API directly for evaluation
 * **get_answer_evaluation_with_azure_openai()**: Uses Azure OpenAI's API for evaluation
+
+DeepEval alternative
+~~~~~~~~~~~~~~~~~~~~
+
+For DeepEval answer correctness and text-characteristic checks, see :ref:`deepeval_shortcuts`.
+The :ref:`DeepEval guide <deepeval_utilities>` also covers response/conversation evaluation, model configuration
+and metric options.
 
 Evaluation Criteria
 ~~~~~~~~~~~~~~~~~~~

@@ -100,3 +100,6 @@ docs/_build
 
 # Tests
 */test/output
+
+# DeepEval
+*.deepeval/
