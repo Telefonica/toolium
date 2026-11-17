@@ -18,12 +18,7 @@ RELEASING.md for the details.
 
 <!-- A short description of the change, and why it is needed. -->
 
-## How was it tested?
-
-<!-- Unit tests added, or the manual steps followed. -->
-
 ## Checklist
 
 - [ ] The **title of this pull request** follows the convention above
-- [ ] `ruff check .` and `ruff format --check .` pass
-- [ ] `python -m pytest` passes
+- [ ] `docs/` is updated if the change is user-visible
