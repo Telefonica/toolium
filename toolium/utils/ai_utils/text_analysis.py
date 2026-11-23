@@ -105,7 +105,8 @@ def assert_text_criteria(text_input, text_criteria, threshold, model_name=None, 
     """
     analysis = json.loads(get_text_criteria_analysis(text_input, text_criteria, model_name, azure, **kwargs))
     overall_match = analysis.get('overall_match', 0.0)
-    if not isinstance(overall_match, (int, float)) or isinstance(overall_match, bool) or not 0.0 <= overall_match <= 1.0:
+    if (not isinstance(overall_match, (int, float)) or isinstance(overall_match, bool)
+            or not 0.0 <= overall_match <= 1.0):
         raise AssertionError(f'Invalid overall_match: {overall_match!r}')
     if overall_match < threshold:
         error = (
