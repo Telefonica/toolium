@@ -28,6 +28,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from toolium.selenoid import Selenoid
 from toolium.utils.driver_wait_utils import WaitUtils
+from toolium.utils.logging_utils import decode_unicode_escapes
 from toolium.utils.path_utils import get_valid_filename, makedirs_safe
 
 
@@ -113,7 +114,11 @@ class Utils(WaitUtils):
                     timestamp = datetime.fromtimestamp(float(entry['timestamp']) / 1000.0).strftime(
                         '%Y-%m-%d %H:%M:%S.%f',
                     )
-                    log_file.write('{}\t{}\t{}\n'.format(timestamp, entry['level'], entry['message'].rstrip()))
+                    log_file.write(
+                        '{}\t{}\t{}\n'.format(
+                            timestamp, entry['level'], decode_unicode_escapes(entry['message'].rstrip())
+                        )
+                    )
 
     def discard_logcat_logs(self):
         """Discard previous logcat logs"""

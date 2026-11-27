@@ -31,6 +31,7 @@ from toolium.driver_wrapper import DriverWrapper
 from toolium.driver_wrappers_pool import DriverWrappersPool
 from toolium.pageelements.page_element import PageElement
 from toolium.utils.driver_utils import Utils
+from toolium.utils.logging_utils import decode_unicode_escapes
 
 navigation_bar_tests = (
     ('android', 'C:/Demo.apk', None, 0),
@@ -92,6 +93,10 @@ def driver_wrapper():
 def utils():
     # Create a new Utils instance
     return Utils()
+
+
+def test_decode_unicode_escapes():
+    assert decode_unicode_escapes(r'Acción € \U0001F680 \n') == 'Acción € 🚀 \\n'
 
 
 @pytest.mark.parametrize(('driver_type', 'driver_name'), driver_name_tests)
