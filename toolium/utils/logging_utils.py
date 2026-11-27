@@ -3,7 +3,6 @@
 import logging
 import re
 
-
 _UNICODE_ESCAPE = re.compile(r'\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})')
 
 
