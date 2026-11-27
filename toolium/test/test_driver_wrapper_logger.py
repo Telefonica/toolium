@@ -57,6 +57,14 @@ def test_configure_logger(driver_wrapper):
     assert logging.getLevelName(driver_wrapper.logger.getEffectiveLevel()) == 'DEBUG'
 
 
+def test_configure_logger_supports_unicode(driver_wrapper):
+    driver_wrapper.configure_logger()
+    driver_wrapper.logger.info(r'Prueba: ñ á € \U0001F680')
+
+    with open(driver_wrapper.output_log_filename, encoding='utf-8') as log_file:
+        assert 'Prueba: ñ á € 🚀' in log_file.read()
+
+
 def test_configure_logger_file_not_configured(driver_wrapper):
     driver_wrapper.configure_logger()
     driver_wrapper.logger.info('No error, default logging configuration')
