@@ -39,11 +39,15 @@ def build_system_message(characteristics):
         {feature_list}
 
         Tasks:
-        1) For EACH characteristic, decide how well the text satisfies it on a scale from 0.0 (does not satisfy it at all) to 1.0 (perfectly satisfies it). Consider style, tone and content when relevant.
-        2) ONLY for each low scored characteristic (<=0.2), output:
+        1) Evaluate every characteristic on a scale from 0.0 (does not satisfy it at all) to 1.0 (perfectly satisfies it). Consider style, tone and content when relevant.
+        2) For each characteristic with a score strictly below 0.2, output:
            - "name": the exact characteristic name as listed above.
            - "score": a float between 0.0 and 0.2.
-        3) Compute an overall score "overall_match" between 0.0 and 1.0 that summarizes how well the text matches the whole set. It does not have to be a simple arithmetic mean, but must still be in [0.0, 1.0].
+        3) Compute an overall score "overall_match" between 0.0 and 1.0 that summarizes
+           how well the text matches the complete set of characteristics. Consider all
+           characteristics, giving more weight to significant deficiencies. The score does
+           not need to be an arithmetic mean, but must be consistent with the individual
+           scores and remain within [0.0, 1.0].
 
         Output format (IMPORTANT):
         Return ONLY a single valid JSON object with this exact top-level structure and property names:
@@ -59,7 +63,7 @@ def build_system_message(characteristics):
         }}
 
         Constraints:
-        - Do NOT include scores for high valued (<=0.2) features at features list.
+        - Do NOT include scores for characteristics with scores greater than or equal to 0.2 in the features list.
         - Use a dot as decimal separator (e.g. 0.75, not 0,75).
         - Use at most 2 decimal places for all scores.
         - Do NOT include any text outside the JSON (no Markdown, no comments, no explanations).
@@ -101,6 +105,12 @@ def assert_text_criteria(text_input, text_criteria, threshold, model_name=None, 
     """
     analysis = json.loads(get_text_criteria_analysis(text_input, text_criteria, model_name, azure, **kwargs))
     overall_match = analysis.get('overall_match', 0.0)
+    if (
+        not isinstance(overall_match, (int, float))
+        or isinstance(overall_match, bool)
+        or not 0.0 <= overall_match <= 1.0
+    ):
+        raise AssertionError(f'Invalid overall_match: {overall_match!r}')
     if overall_match < threshold:
         error = (
             f'Text criteria analysis failed: overall match {overall_match} '
